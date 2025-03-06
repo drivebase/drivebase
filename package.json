@@ -3,15 +3,21 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "nx run-many --target=serve --projects=frontend,backend --parallel=2"
+    "dev": "nx run-many --target=serve --projects=frontend,backend --parallel=2",
+    "prisma:generate": "cd shared/internal/src/database && prisma generate"
   },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^10.0.2",
     "@nestjs/core": "^10.0.2",
+    "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^10.0.2",
     "@nx/react": "^20.4.6",
+    "@prisma/client": "^6.4.1",
+    "class-validator": "^0.14.1",
     "next": "~15.1.4",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "reflect-metadata": "^0.1.13",
@@ -39,6 +45,7 @@
     "@testing-library/react": "16.1.0",
     "@types/jest": "^29.5.14",
     "@types/node": "18.16.9",
+    "@types/passport-local": "^1.0.38",
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.0",
     "babel-jest": "^29.7.0",
