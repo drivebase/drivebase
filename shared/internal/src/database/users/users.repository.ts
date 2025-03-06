@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { CreateUserDto } from '@xile/internal/dtos/auth/create.user.dto';
+import { CreateUserDto } from '@xilehq/internal/dtos/auth/create.user.dto';
 
 @Injectable()
 export class UsersRepository {

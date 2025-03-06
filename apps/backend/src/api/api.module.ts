@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { AuthController } from '@xile/backend/api/controllers/auth.controller';
-import { AuthService } from '@xile/backend/services/auth/auth.service';
-import { LocalStrategy } from '@xile/backend/services/auth/local.strategy';
-import { JwtStrategy } from '@xile/backend/services/auth/jwt.strategy';
+import { AuthController } from '@xilehq/backend/api/controllers/auth.controller';
+import { AuthService } from '@xilehq/backend/services/auth/auth.service';
+import { LocalStrategy } from '@xilehq/backend/services/auth/local.strategy';
+import { JwtStrategy } from '@xilehq/backend/services/auth/jwt.strategy';
 
 @Module({
   imports: [

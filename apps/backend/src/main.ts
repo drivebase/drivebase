@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
-import { AppModule } from '@xile/backend/app.module';
+import { AppModule } from '@xilehq/backend/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

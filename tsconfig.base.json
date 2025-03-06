@@ -15,9 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@xile/backend/*": ["apps/backend/src/*"],
-      "@xile/internal/*": ["shared/internal/src/*"],
-      "@xile/ui/*": ["shared/ui/src/*"]
+      "@xilehq/backend/*": ["apps/backend/src/*"],
+      "@xilehq/internal/*": ["shared/internal/src/*"],
+      "@xilehq/ui/*": ["shared/ui/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
