@@ -6,11 +6,11 @@ import {
   Get,
   Body,
 } from '@nestjs/common';
-import { LocalAuthGuard } from '@xile/backend/services/auth/local-auth.guard';
-import { AuthService } from '@xile/backend/services/auth/auth.service';
-import { JwtAuthGuard } from '@xile/backend/services/auth/jwt-auth.guard';
-import { CreateUserDto } from '@xile/internal/dtos/auth/create.user.dto';
-import { UserInRequest } from '@xile/internal/types/auth.types';
+import { LocalAuthGuard } from '@xilehq/backend/services/auth/local-auth.guard';
+import { AuthService } from '@xilehq/backend/services/auth/auth.service';
+import { JwtAuthGuard } from '@xilehq/backend/services/auth/jwt-auth.guard';
+import { CreateUserDto } from '@xilehq/internal/dtos/auth/create.user.dto';
+import { UserInRequest } from '@xilehq/internal/types/auth.types';
 import { User } from '@prisma/client';
 
 @Controller('auth')
