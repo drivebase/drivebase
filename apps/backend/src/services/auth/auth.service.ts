@@ -40,7 +40,9 @@ export class AuthService {
       ...user,
       password: hashedPassword,
     });
-    return true;
+    return {
+      ok: true,
+    };
   }
 
   hashPassword(password: string) {
