@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@xile/internal": ["shared/internal/src/index.ts"],
+      "@xile/backend/*": ["apps/backend/src/*"],
+      "@xile/internal/*": ["shared/internal/src/*"],
       "@xile/ui/*": ["shared/ui/src/*"]
     }
   },
