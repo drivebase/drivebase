@@ -14,7 +14,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@xile/internal": ["shared/internal/src/index.ts"],
+      "@xile/ui/*": ["shared/ui/src/*"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
