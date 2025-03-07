@@ -16,6 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@xilehq/backend/*": ["apps/backend/src/*"],
+      "@xilehq/frontend/*": ["apps/frontend/src/*"],
       "@xilehq/internal/*": ["shared/internal/src/*"],
       "@xilehq/ui/*": ["shared/ui/src/*"]
     }

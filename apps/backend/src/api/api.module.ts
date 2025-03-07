@@ -13,7 +13,7 @@ import { AuthGuard } from '@xilehq/backend/services/auth/auth.guard';
     PassportModule,
     JwtModule.register({
       global: true,
-      secret: process.env.JWT_SECRET,
+      secret: process.env.AUTH_SECRET,
       signOptions: { expiresIn: '7d' },
     }),
   ],
