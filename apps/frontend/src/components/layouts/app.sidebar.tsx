@@ -20,45 +20,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@xilehq/ui/components/dropdown-menu';
-import {
-  LayoutDashboardIcon,
-  SettingsIcon,
-  StarIcon,
-  TrashIcon,
-} from 'lucide-react';
+import { ChevronLeftIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import SidebarUpload from './upload';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback } from '@xilehq/ui/components/avatar';
 import { useAppSelector } from '@xilehq/ui/lib/redux/hooks';
-
-const items = [
-  {
-    label: 'Dashboard',
-    icon: <LayoutDashboardIcon />,
-    href: '/',
-  },
-  {
-    label: 'Favorites',
-    icon: <StarIcon />,
-    href: '/favorites',
-  },
-  {
-    label: 'Recycle Bin',
-    icon: <TrashIcon />,
-    href: '/recycle-bin',
-  },
-  {
-    label: 'Settings',
-    icon: <SettingsIcon />,
-    href: '/settings',
-  },
-];
+import {
+  mainItems,
+  settingsItems,
+} from '@xilehq/frontend/constants/sidebar.items';
+import SidebarUpload from './upload';
 
 const AppSidebar = () => {
   const pathname = usePathname();
   const profile = useAppSelector((s) => s.profile.user);
+
+  const showSettings = pathname.startsWith('/settings');
+  const currentItems = showSettings ? settingsItems : mainItems;
 
   return (
     <Sidebar className="border-transparent w-[15rem]">
@@ -68,8 +48,8 @@ const AppSidebar = () => {
             draggable={false}
             src="/xile.png"
             alt="logo"
-            width={40}
             height={40}
+            width={40}
             className="rounded-xl"
           />
           <DropdownMenu>
@@ -92,25 +72,44 @@ const AppSidebar = () => {
         </div>
         <SidebarUpload />
       </SidebarHeader>
+
       <SidebarContent className="z-10">
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel className="flex items-center">
+            {showSettings && (
+              <Link href="/" className="mr-2 hover:text-primary">
+                <ChevronLeftIcon className="w-4 h-4" />
+              </Link>
+            )}
+            {showSettings ? 'Settings' : 'Application'}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <SidebarMenuItem key={item.label}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link href={item.href}>
-                        {item.icon}
-                        <span>{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={showSettings ? 'settings' : 'main'}
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -50, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <SidebarMenu>
+                  {currentItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    const Icon = item.icon;
+                    return (
+                      <SidebarMenuItem key={item.label}>
+                        <SidebarMenuButton asChild isActive={isActive}>
+                          <Link href={item.href}>
+                            <Icon />
+                            <span>{item.label}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </motion.div>
+            </AnimatePresence>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
