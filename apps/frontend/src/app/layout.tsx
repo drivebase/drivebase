@@ -5,7 +5,7 @@ import Providers from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Xile File Manager',
+  title: 'Xile - Unified Cloud Storage',
   description:
     'Open-source, self-hosted cloud file manager designed to unify file storage across multiple cloud providers into one seamless interface.',
 };
