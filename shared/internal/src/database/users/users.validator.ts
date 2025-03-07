@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 
 export const userProfile = Prisma.validator<Prisma.UserDefaultArgs>()({
   select: {
@@ -10,3 +10,12 @@ export const userProfile = Prisma.validator<Prisma.UserDefaultArgs>()({
 });
 
 export type UserPublicData = Prisma.UserGetPayload<typeof userProfile>;
+
+export function convertToUserPublicData(user: User) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  } satisfies UserPublicData;
+}
