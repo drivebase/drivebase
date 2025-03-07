@@ -1,82 +1,55 @@
-# Xile
+<p align="center">
+  <a href="https://github.com/mxvsh/xile">
+    <img src="./xile.svg" width="80px" alt="Xile logo" />
+  </a>
+</p>
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+<h3 align="center">
+  Self-Hosted Cloud File Manager
+</h3>
+<p align="center">
+Open-source, self-hosted cloud file manager designed to unify file storage across multiple cloud providers into one seamless interface.
+</p>
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+<p align="center"><a href="#">Cloud (coming soon)</a> · <a href="#">Documentation</a> · <a href="https://discord.gg/3kUSy2d">Discord</a></p>
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-
-## Finish your CI setup
-
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/OqtW1VaXri)
-
-
-## Run tasks
-
-To run the dev server for your app, use:
-
-```sh
-npx nx dev frontend
-```
-
-To create a production bundle:
-
-```sh
-npx nx build frontend
-```
-
-To see all available targets to run for a project, run:
-
-```sh
-npx nx show project frontend
-```
-
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/next:app demo
-```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/react:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+> [!NOTE]
+> This project is currently in development and not all features are available.
 
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
-## Install Nx Console
+Xile is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Xile, users can break free from cloud provider lock-in and take full control of where their files are stored.
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+## Features
+- 💪 Free and Open Source
+- 🔗 Multi-Cloud Integration (Google Drive, Dropbox, etc.)
+- 📂 Unified Folder Structure
+- ⚡ Storage Mapping with Cloud Provider Selection
+- 🔍 Cross-Cloud Search
+- 🔁 File Routing Rules for Automated Uploads
+- 🛡️ Privacy-First Approach (Only metadata is stored)
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Installation
 
-## Useful links
+Coming soon.
 
-Learn more:
+## Roadmap
+- [ ] Multi-User Support
+- [ ] File Sharing
+- [ ] File Versioning
+- [ ] File History
+- [ ] File Trash
+- [ ] File Locking
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Contributing
+
+Contributions are welcome! Please feel free to submit a PR.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+Join our [Discord server](https://discord.gg/3kUSy2d) to stay updated on the project and get help from the community.
