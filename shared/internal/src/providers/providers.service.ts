@@ -2,36 +2,68 @@ import { Injectable } from '@nestjs/common';
 import type { Provider } from '@prisma/client';
 import { CreateProviderDto } from '@xilehq/internal/providers/dtos/create.provider.dto';
 import { UpdateProviderDto } from '@xilehq/internal/providers/dtos/update.provider.dto';
-import { ProvidersRepository } from './providers.repository';
+import { PrismaService } from '@xilehq/internal/prisma.service';
+import { providers } from './providers';
 
 @Injectable()
 export class ProvidersService {
-  constructor(private readonly providersRepository: ProvidersRepository) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateProviderDto): Promise<Provider> {
-    return this.providersRepository.create(data);
+  async create(
+    workspaceId: string,
+    data: CreateProviderDto
+  ): Promise<Provider> {
+    return this.prisma.provider.create({
+      data: {
+        ...data,
+        workspaceId,
+        alias: data.alias || `My ${data.type}`,
+      },
+    });
   }
 
   async findById(id: string): Promise<Provider | null> {
-    return this.providersRepository.findById(id);
+    return this.prisma.provider.findUnique({
+      where: { id },
+    });
   }
 
-  async findByUserId(userId: string): Promise<Provider[]> {
-    return this.providersRepository.findByUserId(userId);
+  async findByWorkspaceId(workspaceId: string): Promise<Provider[]> {
+    return this.prisma.provider.findMany({
+      where: { workspaceId },
+    });
   }
 
   async update(id: string, data: UpdateProviderDto): Promise<Provider> {
-    return this.providersRepository.update(id, data);
+    return this.prisma.provider.update({
+      where: { id },
+      data,
+    });
   }
 
   async delete(id: string): Promise<Provider> {
-    return this.providersRepository.delete(id);
+    return this.prisma.provider.delete({
+      where: { id },
+    });
   }
 
-  async findByUserIdAndType(
-    userId: string,
+  async findByWorkspaceIdAndType(
+    workspaceId: string,
     type: CreateProviderDto['type']
   ): Promise<Provider[]> {
-    return this.providersRepository.findByUserIdAndType(userId, type);
+    return this.prisma.provider.findMany({
+      where: {
+        workspaceId,
+        type,
+      },
+    });
+  }
+
+  async findAvailableProviders() {
+    return providers.map((provider) => ({
+      type: provider.type,
+      label: provider.label,
+      logo: provider.logo,
+    }));
   }
 }
