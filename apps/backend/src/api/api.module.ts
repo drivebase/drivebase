@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from '@xilehq/backend/api/controllers/auth.controller';
+import { ProvidersController } from '@xilehq/backend/api/controllers/providers.controller';
 import { AuthService } from '@xilehq/backend/services/auth/auth.service';
 import { LocalStrategy } from '@xilehq/backend/services/auth/local.strategy';
 import { JwtStrategy } from '@xilehq/backend/services/auth/jwt.strategy';
@@ -17,7 +18,7 @@ import { AuthGuard } from '@xilehq/backend/services/auth/auth.guard';
       signOptions: { expiresIn: '7d' },
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, ProvidersController],
   providers: [
     {
       provide: APP_GUARD,

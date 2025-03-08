@@ -9,8 +9,7 @@ import {
 } from '@nestjs/common';
 import { LocalAuthGuard } from '@xilehq/backend/services/auth/local-auth.guard';
 import { AuthService } from '@xilehq/backend/services/auth/auth.service';
-import { CreateUserDto } from '@xilehq/internal/dtos/auth/create.user.dto';
-import { UserInRequest } from '@xilehq/internal/types/auth.types';
+import { CreateUserDto } from '@xilehq/internal/auth/dtos/create.user.dto';
 import { User } from '@prisma/client';
 import { Public } from '@xilehq/backend/services/auth/auth.guard';
 import type { Response as ExpressResponse } from 'express';
@@ -44,7 +43,7 @@ export class AuthController {
   }
 
   @Get('profile')
-  async profile(@Request() req: Request & { user: UserInRequest }) {
+  async profile(@Request() req: Request & { user: User }) {
     return req.user;
   }
 }
