@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Provider, Prisma, ProviderType } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '@xilehq/internal/prisma.service';
 
 @Injectable()
 export class ProvidersRepository {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '@xilehq/internal/prisma.service';
 import { CreateUserDto } from '@xilehq/internal/auth/dtos/create.user.dto';
 
 @Injectable()
