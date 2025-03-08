@@ -1,25 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from './users.repository';
+import { PrismaService } from '@xilehq/internal/prisma.service';
 import { CreateUserDto } from '@xilehq/internal/auth/dtos/create.user.dto';
 import { userProfile } from './users.validator';
 import { Prisma } from '@prisma/client';
+
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(user: CreateUserDto) {
-    return this.usersRepository.create(user);
+    return this.prisma.user.create({
+      data: user,
+    });
   }
 
   async findById(id: string, select?: Prisma.UserSelect) {
-    return this.usersRepository.findById(id, select);
+    return this.prisma.user.findUnique({
+      where: { id },
+      select,
+    });
   }
 
   async findByEmail(email: string) {
-    return this.usersRepository.findByEmail(email);
+    return this.prisma.user.findUnique({
+      where: { email },
+    });
   }
 
   async getPublicData(id: string) {
-    return this.usersRepository.findById(id, userProfile.select);
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: userProfile.select,
+    });
   }
 }
