@@ -7,11 +7,12 @@ import {
   Body,
   Response,
 } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { LocalAuthGuard } from '@xilehq/backend/services/auth/local-auth.guard';
 import { AuthService } from '@xilehq/backend/services/auth/auth.service';
 import { CreateUserDto } from '@xilehq/internal/auth/dtos/create.user.dto';
-import { User } from '@prisma/client';
 import { Public } from '@xilehq/backend/services/auth/auth.guard';
+import { GetUserFromRequest } from '@xilehq/internal/users/user.from.request';
 import type { Response as ExpressResponse } from 'express';
 
 @Controller('auth')
@@ -43,7 +44,7 @@ export class AuthController {
   }
 
   @Get('profile')
-  async profile(@Request() req: Request & { user: User }) {
-    return req.user;
+  async profile(@GetUserFromRequest() user: User) {
+    return user;
   }
 }

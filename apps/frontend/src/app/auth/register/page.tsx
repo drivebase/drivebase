@@ -23,7 +23,7 @@ import { Checkbox } from '@xilehq/ui/components/checkbox';
 import { DotPattern } from '@xilehq/ui/components/dot-pattern';
 import { cn } from '@xilehq/ui/lib/utils';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { CreateUserDto } from '@xilehq/internal/dtos/auth/create.user.dto';
+import { CreateUserDto } from '@xilehq/internal/auth/dtos/create.user.dto';
 import { useRegisterMutation } from '@xilehq/ui/lib/redux/endpoints/auth';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -126,14 +126,21 @@ function Page() {
                   </label>
                 </div>
               </div>
-              <Button className="w-full" disabled={isLoading}>
-                Register
-              </Button>
-              <Link href="/auth/login">
-                <Button className="w-full" variant="outline" type="button">
-                  Already have an account?
+
+              <div className="space-y-2">
+                <Button className="w-full" disabled={isLoading}>
+                  Register
                 </Button>
-              </Link>
+
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  type="button"
+                  asChild
+                >
+                  <Link href="/auth/login">Already have an account?</Link>
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
