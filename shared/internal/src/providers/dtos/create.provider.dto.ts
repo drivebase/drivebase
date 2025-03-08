@@ -3,13 +3,11 @@ import { ProviderType } from '@prisma/client';
 
 export class CreateProviderDto {
   @IsString()
-  alias: string;
+  @IsOptional()
+  alias?: string;
 
   @IsEnum(ProviderType)
   type: ProviderType;
-
-  @IsString()
-  userId: string;
 
   @IsOptional()
   @IsString({ each: true })

@@ -7,17 +7,13 @@ export class UpdateProviderDto {
 
   @IsOptional()
   @IsString({ each: true })
-  keys?: Record<string, any>;
+  keys?: Record<string, string>;
 
   @IsOptional()
   @IsString({ each: true })
-  credentials?: Record<string, any>;
+  credentials?: Record<string, string>;
 
   @IsOptional()
   @IsBoolean()
   isEnabled?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  isConnected?: boolean;
 }

@@ -6,77 +6,56 @@ import {
   Delete,
   Body,
   Param,
-  Request,
-  ForbiddenException,
+  UseGuards,
 } from '@nestjs/common';
 import { ProvidersService } from '@xilehq/internal/providers/providers.service';
 import { CreateProviderDto } from '@xilehq/internal/providers/dtos/create.provider.dto';
 import { UpdateProviderDto } from '@xilehq/internal/providers/dtos/update.provider.dto';
-import { UserInRequest } from '@xilehq/internal/types/auth.types';
-import { ProviderType } from '@prisma/client';
+import { WorkspaceGuard } from '@xilehq/internal/workspaces/workspace.guard';
+import { GetWorkspaceFromRequest } from '@xilehq/internal/workspaces/workspace.from.request';
+import { ProviderType, Workspace } from '@prisma/client';
 
+@UseGuards(WorkspaceGuard)
 @Controller('providers')
 export class ProvidersController {
   constructor(private readonly providersService: ProvidersService) {}
 
   @Post()
   async create(
-    @Body() createProviderDto: CreateProviderDto,
-    @Request() req: Request & { user: UserInRequest }
+    @GetWorkspaceFromRequest() workspace: Workspace,
+    @Body() createProviderDto: CreateProviderDto
   ) {
-    return this.providersService.create({
-      ...createProviderDto,
-      userId: req.user.id,
-    });
+    return this.providersService.create(workspace.id, createProviderDto);
   }
 
   @Get()
-  async findAll(@Request() req: Request & { user: UserInRequest }) {
-    return this.providersService.findByUserId(req.user.id);
+  async findAll(@GetWorkspaceFromRequest() workspace: Workspace) {
+    return this.providersService.findByWorkspaceId(workspace.id);
   }
 
-  @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-    @Request() req: Request & { user: UserInRequest }
-  ) {
-    const provider = await this.providersService.findById(id);
-    if (provider?.userId !== req.user.id) {
-      throw new ForbiddenException('You do not have access to this provider');
-    }
-    return provider;
+  @Get('all')
+  async findAvailableProviders() {
+    return this.providersService.findAvailableProviders();
   }
 
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() updateProviderDto: UpdateProviderDto,
-    @Request() req: Request & { user: UserInRequest }
+    @Body() updateProviderDto: UpdateProviderDto
   ) {
-    const provider = await this.providersService.findById(id);
-    if (provider?.userId !== req.user.id) {
-      throw new ForbiddenException('You do not have access to this provider');
-    }
     return this.providersService.update(id, updateProviderDto);
   }
 
   @Delete(':id')
-  async remove(
-    @Param('id') id: string,
-    @Request() req: Request & { user: UserInRequest }
-  ) {
-    const provider = await this.providersService.findById(id);
-    if (provider?.userId !== req.user.id) {
-      throw new ForbiddenException('You do not have access to this provider');
-    }
+  async remove(@Param('id') id: string) {
     return this.providersService.delete(id);
   }
 
   @Get('type/:type')
   async findByType(
-    @Param('type') type: ProviderType,
-    @Request() req: Request & { user: UserInRequest }
+    @GetWorkspaceFromRequest() workspace: Workspace,
+    @Param('type') type: ProviderType
   ) {
-    return this.providersService.findByUserIdAndType(req.user.id, type);
+    return this.providersService.findByWorkspaceIdAndType(workspace.id, type);
   }
 }
