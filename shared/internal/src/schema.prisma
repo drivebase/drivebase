@@ -23,14 +23,24 @@ enum ProviderType {
 }
 
 model User {
+  id         String      @id @default(uuid())
+  name       String
+  email      String      @unique
+  password   String
+  role       Role        @default(USER)
+  workspaces Workspace[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Workspace {
   id        String     @id @default(uuid())
   name      String
-  email     String     @unique
-  password  String
-  role      Role       @default(USER)
-  providers Provider[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  providers Provider[]
 }
 
 model Provider {
@@ -41,8 +51,21 @@ model Provider {
   credentials Json?
   isEnabled   Boolean      @default(true)
   isConnected Boolean      @default(false)
-  userId      String
-  user        User         @relation(fields: [userId], references: [id])
+  workspaceId String
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id])
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model File {
+  id        String   @id @default(uuid())
+  name      String
+  isFolder  Boolean  @default(false)
+  parentId  String?
+  parent    File?    @relation("FolderContents", fields: [parentId], references: [id], onDelete: Cascade)
+  children  File[]   @relation("FolderContents")
+  size      Int?
+  mimeType  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
