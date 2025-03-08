@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { UsersService } from '@xilehq/internal/database/users/users.service';
+import { UsersService } from '@xilehq/internal/users/users.service';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -42,7 +42,7 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.AUTH_SECRET,
       });
-      const user = await this.usersService.getPublicData(payload.sub);
+      const user = await this.usersService.findById(payload.sub);
       request['user'] = user;
       return true;
     } catch {

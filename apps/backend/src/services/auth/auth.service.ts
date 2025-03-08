@@ -1,8 +1,8 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
-import { UsersService } from '@xilehq/internal/database/users/users.service';
-import { CreateUserDto } from '@xilehq/internal/dtos/auth/create.user.dto';
+import { UsersService } from '@xilehq/internal/users/users.service';
+import { CreateUserDto } from '@xilehq/internal/auth/dtos/create.user.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

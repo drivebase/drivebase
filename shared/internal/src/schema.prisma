@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum ProviderType {
+  GOOGLE_DRIVE
+  AMAZON_S3
+  DROPBOX
+  ONEDRIVE
+  TELEGRAM
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  password  String
+  role      Role       @default(USER)
+  providers Provider[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Provider {
+  id          String       @id @default(uuid())
+  alias       String
+  type        ProviderType
+  keys        Json?
+  credentials Json?
+  isEnabled   Boolean      @default(true)
+  isConnected Boolean      @default(false)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}

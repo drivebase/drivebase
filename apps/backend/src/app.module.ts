@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { DatabaseModule } from '@xilehq/internal/database/database.module';
+import { DatabaseModule } from '@xilehq/internal/database.module';
 import { ApiModule } from '@xilehq/backend/api/api.module';
 
 @Global()
