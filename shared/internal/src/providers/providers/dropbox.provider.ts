@@ -1,43 +1,33 @@
-import {
-  AuthMethod,
-  AuthToken,
-  Provider,
-  ProviderConfig,
-} from '../provider.interface';
+import { AuthToken, OAuthProvider, OAuthConfig } from '../provider.interface';
 
-export class DropboxProvider implements Provider {
+export class DropboxProvider implements OAuthProvider {
   private accessToken?: string;
 
-  constructor(public config: ProviderConfig) {
-    if (config.authMethod !== AuthMethod.OAuth2 || !config.oauthConfig) {
+  constructor(public config: OAuthConfig) {
+    if (!config.clientId || !config.clientSecret) {
       throw new Error('Dropbox requires OAuth2 authentication');
     }
   }
 
   getAuthUrl(state?: string): string {
-    if (!this.config.oauthConfig) {
-      throw new Error('OAuth config is required');
+    if (!this.config.clientId || !this.config.clientSecret) {
+      throw new Error('Dropbox requires OAuth2 authentication');
     }
 
     const authUrl = 'https://www.dropbox.com/oauth2/authorize';
 
     const params = new URLSearchParams({
-      client_id: this.config.oauthConfig.clientId,
+      client_id: this.config.clientId,
       response_type: 'code',
-      redirect_uri: this.config.oauthConfig.redirectUri,
       token_access_type: 'offline',
       state: state || '',
-      scope: this.config.oauthConfig.scopes.join(' '),
+      redirect_uri: `${process.env['NEXT_PUBLIC_APP_URL']}/providers/callback`,
     });
 
     return `${authUrl}?${params.toString()}`;
   }
 
   async getAccessToken(code: string): Promise<AuthToken> {
-    if (!this.config.oauthConfig) {
-      throw new Error('OAuth config is required');
-    }
-
     const response = await fetch('https://api.dropboxapi.com/oauth2/token', {
       method: 'POST',
       headers: {
@@ -46,9 +36,8 @@ export class DropboxProvider implements Provider {
       body: new URLSearchParams({
         code,
         grant_type: 'authorization_code',
-        client_id: this.config.oauthConfig.clientId,
-        client_secret: this.config.oauthConfig.clientSecret,
-        redirect_uri: this.config.oauthConfig.redirectUri,
+        client_id: this.config.clientId,
+        client_secret: this.config.clientSecret,
       }).toString(),
     });
 
@@ -72,10 +61,6 @@ export class DropboxProvider implements Provider {
   }
 
   async refreshAccessToken(refreshToken: string): Promise<AuthToken> {
-    if (!this.config.oauthConfig) {
-      throw new Error('OAuth config is required');
-    }
-
     const response = await fetch('https://api.dropboxapi.com/oauth2/token', {
       method: 'POST',
       headers: {
@@ -84,8 +69,8 @@ export class DropboxProvider implements Provider {
       body: new URLSearchParams({
         refresh_token: refreshToken,
         grant_type: 'refresh_token',
-        client_id: this.config.oauthConfig.clientId,
-        client_secret: this.config.oauthConfig.clientSecret,
+        client_id: this.config.clientId,
+        client_secret: this.config.clientSecret,
       }).toString(),
     });
 

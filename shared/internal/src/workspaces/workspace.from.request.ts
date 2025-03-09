@@ -9,9 +9,7 @@ export const GetWorkspaceFromRequest = createParamDecorator(
     const request = ctx.switchToHttp().getRequest();
 
     if (!request.workspace) {
-      throw new UnauthorizedException(
-        'Workspace not available. Make sure to use the WorkspaceGuard.'
-      );
+      throw new UnauthorizedException('Workspace not available.');
     }
 
     return request.workspace;

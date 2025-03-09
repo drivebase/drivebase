@@ -12,7 +12,8 @@ export class WorkspaceGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const workspaceId = request.headers['x-workspace-id'];
+    const workspaceId =
+      request.headers['x-workspace-id'] || request.query['workspaceId'];
 
     if (!workspaceId) {
       throw new UnauthorizedException('Workspace ID is required');
@@ -26,7 +27,6 @@ export class WorkspaceGuard implements CanActivate {
       throw new UnauthorizedException('Workspace not found');
     }
 
-    // Add the workspace to the request object
     request.workspace = workspace;
 
     return true;

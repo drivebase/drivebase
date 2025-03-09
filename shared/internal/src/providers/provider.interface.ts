@@ -1,16 +1,19 @@
+import { IsNotEmpty, IsString } from 'class-validator';
+
 export enum AuthMethod {
   OAuth2 = 'oauth2',
   ApiKey = 'api_key',
   None = 'none',
 }
 
-export interface OAuthConfig {
+export class OAuthConfig {
+  @IsString()
+  @IsNotEmpty()
   clientId: string;
+
+  @IsString()
+  @IsNotEmpty()
   clientSecret: string;
-  redirectUri: string;
-  authUrl: string;
-  tokenUrl: string;
-  scopes: string[];
 }
 
 export interface AuthToken {
@@ -20,20 +23,13 @@ export interface AuthToken {
   tokenType?: string;
 }
 
-export interface ProviderConfig {
-  name: string;
-  authMethod: AuthMethod;
-  oauthConfig?: OAuthConfig;
-  apiKey?: string;
-}
-
-export interface Provider {
-  config: ProviderConfig;
+export interface OAuthProvider {
+  config: OAuthConfig;
 
   // Authentication
-  getAuthUrl?(state?: string): string;
-  getAccessToken?(code: string): Promise<AuthToken>;
-  refreshAccessToken?(refreshToken: string): Promise<AuthToken>;
+  getAuthUrl(state?: string): string;
+  getAccessToken(code: string): Promise<AuthToken>;
+  refreshAccessToken(refreshToken: string): Promise<AuthToken>;
 
   // File Management
   // listFiles(path?: string): Promise<any[]>;
@@ -41,3 +37,5 @@ export interface Provider {
   // downloadFile(path: string): Promise<Blob>;
   // deleteFile(path: string): Promise<boolean>;
 }
+
+export const OAUTH_REDIRECT_URI = `${process.env['NEXT_PUBLIC_APP_URL']}/providers/callback`;
