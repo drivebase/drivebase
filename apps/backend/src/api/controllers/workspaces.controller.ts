@@ -6,13 +6,13 @@ import {
   Delete,
   Body,
   Param,
-  Request,
   ForbiddenException,
 } from '@nestjs/common';
 import { WorkspacesService } from '@xilehq/internal/workspaces/workspaces.service';
 import { CreateWorkspaceDto } from '@xilehq/internal/workspaces/dtos/create.workspace.dto';
 import { UpdateWorkspaceDto } from '@xilehq/internal/workspaces/dtos/update.workspace.dto';
-import { UserInRequest } from '@xilehq/internal/types/auth.types';
+import { GetUserFromRequest } from '@xilehq/internal/users/user.from.request';
+import { User } from '@prisma/client';
 
 @Controller('workspaces')
 export class WorkspacesController {
@@ -21,23 +21,21 @@ export class WorkspacesController {
   @Post()
   async create(
     @Body() createWorkspaceDto: CreateWorkspaceDto,
-    @Request() req: Request & { user: UserInRequest }
+    @GetUserFromRequest() user: User
   ) {
-    return this.workspacesService.create(req.user.id, createWorkspaceDto);
+    return this.workspacesService.create(user.id, createWorkspaceDto);
   }
 
   @Get()
-  async findAll(@Request() req: Request & { user: UserInRequest }) {
-    return this.workspacesService.findByUserId(req.user.id);
+  async findAll(@GetUserFromRequest() user: User) {
+    const workspaces = await this.workspacesService.findByUserId(user.id);
+    return workspaces;
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-    @Request() req: Request & { user: UserInRequest }
-  ) {
+  async findOne(@Param('id') id: string, @GetUserFromRequest() user: User) {
     const workspace = await this.workspacesService.findById(id);
-    if (workspace?.userId !== req.user.id) {
+    if (workspace?.userId !== user.id) {
       throw new ForbiddenException('You do not have access to this workspace');
     }
     return workspace;
@@ -47,22 +45,19 @@ export class WorkspacesController {
   async update(
     @Param('id') id: string,
     @Body() updateWorkspaceDto: UpdateWorkspaceDto,
-    @Request() req: Request & { user: UserInRequest }
+    @GetUserFromRequest() user: User
   ) {
     const workspace = await this.workspacesService.findById(id);
-    if (workspace?.userId !== req.user.id) {
+    if (workspace?.userId !== user.id) {
       throw new ForbiddenException('You do not have access to this workspace');
     }
     return this.workspacesService.update(id, updateWorkspaceDto);
   }
 
   @Delete(':id')
-  async remove(
-    @Param('id') id: string,
-    @Request() req: Request & { user: UserInRequest }
-  ) {
+  async remove(@Param('id') id: string, @GetUserFromRequest() user: User) {
     const workspace = await this.workspacesService.findById(id);
-    if (workspace?.userId !== req.user.id) {
+    if (workspace?.userId !== user.id) {
       throw new ForbiddenException('You do not have access to this workspace');
     }
     return this.workspacesService.delete(id);
