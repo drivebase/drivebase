@@ -45,6 +45,8 @@ export class AuthController {
 
   @Get('profile')
   async profile(@GetUserFromRequest() user: User) {
+    delete user['password'];
+
     return user;
   }
 }
