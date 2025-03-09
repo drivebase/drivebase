@@ -1,11 +1,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import ProfileProvider from '@xilehq/frontend/components/layouts/profile.provider';
-import AppLayout from '@xilehq/frontend/components/layouts/app.layout';
 
 async function getUserByAccessToken(accessToken: string) {
-  console.log('fetching user');
-
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/auth/profile`,
     {
@@ -32,11 +29,7 @@ async function Layout({ children }: { children: React.ReactNode }) {
 
   const user = await getUserByAccessToken(accessToken);
 
-  return (
-    <ProfileProvider profile={user}>
-      <AppLayout>{children}</AppLayout>
-    </ProfileProvider>
-  );
+  return <ProfileProvider profile={user.data}>{children}</ProfileProvider>;
 }
 
 export default Layout;
