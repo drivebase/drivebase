@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQuery } from '@xilehq/ui/lib/redux/base.query';
-import { CallbackProviderDto } from '@xilehq/internal/providers/dtos/callback.provider.dto';
+import { baseQuery } from '@drivebase/ui/lib/redux/base.query';
+import { CallbackProviderDto } from '@drivebase/internal/providers/dtos/callback.provider.dto';
 import { ApiResponse } from './api.type';
 
 const providersApi = createApi({

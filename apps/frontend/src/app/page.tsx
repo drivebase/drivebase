@@ -1,4 +1,4 @@
-import { makeReq } from '@xilehq/frontend/helpers/make.req';
+import { makeReq } from '@drivebase/frontend/helpers/make.req';
 import { redirect } from 'next/navigation';
 
 async function getWorkspaces() {
@@ -11,9 +11,12 @@ async function getWorkspaces() {
 
 async function Page() {
   const response = await getWorkspaces();
+
   if (response.statusCode !== 200) {
     redirect('/auth/login');
   }
+
+  console.log('response', response);
 
   if (response.data.length === 0) {
     redirect('/onboarding');

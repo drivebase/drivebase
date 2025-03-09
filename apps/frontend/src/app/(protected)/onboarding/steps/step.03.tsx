@@ -1,4 +1,4 @@
-import { Button } from '@xilehq/ui/components/button';
+import { Button } from '@drivebase/ui/components/button';
 
 type StepThreeProps = {
   onNext: () => void;

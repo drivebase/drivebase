@@ -1,8 +1,8 @@
 import { Global, Module } from '@nestjs/common';
-import { DatabaseModule } from '@xilehq/internal/database.module';
-import { ApiModule } from '@xilehq/backend/api/api.module';
+import { DatabaseModule } from '@drivebase/internal/database.module';
+import { ApiModule } from '@drivebase/backend/api/api.module';
 
-import { WorkspaceProvider } from '@xilehq/internal/workspaces/workspace.provider';
+import { WorkspaceProvider } from '@drivebase/internal/workspaces/workspace.provider';
 
 @Global()
 @Module({

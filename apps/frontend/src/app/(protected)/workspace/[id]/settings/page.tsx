@@ -1,4 +1,4 @@
-import SettingsAppearance from '@xilehq/frontend/components/settings/appearance';
+import SettingsAppearance from '@drivebase/frontend/components/settings/appearance';
 
 function Page() {
   return (

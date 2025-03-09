@@ -15,10 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@xilehq/backend/*": ["apps/backend/src/*"],
-      "@xilehq/frontend/*": ["apps/frontend/src/*"],
-      "@xilehq/internal/*": ["shared/internal/src/*"],
-      "@xilehq/ui/*": ["shared/ui/src/*"]
+      "@drivebase/backend/*": ["apps/backend/src/*"],
+      "@drivebase/frontend/*": ["apps/frontend/src/*"],
+      "@drivebase/internal/*": ["shared/internal/src/*"],
+      "@drivebase/ui/*": ["shared/ui/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

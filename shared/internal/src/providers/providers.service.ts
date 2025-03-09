@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { Provider } from '@prisma/client';
-import { CreateProviderDto } from '@xilehq/internal/providers/dtos/create.provider.dto';
-import { UpdateProviderDto } from '@xilehq/internal/providers/dtos/update.provider.dto';
-import { PrismaService } from '@xilehq/internal/prisma.service';
+import { CreateProviderDto } from '@drivebase/internal/providers/dtos/create.provider.dto';
+import { UpdateProviderDto } from '@drivebase/internal/providers/dtos/update.provider.dto';
+import { PrismaService } from '@drivebase/internal/prisma.service';
 import { providers } from './providers';
 import { ProviderFactory } from './provider.factory';
 import { CallbackProviderDto } from './dtos/callback.provider.dto';

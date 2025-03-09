@@ -1,5 +1,5 @@
-import { useGetAvailableProvidersQuery } from '@xilehq/ui/lib/redux/endpoints/providers';
-import { Button } from '@xilehq/ui/components/button';
+import { useGetAvailableProvidersQuery } from '@drivebase/ui/lib/redux/endpoints/providers';
+import { Button } from '@drivebase/ui/components/button';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import AppLayout from '@xilehq/frontend/components/layouts/app.layout';
+import AppLayout from '@drivebase/frontend/components/layouts/app.layout';
 
 function Layout({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>;

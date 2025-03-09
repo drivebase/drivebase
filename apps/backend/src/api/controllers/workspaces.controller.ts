@@ -8,10 +8,10 @@ import {
   Param,
   ForbiddenException,
 } from '@nestjs/common';
-import { WorkspacesService } from '@xilehq/internal/workspaces/workspaces.service';
-import { CreateWorkspaceDto } from '@xilehq/internal/workspaces/dtos/create.workspace.dto';
-import { UpdateWorkspaceDto } from '@xilehq/internal/workspaces/dtos/update.workspace.dto';
-import { GetUserFromRequest } from '@xilehq/internal/users/user.from.request';
+import { WorkspacesService } from '@drivebase/internal/workspaces/workspaces.service';
+import { CreateWorkspaceDto } from '@drivebase/internal/workspaces/dtos/create.workspace.dto';
+import { UpdateWorkspaceDto } from '@drivebase/internal/workspaces/dtos/update.workspace.dto';
+import { GetUserFromRequest } from '@drivebase/internal/users/user.from.request';
 import { User } from '@prisma/client';
 
 @Controller('workspaces')

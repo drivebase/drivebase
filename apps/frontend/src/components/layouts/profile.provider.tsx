@@ -1,9 +1,9 @@
 'use client';
 
 import { useRef } from 'react';
-import { useAppStore } from '@xilehq/ui/lib/redux/hooks';
-import { UserPublicData } from '@xilehq/internal/database/users/users.validator';
-import { setUser } from '@xilehq/ui/lib/redux/reducers/profile.reducer';
+import { useAppStore } from '@drivebase/ui/lib/redux/hooks';
+import { UserPublicData } from '@drivebase/internal/database/users/users.validator';
+import { setUser } from '@drivebase/ui/lib/redux/reducers/profile.reducer';
 
 type AuthProviderProps = {
   profile: UserPublicData;

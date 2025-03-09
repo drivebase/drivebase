@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Workspace } from '@prisma/client';
-import { PrismaService } from '@xilehq/internal/prisma.service';
+import { PrismaService } from '@drivebase/internal/prisma.service';
 import { CreateWorkspaceDto } from './dtos/create.workspace.dto';
 import { UpdateWorkspaceDto } from './dtos/update.workspace.dto';
 

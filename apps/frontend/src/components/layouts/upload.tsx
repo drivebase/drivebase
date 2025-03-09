@@ -1,4 +1,4 @@
-import { cn } from '@xilehq/ui/lib/utils';
+import { cn } from '@drivebase/ui/lib/utils';
 import { ImageIcon } from 'lucide-react';
 
 function SidebarUpload() {
