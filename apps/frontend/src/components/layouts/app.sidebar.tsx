@@ -23,7 +23,7 @@ import {
 import { ChevronLeftIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback } from '@xilehq/ui/components/avatar';
 import { useAppSelector } from '@xilehq/ui/lib/redux/hooks';
@@ -33,8 +33,14 @@ import {
 } from '@xilehq/frontend/constants/sidebar.items';
 import SidebarUpload from './upload';
 
-const AppSidebar = () => {
+function useRelativePath() {
   const pathname = usePathname();
+  return pathname.replace(/^\/workspace\/[^/]+\/?/, '/');
+}
+
+const AppSidebar = () => {
+  const params = useParams();
+  const pathname = useRelativePath();
   const profile = useAppSelector((s) => s.profile.user);
 
   const showSettings = pathname.startsWith('/settings');
@@ -77,7 +83,10 @@ const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center">
             {showSettings && (
-              <Link href="/" className="mr-2 hover:text-primary">
+              <Link
+                href={`/workspace/${params.id}`}
+                className="mr-2 hover:text-primary"
+              >
                 <ChevronLeftIcon className="w-4 h-4" />
               </Link>
             )}
@@ -99,7 +108,7 @@ const AppSidebar = () => {
                     return (
                       <SidebarMenuItem key={item.label}>
                         <SidebarMenuButton asChild isActive={isActive}>
-                          <Link href={item.href}>
+                          <Link href={`/workspace/${params.id}${item.href}`}>
                             <Icon />
                             <span>{item.label}</span>
                           </Link>
