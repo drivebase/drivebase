@@ -3,17 +3,19 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from '@xilehq/backend/app.module';
 import cookieParser from 'cookie-parser';
+import { TransformInterceptor } from '@xilehq/internal/helpers/transform.response';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: process.env.NEXT_PUBLIC_FRONTEND_URL,
+      origin: process.env.NEXT_PUBLIC_APP_URL,
       credentials: true,
     },
   });
 
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   const config = new DocumentBuilder()
     .setTitle('Xile API')
