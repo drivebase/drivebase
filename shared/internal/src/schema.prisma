@@ -44,17 +44,25 @@ model Workspace {
 }
 
 model Provider {
-  id          String       @id @default(uuid())
+  id          String               @id @default(uuid())
   alias       String
   type        ProviderType
   keys        Json?
-  credentials Json?
-  isEnabled   Boolean      @default(true)
-  isConnected Boolean      @default(false)
+  isEnabled   Boolean              @default(true)
   workspaceId String
-  workspace   Workspace    @relation(fields: [workspaceId], references: [id])
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  workspace   Workspace            @relation(fields: [workspaceId], references: [id])
+  connections ProviderConnection[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+}
+
+model ProviderConnection {
+  id          String   @id @default(uuid())
+  providerId  String
+  provider    Provider @relation(fields: [providerId], references: [id])
+  credentials Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model File {
