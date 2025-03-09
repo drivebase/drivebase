@@ -8,11 +8,11 @@ import {
   Response,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { LocalAuthGuard } from '@xilehq/backend/services/auth/local-auth.guard';
-import { AuthService } from '@xilehq/backend/services/auth/auth.service';
-import { CreateUserDto } from '@xilehq/internal/auth/dtos/create.user.dto';
-import { Public } from '@xilehq/backend/services/auth/auth.guard';
-import { GetUserFromRequest } from '@xilehq/internal/users/user.from.request';
+import { LocalAuthGuard } from '@drivebase/backend/services/auth/local-auth.guard';
+import { AuthService } from '@drivebase/backend/services/auth/auth.service';
+import { CreateUserDto } from '@drivebase/internal/auth/dtos/create.user.dto';
+import { Public } from '@drivebase/backend/services/auth/auth.guard';
+import { GetUserFromRequest } from '@drivebase/internal/users/user.from.request';
 import type { Response as ExpressResponse } from 'express';
 
 @Controller('auth')

@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { Provider as ReduxProvider } from 'react-redux';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import { makeStore, AppStore } from '@xilehq/ui/lib/redux/store';
+import { makeStore, AppStore } from '@drivebase/ui/lib/redux/store';
 import { Toaster } from 'sonner';
 
 function Providers({ children }: { children: React.ReactNode }) {

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { Skeleton } from '@xilehq/ui/components/skeleton';
-import { Tabs, TabsList, TabsTrigger } from '@xilehq/ui/components/tabs';
+import { Skeleton } from '@drivebase/ui/components/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@drivebase/ui/components/tabs';
 import SettingItem from './item';
 
 function SettingsGeneral() {

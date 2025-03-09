@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@xilehq/internal/prisma.service';
-import { CreateUserDto } from '@xilehq/internal/auth/dtos/create.user.dto';
+import { PrismaService } from '@drivebase/internal/prisma.service';
+import { CreateUserDto } from '@drivebase/internal/auth/dtos/create.user.dto';
 import { userProfile } from './users.validator';
 import { Prisma } from '@prisma/client';
 

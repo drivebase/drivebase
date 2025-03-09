@@ -1,4 +1,4 @@
-import '@xilehq/ui/globals.css';
+import '@drivebase/ui/globals.css';
 import { Ubuntu } from 'next/font/google';
 import Providers from './providers';
 
@@ -8,7 +8,7 @@ const ubuntu = Ubuntu({
 });
 
 export const metadata = {
-  title: 'Xile - Unified Cloud Storage',
+  title: 'Drivebase - Unified Cloud Storage',
   description:
     'Open-source, self-hosted cloud file manager designed to unify file storage across multiple cloud providers into one seamless interface.',
 };

@@ -10,7 +10,7 @@ import {
   CardTitle,
   CardContent,
   CardDescription,
-} from '@xilehq/ui/components/card';
+} from '@drivebase/ui/components/card';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useState } from 'react';

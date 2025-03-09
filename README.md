@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://github.com/mxvsh/xile">
-    <img src="./xile.svg" width="80px" alt="Xile logo" />
+  <a href="https://github.com/drivebase/drivebase">
+    <img src="./drivebase.svg" width="80px" alt="Drivebase Logo" />
   </a>
 </p>
 
@@ -18,7 +18,7 @@ Open-source, self-hosted cloud file manager designed to unify file storage acros
 
 
 
-Xile is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Xile, users can break free from cloud provider lock-in and take full control of where their files are stored.
+Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
 
 ## Features
 - 💪 Free and Open Source
@@ -34,7 +34,7 @@ Xile is a next-generation cloud-agnostic file management application that empowe
 Coming soon.
 
 ## Roadmap
-- [ ] Multi-User Support
+- [x] Multi-User Support
 - [ ] File Sharing
 - [ ] File Versioning
 - [ ] File History

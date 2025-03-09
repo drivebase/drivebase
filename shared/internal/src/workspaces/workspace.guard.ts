@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from '@xilehq/internal/prisma.service';
+import { PrismaService } from '@drivebase/internal/prisma.service';
 
 @Injectable()
 export class WorkspaceGuard implements CanActivate {

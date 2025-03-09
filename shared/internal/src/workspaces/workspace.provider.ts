@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@xilehq/internal/prisma.service';
+import { PrismaService } from '@drivebase/internal/prisma.service';
 import { Workspace } from '@prisma/client';
 
 @Injectable()

@@ -8,13 +8,13 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { ProvidersService } from '@xilehq/internal/providers/providers.service';
-import { CreateProviderDto } from '@xilehq/internal/providers/dtos/create.provider.dto';
-import { UpdateProviderDto } from '@xilehq/internal/providers/dtos/update.provider.dto';
-import { GetWorkspaceFromRequest } from '@xilehq/internal/workspaces/workspace.from.request';
+import { ProvidersService } from '@drivebase/internal/providers/providers.service';
+import { CreateProviderDto } from '@drivebase/internal/providers/dtos/create.provider.dto';
+import { UpdateProviderDto } from '@drivebase/internal/providers/dtos/update.provider.dto';
+import { GetWorkspaceFromRequest } from '@drivebase/internal/workspaces/workspace.from.request';
 import { ProviderType, Workspace } from '@prisma/client';
-import { WorkspaceGuard } from '@xilehq/internal/workspaces/workspace.guard';
-import { CallbackProviderDto } from '@xilehq/internal/providers/dtos/callback.provider.dto';
+import { WorkspaceGuard } from '@drivebase/internal/workspaces/workspace.guard';
+import { CallbackProviderDto } from '@drivebase/internal/providers/dtos/callback.provider.dto';
 
 @Controller('providers')
 export class ProvidersController {

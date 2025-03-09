@@ -11,7 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@xilehq/ui/components/sidebar';
+} from '@drivebase/ui/components/sidebar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,18 +19,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@xilehq/ui/components/dropdown-menu';
+} from '@drivebase/ui/components/dropdown-menu';
 import { ChevronLeftIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Avatar, AvatarFallback } from '@xilehq/ui/components/avatar';
-import { useAppSelector } from '@xilehq/ui/lib/redux/hooks';
+import { Avatar, AvatarFallback } from '@drivebase/ui/components/avatar';
+import { useAppSelector } from '@drivebase/ui/lib/redux/hooks';
 import {
   mainItems,
   settingsItems,
-} from '@xilehq/frontend/constants/sidebar.items';
+} from '@drivebase/frontend/constants/sidebar.items';
 import SidebarUpload from './upload';
 
 function useRelativePath() {
@@ -52,7 +52,7 @@ const AppSidebar = () => {
         <div className="flex justify-between items-start">
           <Image
             draggable={false}
-            src="/xile.png"
+            src="/drivebase.png"
             alt="logo"
             height={40}
             width={40}

@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import ProfileProvider from '@xilehq/frontend/components/layouts/profile.provider';
+import ProfileProvider from '@drivebase/frontend/components/layouts/profile.provider';
 
 async function getUserByAccessToken(accessToken: string) {
   const response = await fetch(

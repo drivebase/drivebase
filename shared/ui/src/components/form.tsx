@@ -12,7 +12,7 @@ import {
   type FieldValues,
 } from 'react-hook-form';
 
-import { cn } from '@xilehq/ui/lib/utils';
+import { cn } from '@drivebase/ui/lib/utils';
 import { Label } from './label';
 
 const Form = FormProvider;

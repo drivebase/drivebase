@@ -1,5 +1,5 @@
-import AppSidebar from '@xilehq/frontend/components/layouts/app.sidebar';
-import { SidebarProvider } from '@xilehq/ui/components/sidebar';
+import AppSidebar from '@drivebase/frontend/components/layouts/app.sidebar';
+import { SidebarProvider } from '@drivebase/ui/components/sidebar';
 
 type AppLayoutProps = {
   children: React.ReactNode;

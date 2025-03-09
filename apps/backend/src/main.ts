@@ -1,9 +1,9 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AppModule } from '@xilehq/backend/app.module';
+import { AppModule } from '@drivebase/backend/app.module';
 import cookieParser from 'cookie-parser';
-import { TransformInterceptor } from '@xilehq/internal/helpers/transform.response';
+import { TransformInterceptor } from '@drivebase/internal/helpers/transform.response';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -18,10 +18,9 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
 
   const config = new DocumentBuilder()
-    .setTitle('Xile API')
-    .setDescription('The Xile API description')
+    .setTitle('Drivebase API')
+    .setDescription('The Drivebase API description')
     .setVersion('1.0')
-    .addTag('xile')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -1,23 +1,23 @@
 services:
-  xile-postgres:
+  drivebase-postgres:
     image: postgres:17-alpine
-    container_name: xile-postgres
+    container_name: drivebase-postgres
     restart: always
     environment:
-      POSTGRES_PASSWORD: xile-local-pwd
-      POSTGRES_USER: xile-local
-      POSTGRES_DB: xile-db-local
+      POSTGRES_PASSWORD: drivebase-local-pwd
+      POSTGRES_USER: drivebase-local
+      POSTGRES_DB: drivebase-db-local
     volumes:
       - postgres-volume:/var/lib/postgresql/data
     ports:
       - 5432:5432
     networks:
-      - xile-network
+      - drivebase-network
 
 volumes:
   postgres-volume:
     external: false
 
 networks:
-  xile-network:
+  drivebase-network:
     external: false

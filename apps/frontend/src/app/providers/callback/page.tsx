@@ -3,15 +3,15 @@
 import { Loader } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useCallbackMutation } from '@xilehq/ui/lib/redux/endpoints/providers';
-import { Button } from '@xilehq/ui/components/button';
+import { useCallbackMutation } from '@drivebase/ui/lib/redux/endpoints/providers';
+import { Button } from '@drivebase/ui/components/button';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
   CardDescription,
-} from '@xilehq/ui/components/card';
+} from '@drivebase/ui/components/card';
 
 function Page() {
   const r = useRouter();

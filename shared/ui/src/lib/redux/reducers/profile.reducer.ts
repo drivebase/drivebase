@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { UserPublicData } from '@xilehq/internal/database/users/users.validator';
+import { UserPublicData } from '@drivebase/internal/database/users/users.validator';
 
 export interface ProfileState {
   user: UserPublicData | null;
