@@ -1,8 +1,11 @@
 import '@xilehq/ui/globals.css';
-import { Inter } from 'next/font/google';
+import { Ubuntu } from 'next/font/google';
 import Providers from './providers';
 
-const inter = Inter({ subsets: ['latin'] });
+const ubuntu = Ubuntu({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
+});
 
 export const metadata = {
   title: 'Xile - Unified Cloud Storage',
@@ -16,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.className} suppressHydrationWarning>
+    <html lang="en" className={ubuntu.className} suppressHydrationWarning>
       <body>
         <Providers>{children}</Providers>
       </body>
