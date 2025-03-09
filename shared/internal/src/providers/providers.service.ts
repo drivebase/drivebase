@@ -4,7 +4,8 @@ import { CreateProviderDto } from '@xilehq/internal/providers/dtos/create.provid
 import { UpdateProviderDto } from '@xilehq/internal/providers/dtos/update.provider.dto';
 import { PrismaService } from '@xilehq/internal/prisma.service';
 import { providers } from './providers';
-
+import { ProviderFactory } from './provider.factory';
+import { CallbackProviderDto } from './dtos/callback.provider.dto';
 @Injectable()
 export class ProvidersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -37,7 +38,10 @@ export class ProvidersService {
   async update(id: string, data: UpdateProviderDto): Promise<Provider> {
     return this.prisma.provider.update({
       where: { id },
-      data,
+      data: {
+        ...data,
+        keys: data.keys as unknown as Record<string, string>,
+      },
     });
   }
 
@@ -65,5 +69,64 @@ export class ProvidersService {
       label: provider.label,
       logo: provider.logo,
     }));
+  }
+
+  async getAuthUrl(id: string) {
+    const provider = await this.prisma.provider.findUnique({
+      where: { id },
+    });
+
+    if (!provider) {
+      throw new Error('Provider not found');
+    }
+
+    const providerInstance = ProviderFactory.createProvider(
+      provider.type,
+      provider.keys as Record<string, string>
+    );
+
+    if ('getAuthUrl' in providerInstance) {
+      const authUrl = providerInstance.getAuthUrl(id);
+
+      return {
+        authUrl,
+      };
+    }
+
+    return null;
+  }
+
+  async callback(body: CallbackProviderDto) {
+    const provider = await this.prisma.provider.findUnique({
+      where: { id: body.state },
+    });
+
+    if (!provider) {
+      throw new Error('Provider not found');
+    }
+
+    const providerInstance = ProviderFactory.createProvider(
+      provider.type,
+      provider.keys as Record<string, string>
+    );
+
+    if ('getAccessToken' in providerInstance) {
+      const accessToken = await providerInstance.getAccessToken(body.code);
+
+      if (!accessToken?.accessToken) {
+        throw new Error('Failed to get access token');
+      }
+
+      await this.prisma.providerConnection.create({
+        data: {
+          providerId: provider.id,
+          credentials: {
+            ...accessToken,
+          },
+        },
+      });
+    } else {
+      throw new Error('Provider does not support callback');
+    }
   }
 }

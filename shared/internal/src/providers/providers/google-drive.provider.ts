@@ -1,25 +1,21 @@
 import { OAuth2Client } from 'google-auth-library';
 import { drive_v3, google } from 'googleapis';
 import {
-  AuthMethod,
   AuthToken,
-  Provider,
-  ProviderConfig,
+  OAuthProvider,
+  OAuthConfig,
+  OAUTH_REDIRECT_URI,
 } from '../provider.interface';
 
-export class GoogleDriveProvider implements Provider {
+export class GoogleDriveProvider implements OAuthProvider {
   private oauth2Client: OAuth2Client;
   private driveClient: drive_v3.Drive;
 
-  constructor(public config: ProviderConfig) {
-    if (config.authMethod !== AuthMethod.OAuth2 || !config.oauthConfig) {
-      throw new Error('Google Drive requires OAuth2 authentication');
-    }
-
+  constructor(public config: OAuthConfig) {
     this.oauth2Client = new OAuth2Client(
-      config.oauthConfig.clientId,
-      config.oauthConfig.clientSecret,
-      config.oauthConfig.redirectUri
+      config.clientId,
+      config.clientSecret,
+      OAUTH_REDIRECT_URI
     );
 
     this.driveClient = google.drive({
@@ -29,15 +25,11 @@ export class GoogleDriveProvider implements Provider {
   }
 
   getAuthUrl(state?: string): string {
-    if (!this.config.oauthConfig) {
-      throw new Error('OAuth config is required');
-    }
-
     const url = this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
-      scope: this.config.oauthConfig.scopes,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      redirect_uri: OAUTH_REDIRECT_URI,
       state,
-      prompt: 'consent',
     });
 
     return url;
