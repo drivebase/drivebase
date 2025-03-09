@@ -16,13 +16,13 @@ async function Page() {
     redirect('/auth/login');
   }
 
-  console.log('response', response);
-
   if (response.data.length === 0) {
     redirect('/onboarding');
   }
 
-  return <div>Page</div>;
+  if (response.data.length > 0) {
+    redirect(`/workspaces/${response.data[0].id}`);
+  }
 }
 
 export default Page;

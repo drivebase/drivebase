@@ -35,7 +35,7 @@ import SidebarUpload from './upload';
 
 function useRelativePath() {
   const pathname = usePathname();
-  return pathname.replace(/^\/workspace\/[^/]+\/?/, '/');
+  return pathname.replace(/^\/workspaces\/[^/]+\/?/, '/');
 }
 
 const AppSidebar = () => {
@@ -84,7 +84,7 @@ const AppSidebar = () => {
           <SidebarGroupLabel className="flex items-center">
             {showSettings && (
               <Link
-                href={`/workspace/${params.id}`}
+                href={`/workspaces/${params.id}`}
                 className="mr-2 hover:text-primary"
               >
                 <ChevronLeftIcon className="w-4 h-4" />
@@ -108,7 +108,7 @@ const AppSidebar = () => {
                     return (
                       <SidebarMenuItem key={item.label}>
                         <SidebarMenuButton asChild isActive={isActive}>
-                          <Link href={`/workspace/${params.id}${item.href}`}>
+                          <Link href={`/workspaces/${params.id}${item.href}`}>
                             <Icon />
                             <span>{item.label}</span>
                           </Link>
