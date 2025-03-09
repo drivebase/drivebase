@@ -36,33 +36,32 @@ model User {
 model Workspace {
   id        String     @id @default(uuid())
   name      String
+  keys      Key[]
+  ownerId   String
+  owner     User       @relation(fields: [ownerId], references: [id])
+  providers Provider[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  userId    String
-  user      User       @relation(fields: [userId], references: [id])
-  providers Provider[]
 }
 
 model Provider {
-  id          String               @id @default(uuid())
-  alias       String
+  id          String       @id @default(uuid())
   type        ProviderType
-  keys        Json?
-  isEnabled   Boolean              @default(true)
+  credentials Json?
   workspaceId String
-  workspace   Workspace            @relation(fields: [workspaceId], references: [id])
-  connections ProviderConnection[]
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
-model ProviderConnection {
-  id          String   @id @default(uuid())
-  providerId  String
-  provider    Provider @relation(fields: [providerId], references: [id])
-  credentials Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Key {
+  id          String       @id @default(uuid())
+  type        ProviderType
+  keys        Json?
+  workspaceId String
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model File {
