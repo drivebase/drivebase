@@ -3,9 +3,9 @@ import {
   SettingsIcon,
   StarIcon,
   TrashIcon,
-  KeyIcon,
   CloudIcon,
   UserIcon,
+  KeyIcon,
 } from 'lucide-react';
 
 export const mainItems = [
@@ -44,13 +44,13 @@ export const settingsItems = [
     href: '/settings/accounts',
   },
   {
+    label: 'API Keys',
+    icon: KeyIcon,
+    href: '/settings/keys',
+  },
+  {
     label: 'Providers',
     icon: CloudIcon,
     href: '/settings/providers',
-  },
-  {
-    label: 'API Keys',
-    icon: KeyIcon,
-    href: '/settings/api-keys',
   },
 ];

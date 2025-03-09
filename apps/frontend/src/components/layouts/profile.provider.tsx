@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { useAppStore } from '@drivebase/ui/lib/redux/hooks';
-import { UserPublicData } from '@drivebase/internal/database/users/users.validator';
+import { UserPublicData } from '@drivebase/internal/users/users.validator';
 import { setUser } from '@drivebase/ui/lib/redux/reducers/profile.reducer';
 
 type AuthProviderProps = {

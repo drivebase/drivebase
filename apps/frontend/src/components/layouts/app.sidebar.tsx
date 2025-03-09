@@ -23,8 +23,7 @@ import {
 import { ChevronLeftIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@drivebase/ui/components/avatar';
 import { useAppSelector } from '@drivebase/ui/lib/redux/hooks';
 import {
@@ -33,14 +32,8 @@ import {
 } from '@drivebase/frontend/constants/sidebar.items';
 import SidebarUpload from './upload';
 
-function useRelativePath() {
-  const pathname = usePathname();
-  return pathname.replace(/^\/workspaces\/[^/]+\/?/, '/');
-}
-
 const AppSidebar = () => {
-  const params = useParams();
-  const pathname = useRelativePath();
+  const pathname = usePathname();
   const profile = useAppSelector((s) => s.profile.user);
 
   const showSettings = pathname.startsWith('/settings');
@@ -83,42 +76,29 @@ const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center">
             {showSettings && (
-              <Link
-                href={`/workspaces/${params.id}`}
-                className="mr-2 hover:text-primary"
-              >
+              <Link href={'/'} className="mr-2 hover:text-primary">
                 <ChevronLeftIcon className="w-4 h-4" />
               </Link>
             )}
             {showSettings ? 'Settings' : 'Application'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={showSettings ? 'settings' : 'main'}
-                initial={{ x: 50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -50, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <SidebarMenu>
-                  {currentItems.map((item) => {
-                    const isActive = pathname === item.href;
-                    const Icon = item.icon;
-                    return (
-                      <SidebarMenuItem key={item.label}>
-                        <SidebarMenuButton asChild isActive={isActive}>
-                          <Link href={`/workspaces/${params.id}${item.href}`}>
-                            <Icon />
-                            <span>{item.label}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </motion.div>
-            </AnimatePresence>
+            <SidebarMenu>
+              {currentItems.map((item) => {
+                const isActive = pathname === item.href;
+                const Icon = item.icon;
+                return (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton asChild isActive={isActive}>
+                      <Link href={item.href}>
+                        <Icon />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
