@@ -1,24 +1,29 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from '@drivebase/ui/lib/redux/base.query';
 import { CallbackProviderDto } from '@drivebase/internal/providers/dtos/callback.provider.dto';
+import { ProviderListItem } from '@drivebase/internal/providers/providers';
+import { ProviderType } from '@prisma/client';
 import { ApiResponse } from './api.type';
 
 const providersApi = createApi({
   baseQuery,
   reducerPath: 'providersApi',
   endpoints: (build) => ({
-    getAvailableProviders: build.query<
-      ApiResponse<
-        {
-          type: string;
-          label: string;
-          logo: string;
-        }[]
-      >,
-      void
-    >({
+    getAvailableProviders: build.query<ApiResponse<ProviderListItem[]>, void>({
       query: () => ({
-        url: `/providers/all`,
+        url: `/providers/available`,
+        method: 'GET',
+      }),
+    }),
+    getAuthUrl: build.mutation<
+      ApiResponse<string>,
+      {
+        workspaceId: string;
+        type: ProviderType;
+      }
+    >({
+      query: ({ workspaceId, type }) => ({
+        url: `/providers/auth?workspaceId=${workspaceId}&type=${type}`,
         method: 'GET',
       }),
     }),
@@ -32,6 +37,9 @@ const providersApi = createApi({
   }),
 });
 
-export const { useGetAvailableProvidersQuery, useCallbackMutation } =
-  providersApi;
+export const {
+  useGetAvailableProvidersQuery,
+  useCallbackMutation,
+  useGetAuthUrlMutation,
+} = providersApi;
 export default providersApi;

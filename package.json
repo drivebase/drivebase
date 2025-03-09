@@ -38,6 +38,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cookie-parser": "^1.4.7",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.4.10",
     "google-auth-library": "^9.15.1",
     "googleapis": "^146.0.0",

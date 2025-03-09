@@ -2,25 +2,29 @@ import { configureStore } from '@reduxjs/toolkit';
 
 // Reducers
 import profileReducer from './reducers/profile.reducer';
-
+import workspaceReducer from './reducers/workspace.reducer';
 // Endpoints
 import authApi from './endpoints/auth';
 import workspaceApi from './endpoints/workspaces';
 import providersApi from './endpoints/providers';
+import keysApi from './endpoints/keys';
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       profile: profileReducer,
+      workspace: workspaceReducer,
       [authApi.reducerPath]: authApi.reducer,
       [workspaceApi.reducerPath]: workspaceApi.reducer,
       [providersApi.reducerPath]: providersApi.reducer,
+      [keysApi.reducerPath]: keysApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
         authApi.middleware,
         workspaceApi.middleware,
-        providersApi.middleware
+        providersApi.middleware,
+        keysApi.middleware
       ),
   });
 };

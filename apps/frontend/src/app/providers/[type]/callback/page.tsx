@@ -1,7 +1,7 @@
 'use client';
 
 import { Loader } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useCallbackMutation } from '@drivebase/ui/lib/redux/endpoints/providers';
 import { Button } from '@drivebase/ui/components/button';
@@ -12,19 +12,21 @@ import {
   CardContent,
   CardDescription,
 } from '@drivebase/ui/components/card';
+import { ProviderType } from '@prisma/client';
 
 function Page() {
   const r = useRouter();
-  const params = useSearchParams();
+  const params = useParams();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [callback] = useCallbackMutation();
 
   useEffect(() => {
-    const code = params.get('code');
-    const state = params.get('state');
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
 
     if (code && state) {
-      callback({ code, state })
+      callback({ code, state, type: params.type as ProviderType })
         .unwrap()
         .then(() => {
           r.push('/');
@@ -35,7 +37,7 @@ function Page() {
     } else {
       r.push('/');
     }
-  }, [callback, params, r]);
+  }, [callback, params.type, r, searchParams]);
 
   return (
     <div className="h-screen flex items-center justify-center">
