@@ -35,7 +35,7 @@ export class WorkspacesController {
   @Get(':id')
   async findOne(@Param('id') id: string, @GetUserFromRequest() user: User) {
     const workspace = await this.workspacesService.findById(id);
-    if (workspace?.userId !== user.id) {
+    if (workspace?.ownerId !== user.id) {
       throw new ForbiddenException('You do not have access to this workspace');
     }
     return workspace;
@@ -48,7 +48,7 @@ export class WorkspacesController {
     @GetUserFromRequest() user: User
   ) {
     const workspace = await this.workspacesService.findById(id);
-    if (workspace?.userId !== user.id) {
+    if (workspace?.ownerId !== user.id) {
       throw new ForbiddenException('You do not have access to this workspace');
     }
     return this.workspacesService.update(id, updateWorkspaceDto);
@@ -57,7 +57,7 @@ export class WorkspacesController {
   @Delete(':id')
   async remove(@Param('id') id: string, @GetUserFromRequest() user: User) {
     const workspace = await this.workspacesService.findById(id);
-    if (workspace?.userId !== user.id) {
+    if (workspace?.ownerId !== user.id) {
       throw new ForbiddenException('You do not have access to this workspace');
     }
     return this.workspacesService.delete(id);

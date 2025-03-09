@@ -1,11 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsBoolean,
-  ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { OAuthConfig } from '../provider.interface';
+import { IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class UpdateProviderDto {
   @IsOptional()
@@ -13,13 +6,7 @@ export class UpdateProviderDto {
   alias?: string;
 
   @IsOptional()
-  @ValidateNested()
-  @Type(() => OAuthConfig)
-  keys?: OAuthConfig;
-
-  @IsOptional()
-  @IsString({ each: true })
-  credentials?: Record<string, string>;
+  keys?: Record<string, string>;
 
   @IsOptional()
   @IsBoolean()

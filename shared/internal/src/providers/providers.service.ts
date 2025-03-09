@@ -1,132 +1,81 @@
 import { Injectable } from '@nestjs/common';
-import type { Provider } from '@prisma/client';
-import { CreateProviderDto } from '@drivebase/internal/providers/dtos/create.provider.dto';
-import { UpdateProviderDto } from '@drivebase/internal/providers/dtos/update.provider.dto';
+import type { ProviderType } from '@prisma/client';
 import { PrismaService } from '@drivebase/internal/prisma.service';
-import { providers } from './providers';
+import { ProviderListItem, providers } from './providers';
 import { ProviderFactory } from './provider.factory';
 import { CallbackProviderDto } from './dtos/callback.provider.dto';
+
 @Injectable()
 export class ProvidersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    workspaceId: string,
-    data: CreateProviderDto
-  ): Promise<Provider> {
-    return this.prisma.provider.create({
-      data: {
-        ...data,
-        workspaceId,
-        alias: data.alias || `My ${data.type}`,
-      },
-    });
-  }
-
-  async findById(id: string): Promise<Provider | null> {
-    return this.prisma.provider.findUnique({
-      where: { id },
-    });
-  }
-
-  async findByWorkspaceId(workspaceId: string): Promise<Provider[]> {
-    return this.prisma.provider.findMany({
-      where: { workspaceId },
-    });
-  }
-
-  async update(id: string, data: UpdateProviderDto): Promise<Provider> {
-    return this.prisma.provider.update({
-      where: { id },
-      data: {
-        ...data,
-        keys: data.keys as unknown as Record<string, string>,
-      },
-    });
-  }
-
-  async delete(id: string): Promise<Provider> {
-    return this.prisma.provider.delete({
-      where: { id },
-    });
-  }
-
-  async findByWorkspaceIdAndType(
-    workspaceId: string,
-    type: CreateProviderDto['type']
-  ): Promise<Provider[]> {
-    return this.prisma.provider.findMany({
+  async findKeys(workspaceId: string, type: ProviderType) {
+    const key = await this.prisma.key.findFirst({
       where: {
         workspaceId,
         type,
       },
     });
+
+    return key?.keys as Record<string, string>;
   }
 
   async findAvailableProviders() {
     return providers.map((provider) => ({
-      type: provider.type,
-      label: provider.label,
-      logo: provider.logo,
-    }));
+      ...provider,
+      class: null,
+    })) as ProviderListItem[];
   }
 
-  async getAuthUrl(id: string) {
-    const provider = await this.prisma.provider.findUnique({
-      where: { id },
-    });
+  async getAuthUrl(workspaceId: string, type: ProviderType) {
+    const keys = await this.findKeys(workspaceId, type);
 
-    if (!provider) {
-      throw new Error('Provider not found');
-    }
-
-    const providerInstance = ProviderFactory.createProvider(
-      provider.type,
-      provider.keys as Record<string, string>
-    );
+    const providerInstance = ProviderFactory.createProvider(type, keys);
 
     if ('getAuthUrl' in providerInstance) {
-      const authUrl = providerInstance.getAuthUrl(id);
-
-      return {
-        authUrl,
-      };
+      const authUrl = providerInstance.getAuthUrl(workspaceId);
+      return authUrl;
     }
 
     return null;
   }
 
-  async callback(body: CallbackProviderDto) {
-    const provider = await this.prisma.provider.findUnique({
-      where: { id: body.state },
+  async callback(data: CallbackProviderDto) {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: data.state },
     });
 
-    if (!provider) {
-      throw new Error('Provider not found');
+    if (!workspace) {
+      throw new Error('Workspace not found');
     }
 
-    const providerInstance = ProviderFactory.createProvider(
-      provider.type,
-      provider.keys as Record<string, string>
-    );
+    const keys = await this.findKeys(workspace.id, data.type);
 
-    if ('getAccessToken' in providerInstance) {
-      const accessToken = await providerInstance.getAccessToken(body.code);
+    const providerInstance = ProviderFactory.createProvider(data.type, keys);
 
-      if (!accessToken?.accessToken) {
-        throw new Error('Failed to get access token');
-      }
+    try {
+      if ('getAccessToken' in providerInstance) {
+        const accessToken = await providerInstance.getAccessToken(data.code);
 
-      await this.prisma.providerConnection.create({
-        data: {
-          providerId: provider.id,
-          credentials: {
-            ...accessToken,
+        if (!accessToken?.accessToken) {
+          throw new Error('Failed to get access token');
+        }
+
+        await this.prisma.provider.create({
+          data: {
+            type: data.type,
+            credentials: {
+              ...accessToken,
+            },
+            workspaceId: workspace.id,
           },
-        },
-      });
-    } else {
-      throw new Error('Provider does not support callback');
+        });
+      } else {
+        throw new Error('Provider does not support callback');
+      }
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to connect provider');
     }
   }
 }
