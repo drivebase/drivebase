@@ -9,13 +9,13 @@ export class WorkspacesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(
-    userId: string,
+    ownerId: string,
     createWorkspaceDto: CreateWorkspaceDto
   ): Promise<Workspace> {
     return this.prisma.workspace.create({
       data: {
         name: createWorkspaceDto.name,
-        userId,
+        ownerId,
       },
     });
   }
@@ -24,9 +24,9 @@ export class WorkspacesService {
     return this.prisma.workspace.findMany();
   }
 
-  async findByUserId(userId: string): Promise<Workspace[]> {
+  async findByUserId(ownerId: string): Promise<Workspace[]> {
     return this.prisma.workspace.findMany({
-      where: { userId },
+      where: { ownerId },
     });
   }
 

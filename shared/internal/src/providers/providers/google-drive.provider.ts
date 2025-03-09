@@ -6,6 +6,12 @@ import {
   OAuthConfig,
   OAUTH_REDIRECT_URI,
 } from '../provider.interface';
+import { ProviderType } from '@prisma/client';
+
+const redirectUri = OAUTH_REDIRECT_URI.replace(
+  '[type]',
+  ProviderType.GOOGLE_DRIVE
+);
 
 export class GoogleDriveProvider implements OAuthProvider {
   private oauth2Client: OAuth2Client;
@@ -15,7 +21,7 @@ export class GoogleDriveProvider implements OAuthProvider {
     this.oauth2Client = new OAuth2Client(
       config.clientId,
       config.clientSecret,
-      OAUTH_REDIRECT_URI
+      redirectUri
     );
 
     this.driveClient = google.drive({
@@ -28,7 +34,7 @@ export class GoogleDriveProvider implements OAuthProvider {
     const url = this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: 'https://www.googleapis.com/auth/drive.file',
-      redirect_uri: OAUTH_REDIRECT_URI,
+      redirect_uri: redirectUri,
       state,
     });
 

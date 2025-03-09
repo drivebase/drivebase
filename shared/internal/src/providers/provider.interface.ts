@@ -38,4 +38,4 @@ export interface OAuthProvider {
   // deleteFile(path: string): Promise<boolean>;
 }
 
-export const OAUTH_REDIRECT_URI = `${process.env['NEXT_PUBLIC_APP_URL']}/providers/callback`;
+export const OAUTH_REDIRECT_URI = `${process.env['NEXT_PUBLIC_APP_URL']}/providers/[type]/callback`;
