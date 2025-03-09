@@ -4,8 +4,10 @@
   "license": "MIT",
   "scripts": {
     "dev": "nx run-many --target=serve --projects=frontend,backend --parallel=2",
-    "prisma:push": "cd shared/internal/src && prisma db push",
-    "prisma:generate": "cd shared/internal/src && prisma generate"
+    "db:push": "cd shared/internal/src && prisma db push",
+    "db:generate": "cd shared/internal/src && prisma generate",
+    "db:migrate": "cd shared/internal/src && prisma migrate dev",
+    "db:studio": "cd shared/internal/src && BROWSER=null prisma studio"
   },
   "private": true,
   "dependencies": {
@@ -104,6 +106,7 @@
     "nx": "20.4.6",
     "prettier": "^2.6.2",
     "prisma": "^6.4.1",
+    "swc-loader": "^0.2.6",
     "tailwindcss": "3.4.3",
     "ts-jest": "^29.1.0",
     "ts-node": "10.9.1",

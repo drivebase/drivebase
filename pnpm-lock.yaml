@@ -288,6 +288,9 @@ importers:
       prisma:
         specifier: ^6.4.1
         version: 6.4.1(typescript@5.7.3)
+      swc-loader:
+        specifier: ^0.2.6
+        version: 0.2.6(@swc/core@1.5.29(@swc/helpers@0.5.15))(webpack@5.98.0)
       tailwindcss:
         specifier: 3.4.3
         version: 3.4.3(ts-node@10.9.1(@swc/core@1.5.29(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.7.3))
@@ -7282,6 +7285,12 @@ packages:
 
   swagger-ui-dist@5.19.0:
     resolution: {integrity: sha512-bSVZeYaqanMFeW5ZY3+EejFbsjkjazYxm1I7Lz3xayYz5XU3m2aUzvuPC0jI95WCQdduszHYV3ER4buQoy8DXA==}
+
+  swc-loader@0.2.6:
+    resolution: {integrity: sha512-9Zi9UP2YmDpgmQVbyOPJClY0dwf58JDyDMQ7uRc4krmc72twNI2fvlBWHLqVekBpPc7h5NJkGVT1zNDxFrqhvg==}
+    peerDependencies:
+      '@swc/core': ^1.2.147
+      webpack: '>=2'
 
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
@@ -16212,6 +16221,12 @@ snapshots:
   swagger-ui-dist@5.19.0:
     dependencies:
       '@scarf/scarf': 1.4.0
+
+  swc-loader@0.2.6(@swc/core@1.5.29(@swc/helpers@0.5.15))(webpack@5.98.0):
+    dependencies:
+      '@swc/core': 1.5.29(@swc/helpers@0.5.15)
+      '@swc/counter': 0.1.3
+      webpack: 5.98.0(@swc/core@1.5.29(@swc/helpers@0.5.15))(esbuild@0.25.0)(webpack-cli@5.1.4)
 
   symbol-tree@3.2.4: {}
 
