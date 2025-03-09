@@ -1,8 +1,9 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from '@xilehq/ui/lib/redux/base.query';
-import { CreateUserDto } from '@xilehq/internal/dtos/auth/create.user.dto';
-import { LoginUserDto } from '@xilehq/internal/dtos/auth/login.user.dto';
-import { UserPublicData } from '@xilehq/internal/database/users/users.validator';
+import { CreateUserDto } from '@xilehq/internal/auth/dtos/create.user.dto';
+import { LoginUserDto } from '@xilehq/internal/auth/dtos/login.user.dto';
+import { UserPublicData } from '@xilehq/internal/users/users.validator';
+
 const authApi = createApi({
   baseQuery,
   reducerPath: 'authApi',
