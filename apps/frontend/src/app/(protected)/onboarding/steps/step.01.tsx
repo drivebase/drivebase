@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@drivebase/ui/components/button';
 import { Input } from '@drivebase/ui/components/input';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useCreateWorkspaceMutation } from '@drivebase/ui/lib/redux/endpoints/workspaces';
 
 type StepOneProps = {
@@ -11,22 +11,18 @@ type StepOneProps = {
 function StepOne({ onNext }: StepOneProps) {
   const nameRef = useRef<HTMLInputElement>(null);
   const [createWorkspace, { isLoading }] = useCreateWorkspaceMutation();
-  const [loading, setLoading] = useState(false);
+
   const handleNext = async () => {
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    onNext('cded9b17-85b3-464f-a4fc-5b31c839543d');
-    return;
-    // const name = nameRef.current?.value;
-    // if (name) {
-    //   createWorkspace({ name })
-    //     .unwrap()
-    //     .then((workspace) => {
-    //       if (workspace.data) {
-    //         onNext(workspace.data.id);
-    //       }
-    //     });
-    // }
+    const name = nameRef.current?.value;
+    if (name) {
+      createWorkspace({ name })
+        .unwrap()
+        .then((workspace) => {
+          if (workspace.data) {
+            onNext(workspace.data.id);
+          }
+        });
+    }
   };
 
   return (
@@ -49,7 +45,7 @@ function StepOne({ onNext }: StepOneProps) {
           className="px-10"
           variant={'outline'}
           onClick={handleNext}
-          isLoading={loading}
+          isLoading={isLoading}
         >
           Create
         </Button>
