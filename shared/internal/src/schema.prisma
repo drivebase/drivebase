@@ -40,6 +40,7 @@ model Workspace {
   ownerId   String
   owner     User      @relation(fields: [ownerId], references: [id])
   accounts  Account[]
+  files     File[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -66,14 +67,16 @@ model Key {
 }
 
 model File {
-  id        String   @id @default(uuid())
-  name      String
-  isFolder  Boolean  @default(false)
-  parentId  String?
-  parent    File?    @relation("FolderContents", fields: [parentId], references: [id], onDelete: Cascade)
-  children  File[]   @relation("FolderContents")
-  size      Int?
-  mimeType  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(uuid())
+  name        String
+  isFolder    Boolean   @default(false)
+  parentPath  String
+  path        String
+  totalItems  Int?      @default(0)
+  size        Int?
+  mimeType    String?
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
