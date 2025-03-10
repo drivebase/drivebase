@@ -1,9 +1,9 @@
 'use client';
 
 import { useRef } from 'react';
-import { useAppStore } from '@drivebase/ui/lib/redux/hooks';
+import { useAppStore } from '@drivebase/react/lib/redux/hooks';
 import { UserPublicData } from '@drivebase/internal/users/users.validator';
-import { setUser } from '@drivebase/ui/lib/redux/reducers/profile.reducer';
+import { setUser } from '@drivebase/react/lib/redux/reducers/profile.reducer';
 
 type AuthProviderProps = {
   profile: UserPublicData;

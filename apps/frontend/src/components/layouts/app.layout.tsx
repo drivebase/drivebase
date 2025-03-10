@@ -1,5 +1,5 @@
 import AppSidebar from '@drivebase/frontend/components/layouts/app.sidebar';
-import { SidebarProvider } from '@drivebase/ui/components/sidebar';
+import { SidebarProvider } from '@drivebase/react/components/sidebar';
 
 type AppLayoutProps = {
   children: React.ReactNode;

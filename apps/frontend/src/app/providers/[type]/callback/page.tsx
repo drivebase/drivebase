@@ -3,15 +3,15 @@
 import { Loader } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useCallbackMutation } from '@drivebase/ui/lib/redux/endpoints/providers';
-import { Button } from '@drivebase/ui/components/button';
+import { useCallbackMutation } from '@drivebase/react/lib/redux/endpoints/providers';
+import { Button } from '@drivebase/react/components/button';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
   CardDescription,
-} from '@drivebase/ui/components/card';
+} from '@drivebase/react/components/card';
 import { ProviderType } from '@prisma/client';
 
 function Page() {

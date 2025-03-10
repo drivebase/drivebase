@@ -1,6 +1,6 @@
 'use client';
 
-import { useAppSelector } from '@drivebase/ui/lib/redux/hooks';
+import { useAppSelector } from '@drivebase/react/lib/redux/hooks';
 
 function ProfileAvatar() {
   const user = useAppSelector((s) => s.profile.user);
