@@ -3,7 +3,6 @@
 import { Loader } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useCallbackMutation } from '@drivebase/react/lib/redux/endpoints/providers';
 import { Button } from '@drivebase/react/components/button';
 import {
   Card,
@@ -13,6 +12,7 @@ import {
   CardDescription,
 } from '@drivebase/react/components/card';
 import { ProviderType } from '@prisma/client';
+import { useCallbackMutation } from '@drivebase/react/lib/redux/endpoints/accounts';
 
 function Page() {
   const r = useRouter();
@@ -29,13 +29,13 @@ function Page() {
       callback({ code, state, type: params.type as ProviderType })
         .unwrap()
         .then(() => {
-          r.push('/');
+          r.push('/settings/accounts');
         })
         .catch(() => {
           setError('Failed to connect provider');
         });
     } else {
-      r.push('/');
+      r.push('/settings/keys');
     }
   }, [callback, params.type, r, searchParams]);
 

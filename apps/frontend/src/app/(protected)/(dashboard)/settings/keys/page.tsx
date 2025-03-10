@@ -4,8 +4,8 @@ function Page() {
   return (
     <div className="space-y-10">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold">API Keys</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-xl font-bold">API Keys</h1>
+        <p className="text-muted-foreground">
           Manage your provider&apos;s API keys here.
         </p>
       </div>

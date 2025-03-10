@@ -1,3 +1,5 @@
+'use client';
+
 import { Input } from '@drivebase/react/components/input';
 import { Button } from '@drivebase/react/components/button';
 import {
@@ -36,11 +38,11 @@ function NoData({ title, description, button }: NoDataProps) {
 function ProviderList() {
   return (
     <NoData
-      title="No providers found"
-      description="You haven't connected any providers yet."
+      title="No accounts found"
+      description="You haven't linked any accounts yet."
       button={
         <Link href="/settings/keys">
-          <Button variant={'outline'}>Connect</Button>
+          <Button variant={'outline'}>Link Account</Button>
         </Link>
       }
     />

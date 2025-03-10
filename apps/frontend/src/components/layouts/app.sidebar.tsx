@@ -54,7 +54,7 @@ const AppSidebar = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Avatar className="w-8 h-8 select-none">
-                <AvatarFallback className="bg-orange-500 text-primary-foreground">
+                <AvatarFallback className="bg-accent-foreground text-accent">
                   {profile?.name?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
