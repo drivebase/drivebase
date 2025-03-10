@@ -1,7 +1,7 @@
 {
   "name": "ui",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "shared/ui/src",
+  "sourceRoot": "shared/react/src",
   "projectType": "library",
   "tags": [],
   "// targets": "to see all targets run: nx show project ui --web",

@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQuery } from '@drivebase/ui/lib/redux/base.query';
+import { baseQuery } from '@drivebase/react/lib/redux/base.query';
 import { CreateUserDto } from '@drivebase/internal/auth/dtos/create.user.dto';
 import { LoginUserDto } from '@drivebase/internal/auth/dtos/login.user.dto';
 import { UserPublicData } from '@drivebase/internal/users/users.validator';

@@ -1,5 +1,5 @@
-import { Input } from '@drivebase/ui/components/input';
-import { Button } from '@drivebase/ui/components/button';
+import { Input } from '@drivebase/react/components/input';
+import { Button } from '@drivebase/react/components/button';
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@drivebase/ui/components/table';
+} from '@drivebase/react/components/table';
 
 import { CloudIcon } from 'lucide-react';
 import React from 'react';

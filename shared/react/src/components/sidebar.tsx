@@ -5,8 +5,8 @@ import { Slot } from '@radix-ui/react-slot';
 import { VariantProps, cva } from 'class-variance-authority';
 import { PanelLeft } from 'lucide-react';
 
-import { useIsMobile } from '@drivebase/ui/lib/use.mobile';
-import { cn } from '@drivebase/ui/lib/utils';
+import { useIsMobile } from '@drivebase/react/lib/use.mobile';
+import { cn } from '@drivebase/react/lib/utils';
 import { Button } from './button';
 import { Input } from './input';
 import { Separator } from './separator';

@@ -10,7 +10,7 @@ import {
   CardTitle,
   CardContent,
   CardDescription,
-} from '@drivebase/ui/components/card';
+} from '@drivebase/react/components/card';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useState } from 'react';
