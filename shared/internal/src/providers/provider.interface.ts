@@ -21,6 +21,7 @@ export interface AuthToken {
   refreshToken?: string;
   expiresIn?: number;
   tokenType?: string;
+  email?: string | null;
 }
 
 export interface OAuthProvider {

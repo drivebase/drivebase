@@ -11,6 +11,7 @@ import { LocalStrategy } from '@drivebase/backend/services/auth/local.strategy';
 import { JwtStrategy } from '@drivebase/backend/services/auth/jwt.strategy';
 import { AuthGuard } from '@drivebase/backend/services/auth/auth.guard';
 import { WorkspaceGuard } from '@drivebase/internal/workspaces/workspace.guard';
+import { AccountsController } from './controllers/accounts.controller';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { WorkspaceGuard } from '@drivebase/internal/workspaces/workspace.guard';
     ProvidersController,
     WorkspacesController,
     KeysController,
+    AccountsController,
   ],
   providers: [
     {

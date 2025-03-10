@@ -48,7 +48,20 @@ export class GoogleDriveProvider implements OAuthProvider {
       throw new Error('Failed to get access token');
     }
 
+    this.oauth2Client.setCredentials({
+      access_token: tokens.access_token,
+    });
+
+    const userInfo = await this.driveClient.about.get({
+      fields: 'user',
+    });
+
+    if (!userInfo.data.user) {
+      throw new Error('Failed to get user info');
+    }
+
     return {
+      email: userInfo.data.user.emailAddress,
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token || undefined,
       expiresIn: tokens.expiry_date
