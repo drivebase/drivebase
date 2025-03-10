@@ -15,10 +15,7 @@ import {
   useSaveKeysMutation,
   useGetKeysQuery,
 } from '@drivebase/react/lib/redux/endpoints/keys';
-import {
-  useGetAvailableProvidersQuery,
-  useGetAuthUrlMutation,
-} from '@drivebase/react/lib/redux/endpoints/providers';
+import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
 import {
   Dialog,
   DialogTitle,
@@ -30,6 +27,7 @@ import { ProviderListItem } from '@drivebase/internal/providers/providers';
 import { useParams } from 'next/navigation';
 import { formatDistance } from 'date-fns';
 import { useState } from 'react';
+import { useGetAuthUrlMutation } from '@drivebase/react/lib/redux/endpoints/accounts';
 
 function KeyList() {
   const params = useParams();
@@ -38,12 +36,11 @@ function KeyList() {
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderListItem | null>(null);
 
-  const { data: keys } = useGetKeysQuery({
-    workspaceId: params.id as string,
-  });
+  const { data: keys } = useGetKeysQuery();
   const { data: providers, isLoading } = useGetAvailableProvidersQuery();
   const [saveKeys, { isLoading: isSaving }] = useSaveKeysMutation();
   const [getAuthUrl, { isLoading: isGettingAuthUrl }] = useGetAuthUrlMutation();
+
   return (
     <div className="space-y-4">
       <Input placeholder="Search" className="w-60" />
@@ -57,7 +54,7 @@ function KeyList() {
         </TableHeader>
         <TableBody>
           {isLoading
-            ? Array.from({ length: 3 }).map((_, index) => (
+            ? Array.from({ length: 6 }).map((_, index) => (
                 <TableRow key={index}>
                   <TableCell colSpan={3}>
                     <Skeleton className="h-10 w-full" />
@@ -77,8 +74,8 @@ function KeyList() {
                     <Image
                       src={provider.logo}
                       alt={provider.label}
-                      width={15}
-                      height={15}
+                      width={20}
+                      height={20}
                       className="rounded"
                     />
                     {provider.label}
@@ -202,7 +199,6 @@ function KeyList() {
                   onClick={() =>
                     saveKeys({
                       keys: keysInput,
-                      workspaceId: params.id as string,
                       type: selectedProvider?.type,
                     })
                   }

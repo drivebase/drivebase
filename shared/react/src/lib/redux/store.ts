@@ -7,6 +7,7 @@ import workspaceReducer from './reducers/workspace.reducer';
 import authApi from './endpoints/auth';
 import workspaceApi from './endpoints/workspaces';
 import providersApi from './endpoints/providers';
+import accountsApi from './endpoints/accounts';
 import keysApi from './endpoints/keys';
 
 export const makeStore = () => {
@@ -17,6 +18,7 @@ export const makeStore = () => {
       [authApi.reducerPath]: authApi.reducer,
       [workspaceApi.reducerPath]: workspaceApi.reducer,
       [providersApi.reducerPath]: providersApi.reducer,
+      [accountsApi.reducerPath]: accountsApi.reducer,
       [keysApi.reducerPath]: keysApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
@@ -24,6 +26,7 @@ export const makeStore = () => {
         authApi.middleware,
         workspaceApi.middleware,
         providersApi.middleware,
+        accountsApi.middleware,
         keysApi.middleware
       ),
   });
