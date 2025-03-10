@@ -34,18 +34,19 @@ model User {
 }
 
 model Workspace {
-  id        String     @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
   keys      Key[]
   ownerId   String
-  owner     User       @relation(fields: [ownerId], references: [id])
-  providers Provider[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  owner     User      @relation(fields: [ownerId], references: [id])
+  accounts  Account[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
-model Provider {
+model Account {
   id          String       @id @default(uuid())
+  alias       String?
   type        ProviderType
   credentials Json?
   workspaceId String
