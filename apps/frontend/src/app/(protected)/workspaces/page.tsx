@@ -24,7 +24,7 @@ async function Page() {
 
   return (
     <div className="h-screen flex justify-center items-center">
-      <Card className="w-full max-w-sm shadow-xl rounded-2xl relative">
+      <Card className="w-full max-w-sm shadow-xl rounded-2xl relative z-10">
         <CardHeader className="border-b text-center py-12">
           <div className="mx-auto p-4 bg-accent rounded-2xl mb-4">
             <LibraryIcon size={40} />
@@ -57,6 +57,8 @@ async function Page() {
           ))}
         </CardContent>
       </Card>
+
+      <div className="absolute inset-0 h-full w-full bg-background bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
     </div>
   );
 }
