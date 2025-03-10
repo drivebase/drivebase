@@ -12,6 +12,7 @@ import { JwtStrategy } from '@drivebase/backend/services/auth/jwt.strategy';
 import { AuthGuard } from '@drivebase/backend/services/auth/auth.guard';
 import { WorkspaceGuard } from '@drivebase/internal/workspaces/workspace.guard';
 import { AccountsController } from './controllers/accounts.controller';
+import { FilesController } from './controllers/files.controller';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AccountsController } from './controllers/accounts.controller';
     WorkspacesController,
     KeysController,
     AccountsController,
+    FilesController,
   ],
   providers: [
     {

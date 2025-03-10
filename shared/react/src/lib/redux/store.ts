@@ -9,6 +9,7 @@ import workspaceApi from './endpoints/workspaces';
 import providersApi from './endpoints/providers';
 import accountsApi from './endpoints/accounts';
 import keysApi from './endpoints/keys';
+import filesApi from './endpoints/files';
 
 export const makeStore = () => {
   return configureStore({
@@ -20,6 +21,7 @@ export const makeStore = () => {
       [providersApi.reducerPath]: providersApi.reducer,
       [accountsApi.reducerPath]: accountsApi.reducer,
       [keysApi.reducerPath]: keysApi.reducer,
+      [filesApi.reducerPath]: filesApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
@@ -27,7 +29,8 @@ export const makeStore = () => {
         workspaceApi.middleware,
         providersApi.middleware,
         accountsApi.middleware,
-        keysApi.middleware
+        keysApi.middleware,
+        filesApi.middleware
       ),
   });
 };
