@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQuery } from '@drivebase/ui/lib/redux/base.query';
+import { baseQuery } from '@drivebase/react/lib/redux/base.query';
 import { CreateWorkspaceDto } from '@drivebase/internal/workspaces/dtos/create.workspace.dto';
 import { Workspace } from '@prisma/client';
 

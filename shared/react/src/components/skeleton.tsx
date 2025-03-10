@@ -1,4 +1,4 @@
-import { cn } from '@drivebase/ui/lib/utils';
+import { cn } from '@drivebase/react/lib/utils';
 
 function Skeleton({
   className,

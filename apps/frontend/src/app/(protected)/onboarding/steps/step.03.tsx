@@ -1,4 +1,4 @@
-import { Button } from '@drivebase/ui/components/button';
+import { Button } from '@drivebase/react/components/button';
 
 type StepThreeProps = {
   onNext: () => void;

@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { Button } from '@drivebase/ui/components/button';
-import { Input } from '@drivebase/ui/components/input';
+import { Button } from '@drivebase/react/components/button';
+import { Input } from '@drivebase/react/components/input';
 import { useRef } from 'react';
-import { useCreateWorkspaceMutation } from '@drivebase/ui/lib/redux/endpoints/workspaces';
+import { useCreateWorkspaceMutation } from '@drivebase/react/lib/redux/endpoints/workspaces';
 
 type StepOneProps = {
   onNext: (workspaceId: string) => void;

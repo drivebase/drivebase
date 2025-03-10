@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-import { cn } from '@drivebase/ui/lib/utils';
+import { cn } from '@drivebase/react/lib/utils';
 import { Loader } from 'lucide-react';
 
 const buttonVariants = cva(

@@ -1,4 +1,4 @@
-import '@drivebase/ui/globals.css';
+import '@drivebase/react/globals.css';
 import { Ubuntu } from 'next/font/google';
 import Providers from './providers';
 

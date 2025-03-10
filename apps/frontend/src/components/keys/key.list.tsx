@@ -1,8 +1,8 @@
 'use client';
 
-import { Button } from '@drivebase/ui/components/button';
-import { Input } from '@drivebase/ui/components/input';
-import { Skeleton } from '@drivebase/ui/components/skeleton';
+import { Button } from '@drivebase/react/components/button';
+import { Input } from '@drivebase/react/components/input';
+import { Skeleton } from '@drivebase/react/components/skeleton';
 import {
   Table,
   TableBody,
@@ -10,21 +10,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@drivebase/ui/components/table';
+} from '@drivebase/react/components/table';
 import {
   useSaveKeysMutation,
   useGetKeysQuery,
-} from '@drivebase/ui/lib/redux/endpoints/keys';
+} from '@drivebase/react/lib/redux/endpoints/keys';
 import {
   useGetAvailableProvidersQuery,
   useGetAuthUrlMutation,
-} from '@drivebase/ui/lib/redux/endpoints/providers';
+} from '@drivebase/react/lib/redux/endpoints/providers';
 import {
   Dialog,
   DialogTitle,
   DialogHeader,
   DialogContent,
-} from '@drivebase/ui/components/dialog';
+} from '@drivebase/react/components/dialog';
 import Image from 'next/image';
 import { ProviderListItem } from '@drivebase/internal/providers/providers';
 import { useParams } from 'next/navigation';

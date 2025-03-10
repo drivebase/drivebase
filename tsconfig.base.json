@@ -18,7 +18,7 @@
       "@drivebase/backend/*": ["apps/backend/src/*"],
       "@drivebase/frontend/*": ["apps/frontend/src/*"],
       "@drivebase/internal/*": ["shared/internal/src/*"],
-      "@drivebase/ui/*": ["shared/ui/src/*"]
+      "@drivebase/react/*": ["shared/react/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

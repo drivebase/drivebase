@@ -6,7 +6,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from '@drivebase/ui/components/card';
+} from '@drivebase/react/components/card';
 import { ArrowRight, LibraryIcon } from 'lucide-react';
 import { Workspace } from '@prisma/client';
 import { setWorkspace } from './action';

@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQuery } from '@drivebase/ui/lib/redux/base.query';
+import { baseQuery } from '@drivebase/react/lib/redux/base.query';
 import { CallbackProviderDto } from '@drivebase/internal/providers/dtos/callback.provider.dto';
 import { ProviderListItem } from '@drivebase/internal/providers/providers';
 import { ProviderType } from '@prisma/client';

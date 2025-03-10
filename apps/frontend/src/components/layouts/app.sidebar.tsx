@@ -11,7 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@drivebase/ui/components/sidebar';
+} from '@drivebase/react/components/sidebar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,13 +19,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@drivebase/ui/components/dropdown-menu';
+} from '@drivebase/react/components/dropdown-menu';
 import { ChevronLeftIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Avatar, AvatarFallback } from '@drivebase/ui/components/avatar';
-import { useAppSelector } from '@drivebase/ui/lib/redux/hooks';
+import { Avatar, AvatarFallback } from '@drivebase/react/components/avatar';
+import { useAppSelector } from '@drivebase/react/lib/redux/hooks';
 import {
   mainItems,
   settingsItems,
