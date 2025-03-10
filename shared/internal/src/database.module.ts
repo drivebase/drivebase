@@ -5,6 +5,7 @@ import { ProvidersService } from './providers/providers.service';
 import { WorkspacesService } from './workspaces/workspaces.service';
 import { KeysService } from './keys/keys.service';
 import { AccountsService } from './accounts/accounts.service';
+import { FilesService } from './files/files.service';
 
 @Global()
 @Module({
@@ -15,6 +16,7 @@ import { AccountsService } from './accounts/accounts.service';
     WorkspacesService,
     KeysService,
     AccountsService,
+    FilesService,
   ],
   get exports() {
     return this.providers;
