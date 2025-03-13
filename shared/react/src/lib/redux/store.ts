@@ -3,6 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 // Reducers
 import profileReducer from './reducers/profile.reducer';
 import workspaceReducer from './reducers/workspace.reducer';
+import uploaderReducer from './reducers/uploader.reducer';
 // Endpoints
 import authApi from './endpoints/auth';
 import workspaceApi from './endpoints/workspaces';
@@ -16,6 +17,8 @@ export const makeStore = () => {
     reducer: {
       profile: profileReducer,
       workspace: workspaceReducer,
+      uploader: uploaderReducer,
+
       [authApi.reducerPath]: authApi.reducer,
       [workspaceApi.reducerPath]: workspaceApi.reducer,
       [providersApi.reducerPath]: providersApi.reducer,
