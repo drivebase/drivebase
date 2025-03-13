@@ -12,6 +12,20 @@ async function Layout({ children }: { children: React.ReactNode }) {
     redirect('/auth/login');
   }
 
+  const workspacesReq = await makeReq('/workspaces', {
+    method: 'GET',
+  });
+
+  if (!workspacesReq.ok) {
+    redirect('/auth/login');
+  }
+
+  const workspaces = await workspacesReq.json();
+
+  if (workspaces.data.length === 0) {
+    redirect('/onboarding');
+  }
+
   const workspaceId = cookiesList.get('workspaceId')?.value;
 
   if (!workspaceId) {
