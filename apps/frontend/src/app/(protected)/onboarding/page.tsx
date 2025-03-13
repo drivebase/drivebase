@@ -13,14 +13,12 @@ import {
 } from '@drivebase/react/components/card';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const step = searchParams.get('step') || '1';
-
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
 
   const steps = useMemo(
     () => [
@@ -30,8 +28,7 @@ function Page() {
         component: (
           <StepOne
             onNext={(id) => {
-              setWorkspaceId(id);
-              router.push('/onboarding?step=2');
+              router.push(`/onboarding?step=2&workspaceId=${id}`);
             }}
           />
         ),
@@ -45,7 +42,7 @@ function Page() {
               router.push('/onboarding?step=3');
             }}
             onSkip={() => {
-              router.push(`/workspace/${workspaceId}`);
+              router.push(`/`);
             }}
           />
         ),
@@ -62,7 +59,7 @@ function Page() {
         ),
       },
     ],
-    [router, workspaceId]
+    [router]
   );
 
   const currentStep = steps.find((s) => s.id === step);
@@ -73,7 +70,7 @@ function Page() {
         <motion.span
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.9 }}
           className="py-1 px-2 text-xs absolute top-2 right-2 text-blue-400 bg-blue-50 dark:bg-blue-900 dark:text-blue-400 rounded-lg"
         >
           v2.4.1
@@ -82,7 +79,7 @@ function Page() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
           >
             <Image
               src="/drivebase.svg"
@@ -98,7 +95,7 @@ function Page() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
           >
             <CardTitle className={'text-xl font-medium'}>Drivebase</CardTitle>
           </motion.div>
@@ -106,7 +103,7 @@ function Page() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
           >
             <CardDescription>
               Your unified file storage management across multiple cloud
