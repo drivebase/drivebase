@@ -64,7 +64,7 @@ function AllFiles() {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/?path=%2F`}>/</Link>
+                <Link href={`/?path=%2F`}>root</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
