@@ -42,7 +42,7 @@ function Page() {
               router.push('/onboarding?step=3');
             }}
             onSkip={() => {
-              router.push(`/`);
+              router.push(`/workspaces`);
             }}
           />
         ),
