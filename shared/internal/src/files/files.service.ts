@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { File } from '@prisma/client';
+import { File, ProviderType } from '@prisma/client';
 import { UpdateFileDto } from './dtos/update.file.dto';
 import { PrismaService } from '../prisma.service';
 import { UploadFileDto } from './dtos/upload.file.dto';
@@ -87,6 +87,53 @@ export class FilesService {
     );
 
     await provider.deleteFile(file.reference as string);
+  }
+
+  async downloadFile(id: string) {
+    const file = await this.findById(id);
+
+    if (!file) {
+      throw new Error('File not found');
+    }
+
+    const account = await this.prisma.account.findFirst({
+      where: {
+        workspaceId: file.workspaceId,
+        type: file.provider as ProviderType,
+      },
+    });
+
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    const keys = await this.prisma.key.findFirst({
+      where: {
+        workspaceId: account.workspaceId,
+        type: account.type,
+      },
+    });
+
+    if (!keys) {
+      throw new Error('Keys not found');
+    }
+
+    const provider = ProviderFactory.createProvider(
+      account.type,
+      keys.keys as Record<string, string>
+    );
+
+    const credentials = account.credentials as Record<string, string>;
+    await provider.setCredentials(credentials);
+
+    const fileStream = await provider.downloadFile(file.reference as string);
+    const metadata = {
+      fileName: file.name,
+      mimeType: file.mimeType,
+      size: file.size,
+    };
+
+    return { fileStream, metadata };
   }
 
   // todo(v2): Add queue for each file using BullMQ

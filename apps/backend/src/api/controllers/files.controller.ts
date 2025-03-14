@@ -10,6 +10,8 @@ import {
   Query,
   UploadedFiles,
   UseInterceptors,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import { FilesService } from '@drivebase/internal/files/files.service';
 import { CreateFolderDto } from '@drivebase/internal/files/dtos/create.file.dto';
@@ -20,6 +22,8 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { GetWorkspaceFromRequest } from '@drivebase/internal/workspaces/workspace.from.request';
 import { Workspace } from '@prisma/client';
 import { UploadFileDto } from '@drivebase/internal/files/dtos/upload.file.dto';
+import type { Response } from 'express';
+import { SkipTransformInterceptor } from '@drivebase/internal/helpers/transform.response';
 
 @Controller('/files')
 @UseGuards(WorkspaceGuard)
@@ -97,5 +101,32 @@ export class FilesController {
     }
 
     return this.filesService.uploadFile(files, uploadFileDto);
+  }
+
+  @Get('download/:id')
+  @SkipTransformInterceptor()
+  async downloadFile(
+    @GetWorkspaceFromRequest() workspace: Workspace,
+    @Param('id') id: string,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    const file = await this.filesService.findById(id);
+    if (!file || file.workspaceId !== workspace.id) {
+      throw new ForbiddenException('File not found or access denied');
+    }
+
+    const { fileStream, metadata } = await this.filesService.downloadFile(id);
+
+    // Set appropriate headers for file download
+    response.set({
+      'Content-Type': metadata.mimeType,
+      'Content-Disposition': `attachment; filename="${encodeURIComponent(
+        metadata.fileName
+      )}"`,
+      'Content-Length': metadata.size,
+    });
+
+    // Return the stream directly
+    return new StreamableFile(fileStream);
   }
 }
