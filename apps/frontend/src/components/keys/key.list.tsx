@@ -26,13 +26,17 @@ import Image from 'next/image';
 import { ProviderListItem } from '@drivebase/internal/providers/providers';
 import { useParams } from 'next/navigation';
 import { formatDistance } from 'date-fns';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useGetAuthUrlMutation } from '@drivebase/react/lib/redux/endpoints/accounts';
+import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
+import { toast } from 'sonner';
 
 function KeyList() {
   const params = useParams();
 
-  const [keysInput, setKeysInput] = useState<Record<string, string>>({});
+  const clientIdRef = useRef<HTMLInputElement>(null);
+  const clientSecretRef = useRef<HTMLInputElement>(null);
+
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderListItem | null>(null);
 
@@ -40,6 +44,38 @@ function KeyList() {
   const { data: providers, isLoading } = useGetAvailableProvidersQuery();
   const [saveKeys, { isLoading: isSaving }] = useSaveKeysMutation();
   const [getAuthUrl, { isLoading: isGettingAuthUrl }] = useGetAuthUrlMutation();
+
+  function handleSave() {
+    const clientId = clientIdRef.current?.value;
+    const clientSecret = clientSecretRef.current?.value;
+
+    if (!clientId || !clientSecret) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (!selectedProvider) {
+      toast.error('Please select a provider');
+      return;
+    }
+
+    saveKeys({
+      keys: {
+        clientId,
+        clientSecret,
+      },
+      type: selectedProvider.type,
+    })
+      .unwrap()
+      .then(() => {
+        toast.success('Keys saved');
+        setSelectedProvider(null);
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error('Failed to save keys');
+      });
+  }
 
   return (
     <div className="space-y-4">
@@ -67,12 +103,14 @@ function KeyList() {
               (key) => key.type === provider.type
             );
 
+            const iconUrl = getProviderIcon(provider.type);
+
             return (
               <TableRow key={provider.type}>
                 <TableCell>
                   <div className="flex gap-2 items-center">
                     <Image
-                      src={provider.logo}
+                      src={iconUrl}
                       alt={provider.label}
                       width={20}
                       height={20}
@@ -148,8 +186,8 @@ function KeyList() {
               <div>
                 {selectedProvider && (
                   <Image
-                    src={selectedProvider.logo}
-                    alt={selectedProvider.label}
+                    src={getProviderIcon(selectedProvider.type)}
+                    alt={selectedProvider?.label}
                     width={75}
                     height={75}
                     className="mx-auto mb-4 p-4 bg-muted rounded-xl"
@@ -168,40 +206,17 @@ function KeyList() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <Input
-                      placeholder="Client ID"
-                      value={keysInput.clientId}
-                      onChange={(e) =>
-                        setKeysInput({
-                          ...keysInput,
-                          clientId: e.target.value,
-                        })
-                      }
-                    />
+                    <Input placeholder="Client ID" ref={clientIdRef} />
                   </div>
                   <div className="col-span-2">
-                    <Input
-                      placeholder="Client Secret"
-                      value={keysInput.clientSecret}
-                      onChange={(e) =>
-                        setKeysInput({
-                          ...keysInput,
-                          clientSecret: e.target.value,
-                        })
-                      }
-                    />
+                    <Input placeholder="Client Secret" ref={clientSecretRef} />
                   </div>
                 </div>
                 <Button
                   variant="outline"
                   className="w-32"
                   isLoading={isSaving}
-                  onClick={() =>
-                    saveKeys({
-                      keys: keysInput,
-                      type: selectedProvider?.type,
-                    })
-                  }
+                  onClick={handleSave}
                 >
                   Save
                 </Button>

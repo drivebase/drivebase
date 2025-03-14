@@ -6,6 +6,8 @@ import { FolderIcon } from 'lucide-react';
 import byteSize from 'byte-size';
 import { getFileIcon } from './file.icons';
 import { format } from 'date-fns';
+import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
+import Image from 'next/image';
 
 export const columns: ColumnDef<File>[] = [
   {
@@ -40,6 +42,27 @@ export const columns: ColumnDef<File>[] = [
     header: 'Type',
     cell: ({ row }) => {
       return row.original.isFolder ? 'Folder' : row.original.mimeType;
+    },
+  },
+  {
+    accessorKey: 'type',
+    header: 'Provider',
+    cell: ({ row }) => {
+      if (!row.original.provider) return '-';
+
+      const Icon = getProviderIcon(row.original.provider);
+
+      return (
+        <div className="flex items-center gap-2 capitalize">
+          <Image
+            src={Icon}
+            alt={row.original.provider || ''}
+            width={20}
+            height={20}
+          />
+          {row.original.provider?.replace('_', ' ').toLocaleLowerCase()}
+        </div>
+      );
     },
   },
   {

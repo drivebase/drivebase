@@ -19,10 +19,17 @@ export class OAuthConfig {
 export interface AuthToken {
   accessToken: string;
   refreshToken?: string;
-  expiresIn?: number;
+  expiryDate?: number;
   tokenType?: string;
   email?: string | null;
+  folderReference?: Record<string, string>;
 }
+
+type UserInfo = {
+  id?: string;
+  name?: string;
+  email?: string;
+};
 
 export interface OAuthProvider {
   config: OAuthConfig;
@@ -31,12 +38,16 @@ export interface OAuthProvider {
   getAuthUrl(state?: string): string;
   getAccessToken(code: string): Promise<AuthToken>;
   refreshAccessToken(refreshToken: string): Promise<AuthToken>;
+  setCredentials(credentials: Record<string, string>): Promise<void>;
+  getUserInfo(): Promise<UserInfo>;
 
   // File Management
+  hasFolder(id: string): Promise<boolean>;
+  createDrivebaseFolder(): Promise<string>;
   // listFiles(path?: string): Promise<any[]>;
-  // uploadFile(path: string, file: Blob): Promise<any>;
+  uploadFile(folderId: string, file: Express.Multer.File): Promise<string>;
   // downloadFile(path: string): Promise<Blob>;
-  // deleteFile(path: string): Promise<boolean>;
+  deleteFile(path: string): Promise<boolean>;
 }
 
 export const OAUTH_REDIRECT_URI = `${process.env['NEXT_PUBLIC_APP_URL']}/providers/[type]/callback`;

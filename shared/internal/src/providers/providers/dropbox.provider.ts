@@ -1,4 +1,13 @@
-import { AuthToken, OAuthProvider, OAuthConfig } from '../provider.interface';
+import { ProviderType } from '@prisma/client';
+import {
+  AuthToken,
+  OAuthProvider,
+  OAuthConfig,
+  OAUTH_REDIRECT_URI,
+} from '../provider.interface';
+
+const redirectUri = OAUTH_REDIRECT_URI.replace('[type]', ProviderType.DROPBOX);
+const drivebaseFolderName = process.env['DRIVEBASE_FOLDER_NAME'];
 
 export class DropboxProvider implements OAuthProvider {
   private accessToken?: string;
@@ -7,6 +16,30 @@ export class DropboxProvider implements OAuthProvider {
     if (!config.clientId || !config.clientSecret) {
       throw new Error('Dropbox requires OAuth2 authentication');
     }
+  }
+
+  async getUserInfo(): Promise<any> {
+    const response = await fetch(
+      'https://api.dropboxapi.com/2/users/get_current_account',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+      }
+    );
+
+    const json = await response.json();
+
+    return {
+      id: json.account_id,
+      name: json.name.display_name,
+      email: json.email,
+    };
+  }
+
+  async setCredentials(credentials: Record<string, string>) {
+    this.accessToken = credentials['accessToken'];
   }
 
   getAuthUrl(state?: string): string {
@@ -21,7 +54,7 @@ export class DropboxProvider implements OAuthProvider {
       response_type: 'code',
       token_access_type: 'offline',
       state: state || '',
-      redirect_uri: `${process.env['NEXT_PUBLIC_APP_URL']}/providers/callback`,
+      redirect_uri: redirectUri,
     });
 
     return `${authUrl}?${params.toString()}`;
@@ -38,6 +71,7 @@ export class DropboxProvider implements OAuthProvider {
         grant_type: 'authorization_code',
         client_id: this.config.clientId,
         client_secret: this.config.clientSecret,
+        redirect_uri: redirectUri,
       }).toString(),
     });
 
@@ -55,7 +89,7 @@ export class DropboxProvider implements OAuthProvider {
     return {
       accessToken: result.access_token,
       refreshToken: result.refresh_token,
-      expiresIn: result.expires_in,
+      expiryDate: new Date().getTime() + result.expires_in * 1000,
       tokenType: result.token_type,
     };
   }
@@ -88,9 +122,81 @@ export class DropboxProvider implements OAuthProvider {
     return {
       accessToken: result.access_token,
       refreshToken: result.refresh_token || refreshToken,
-      expiresIn: result.expires_in,
       tokenType: result.token_type,
+      expiryDate: new Date().getTime() + result.expires_in * 1000,
     };
+  }
+
+  async createFolder(name: string) {
+    const response = await fetch(
+      'https://api.dropboxapi.com/2/files/create_folder_v2',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          path: name,
+          autorename: false,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to create folder');
+    }
+
+    const json = await response.json();
+
+    return {
+      id: json.metadata.id,
+      name: json.metadata.name,
+      path: json.metadata.path_display,
+    };
+  }
+
+  async createDrivebaseFolder() {
+    const response = await fetch(
+      'https://api.dropboxapi.com/2/files/create_folder_v2',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          path: `/${process.env['DRIVEBASE_FOLDER_NAME']}`,
+          autorename: false,
+        }),
+      }
+    );
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      throw new Error('Failed to create folder');
+    }
+
+    return json.metadata.id;
+  }
+
+  async hasFolder(id: string): Promise<boolean> {
+    const response = await fetch(
+      'https://api.dropboxapi.com/2/files/get_metadata',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          path: id,
+        }),
+      }
+    );
+
+    return response.ok;
   }
 
   async listFiles(path?: string) {
@@ -114,8 +220,7 @@ export class DropboxProvider implements OAuthProvider {
     return result.entries;
   }
 
-  async uploadFile(path: string, file: Blob) {
-    const arrayBuffer = await file.arrayBuffer();
+  async uploadFile(folderId: string, file: Express.Multer.File) {
     const response = await fetch(
       'https://content.dropboxapi.com/2/files/upload',
       {
@@ -123,17 +228,24 @@ export class DropboxProvider implements OAuthProvider {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
           'Dropbox-API-Arg': JSON.stringify({
-            path: `${path}/${file.name}`,
+            path: `/${drivebaseFolderName}/${file.originalname}`,
             mode: 'add',
-            autorename: true,
-            mute: false,
+            autorename: false,
+            mute: true,
           }),
           'Content-Type': 'application/octet-stream',
         },
-        body: Buffer.from(arrayBuffer),
+        body: file.buffer,
       }
     );
-    return response.json();
+
+    if (!response.ok) {
+      throw new Error('Failed to upload file');
+    }
+
+    const json = await response.json();
+
+    return json.id;
   }
 
   async downloadFile(path: string): Promise<Blob> {
