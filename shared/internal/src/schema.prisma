@@ -50,10 +50,14 @@ model Account {
   alias       String?
   type        ProviderType
   credentials Json?
+  isDefault   Boolean      @default(false)
+  folderId    String
+  userInfo    Json
   workspaceId String
   workspace   Workspace    @relation(fields: [workspaceId], references: [id])
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Key {
@@ -67,17 +71,17 @@ model Key {
 }
 
 model File {
-  id          String    @id @default(uuid())
+  id          String        @id @default(uuid())
   name        String
-  isFolder    Boolean   @default(false)
+  isFolder    Boolean       @default(false)
   parentPath  String
   path        String
-  totalItems  Int?      @default(0)
-  size        Int?
   mimeType    String?
+  size        Float?
   reference   Json?
+  provider    ProviderType?
   workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
