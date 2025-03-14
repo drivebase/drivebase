@@ -40,23 +40,30 @@ function Page() {
   }, [callback, params.type, r, searchParams]);
 
   return (
-    <div className="h-screen flex items-center justify-center">
+    <div className="h-screen flex items-center justify-center relative">
+      <div className="absolute inset-0 h-full w-full bg-background bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
       {error ? (
-        <Card className="shadow-xl rounded-2xl">
-          <CardHeader className="border-b pb-10">
+        <Card className="shadow-xl rounded-2xl z-20 w-[25rem]">
+          <CardHeader className="border-b pb-6">
             <CardTitle className="text-2xl font-semibold">Error</CardTitle>
             <CardDescription>
-              We were unable to connect to the provider. Please try again.
+              An error occurred while connecting to the provider.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-8 bg-accent/50">
-            <Button variant={'outline'} onClick={() => r.push('/')}>
+          <CardContent className="pt-6 space-y-4 bg-accent/50">
+            <p className="text-sm text-muted-foreground">
+              Please check console for more details.
+            </p>
+            <Button
+              variant={'outline'}
+              onClick={() => r.push('/settings/keys')}
+            >
               Go back
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <Loader className="animate-spin" size={32} />
+        <Loader className="animate-spin z-20" size={32} />
       )}
     </div>
   );
