@@ -6,12 +6,14 @@ import { ApiResponse } from './api.type';
 const keysApi = createApi({
   baseQuery,
   reducerPath: 'keysApi',
+  tagTypes: ['Keys'],
   endpoints: (build) => ({
     getKeys: build.query<ApiResponse<Key[]>, void>({
       query: () => ({
         url: `/keys `,
         method: 'GET',
       }),
+      providesTags: ['Keys'],
     }),
     saveKeys: build.mutation<
       ApiResponse<Key>,
@@ -25,6 +27,7 @@ const keysApi = createApi({
         method: 'PUT',
         body: { keys, type },
       }),
+      invalidatesTags: ['Keys'],
     }),
   }),
 });

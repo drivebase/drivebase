@@ -57,6 +57,7 @@ const filesApi = createApi({
           body: formData,
         };
       },
+      invalidatesTags: ['files'],
     }),
   }),
 });
