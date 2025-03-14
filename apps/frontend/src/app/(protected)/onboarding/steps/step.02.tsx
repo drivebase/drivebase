@@ -2,6 +2,7 @@ import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoi
 import { Button } from '@drivebase/react/components/button';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
+import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
 
 type StepTwoProps = {
   onNext: () => void;
@@ -14,21 +15,25 @@ function StepTwo({ onNext, onSkip }: StepTwoProps) {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 gap-4">
-        {providers?.data.map((provider) => (
-          <div
-            key={provider.type}
-            className="flex items-center gap-2 hover:opacity-50 rounded-md cursor-pointer"
-          >
-            <Image
-              src={provider.logo}
-              alt={provider.label}
-              width={15}
-              height={15}
-              className="rounded"
-            />
-            <h4 className="text-sm">{provider.label}</h4>
-          </div>
-        ))}
+        {providers?.data.map((provider) => {
+          const iconUrl = getProviderIcon(provider.type);
+
+          return (
+            <div
+              key={provider.type}
+              className="flex items-center gap-2 hover:opacity-50 rounded-md cursor-pointer"
+            >
+              <Image
+                src={iconUrl}
+                alt={provider.label}
+                width={15}
+                height={15}
+                className="rounded"
+              />
+              <h4 className="text-sm">{provider.label}</h4>
+            </div>
+          );
+        })}
       </div>
 
       <p className="text-sm text-muted-foreground">
