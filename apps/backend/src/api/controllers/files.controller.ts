@@ -8,14 +8,19 @@ import {
   Param,
   ForbiddenException,
   Query,
+  UploadedFile,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FilesService } from '@drivebase/internal/files/files.service';
 import { CreateFolderDto } from '@drivebase/internal/files/dtos/create.file.dto';
 import { UpdateFileDto } from '@drivebase/internal/files/dtos/update.file.dto';
 import { WorkspaceGuard } from '@drivebase/internal/workspaces/workspace.guard';
 import { UseGuards } from '@nestjs/common';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { GetWorkspaceFromRequest } from '@drivebase/internal/workspaces/workspace.from.request';
 import { Workspace } from '@prisma/client';
+import { UploadFileDto } from '@drivebase/internal/files/dtos/upload.file.dto';
 
 @Controller('/files')
 @UseGuards(WorkspaceGuard)
@@ -80,5 +85,18 @@ export class FilesController {
       throw new ForbiddenException('File not found or access denied');
     }
     return this.filesService.delete(id);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FilesInterceptor('files'))
+  async uploadFile(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() uploadFileDto: UploadFileDto
+  ) {
+    if (!files || files.length === 0) {
+      throw new Error('No files uploaded');
+    }
+
+    return this.filesService.uploadFile(files, uploadFileDto);
   }
 }
