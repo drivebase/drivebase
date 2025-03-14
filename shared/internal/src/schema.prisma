@@ -78,7 +78,7 @@ model File {
   path        String
   mimeType    String?
   size        Float?
-  reference   Json?
+  reference   String
   provider    ProviderType?
   workspaceId String
   workspace   Workspace     @relation(fields: [workspaceId], references: [id])
