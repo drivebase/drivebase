@@ -30,9 +30,10 @@ import { Button } from '@drivebase/react/components/button';
 import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
 import byteSize from 'byte-size';
 import { useGetConnectedAccountsQuery } from '@drivebase/react/lib/redux/endpoints/accounts';
-import { env } from '@drivebase/frontend/constants/env';
 import { useUploadFileMutation } from '@drivebase/react/lib/redux/endpoints/files';
 import { useSearchParams } from 'next/navigation';
+import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
+import { toast } from 'sonner';
 
 export function UploadModal() {
   const searchParams = useSearchParams();
@@ -60,7 +61,16 @@ export function UploadModal() {
       files: files.map(({ file }) => file),
       accountId: account.id,
       path: path ?? '/',
-    });
+    })
+      .unwrap()
+      .then(() => {
+        toast.success('Files uploaded successfully');
+        dispatch(setUploadModalOpen(false));
+        clearFiles();
+      })
+      .catch((error) => {
+        toast.error(error.data.message);
+      });
   }
 
   return (
@@ -97,11 +107,13 @@ export function UploadModal() {
 
                   if (!provider) return null;
 
+                  const iconUrl = getProviderIcon(provider.type);
+
                   return (
                     <SelectItem key={account.id} value={account.id}>
                       <div className="flex items-center gap-2">
                         <Image
-                          src={provider.logo}
+                          src={iconUrl}
                           alt={provider.label}
                           width={20}
                           height={20}
@@ -168,6 +180,7 @@ export function UploadModal() {
             variant={'secondary'}
             className="w-full"
             onClick={handleUpload}
+            isLoading={isLoading}
           >
             Start Upload
           </Button>
