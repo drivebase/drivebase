@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from '@drivebase/backend/app.module';
 import cookieParser from 'cookie-parser';
 import { TransformInterceptor } from '@drivebase/internal/helpers/transform.response';
+import { Reflector } from '@nestjs/core';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -15,7 +16,9 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalInterceptors(new TransformInterceptor());
+
+  const reflector = new Reflector();
+  app.useGlobalInterceptors(new TransformInterceptor(reflector));
 
   const config = new DocumentBuilder()
     .setTitle('Drivebase API')
