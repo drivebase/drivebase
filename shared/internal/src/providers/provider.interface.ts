@@ -31,10 +31,11 @@ export interface OAuthProvider {
   getAuthUrl(state?: string): string;
   getAccessToken(code: string): Promise<AuthToken>;
   refreshAccessToken(refreshToken: string): Promise<AuthToken>;
+  setCredentials(credentials: Record<string, string>): void;
 
   // File Management
   // listFiles(path?: string): Promise<any[]>;
-  // uploadFile(path: string, file: Blob): Promise<any>;
+  uploadFile(path: string, file: Express.Multer.File): Promise<{ id: string }>;
   // downloadFile(path: string): Promise<Blob>;
   // deleteFile(path: string): Promise<boolean>;
 }

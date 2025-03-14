@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { File } from '@prisma/client';
 import { UpdateFileDto } from './dtos/update.file.dto';
 import { PrismaService } from '../prisma.service';
+import { UploadFileDto } from './dtos/upload.file.dto';
+import { ProviderFactory } from '../providers/provider.factory';
 
 @Injectable()
 export class FilesService {
@@ -76,5 +78,70 @@ export class FilesService {
         id,
       },
     });
+  }
+
+  // todo(v2): Add queue for each file using BullMQ
+  async uploadFile(files: Express.Multer.File[], uploadFileDto: UploadFileDto) {
+    const { accountId, path } = uploadFileDto;
+
+    const account = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: {
+        type: true,
+        credentials: true,
+        workspace: { select: { id: true } },
+      },
+    });
+
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    const keys = await this.prisma.key.findFirst({
+      where: {
+        workspaceId: account.workspace.id,
+        type: account.type,
+      },
+    });
+
+    if (!keys) {
+      throw new Error('Keys not found');
+    }
+
+    try {
+      const provider = ProviderFactory.createProvider(
+        account.type,
+        keys.keys as Record<string, string>
+      );
+
+      const credentials = account.credentials as Record<string, string>;
+
+      provider.setCredentials({
+        access_token: credentials['accessToken'],
+        refresh_token: credentials['refreshToken'],
+      });
+
+      for (const file of files) {
+        const upload = await provider.uploadFile(path, file);
+
+        await this.prisma.file.create({
+          data: {
+            name: file.originalname,
+            isFolder: false,
+            parentPath: path,
+            path: `${path}/${file.originalname}`,
+            size: file.size,
+            mimeType: file.mimetype,
+            workspaceId: account.workspace.id,
+            reference: upload,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to upload file: ${errorMessage}`);
+    }
   }
 }

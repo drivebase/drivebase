@@ -75,6 +75,7 @@ model File {
   totalItems  Int?      @default(0)
   size        Int?
   mimeType    String?
+  reference   Json?
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   createdAt   DateTime  @default(now())

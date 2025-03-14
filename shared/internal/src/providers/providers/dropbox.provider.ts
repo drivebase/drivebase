@@ -9,6 +9,10 @@ export class DropboxProvider implements OAuthProvider {
     }
   }
 
+  setCredentials(credentials: Record<string, string>): void {
+    this.accessToken = credentials['access_token'];
+  }
+
   getAuthUrl(state?: string): string {
     if (!this.config.clientId || !this.config.clientSecret) {
       throw new Error('Dropbox requires OAuth2 authentication');
@@ -114,8 +118,7 @@ export class DropboxProvider implements OAuthProvider {
     return result.entries;
   }
 
-  async uploadFile(path: string, file: Blob) {
-    const arrayBuffer = await file.arrayBuffer();
+  async uploadFile(path: string, file: Express.Multer.File) {
     const response = await fetch(
       'https://content.dropboxapi.com/2/files/upload',
       {
@@ -123,14 +126,14 @@ export class DropboxProvider implements OAuthProvider {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
           'Dropbox-API-Arg': JSON.stringify({
-            path: `${path}/${file.name}`,
+            path: `${path}/${file.originalname}`,
             mode: 'add',
             autorename: true,
             mute: false,
           }),
           'Content-Type': 'application/octet-stream',
         },
-        body: Buffer.from(arrayBuffer),
+        body: file.buffer,
       }
     );
     return response.json();

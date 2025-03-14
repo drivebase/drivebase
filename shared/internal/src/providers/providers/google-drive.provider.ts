@@ -7,6 +7,7 @@ import {
   OAUTH_REDIRECT_URI,
 } from '../provider.interface';
 import { ProviderType } from '@prisma/client';
+import { Readable } from 'stream';
 
 const redirectUri = OAUTH_REDIRECT_URI.replace(
   '[type]',
@@ -28,6 +29,10 @@ export class GoogleDriveProvider implements OAuthProvider {
       version: 'v3',
       auth: this.oauth2Client,
     });
+  }
+
+  setCredentials(credentials: Record<string, string>): void {
+    this.oauth2Client.setCredentials(credentials);
   }
 
   getAuthUrl(state?: string): string {
@@ -101,21 +106,46 @@ export class GoogleDriveProvider implements OAuthProvider {
     return response.data.files || [];
   }
 
-  async uploadFile(path: string, file: Blob) {
-    const parentId = path === 'root' ? 'root' : path;
+  async uploadFile(path: string, file: Express.Multer.File) {
+    const { credentials } = await this.oauth2Client.refreshAccessToken();
+
+    if (!credentials.access_token) {
+      throw new Error('Failed to refresh access token');
+    }
+
+    this.oauth2Client.setCredentials({
+      access_token: credentials.access_token,
+    });
+
+    const folder = await this.driveClient.files.create({
+      requestBody: {
+        name: '__drivebase_folder__',
+        mimeType: 'application/vnd.google-apps.folder',
+      },
+      fields: 'id',
+    });
+
+    const fileStream = new Readable();
+    fileStream.push(file.buffer);
+    fileStream.push(null); // Mark the end of the stream
+
     const media = {
-      mimeType: file.type,
-      body: file,
+      mimeType: file.mimetype,
+      body: fileStream,
     };
+
     const response = await this.driveClient.files.create({
       requestBody: {
-        name: file.name,
-        parents: [parentId],
+        name: file.originalname,
+        parents: [folder.data.id || ''],
       },
       media,
-      fields: 'id, name, mimeType, size, parents',
+      fields: 'id',
     });
-    return response.data;
+
+    return {
+      id: response.data.id || '',
+    };
   }
 
   async downloadFile(fileId: string): Promise<Blob> {
