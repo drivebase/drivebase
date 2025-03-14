@@ -10,15 +10,6 @@ export class FilesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createFolder(workspaceId: string, name: string, parentPath = '/') {
-    if (parentPath) {
-      await this.prisma.file.updateMany({
-        where: { path: parentPath },
-        data: {
-          totalItems: { increment: 1 },
-        },
-      });
-    }
-
     return this.prisma.file.create({
       data: {
         name,
@@ -73,11 +64,28 @@ export class FilesService {
   }
 
   async delete(id: string) {
-    return this.prisma.file.delete({
+    const file = await this.findById(id);
+
+    if (!file) {
+      throw new Error('File not found');
+    }
+
+    const account = await this.prisma.account.findFirst({
       where: {
-        id,
+        workspaceId: file.workspaceId,
       },
     });
+
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    const provider = ProviderFactory.createProvider(
+      account.type,
+      account.credentials as Record<string, string>
+    );
+
+    await provider.deleteFile(file.reference as string);
   }
 
   // todo(v2): Add queue for each file using BullMQ
@@ -87,9 +95,11 @@ export class FilesService {
     const account = await this.prisma.account.findUnique({
       where: { id: accountId },
       select: {
+        id: true,
         type: true,
         credentials: true,
-        workspace: { select: { id: true } },
+        workspaceId: true,
+        folderId: true,
       },
     });
 
@@ -99,7 +109,7 @@ export class FilesService {
 
     const keys = await this.prisma.key.findFirst({
       where: {
-        workspaceId: account.workspace.id,
+        workspaceId: account.workspaceId,
         type: account.type,
       },
     });
@@ -116,24 +126,35 @@ export class FilesService {
 
       const credentials = account.credentials as Record<string, string>;
 
-      provider.setCredentials({
-        access_token: credentials['accessToken'],
-        refresh_token: credentials['refreshToken'],
-      });
+      provider.setCredentials(credentials);
 
       for (const file of files) {
-        const upload = await provider.uploadFile(path, file);
+        const folder = await provider.hasFolder(account.folderId);
+
+        if (!folder) {
+          const folderId = await provider.createDrivebaseFolder();
+
+          await this.prisma.account.update({
+            where: { id: account.id },
+            data: {
+              folderId,
+            },
+          });
+        }
+
+        const reference = await provider.uploadFile(account.folderId, file);
 
         await this.prisma.file.create({
           data: {
+            reference,
             name: file.originalname,
             isFolder: false,
             parentPath: path,
-            path: `${path}/${file.originalname}`,
-            size: file.size,
+            path: `${path === '/' ? '' : path}/${file.originalname}`,
             mimeType: file.mimetype,
-            workspaceId: account.workspace.id,
-            reference: upload,
+            workspaceId: account.workspaceId,
+            provider: account.type,
+            size: file.size,
           },
         });
       }

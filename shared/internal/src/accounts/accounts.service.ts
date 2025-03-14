@@ -57,14 +57,21 @@ export class AccountsService {
           throw new Error('Failed to get access token');
         }
 
-        const { email, ...credentials } = accessToken;
+        await providerInstance.setCredentials({
+          accessToken: accessToken.accessToken,
+        });
+
+        const userInfo = await providerInstance.getUserInfo();
+        const folderId = await providerInstance.createDrivebaseFolder();
 
         await this.prisma.account.create({
           data: {
-            alias: email,
+            alias: userInfo.email,
             type: data.type,
-            credentials,
+            credentials: accessToken as unknown as Record<string, string>,
+            userInfo: userInfo as unknown as Record<string, string>,
             workspaceId,
+            folderId,
           },
         });
       } else {
