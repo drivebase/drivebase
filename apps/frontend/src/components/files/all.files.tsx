@@ -26,7 +26,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@drivebase/react/components/breadcrumb';
-import { Fragment } from 'react';
+import { Fragment, useMemo } from 'react';
 import Link from 'next/link';
 
 function AllFiles() {
@@ -40,13 +40,25 @@ function AllFiles() {
     parentPath,
   });
 
+  const splitPath = parentPath.split('/').filter(Boolean);
+
+  const filteredFiles = useMemo(() => {
+    const files = Array.from(data?.data ?? []);
+
+    const sortedFiles = files.sort((a, b) => {
+      if (a.isFolder && !b.isFolder) return -1;
+      if (!a.isFolder && b.isFolder) return 1;
+      return 0;
+    });
+
+    return sortedFiles;
+  }, [data?.data]);
+
   const table = useReactTable({
-    data: data?.data ?? [],
+    data: filteredFiles,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
-
-  const splitPath = parentPath.split('/').filter(Boolean);
 
   return (
     <div className="space-y-4">
