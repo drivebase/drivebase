@@ -31,14 +31,14 @@ export class GoogleDriveProvider implements OAuthProvider {
     });
   }
 
-  async getUserInfo(): Promise<any> {
+  async getUserInfo() {
     const response = await this.driveClient.about.get({
       fields: 'user',
     });
 
     return {
-      name: response.data.user?.displayName,
-      email: response.data.user?.emailAddress,
+      name: response.data.user?.displayName || undefined,
+      email: response.data.user?.emailAddress || undefined,
     };
   }
 
@@ -197,18 +197,33 @@ export class GoogleDriveProvider implements OAuthProvider {
     return response.data.id;
   }
 
-  async downloadFile(fileId: string): Promise<Blob> {
+  async downloadFile(fileId: string): Promise<Readable> {
     const response = await this.driveClient.files.get(
       {
         fileId,
         alt: 'media',
       },
-      { responseType: 'arraybuffer' }
+      { responseType: 'stream' }
     );
+
     if (!response.data) {
       throw new Error('Failed to download file');
     }
-    return new Blob([response.data as ArrayBuffer]);
+
+    return response.data as Readable;
+  }
+
+  async getFileMetadata(fileId: string) {
+    const response = await this.driveClient.files.get({
+      fileId,
+      fields: 'id,name,mimeType,size',
+    });
+
+    if (!response.data) {
+      throw new Error('Failed to get file metadata');
+    }
+
+    return response.data;
   }
 
   async deleteFile(fileId: string): Promise<boolean> {

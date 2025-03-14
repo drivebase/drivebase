@@ -5,6 +5,7 @@ import {
   OAuthConfig,
   OAUTH_REDIRECT_URI,
 } from '../provider.interface';
+import { Readable } from 'stream';
 
 const redirectUri = OAUTH_REDIRECT_URI.replace('[type]', ProviderType.DROPBOX);
 const drivebaseFolderName = process.env['DRIVEBASE_FOLDER_NAME'];
@@ -248,7 +249,39 @@ export class DropboxProvider implements OAuthProvider {
     return json.id;
   }
 
-  async downloadFile(path: string): Promise<Blob> {
+  async getFileMetadata(fileId: string) {
+    const response = await fetch(
+      'https://api.dropboxapi.com/2/files/get_metadata',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          path: fileId,
+          include_media_info: true,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to get file metadata: ${response.statusText}`);
+    }
+
+    const json = await response.json();
+
+    return {
+      id: json.id,
+      name: json.name,
+      size: json.size,
+      mimeType:
+        json.media_info?.metadata?.mime_type || 'application/octet-stream',
+      path: json.path_display,
+    };
+  }
+
+  async downloadFile(path: string): Promise<Readable> {
     const response = await fetch(
       'https://content.dropboxapi.com/2/files/download',
       {
@@ -261,7 +294,17 @@ export class DropboxProvider implements OAuthProvider {
         },
       }
     );
-    return await response.blob();
+
+    if (!response.ok) {
+      throw new Error(`Failed to download file: ${response.statusText}`);
+    }
+
+    const buffer = await response.arrayBuffer();
+    const readable = new Readable();
+    readable.push(Buffer.from(buffer));
+    readable.push(null);
+
+    return readable;
   }
 
   async deleteFile(path: string): Promise<boolean> {

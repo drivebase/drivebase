@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString } from 'class-validator';
+import { Readable } from 'stream';
 
 export enum AuthMethod {
   OAuth2 = 'oauth2',
@@ -46,7 +47,8 @@ export interface OAuthProvider {
   createDrivebaseFolder(): Promise<string>;
   // listFiles(path?: string): Promise<any[]>;
   uploadFile(folderId: string, file: Express.Multer.File): Promise<string>;
-  // downloadFile(path: string): Promise<Blob>;
+  downloadFile(fileId: string): Promise<Readable>;
+  getFileMetadata(fileId: string): Promise<any>;
   deleteFile(path: string): Promise<boolean>;
 }
 
