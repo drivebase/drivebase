@@ -1,7 +1,7 @@
 'use client';
 
 import { Separator } from '@drivebase/react/components/separator';
-import { Grid2X2Icon, ListIcon } from 'lucide-react';
+import { DownloadIcon, Grid2X2Icon, ListIcon, TrashIcon } from 'lucide-react';
 import { useGetFilesQuery } from '@drivebase/react/lib/redux/endpoints/files';
 import {
   Table,
@@ -28,6 +28,17 @@ import {
 } from '@drivebase/react/components/breadcrumb';
 import { Fragment, useMemo } from 'react';
 import Link from 'next/link';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  ContextMenuLabel,
+} from '@drivebase/react/components/context-menu';
+import { toast } from 'sonner';
+import type { File as DBFile } from '@prisma/client';
+
+const baseUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:8000';
 
 function AllFiles() {
   const router = useRouter();
@@ -59,6 +70,45 @@ function AllFiles() {
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const handleDownload = async (file: DBFile) => {
+    const fileId = file.id;
+
+    try {
+      const loadingToast = toast.loading('Downloading file...');
+
+      const res = await fetch(`${baseUrl}/files/download/${fileId}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        toast.dismiss(loadingToast);
+        toast.error(`Failed to download file: ${res.statusText}`);
+        return;
+      }
+
+      const filename = file.name;
+
+      const blob = await res.blob();
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+      a.remove();
+
+      toast.dismiss(loadingToast);
+      toast.success(`Downloaded ${filename}`);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('An error occurred while downloading the file');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -138,12 +188,30 @@ function AllFiles() {
                   className="select-none"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+                    <ContextMenu key={cell.id}>
+                      <ContextMenuTrigger asChild>
+                        <TableCell>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent className="w-[200px]">
+                        <ContextMenuLabel>Actions</ContextMenuLabel>
+                        <ContextMenuItem
+                          disabled={row.original.isFolder}
+                          onClick={() => handleDownload(row.original)}
+                        >
+                          <DownloadIcon className="w-4 h-4 mr-2" />
+                          Download
+                        </ContextMenuItem>
+                        <ContextMenuItem>
+                          <TrashIcon className="w-4 h-4 mr-2" />
+                          Delete
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
                   ))}
                 </TableRow>
               ))
