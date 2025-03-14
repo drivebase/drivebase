@@ -8,7 +8,6 @@ import {
   Param,
   ForbiddenException,
   Query,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -17,7 +16,7 @@ import { CreateFolderDto } from '@drivebase/internal/files/dtos/create.file.dto'
 import { UpdateFileDto } from '@drivebase/internal/files/dtos/update.file.dto';
 import { WorkspaceGuard } from '@drivebase/internal/workspaces/workspace.guard';
 import { UseGuards } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { GetWorkspaceFromRequest } from '@drivebase/internal/workspaces/workspace.from.request';
 import { Workspace } from '@prisma/client';
 import { UploadFileDto } from '@drivebase/internal/files/dtos/upload.file.dto';
