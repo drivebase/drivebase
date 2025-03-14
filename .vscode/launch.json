@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to nestjs",
+      "request": "attach",
+      "cwd": "${workspaceFolder}/apps/backend",
+      "type": "node",
+      "port": 9229
+    }
+  ]
+}
