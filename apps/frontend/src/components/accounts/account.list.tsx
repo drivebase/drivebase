@@ -18,6 +18,7 @@ import { Skeleton } from '@drivebase/react/components/skeleton';
 import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
 import Image from 'next/image';
 import { formatDistance } from 'date-fns';
+import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
 
 type NoDataProps = {
   title: string;
@@ -88,13 +89,15 @@ function AccountList() {
               (provider) => provider.type === account.type
             );
 
+            const iconUrl = getProviderIcon(account.type);
+
             return (
               <TableRow key={account.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {provider && (
                       <Image
-                        src={provider.logo || ''}
+                        src={iconUrl}
                         alt={provider.label || ''}
                         width={20}
                         height={20}
