@@ -17,6 +17,7 @@ export class FilesService {
         workspaceId,
         parentPath,
         path: parentPath !== '/' ? `${parentPath}/${name}` : `/${name}`,
+        reference: '',
       },
     });
   }
