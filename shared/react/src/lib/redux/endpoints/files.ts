@@ -1,6 +1,7 @@
 import { File as DrivebaseFile } from '@prisma/client';
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from '@drivebase/react/lib/redux/base.query';
+import { UploadFileDto } from '@drivebase/internal/files/dtos/upload.file.dto';
 import { ApiResponse } from './api.type';
 
 const filesApi = createApi({
@@ -34,8 +35,35 @@ const filesApi = createApi({
       }),
       invalidatesTags: ['files'],
     }),
+    uploadFile: builder.mutation<
+      ApiResponse<DrivebaseFile>,
+      UploadFileDto & {
+        files: File[];
+      }
+    >({
+      query: ({ files, accountId, path }) => {
+        const formData = new FormData();
+
+        formData.append('accountId', accountId);
+        formData.append('path', path);
+
+        files.forEach((file) => {
+          formData.append('files', file);
+        });
+
+        return {
+          url: '/files/upload',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
   }),
 });
 
-export const { useGetFilesQuery, useCreateFolderMutation } = filesApi;
+export const {
+  useGetFilesQuery,
+  useCreateFolderMutation,
+  useUploadFileMutation,
+} = filesApi;
 export default filesApi;

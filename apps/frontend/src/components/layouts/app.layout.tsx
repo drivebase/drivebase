@@ -12,13 +12,12 @@ function AppLayout({ children }: AppLayoutProps) {
     <FileStoreProvider>
       <SidebarProvider>
         <AppSidebar />
-        <main className="h-screen flex-1 bg-sidebar pt-2">
-          <div className="h-full rounded-tl-2xl border bg-background p-10">
+        <main className="h-screen flex-1 flex items-start bg-sidebar pt-2 gap-2">
+          <div className="h-full flex-1 rounded-tl-2xl border bg-background p-10">
             {children}
           </div>
         </main>
       </SidebarProvider>
-
       <UploadModal />
     </FileStoreProvider>
   );

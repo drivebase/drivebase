@@ -1,6 +1,9 @@
+'use client';
+
 import AllFiles from '@drivebase/frontend/components/files/all.files';
 import NewFolderDialog from '@drivebase/frontend/components/files/new.folder.dialog';
 import { Button } from '@drivebase/react/components/button';
+import { useAppSelector } from '@drivebase/react/lib/redux/hooks';
 import { cn } from '@drivebase/react/lib/utils';
 import { FileIcon, ImageIcon, VideoIcon, UploadIcon } from 'lucide-react';
 
@@ -48,6 +51,8 @@ const cards = [
 ];
 
 function Page() {
+  const { uploadModalOpen } = useAppSelector((s) => s.uploader);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between">
@@ -62,7 +67,11 @@ function Page() {
       </div>
 
       <div className="space-y-10">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div
+          className={cn('grid gap-4 md:grid-cols-2 lg:grid-cols-4', {
+            // 'lg:grid-cols-2': true,
+          })}
+        >
           {cards.map((card) => (
             <div
               key={card.title}

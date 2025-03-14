@@ -8,6 +8,13 @@ import {
   DialogTitle,
 } from '@drivebase/react/components/dialog';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@drivebase/react/components/select';
+import {
   useAppDispatch,
   useAppSelector,
 } from '@drivebase/react/lib/redux/hooks';
@@ -16,81 +23,104 @@ import {
   clearFileIds,
 } from '@drivebase/react/lib/redux/reducers/uploader.reducer';
 import { FileIcon, XIcon } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useFileStore } from '@drivebase/react/lib/contexts/file-store.context';
 import Image from 'next/image';
 import { Button } from '@drivebase/react/components/button';
 import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
-import { cn } from '@drivebase/react/lib/utils';
+import byteSize from 'byte-size';
+import { useGetConnectedAccountsQuery } from '@drivebase/react/lib/redux/endpoints/accounts';
+import { env } from '@drivebase/frontend/constants/env';
+import { useUploadFileMutation } from '@drivebase/react/lib/redux/endpoints/files';
+import { useSearchParams } from 'next/navigation';
 
 export function UploadModal() {
-  const imageUrlsRef = useRef<string[]>([]);
+  const searchParams = useSearchParams();
+
   const dispatch = useAppDispatch();
   const { uploadModalOpen } = useAppSelector((s) => s.uploader);
   const { files, clearFiles, removeFile } = useFileStore();
-  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
+
+  const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
 
   const { data: providers } = useGetAvailableProvidersQuery();
+  const { data: accounts } = useGetConnectedAccountsQuery();
+  const [uploadFile, { isLoading }] = useUploadFileMutation();
 
-  // Clean up files and object URLs when the modal is closed
-  useEffect(() => {
-    if (!uploadModalOpen) {
-      // Clean up any existing object URLs
-      imageUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
-      imageUrlsRef.current = [];
-      clearFiles();
-      dispatch(clearFileIds());
-    }
-  }, [uploadModalOpen, dispatch, clearFiles]);
+  async function handleUpload() {
+    if (!selectedAccount) return;
+
+    const account = accounts?.data.find((a) => a.id === selectedAccount);
+
+    if (!account) return;
+
+    const path = searchParams.get('path');
+
+    uploadFile({
+      files: files.map(({ file }) => file),
+      accountId: account.id,
+      path: path ?? '/',
+    });
+  }
 
   return (
     <Dialog
       open={uploadModalOpen}
-      onOpenChange={() => {
-        dispatch(setUploadModalOpen(!uploadModalOpen));
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          dispatch(setUploadModalOpen(false));
+          clearFiles();
+          dispatch(clearFileIds());
+        }
       }}
     >
-      <DialogContent className="p-0 w-[30rem]">
-        <DialogHeader className="px-8 py-10 select-none text-center">
-          <DialogTitle className="mx-auto text-2xl">
-            Select providers
-          </DialogTitle>
-          <DialogDescription className="text-center">
+      <DialogContent className="p-0 min-w-[40rem]">
+        <DialogHeader className="px-8 py-10 select-none">
+          <DialogTitle className="text-2xl">Upload Files</DialogTitle>
+          <DialogDescription>
             Please select where you want to upload your files.
           </DialogDescription>
+
+          <div className="flex gap-10 justify-between pt-10">
+            <Select
+              value={selectedAccount ?? undefined}
+              onValueChange={setSelectedAccount}
+            >
+              <SelectTrigger className="w-[300px]">
+                <SelectValue placeholder="Select account" />
+              </SelectTrigger>
+              <SelectContent>
+                {accounts?.data.map((account) => {
+                  const provider = providers?.data.find(
+                    (p) => p.type === account.type
+                  );
+
+                  if (!provider) return null;
+
+                  return (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center gap-2">
+                        <Image
+                          src={provider.logo}
+                          alt={provider.label}
+                          width={20}
+                          height={20}
+                        />
+                        {account.alias ?? account.id}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
         </DialogHeader>
 
         <div className="py-10 px-8 bg-accent/30 border-t space-y-10">
-          <div className="flex flex-wrap gap-2">
-            {providers?.data.map((provider) => (
-              <div
-                key={provider.label}
-                onClick={() => {
-                  const old = selectedProviders.includes(provider.label);
-                  setSelectedProviders((prev) =>
-                    old
-                      ? prev.filter((p) => p !== provider.label)
-                      : [...prev, provider.label]
-                  );
-                }}
-                className="cursor-pointer"
-              >
-                <Image
-                  draggable={false}
-                  src={provider.logo}
-                  alt={provider.label}
-                  width={65}
-                  height={65}
-                  className={cn(
-                    'p-4 h-14 w-14 rounded-md',
-                    selectedProviders.includes(provider.label) && 'bg-secondary'
-                  )}
-                />
-              </div>
-            ))}
-          </div>
-
           <div className="space-y-4 max-h-[15rem] overflow-auto">
+            {files.length === 0 && (
+              <p className="text-sm text-muted-foreground">No files selected</p>
+            )}
             {files.map(({ id, file }) => {
               if (!file) return null;
 
@@ -108,7 +138,9 @@ export function UploadModal() {
                   />
                 );
               } else {
-                Placeholder = <FileIcon size={100} />;
+                Placeholder = (
+                  <FileIcon className="h-12 w-12 p-2 bg-secondary rounded" />
+                );
               }
 
               return (
@@ -116,7 +148,9 @@ export function UploadModal() {
                   {Placeholder}
                   <div className="flex-1">
                     <p className="">{file.name}</p>
-                    <p className="text-sm text-muted-foreground">{file.type}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {file.type} ({byteSize(file.size).toString()})
+                    </p>
                   </div>
                   <XIcon
                     size={16}
@@ -130,7 +164,11 @@ export function UploadModal() {
             })}
           </div>
 
-          <Button variant={'secondary'} className="w-full">
+          <Button
+            variant={'secondary'}
+            className="w-full"
+            onClick={handleUpload}
+          >
             Start Upload
           </Button>
         </div>
