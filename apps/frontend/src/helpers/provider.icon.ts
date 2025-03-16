@@ -1,16 +1,16 @@
-import { ProviderType } from '@prisma/client';
+import type { ProviderType } from '@prisma/client';
 
 export const getProviderIcon = (provider: ProviderType) => {
   switch (provider) {
-    case ProviderType.GOOGLE_DRIVE:
+    case 'GOOGLE_DRIVE':
       return 'https://api.iconify.design/logos/google-drive.svg';
-    case ProviderType.DROPBOX:
+    case 'DROPBOX':
       return 'https://api.iconify.design/logos/dropbox.svg';
-    case ProviderType.TELEGRAM:
+    case 'TELEGRAM':
       return 'https://api.iconify.design/logos/telegram.svg';
-    case ProviderType.AMAZON_S3:
+    case 'AMAZON_S3':
       return 'https://api.iconify.design/logos/aws-s3.svg';
-    case ProviderType.ONEDRIVE:
+    case 'ONEDRIVE':
       return 'https://api.iconify.design/logos/microsoft-onedrive.svg';
     default:
       return 'https://api.iconify.design/logos/google-drive.svg';

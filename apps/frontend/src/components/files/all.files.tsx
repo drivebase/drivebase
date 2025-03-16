@@ -74,7 +74,7 @@ function AllFiles() {
     try {
       const loadingToast = toast.loading('Downloading file...');
 
-      const res = await fetch(`${baseUrl}/files/download/${fileId}`, {
+      const res = await fetch(`${baseUrl}/api/files/download/${fileId}`, {
         method: 'GET',
         credentials: 'include',
       });
