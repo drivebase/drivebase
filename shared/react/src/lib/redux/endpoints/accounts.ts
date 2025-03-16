@@ -17,12 +17,11 @@ const accountsApi = createApi({
     getAuthUrl: build.mutation<
       ApiResponse<string>,
       {
-        workspaceId: string;
         type: ProviderType;
       }
     >({
-      query: ({ workspaceId, type }) => ({
-        url: `/accounts/auth?workspaceId=${workspaceId}&type=${type}`,
+      query: ({ type }) => ({
+        url: `/accounts/auth?type=${type}`,
         method: 'GET',
       }),
     }),
