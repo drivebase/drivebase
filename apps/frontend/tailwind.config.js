@@ -1,6 +1,6 @@
 const { createGlobPatternsForDependencies } = require('@nx/react/tailwind');
 const { join } = require('path');
-const { fontFamily } = require('tailwindcss/defaultTheme');
+const globPatterns = createGlobPatternsForDependencies(__dirname);
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -9,12 +9,12 @@ module.exports = {
       __dirname,
       '{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}'
     ),
-    ...createGlobPatternsForDependencies(__dirname),
+    ...globPatterns,
   ],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-inter)', ...fontFamily.sans],
+        sans: ['Ubuntu'],
       },
       borderRadius: {
         lg: 'var(--radius)',

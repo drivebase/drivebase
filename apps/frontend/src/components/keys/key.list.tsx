@@ -22,9 +22,7 @@ import {
   DialogHeader,
   DialogContent,
 } from '@drivebase/react/components/dialog';
-import Image from 'next/image';
 import { ProviderListItem } from '@drivebase/internal/providers/providers';
-import { useParams } from 'next/navigation';
 import { formatDistance } from 'date-fns';
 import { useState, useRef } from 'react';
 import { useGetAuthUrlMutation } from '@drivebase/react/lib/redux/endpoints/accounts';
@@ -32,8 +30,6 @@ import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
 import { toast } from 'sonner';
 
 function KeyList() {
-  const params = useParams();
-
   const clientIdRef = useRef<HTMLInputElement>(null);
   const clientSecretRef = useRef<HTMLInputElement>(null);
 
@@ -109,7 +105,7 @@ function KeyList() {
               <TableRow key={provider.type}>
                 <TableCell>
                   <div className="flex gap-2 items-center">
-                    <Image
+                    <img
                       src={iconUrl}
                       alt={provider.label}
                       width={20}
@@ -140,7 +136,6 @@ function KeyList() {
                       isLoading={isGettingAuthUrl}
                       onClick={() => {
                         getAuthUrl({
-                          workspaceId: params.id as string,
                           type: provider.type,
                         })
                           .unwrap()
@@ -185,7 +180,7 @@ function KeyList() {
             >
               <div>
                 {selectedProvider && (
-                  <Image
+                  <img
                     src={getProviderIcon(selectedProvider.type)}
                     alt={selectedProvider?.label}
                     width={75}
