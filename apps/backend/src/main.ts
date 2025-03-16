@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -12,11 +13,6 @@ async function bootstrap() {
       origin: process.env.VITE_PUBLIC_APP_URL,
       credentials: true,
     },
-  });
-
-  // simulate delay
-  app.use((req, res, next) => {
-    setTimeout(() => next(), 500);
   });
 
   app.use(cookieParser());
