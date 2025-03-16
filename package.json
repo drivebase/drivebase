@@ -18,6 +18,7 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^10.0.2",
+    "@nestjs/serve-static": "^5.0.3",
     "@nestjs/swagger": "^11.0.6",
     "@prisma/client": "^6.4.1",
     "@radix-ui/react-avatar": "^1.1.3",
