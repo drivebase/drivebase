@@ -4,10 +4,13 @@
   "license": "MIT",
   "scripts": {
     "dev": "nx run-many --target=serve --projects=frontend,backend --parallel=2",
-    "db:push": "cd shared/internal/src && prisma db push",
-    "db:generate": "cd shared/internal/src && prisma generate",
-    "db:migrate": "cd shared/internal/src && prisma migrate dev",
-    "db:studio": "cd shared/internal/src && BROWSER=null prisma studio"
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "node scripts/migrate-deploy.mjs",
+    "db:studio": "BROWSER=null prisma studio",
+    "db:squash": "node scripts/manage-migrations.mjs squash",
+    "db:validate": "node scripts/manage-migrations.mjs validate"
   },
   "private": true,
   "dependencies": {
