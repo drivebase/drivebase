@@ -1,5 +1,4 @@
-'use client';
-
+import { useRouter, useSearch, Link } from '@tanstack/react-router';
 import { Separator } from '@drivebase/react/components/separator';
 import { DownloadIcon, Grid2X2Icon, ListIcon, TrashIcon } from 'lucide-react';
 import { useGetFilesQuery } from '@drivebase/react/lib/redux/endpoints/files';
@@ -11,7 +10,6 @@ import {
   TableBody,
   TableCell,
 } from '@drivebase/react/components/table';
-import { useRouter, useSearchParams } from 'next/navigation';
 import {
   flexRender,
   getCoreRowModel,
@@ -27,7 +25,6 @@ import {
   BreadcrumbSeparator,
 } from '@drivebase/react/components/breadcrumb';
 import { Fragment, useMemo } from 'react';
-import Link from 'next/link';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -38,14 +35,14 @@ import {
 import { toast } from 'sonner';
 import type { File as DBFile } from '@prisma/client';
 
-const baseUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:8000';
+const baseUrl =
+  import.meta.env['VITE_PUBLIC_API_URL'] || 'http://localhost:8000';
 
 function AllFiles() {
   const router = useRouter();
+  const search = useSearch({ from: '/_protected/_dashboard/' });
 
-  const searchParams = useSearchParams();
-
-  const parentPath = searchParams.get('path') ?? '/';
+  const parentPath = search.path ?? '/';
 
   const { data, isLoading } = useGetFilesQuery({
     parentPath,
@@ -126,7 +123,9 @@ function AllFiles() {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/?path=%2F`}>root</Link>
+                <Link to="/" params={{ path: '/' }}>
+                  root
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -134,7 +133,7 @@ function AllFiles() {
               <Fragment key={path}>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link href={`/?path=${encodeURIComponent('/' + path)}`}>
+                    <Link to="/" params={{ path: '/' + path }}>
                       {path ?? '/'}
                     </Link>
                   </BreadcrumbLink>
@@ -180,9 +179,12 @@ function AllFiles() {
                   data-state={row.getIsSelected() && 'selected'}
                   onDoubleClick={() => {
                     if (row.original.isFolder) {
-                      router.push(
-                        `/?path=${encodeURIComponent(row.original.path)}`
-                      );
+                      router.navigate({
+                        to: '/',
+                        search: {
+                          path: row.original.path,
+                        },
+                      });
                     }
                   }}
                   className="select-none"

@@ -1,7 +1,5 @@
-'use client';
-
+import { useEffect, useRef, useState } from 'react';
 import { motion, Transition } from 'framer-motion';
-
 import { cn } from '@drivebase/react/lib/utils';
 import { FileIcon } from 'lucide-react';
 import { useAppDispatch } from '@drivebase/react/lib/redux/hooks';
@@ -9,7 +7,6 @@ import {
   setFileIds,
   setUploadModalOpen,
 } from '@drivebase/react/lib/redux/reducers/uploader.reducer';
-import { useEffect, useRef, useState } from 'react';
 import { useFileStore } from '@drivebase/react/lib/contexts/file-store.context';
 
 function SidebarUpload() {

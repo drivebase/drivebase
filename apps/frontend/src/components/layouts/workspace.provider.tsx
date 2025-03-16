@@ -1,9 +1,7 @@
-'use client';
-
 import { useRef } from 'react';
 import { useAppStore } from '@drivebase/react/lib/redux/hooks';
 import { setWorkspace } from '@drivebase/react/lib/redux/reducers/workspace.reducer';
-import { Workspace } from '@prisma/client';
+import type { Workspace } from '@prisma/client';
 
 type WorkspaceProviderProps = {
   workspace: Workspace;
@@ -19,7 +17,7 @@ function WorkspaceProvider({ workspace, children }: WorkspaceProviderProps) {
     store.dispatch(setWorkspace(workspace));
   }
 
-  return <>{children}</>;
+  return children;
 }
 
 export default WorkspaceProvider;

@@ -1,5 +1,3 @@
-'use client';
-
 import { Input } from '@drivebase/react/components/input';
 import { Button } from '@drivebase/react/components/button';
 import {
@@ -12,11 +10,10 @@ import {
 } from '@drivebase/react/components/table';
 import { CloudIcon } from 'lucide-react';
 import React from 'react';
-import Link from 'next/link';
+import { Link } from '@tanstack/react-router';
 import { useGetConnectedAccountsQuery } from '@drivebase/react/lib/redux/endpoints/accounts';
 import { Skeleton } from '@drivebase/react/components/skeleton';
 import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
-import Image from 'next/image';
 import { formatDistance } from 'date-fns';
 import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
 
@@ -53,7 +50,7 @@ function AccountList() {
         title="No accounts found"
         description="You haven't linked any accounts yet."
         button={
-          <Link href="/settings/keys">
+          <Link to="/settings/keys">
             <Button variant={'outline'}>Link Account</Button>
           </Link>
         }
@@ -96,7 +93,7 @@ function AccountList() {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {provider && (
-                      <Image
+                      <img
                         src={iconUrl}
                         alt={provider.label || ''}
                         width={20}
