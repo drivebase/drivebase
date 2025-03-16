@@ -1,5 +1,3 @@
-'use client';
-
 import { File } from '@prisma/client';
 import { ColumnDef } from '@tanstack/react-table';
 import { FolderIcon } from 'lucide-react';
@@ -7,7 +5,6 @@ import byteSize from 'byte-size';
 import { getFileIcon } from './file.icons';
 import { format } from 'date-fns';
 import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
-import Image from 'next/image';
 
 export const columns: ColumnDef<File>[] = [
   {
@@ -54,7 +51,7 @@ export const columns: ColumnDef<File>[] = [
 
       return (
         <div className="flex items-center gap-2 capitalize">
-          <Image
+          <img
             src={Icon}
             alt={row.original.provider || ''}
             width={20}

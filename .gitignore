@@ -48,3 +48,6 @@ out
 
 # Other
 .env
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

@@ -1,6 +1,7 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query';
 
-const baseUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3000';
+const baseUrl =
+  import.meta.env['VITE_PUBLIC_API_URL'] || 'http://localhost:8000';
 
 export const baseQuery = fetchBaseQuery({
   baseUrl,

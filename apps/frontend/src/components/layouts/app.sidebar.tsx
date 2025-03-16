@@ -1,5 +1,3 @@
-'use client';
-
 import {
   Sidebar,
   SidebarContent,
@@ -21,9 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@drivebase/react/components/dropdown-menu';
 import { ChevronLeftIcon } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useLocation, Link } from '@tanstack/react-router';
 import { Avatar, AvatarFallback } from '@drivebase/react/components/avatar';
 import { useAppSelector } from '@drivebase/react/lib/redux/hooks';
 import {
@@ -33,17 +29,17 @@ import {
 import SidebarUpload from './upload';
 
 const AppSidebar = () => {
-  const pathname = usePathname();
+  const location = useLocation();
   const profile = useAppSelector((s) => s.profile.user);
 
-  const showSettings = pathname.startsWith('/settings');
+  const showSettings = location.pathname.startsWith('/settings');
   const currentItems = showSettings ? settingsItems : mainItems;
 
   return (
     <Sidebar className="border-transparent w-[15rem]">
       <SidebarHeader className="z-10 space-y-4 pt-4 justify-between">
         <div className="flex justify-between items-start">
-          <Image
+          <img
             draggable={false}
             src="/drivebase.png"
             alt="logo"
@@ -76,7 +72,7 @@ const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center">
             {showSettings && (
-              <Link href={'/'} className="mr-2 hover:text-primary">
+              <Link to={'/'} className="mr-2 hover:text-primary">
                 <ChevronLeftIcon className="w-4 h-4" />
               </Link>
             )}
@@ -85,12 +81,12 @@ const AppSidebar = () => {
           <SidebarGroupContent>
             <SidebarMenu>
               {currentItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = location.pathname === item.href;
                 const Icon = item.icon;
                 return (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton asChild isActive={isActive}>
-                      <Link href={item.href}>
+                      <Link to={item.href}>
                         <Icon />
                         <span>{item.label}</span>
                       </Link>

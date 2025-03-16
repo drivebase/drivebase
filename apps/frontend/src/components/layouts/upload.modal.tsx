@@ -25,18 +25,17 @@ import {
 import { FileIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useFileStore } from '@drivebase/react/lib/contexts/file-store.context';
-import Image from 'next/image';
 import { Button } from '@drivebase/react/components/button';
 import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
 import byteSize from 'byte-size';
 import { useGetConnectedAccountsQuery } from '@drivebase/react/lib/redux/endpoints/accounts';
 import { useUploadFileMutation } from '@drivebase/react/lib/redux/endpoints/files';
-import { useSearchParams } from 'next/navigation';
 import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
 import { toast } from 'sonner';
+import { useSearch } from '@tanstack/react-router';
 
 export function UploadModal() {
-  const searchParams = useSearchParams();
+  const search = useSearch({ strict: false });
 
   const dispatch = useAppDispatch();
   const { uploadModalOpen } = useAppSelector((s) => s.uploader);
@@ -55,7 +54,7 @@ export function UploadModal() {
 
     if (!account) return;
 
-    const path = searchParams.get('path');
+    const path = search.path;
 
     uploadFile({
       files: files.map(({ file }) => file),
@@ -112,7 +111,7 @@ export function UploadModal() {
                   return (
                     <SelectItem key={account.id} value={account.id}>
                       <div className="flex items-center gap-2">
-                        <Image
+                        <img
                           src={iconUrl}
                           alt={provider.label}
                           width={20}
@@ -141,7 +140,7 @@ export function UploadModal() {
               if (file.type.startsWith('image/')) {
                 const objectUrl = URL.createObjectURL(file);
                 Placeholder = (
-                  <Image
+                  <img
                     src={objectUrl}
                     alt={file.name}
                     width={50}

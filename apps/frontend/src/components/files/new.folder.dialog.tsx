@@ -12,15 +12,15 @@ import { Input } from '@drivebase/react/components/input';
 import { Button } from '@drivebase/react/components/button';
 import { FolderIcon, PlusIcon } from 'lucide-react';
 import { useCreateFolderMutation } from '@drivebase/react/lib/redux/endpoints/files';
-import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { useSearch } from '@tanstack/react-router';
 
 function NewFolderDialog() {
-  const searchParams = useSearchParams();
+  const search = useSearch({ from: '/_protected/_dashboard/' });
   const ref = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const parentPath = searchParams.get('path');
+  const parentPath = search.path;
 
   const [createFolder, { isLoading }] = useCreateFolderMutation();
 

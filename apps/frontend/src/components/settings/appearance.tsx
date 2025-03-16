@@ -1,10 +1,10 @@
-'use client';
-
 import { useEffect, useState } from 'react';
-import { useTheme } from 'next-themes';
 import { Skeleton } from '@drivebase/react/components/skeleton';
+import { useTheme } from '@drivebase/frontend/theme.provider';
 import { Tabs, TabsList, TabsTrigger } from '@drivebase/react/components/tabs';
 import SettingItem from './item';
+
+type Theme = 'system' | 'light' | 'dark';
 
 function SettingsGeneral() {
   const { setTheme, theme } = useTheme();
@@ -31,7 +31,7 @@ function SettingsGeneral() {
           <Tabs
             defaultValue={theme}
             onValueChange={(value) => {
-              setTheme(value);
+              setTheme(value as Theme);
             }}
           >
             <TabsList>
