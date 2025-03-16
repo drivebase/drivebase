@@ -20,9 +20,10 @@ WORKDIR /app
 RUN npm i -g pnpm
 
 COPY --from=base /app/dist/apps .
-COPY shared/internal/src/schema.prisma backend/
 
 WORKDIR /app/backend
+
+COPY schema.prisma .
 
 RUN pnpm install --frozen-lockfile --prod && \
   pnpm add tslib && \
@@ -32,6 +33,12 @@ RUN pnpm install --frozen-lockfile --prod && \
   rm -rf /root/.cache && \
   rm -rf /root/.npm
 
+COPY scripts scripts
+COPY migrations migrations
+COPY var/docker/entrypoint.sh .
+
 EXPOSE 8000
 
-CMD ["node", "main.js"]
+RUN chmod +x entrypoint.sh
+
+CMD ["./entrypoint.sh"]
