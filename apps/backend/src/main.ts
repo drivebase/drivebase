@@ -36,6 +36,12 @@ async function bootstrap() {
   await app.listen(port);
 
   Logger.log(`🚀 Application is running on: http://localhost:${port}`);
+
+  process.on('SIGINT', async () => {
+    Logger.log('SIGINT signal received: closing HTTP server');
+    await app.close();
+    process.exit(0);
+  });
 }
 
 bootstrap();
