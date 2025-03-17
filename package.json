@@ -90,6 +90,7 @@
     "@nx/web": "20.4.6",
     "@nx/webpack": "20.4.6",
     "@nx/workspace": "20.4.6",
+    "@release-it/conventional-changelog": "^10.0.0",
     "@swc-node/register": "~1.9.1",
     "@swc/cli": "~0.3.12",
     "@swc/core": "~1.5.7",
