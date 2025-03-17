@@ -87,7 +87,7 @@ const AppSidebar = () => {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-primary-foreground"
+              className="data-[state=open]:bg-transparent data-[state=open]:text-sidebar-accent-foreground hover:bg-transparent"
             >
               <div className="flex aspect-square size-8 items-center justify-center">
                 <Avatar className="w-8 h-8 select-none">
