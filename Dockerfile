@@ -15,6 +15,10 @@ RUN npx nx run-many --target=build --projects=frontend,backend
 
 FROM node:22-alpine AS runner
 
+ARG APP_VERSION
+ENV APP_VERSION=${APP_VERSION}
+ENV NODE_ENV=production
+
 WORKDIR /app
 
 RUN npm i -g pnpm

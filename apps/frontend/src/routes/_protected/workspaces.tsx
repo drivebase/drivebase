@@ -24,8 +24,13 @@ function Page() {
     );
   }
 
-  if (!workspaces) {
+  if (!workspaces?.data) {
     return <div>An error occurred. Please try again.</div>;
+  }
+
+  if (workspaces.data.length === 0) {
+    window.location.href = '/onboarding';
+    return;
   }
 
   return (
@@ -45,11 +50,13 @@ function Page() {
               className="flex items-center group justify-between text-left relative cursor-pointer w-full"
               role="group"
               onClick={() => {
-                // add workspace id to cookie
-                const existingCookie = document.cookie;
-                document.cookie = existingCookie
-                  ? `${existingCookie}; workspaceId=${workspace.id}`
-                  : `workspaceId=${workspace.id}`;
+                const cookieValue = `workspaceId=${workspace.id}`;
+                const isLocalhost =
+                  window.location.hostname === 'localhost' ||
+                  window.location.hostname === '127.0.0.1';
+                document.cookie = `${cookieValue}; path=/; SameSite=Strict${
+                  isLocalhost ? '' : '; secure'
+                }`;
                 router.navigate({
                   to: '/',
                 });
