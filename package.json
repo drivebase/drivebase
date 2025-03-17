@@ -69,6 +69,7 @@
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
+    "telegram": "^2.26.22",
     "uniqid": "^5.4.0"
   },
   "devDependencies": {
