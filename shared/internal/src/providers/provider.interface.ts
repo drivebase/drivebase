@@ -26,7 +26,7 @@ export interface AuthToken {
   folderReference?: Record<string, string>;
 }
 
-type UserInfo = {
+export type UserInfo = {
   id?: string;
   name?: string;
   email?: string;
