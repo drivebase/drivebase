@@ -12,6 +12,7 @@ import accountsApi from './endpoints/accounts';
 import keysApi from './endpoints/keys';
 import filesApi from './endpoints/files';
 import profileApi from './endpoints/profile';
+import publicApi from './endpoints/public';
 
 export const makeStore = () => {
   return configureStore({
@@ -27,6 +28,7 @@ export const makeStore = () => {
       [keysApi.reducerPath]: keysApi.reducer,
       [filesApi.reducerPath]: filesApi.reducer,
       [profileApi.reducerPath]: profileApi.reducer,
+      [publicApi.reducerPath]: publicApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
@@ -36,7 +38,8 @@ export const makeStore = () => {
         accountsApi.middleware,
         keysApi.middleware,
         filesApi.middleware,
-        profileApi.middleware
+        profileApi.middleware,
+        publicApi.middleware
       ),
   });
 };
