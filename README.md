@@ -16,8 +16,6 @@ Open-source, self-hosted cloud file manager designed to unify file storage acros
 > [!NOTE]
 > This project is currently in development and not all features are available.
 
-
-
 Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
 
 ## Features
@@ -27,20 +25,10 @@ Drivebase is a next-generation cloud-agnostic file management application that e
 - ⚡ Storage Mapping with Cloud Provider Selection
 - 🔍 Cross-Cloud Search
 - 🔁 File Routing Rules for Automated Uploads
-- 🛡️ Privacy-First Approach (Only metadata is stored)
 
 ## Installation
 
-Coming soon.
-
-## Roadmap
-- [x] Multi-User Support
-- [ ] File Sharing
-- [ ] File Versioning
-- [ ] File History
-- [ ] File Trash
-- [ ] File Locking
-
+Head over to [Quickstart](https://drivebase.github.io/docs/quickstart.html) guide to get your own Drivebase up and running.
 
 ## Contributing
 
