@@ -174,7 +174,7 @@ export class FilesService {
 
       const credentials = account.credentials as Record<string, string>;
 
-      provider.setCredentials(credentials);
+      await provider.setCredentials(credentials);
 
       for (const file of files) {
         const folder = await provider.hasFolder(account.folderId);
