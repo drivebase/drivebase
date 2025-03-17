@@ -14,6 +14,7 @@ import { WorkspaceGuard } from '@drivebase/internal/workspaces/workspace.guard';
 import { AccountsController } from './controllers/accounts.controller';
 import { FilesController } from './controllers/files.controller';
 import { PublicController } from './controllers/public.controller';
+import { CustomProviderController } from './controllers/custom.provider.controller';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { PublicController } from './controllers/public.controller';
     AccountsController,
     FilesController,
     PublicController,
+    CustomProviderController,
   ],
   providers: [
     {
