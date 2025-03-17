@@ -1,5 +1,3 @@
-'use client';
-
 import { Button } from '@drivebase/react/components/button';
 import { Input } from '@drivebase/react/components/input';
 import { Skeleton } from '@drivebase/react/components/skeleton';
@@ -28,10 +26,16 @@ import { useState, useRef } from 'react';
 import { useGetAuthUrlMutation } from '@drivebase/react/lib/redux/endpoints/accounts';
 import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
 import { toast } from 'sonner';
+import { ProviderType } from '@prisma/client';
+import { CustomProvider, CustomProviders } from '../providers';
 
 function KeyList() {
   const clientIdRef = useRef<HTMLInputElement>(null);
   const clientSecretRef = useRef<HTMLInputElement>(null);
+
+  const [CustomProvider, setCustomProvider] = useState<
+    CustomProvider[keyof CustomProvider] | null
+  >(null);
 
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderListItem | null>(null);
@@ -140,7 +144,18 @@ function KeyList() {
                         })
                           .unwrap()
                           .then((res) => {
-                            window.location.href = res.data;
+                            if (res.data.startsWith('custom://')) {
+                              const provider = res.data.split('://')[1];
+                              if (provider in CustomProviders) {
+                                const Provider =
+                                  CustomProviders[provider as ProviderType];
+                                if (Provider) {
+                                  setCustomProvider(Provider);
+                                }
+                              }
+                            } else {
+                              window.location.href = res.data;
+                            }
                           })
                           .catch((err) => {
                             console.error(err);
@@ -220,6 +235,14 @@ function KeyList() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {CustomProvider && (
+        <CustomProvider
+          onClose={() => {
+            setCustomProvider(null);
+          }}
+        />
+      )}
     </div>
   );
 }
