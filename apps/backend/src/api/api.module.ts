@@ -13,6 +13,7 @@ import { AuthGuard } from '@drivebase/backend/services/auth/auth.guard';
 import { WorkspaceGuard } from '@drivebase/internal/workspaces/workspace.guard';
 import { AccountsController } from './controllers/accounts.controller';
 import { FilesController } from './controllers/files.controller';
+import { PublicController } from './controllers/public.controller';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { FilesController } from './controllers/files.controller';
     KeysController,
     AccountsController,
     FilesController,
+    PublicController,
   ],
   providers: [
     {
