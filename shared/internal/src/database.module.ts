@@ -6,6 +6,7 @@ import { WorkspacesService } from './workspaces/workspaces.service';
 import { KeysService } from './keys/keys.service';
 import { AccountsService } from './accounts/accounts.service';
 import { FilesService } from './files/files.service';
+import { TelegramService } from './providers/custom/telegram/telegram.service';
 
 @Global()
 @Module({
@@ -17,6 +18,9 @@ import { FilesService } from './files/files.service';
     KeysService,
     AccountsService,
     FilesService,
+
+    // Custom Oauth
+    TelegramService,
   ],
   get exports() {
     return this.providers;
