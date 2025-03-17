@@ -82,7 +82,7 @@ const AppSidebar = () => {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="z-10 border-t">
+      <SidebarFooter className="z-10">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
