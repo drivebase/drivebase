@@ -11,7 +11,7 @@
 Open-source, self-hosted cloud file manager designed to unify file storage across multiple cloud providers into one seamless interface.
 </p>
 
-<p align="center"><a href="https://github.com/orgs/drivebase/discussions">Discussions</a> · <a href="https://drivebase.github.io/docs">Documentation</a> · <a href="https://discord.gg/3kUSy2d">Discord</a></p>
+<p align="center"><a href="https://github.com/drivebase/drivebase/discussions">Discussions</a> · <a href="https://drivebase.github.io/docs">Documentation</a> · <a href="https://discord.gg/3kUSy2d">Discord</a></p>
 
 > [!WARNING]
 > This project is currently in early development, expect breaking changes with each commit.
