@@ -5,6 +5,7 @@ import { Loader } from 'lucide-react';
 
 export interface AuthContext {
   isAuthenticated: boolean;
+  isServerAvailable: boolean;
   logout: () => Promise<void>;
   user: User | null;
 }
@@ -26,9 +27,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const isServerAvailable =
+    // @ts-expect-error - profile.error is not defined
+    profile.error?.status === 'FETCH_ERROR' ? false : true;
+
   return (
     <authContext.Provider
       value={{
+        isServerAvailable,
         isAuthenticated: profile.isSuccess,
         user: profile.data?.data ?? null,
         logout,
