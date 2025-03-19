@@ -10,7 +10,7 @@ import {
   CardDescription,
 } from '@drivebase/react/components/card';
 import { ProviderType } from '@prisma/client';
-import { useCallbackMutation } from '@drivebase/react/lib/redux/endpoints/accounts';
+import { useCallbackMutation } from '@drivebase/react/lib/redux/endpoints/providers';
 
 function Page() {
   const r = useRouter();
@@ -27,13 +27,13 @@ function Page() {
       callback({ code, state, type: params.type as ProviderType })
         .unwrap()
         .then(() => {
-          r.navigate({ to: '/settings/accounts' });
+          r.navigate({ to: '/settings/providers' });
         })
         .catch(() => {
           setError('Failed to connect provider');
         });
     } else {
-      r.navigate({ to: '/settings/keys' });
+      r.navigate({ to: '/settings/providers' });
     }
   }, [callback, params.type, r, searchParams]);
 
@@ -54,7 +54,7 @@ function Page() {
             </p>
             <Button
               variant={'outline'}
-              onClick={() => r.navigate({ to: '/settings/keys' })}
+              onClick={() => r.navigate({ to: '/settings/providers' })}
             >
               Go back
             </Button>
