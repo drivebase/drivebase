@@ -29,31 +29,17 @@ CREATE TABLE "Workspace" (
 );
 
 -- CreateTable
-CREATE TABLE "Account" (
+CREATE TABLE "Provider" (
     "id" TEXT NOT NULL,
-    "alias" TEXT,
+    "label" TEXT NOT NULL,
     "type" "ProviderType" NOT NULL,
-    "credentials" JSONB,
-    "isDefault" BOOLEAN NOT NULL DEFAULT false,
-    "folderId" TEXT NOT NULL,
-    "userInfo" JSONB NOT NULL,
+    "credentials" JSONB NOT NULL,
+    "metadata" JSONB,
     "workspaceId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Key" (
-    "id" TEXT NOT NULL,
-    "type" "ProviderType" NOT NULL,
-    "keys" JSONB,
-    "workspaceId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Key_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Provider_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -65,9 +51,10 @@ CREATE TABLE "File" (
     "path" TEXT NOT NULL,
     "mimeType" TEXT,
     "size" DOUBLE PRECISION,
-    "reference" TEXT NOT NULL,
-    "provider" "ProviderType",
-    "workspaceId" TEXT NOT NULL,
+    "isStarred" BOOLEAN NOT NULL DEFAULT false,
+    "referenceId" TEXT,
+    "workspaceId" TEXT,
+    "fileProviderId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -81,10 +68,10 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 ALTER TABLE "Workspace" ADD CONSTRAINT "Workspace_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Account" ADD CONSTRAINT "Account_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Provider" ADD CONSTRAINT "Provider_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Key" ADD CONSTRAINT "Key_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "File" ADD CONSTRAINT "File_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "File" ADD CONSTRAINT "File_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "File" ADD CONSTRAINT "File_fileProviderId_fkey" FOREIGN KEY ("fileProviderId") REFERENCES "Provider"("id") ON DELETE SET NULL ON UPDATE CASCADE;
