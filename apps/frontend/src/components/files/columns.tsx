@@ -1,16 +1,20 @@
-import { File } from '@prisma/client';
+import { File, Provider } from '@prisma/client';
 import { ColumnDef } from '@tanstack/react-table';
-import { FolderIcon } from 'lucide-react';
+import { FolderIcon, StarOffIcon, StarIcon } from 'lucide-react';
 import byteSize from 'byte-size';
 import { getFileIcon } from './file.icons';
 import { format } from 'date-fns';
-import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
+import ProviderIcon from '../providers/provider.icon';
 
-export const columns: ColumnDef<File>[] = [
+type FileWithProvider = File & {
+  fileProvider: Provider;
+};
+
+export const columns: ColumnDef<FileWithProvider>[] = [
   {
     accessorKey: 'name',
     header: () => {
-      return <div>Name</div>;
+      return <div className="w-[300px]">Name</div>;
     },
     cell: ({ row }) => {
       const Icon = row.original.isFolder
@@ -18,9 +22,12 @@ export const columns: ColumnDef<File>[] = [
         : getFileIcon(row.original.name);
 
       return (
-        <div className="flex items-center gap-2">
-          <Icon size={20} />
-          {row.original.name}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Icon size={20} />
+            {row.original.name}
+          </div>
+          {row.original.isStarred && <StarIcon className="w-4 h-4" />}
         </div>
       );
     },
@@ -45,19 +52,13 @@ export const columns: ColumnDef<File>[] = [
     accessorKey: 'type',
     header: 'Provider',
     cell: ({ row }) => {
-      if (!row.original.provider) return '-';
-
-      const Icon = getProviderIcon(row.original.provider);
+      if (!row.original.fileProviderId) return '-';
+      const provider = row.original.fileProvider;
 
       return (
         <div className="flex items-center gap-2 capitalize">
-          <img
-            src={Icon}
-            alt={row.original.provider || ''}
-            width={20}
-            height={20}
-          />
-          {row.original.provider?.replace('_', ' ').toLocaleLowerCase()}
+          <ProviderIcon provider={provider.type} className="w-5 h-5" />
+          {provider.type.replace('_', ' ').toLocaleLowerCase()}
         </div>
       );
     },

@@ -3,11 +3,17 @@ import {
   SettingsIcon,
   StarIcon,
   TrashIcon,
-  UserIcon,
-  KeyIcon,
+  CloudIcon,
 } from 'lucide-react';
 
-export const mainItems = [
+type SidebarItem = {
+  label: string;
+  icon: React.ElementType;
+  href: string;
+  regex?: RegExp;
+};
+
+export const mainItems: SidebarItem[] = [
   {
     label: 'Dashboard',
     icon: LayoutDashboardIcon,
@@ -27,24 +33,19 @@ export const mainItems = [
     label: 'Settings',
     icon: SettingsIcon,
     href: '/settings',
-    isSettingsButton: true,
   },
 ];
 
-export const settingsItems = [
+export const settingsItems: SidebarItem[] = [
   {
     label: 'General',
     icon: SettingsIcon,
     href: '/settings',
   },
   {
-    label: 'Accounts',
-    icon: UserIcon,
-    href: '/settings/accounts',
-  },
-  {
-    label: 'API Keys',
-    icon: KeyIcon,
-    href: '/settings/keys',
+    label: 'Providers',
+    icon: CloudIcon,
+    href: '/settings/providers',
+    regex: /\/settings\/providers(.*)/,
   },
 ];

@@ -3,11 +3,11 @@ import { drive_v3, google } from 'googleapis';
 import {
   AuthToken,
   OAuthProvider,
-  OAuthConfig,
   OAUTH_REDIRECT_URI,
 } from '../provider.interface';
 import { ProviderType } from '@prisma/client';
 import { Readable } from 'stream';
+import { z } from 'zod';
 
 const redirectUri = OAUTH_REDIRECT_URI.replace(
   '[type]',
@@ -18,10 +18,20 @@ export class GoogleDriveProvider implements OAuthProvider {
   private oauth2Client: OAuth2Client;
   private driveClient: drive_v3.Drive;
 
-  constructor(public config: OAuthConfig) {
+  constructor(private config: Record<string, string>) {
+    const parsedConfig = z
+      .object({
+        clientId: z.string(),
+        clientSecret: z.string(),
+        refreshToken: z.string().optional(),
+        accessToken: z.string().optional(),
+        expiryDate: z.number().optional(),
+      })
+      .parse(config);
+
     this.oauth2Client = new OAuth2Client(
-      config.clientId,
-      config.clientSecret,
+      parsedConfig.clientId,
+      parsedConfig.clientSecret,
       redirectUri
     );
 
@@ -29,6 +39,18 @@ export class GoogleDriveProvider implements OAuthProvider {
       version: 'v3',
       auth: this.oauth2Client,
     });
+
+    if (
+      parsedConfig.refreshToken &&
+      parsedConfig.accessToken &&
+      parsedConfig.expiryDate
+    ) {
+      this.oauth2Client.setCredentials({
+        refresh_token: parsedConfig.refreshToken,
+        access_token: parsedConfig.accessToken,
+        expiry_date: parsedConfig.expiryDate,
+      });
+    }
   }
 
   async getUserInfo() {
@@ -42,31 +64,13 @@ export class GoogleDriveProvider implements OAuthProvider {
     };
   }
 
-  async setCredentials(credentials: Record<string, string>) {
-    if (!credentials['accessToken']) {
-      throw new Error('Failed to set access token');
-    }
-
-    const expiry = new Date(credentials['expiryDate']);
-
-    if (expiry < new Date()) {
-      await this.refreshAccessToken(credentials['refreshToken']);
-    } else {
-      this.oauth2Client.setCredentials({
-        access_token: credentials['accessToken'],
-      });
-    }
-  }
-
   getAuthUrl(state?: string): string {
-    const url = this.oauth2Client.generateAuthUrl({
+    return this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: 'https://www.googleapis.com/auth/drive.file',
       redirect_uri: redirectUri,
       state,
     });
-
-    return url;
   }
 
   async getAccessToken(code: string): Promise<AuthToken> {
@@ -84,8 +88,43 @@ export class GoogleDriveProvider implements OAuthProvider {
       accessToken: tokens.access_token,
       expiryDate: tokens.expiry_date,
       refreshToken: tokens.refresh_token || undefined,
-      tokenType: tokens.token_type || undefined,
     };
+  }
+
+  async setCredentials(credentials: Record<string, string>): Promise<void> {
+    const schema = z.object({
+      refreshToken: z.string(),
+      accessToken: z.string(),
+      expiryDate: z.number(),
+    });
+
+    const parsedCreds = schema.parse(credentials);
+
+    this.oauth2Client.setCredentials({
+      refresh_token: parsedCreds.refreshToken,
+      access_token: parsedCreds.accessToken,
+      expiry_date: parsedCreds.expiryDate,
+    });
+
+    this.driveClient = google.drive({
+      version: 'v3',
+      auth: this.oauth2Client,
+    });
+  }
+
+  async validateCredentials(): Promise<boolean> {
+    const currentDate = Date.now();
+    const expiryDate = this.oauth2Client.credentials.expiry_date;
+
+    if (expiryDate && expiryDate < currentDate) {
+      if (this.config['refreshToken']) {
+        await this.refreshAccessToken(this.config['refreshToken']);
+      } else {
+        throw new Error('Refresh token not found');
+      }
+    }
+
+    return true;
   }
 
   async refreshAccessToken(refreshToken: string): Promise<AuthToken> {

@@ -64,7 +64,9 @@ const AppSidebar = () => {
           <SidebarGroupContent>
             <SidebarMenu>
               {currentItems.map((item) => {
-                const isActive = location.pathname === item.href;
+                const isActive = item.regex
+                  ? item.regex.test(location.pathname)
+                  : item.href === location.pathname;
                 const Icon = item.icon;
                 return (
                   <SidebarMenuItem key={item.label}>

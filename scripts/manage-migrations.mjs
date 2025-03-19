@@ -7,7 +7,7 @@ import { join } from 'path';
 
 const execAsync = promisify(exec);
 
-const MIGRATIONS_DIR = 'shared/internal/src/migrations';
+const MIGRATIONS_DIR = 'migrations';
 
 async function squashMigrations(name) {
   try {
@@ -16,7 +16,7 @@ async function squashMigrations(name) {
     // Generate SQL from current schema
     console.log('1. Generating SQL from current schema...');
     const { stdout: sql } = await execAsync(
-      'npx prisma migrate diff --from-empty --to-schema-datamodel shared/internal/src/schema.prisma --script'
+      'npx prisma migrate diff --from-empty --to-schema-datamodel schema.prisma --script'
     );
 
     // Create squashed migration name with timestamp
@@ -53,7 +53,7 @@ async function validateMigrations() {
 
     // Check for migration conflicts
     const { stdout: diffOutput } = await execAsync(
-      'npx prisma migrate diff --from-schema-datamodel shared/internal/src/schema.prisma --to-schema-datamodel shared/internal/src/schema.prisma'
+      'npx prisma migrate diff --from-schema-datamodel schema.prisma --to-schema-datamodel schema.prisma'
     );
 
     if (diffOutput.includes('No difference detected')) {

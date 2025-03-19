@@ -45,48 +45,31 @@ export class FilesController {
   @Get()
   async findAll(
     @GetWorkspaceFromRequest() workspace: Workspace,
-    @Query('parentPath') parentPath?: string
+    @Query('parentPath') parentPath?: string,
+    @Query('isStarred') isStarred?: string
   ) {
-    if (parentPath) {
-      return this.filesService.findByParentPath(workspace.id, parentPath);
-    }
-    return this.filesService.findByWorkspaceId(workspace.id);
+    return this.filesService.findWorkspaceFiles(workspace.id, {
+      parentPath,
+      isStarred: isStarred === 'true',
+    });
   }
 
   @Get(':id')
-  async findOne(
-    @GetWorkspaceFromRequest() workspace: Workspace,
-    @Param('id') id: string
-  ) {
+  async findOne(@Param('id') id: string) {
     const file = await this.filesService.findById(id);
-    if (!file || file.workspaceId !== workspace.id) {
+    if (!file) {
       throw new ForbiddenException('File not found or access denied');
     }
     return file;
   }
 
   @Put(':id')
-  async update(
-    @GetWorkspaceFromRequest() workspace: Workspace,
-    @Param('id') id: string,
-    @Body() updateFileDto: UpdateFileDto
-  ) {
-    const file = await this.filesService.findById(id);
-    if (!file || file.workspaceId !== workspace.id) {
-      throw new ForbiddenException('File not found or access denied');
-    }
+  async update(@Param('id') id: string, @Body() updateFileDto: UpdateFileDto) {
     return this.filesService.update(id, updateFileDto);
   }
 
   @Delete(':id')
-  async remove(
-    @GetWorkspaceFromRequest() workspace: Workspace,
-    @Param('id') id: string
-  ) {
-    const file = await this.filesService.findById(id);
-    if (!file || file.workspaceId !== workspace.id) {
-      throw new ForbiddenException('File not found or access denied');
-    }
+  async remove(@Param('id') id: string) {
     return this.filesService.delete(id);
   }
 
@@ -106,12 +89,11 @@ export class FilesController {
   @Get('download/:id')
   @SkipTransformInterceptor()
   async downloadFile(
-    @GetWorkspaceFromRequest() workspace: Workspace,
     @Param('id') id: string,
     @Res({ passthrough: true }) response: Response
   ) {
     const file = await this.filesService.findById(id);
-    if (!file || file.workspaceId !== workspace.id) {
+    if (!file) {
       throw new ForbiddenException('File not found or access denied');
     }
 
@@ -128,5 +110,15 @@ export class FilesController {
 
     // Return the stream directly
     return new StreamableFile(fileStream);
+  }
+
+  @Post('star/:id')
+  async starFile(@Param('id') id: string) {
+    return this.filesService.starFile(id);
+  }
+
+  @Post('unstar/:id')
+  async unstarFile(@Param('id') id: string) {
+    return this.filesService.unstarFile(id);
   }
 }
