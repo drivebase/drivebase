@@ -34,54 +34,43 @@ model User {
 }
 
 model Workspace {
-  id        String    @id @default(uuid())
+  id        String     @id @default(uuid())
   name      String
-  keys      Key[]
   ownerId   String
-  owner     User      @relation(fields: [ownerId], references: [id])
-  accounts  Account[]
+  owner     User       @relation(fields: [ownerId], references: [id])
+  providers Provider[]
   files     File[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
-model Account {
+model Provider {
   id          String       @id @default(uuid())
-  alias       String?
+  label       String
   type        ProviderType
-  credentials Json?
-  isDefault   Boolean      @default(false)
-  folderId    String
-  userInfo    Json
+  credentials Json
+  metadata    Json?
   workspaceId String
   workspace   Workspace    @relation(fields: [workspaceId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Key {
-  id          String       @id @default(uuid())
-  type        ProviderType
-  keys        Json?
-  workspaceId String
-  workspace   Workspace    @relation(fields: [workspaceId], references: [id])
+  files       File[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
 
 model File {
-  id          String        @id @default(uuid())
-  name        String
-  isFolder    Boolean       @default(false)
-  parentPath  String
-  path        String
-  mimeType    String?
-  size        Float?
-  reference   String
-  provider    ProviderType?
-  workspaceId String
-  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String     @id @default(uuid())
+  name           String
+  isFolder       Boolean    @default(false)
+  parentPath     String
+  path           String
+  mimeType       String?
+  size           Float?
+  isStarred      Boolean    @default(false)
+  referenceId    String?
+  workspaceId    String?
+  workspace      Workspace? @relation(fields: [workspaceId], references: [id])
+  fileProviderId String?
+  fileProvider   Provider?  @relation(fields: [fileProviderId], references: [id])
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 }
