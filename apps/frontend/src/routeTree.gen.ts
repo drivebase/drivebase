@@ -23,8 +23,7 @@ import { Route as ProvidersTypeCallbackImport } from './routes/providers.$type.c
 import { Route as ProtectedDashboardRecycleBinImport } from './routes/_protected/_dashboard/recycle-bin'
 import { Route as ProtectedDashboardFavoritesImport } from './routes/_protected/_dashboard/favorites'
 import { Route as ProtectedDashboardSettingsIndexImport } from './routes/_protected/_dashboard/settings/index'
-import { Route as ProtectedDashboardSettingsKeysImport } from './routes/_protected/_dashboard/settings/keys'
-import { Route as ProtectedDashboardSettingsAccountsImport } from './routes/_protected/_dashboard/settings/accounts'
+import { Route as ProtectedDashboardSettingsProvidersImport } from './routes/_protected/_dashboard/settings/providers'
 
 // Create/Update Routes
 
@@ -101,17 +100,10 @@ const ProtectedDashboardSettingsIndexRoute =
     getParentRoute: () => ProtectedDashboardRoute,
   } as any)
 
-const ProtectedDashboardSettingsKeysRoute =
-  ProtectedDashboardSettingsKeysImport.update({
-    id: '/settings/keys',
-    path: '/settings/keys',
-    getParentRoute: () => ProtectedDashboardRoute,
-  } as any)
-
-const ProtectedDashboardSettingsAccountsRoute =
-  ProtectedDashboardSettingsAccountsImport.update({
-    id: '/settings/accounts',
-    path: '/settings/accounts',
+const ProtectedDashboardSettingsProvidersRoute =
+  ProtectedDashboardSettingsProvidersImport.update({
+    id: '/settings/providers',
+    path: '/settings/providers',
     getParentRoute: () => ProtectedDashboardRoute,
   } as any)
 
@@ -196,18 +188,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedDashboardIndexImport
       parentRoute: typeof ProtectedDashboardImport
     }
-    '/_protected/_dashboard/settings/accounts': {
-      id: '/_protected/_dashboard/settings/accounts'
-      path: '/settings/accounts'
-      fullPath: '/settings/accounts'
-      preLoaderRoute: typeof ProtectedDashboardSettingsAccountsImport
-      parentRoute: typeof ProtectedDashboardImport
-    }
-    '/_protected/_dashboard/settings/keys': {
-      id: '/_protected/_dashboard/settings/keys'
-      path: '/settings/keys'
-      fullPath: '/settings/keys'
-      preLoaderRoute: typeof ProtectedDashboardSettingsKeysImport
+    '/_protected/_dashboard/settings/providers': {
+      id: '/_protected/_dashboard/settings/providers'
+      path: '/settings/providers'
+      fullPath: '/settings/providers'
+      preLoaderRoute: typeof ProtectedDashboardSettingsProvidersImport
       parentRoute: typeof ProtectedDashboardImport
     }
     '/_protected/_dashboard/settings/': {
@@ -226,8 +211,7 @@ interface ProtectedDashboardRouteChildren {
   ProtectedDashboardFavoritesRoute: typeof ProtectedDashboardFavoritesRoute
   ProtectedDashboardRecycleBinRoute: typeof ProtectedDashboardRecycleBinRoute
   ProtectedDashboardIndexRoute: typeof ProtectedDashboardIndexRoute
-  ProtectedDashboardSettingsAccountsRoute: typeof ProtectedDashboardSettingsAccountsRoute
-  ProtectedDashboardSettingsKeysRoute: typeof ProtectedDashboardSettingsKeysRoute
+  ProtectedDashboardSettingsProvidersRoute: typeof ProtectedDashboardSettingsProvidersRoute
   ProtectedDashboardSettingsIndexRoute: typeof ProtectedDashboardSettingsIndexRoute
 }
 
@@ -235,9 +219,8 @@ const ProtectedDashboardRouteChildren: ProtectedDashboardRouteChildren = {
   ProtectedDashboardFavoritesRoute: ProtectedDashboardFavoritesRoute,
   ProtectedDashboardRecycleBinRoute: ProtectedDashboardRecycleBinRoute,
   ProtectedDashboardIndexRoute: ProtectedDashboardIndexRoute,
-  ProtectedDashboardSettingsAccountsRoute:
-    ProtectedDashboardSettingsAccountsRoute,
-  ProtectedDashboardSettingsKeysRoute: ProtectedDashboardSettingsKeysRoute,
+  ProtectedDashboardSettingsProvidersRoute:
+    ProtectedDashboardSettingsProvidersRoute,
   ProtectedDashboardSettingsIndexRoute: ProtectedDashboardSettingsIndexRoute,
 }
 
@@ -271,8 +254,7 @@ export interface FileRoutesByFullPath {
   '/recycle-bin': typeof ProtectedDashboardRecycleBinRoute
   '/providers/$type/callback': typeof ProvidersTypeCallbackRoute
   '/': typeof ProtectedDashboardIndexRoute
-  '/settings/accounts': typeof ProtectedDashboardSettingsAccountsRoute
-  '/settings/keys': typeof ProtectedDashboardSettingsKeysRoute
+  '/settings/providers': typeof ProtectedDashboardSettingsProvidersRoute
   '/settings': typeof ProtectedDashboardSettingsIndexRoute
 }
 
@@ -287,8 +269,7 @@ export interface FileRoutesByTo {
   '/recycle-bin': typeof ProtectedDashboardRecycleBinRoute
   '/providers/$type/callback': typeof ProvidersTypeCallbackRoute
   '/': typeof ProtectedDashboardIndexRoute
-  '/settings/accounts': typeof ProtectedDashboardSettingsAccountsRoute
-  '/settings/keys': typeof ProtectedDashboardSettingsKeysRoute
+  '/settings/providers': typeof ProtectedDashboardSettingsProvidersRoute
   '/settings': typeof ProtectedDashboardSettingsIndexRoute
 }
 
@@ -305,8 +286,7 @@ export interface FileRoutesById {
   '/_protected/_dashboard/recycle-bin': typeof ProtectedDashboardRecycleBinRoute
   '/providers/$type/callback': typeof ProvidersTypeCallbackRoute
   '/_protected/_dashboard/': typeof ProtectedDashboardIndexRoute
-  '/_protected/_dashboard/settings/accounts': typeof ProtectedDashboardSettingsAccountsRoute
-  '/_protected/_dashboard/settings/keys': typeof ProtectedDashboardSettingsKeysRoute
+  '/_protected/_dashboard/settings/providers': typeof ProtectedDashboardSettingsProvidersRoute
   '/_protected/_dashboard/settings/': typeof ProtectedDashboardSettingsIndexRoute
 }
 
@@ -323,8 +303,7 @@ export interface FileRouteTypes {
     | '/recycle-bin'
     | '/providers/$type/callback'
     | '/'
-    | '/settings/accounts'
-    | '/settings/keys'
+    | '/settings/providers'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -338,8 +317,7 @@ export interface FileRouteTypes {
     | '/recycle-bin'
     | '/providers/$type/callback'
     | '/'
-    | '/settings/accounts'
-    | '/settings/keys'
+    | '/settings/providers'
     | '/settings'
   id:
     | '__root__'
@@ -354,8 +332,7 @@ export interface FileRouteTypes {
     | '/_protected/_dashboard/recycle-bin'
     | '/providers/$type/callback'
     | '/_protected/_dashboard/'
-    | '/_protected/_dashboard/settings/accounts'
-    | '/_protected/_dashboard/settings/keys'
+    | '/_protected/_dashboard/settings/providers'
     | '/_protected/_dashboard/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -408,8 +385,7 @@ export const routeTree = rootRoute
         "/_protected/_dashboard/favorites",
         "/_protected/_dashboard/recycle-bin",
         "/_protected/_dashboard/",
-        "/_protected/_dashboard/settings/accounts",
-        "/_protected/_dashboard/settings/keys",
+        "/_protected/_dashboard/settings/providers",
         "/_protected/_dashboard/settings/"
       ]
     },
@@ -445,12 +421,8 @@ export const routeTree = rootRoute
       "filePath": "_protected/_dashboard/index.tsx",
       "parent": "/_protected/_dashboard"
     },
-    "/_protected/_dashboard/settings/accounts": {
-      "filePath": "_protected/_dashboard/settings/accounts.tsx",
-      "parent": "/_protected/_dashboard"
-    },
-    "/_protected/_dashboard/settings/keys": {
-      "filePath": "_protected/_dashboard/settings/keys.tsx",
+    "/_protected/_dashboard/settings/providers": {
+      "filePath": "_protected/_dashboard/settings/providers.tsx",
       "parent": "/_protected/_dashboard"
     },
     "/_protected/_dashboard/settings/": {

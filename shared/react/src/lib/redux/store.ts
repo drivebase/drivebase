@@ -8,12 +8,9 @@ import uploaderReducer from './reducers/uploader.reducer';
 import authApi from './endpoints/auth';
 import workspaceApi from './endpoints/workspaces';
 import providersApi from './endpoints/providers';
-import accountsApi from './endpoints/accounts';
-import keysApi from './endpoints/keys';
 import filesApi from './endpoints/files';
 import profileApi from './endpoints/profile';
 import publicApi from './endpoints/public';
-import customProviderApi from './endpoints/custom.provider';
 
 export const makeStore = () => {
   return configureStore({
@@ -25,24 +22,18 @@ export const makeStore = () => {
       [authApi.reducerPath]: authApi.reducer,
       [workspaceApi.reducerPath]: workspaceApi.reducer,
       [providersApi.reducerPath]: providersApi.reducer,
-      [accountsApi.reducerPath]: accountsApi.reducer,
-      [keysApi.reducerPath]: keysApi.reducer,
       [filesApi.reducerPath]: filesApi.reducer,
       [profileApi.reducerPath]: profileApi.reducer,
       [publicApi.reducerPath]: publicApi.reducer,
-      [customProviderApi.reducerPath]: customProviderApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
         authApi.middleware,
         workspaceApi.middleware,
         providersApi.middleware,
-        accountsApi.middleware,
-        keysApi.middleware,
         filesApi.middleware,
         profileApi.middleware,
-        publicApi.middleware,
-        customProviderApi.middleware
+        publicApi.middleware
       ),
   });
 };
