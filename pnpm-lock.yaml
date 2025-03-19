@@ -179,6 +179,9 @@ importers:
       uniqid:
         specifier: ^5.4.0
         version: 5.4.0
+      zod:
+        specifier: ^3.24.2
+        version: 3.24.2
     devDependencies:
       '@eslint/compat':
         specifier: ^1.1.1
