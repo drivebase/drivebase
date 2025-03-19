@@ -11,4 +11,9 @@ export class PublicController {
     }
     return process.env.APP_VERSION || '0.0.0';
   }
+
+  @Get('ping')
+  ping() {
+    return 'pong';
+  }
 }
