@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { IsNotEmpty, IsString } from 'class-validator';
 import { Readable } from 'stream';
 
@@ -26,30 +27,39 @@ export interface AuthToken {
   folderReference?: Record<string, string>;
 }
 
-type UserInfo = {
+export type UserInfo = {
   id?: string;
   name?: string;
   email?: string;
 };
 
-export interface OAuthProvider {
-  config: OAuthConfig;
-
-  // Authentication
-  getAuthUrl(state?: string): string;
-  getAccessToken(code: string): Promise<AuthToken>;
-  refreshAccessToken(refreshToken: string): Promise<AuthToken>;
-  setCredentials(credentials: Record<string, string>): Promise<void>;
-  getUserInfo(): Promise<UserInfo>;
-
+// Base provider interface with common file operations
+export interface BaseProvider {
   // File Management
-  hasFolder(id: string): Promise<boolean>;
-  createDrivebaseFolder(): Promise<string>;
-  // listFiles(path?: string): Promise<any[]>;
   uploadFile(folderId: string, file: Express.Multer.File): Promise<string>;
   downloadFile(fileId: string): Promise<Readable>;
   getFileMetadata(fileId: string): Promise<any>;
   deleteFile(path: string): Promise<boolean>;
+  getUserInfo(): Promise<UserInfo>;
 }
+
+// OAuth specific provider
+export interface OAuthProvider extends BaseProvider {
+  validateCredentials(): Promise<boolean>;
+  hasFolder(id: string): Promise<boolean>;
+  createDrivebaseFolder(): Promise<string>;
+  getAuthUrl(state?: string): string;
+  getAccessToken(code: string): Promise<AuthToken>;
+  refreshAccessToken(refreshToken: string): Promise<AuthToken>;
+  setCredentials(credentials: Record<string, string>): Promise<void>;
+}
+
+// API key specific provider
+export interface ApiKeyProvider extends BaseProvider {
+  validateCredentials(): Promise<boolean>;
+}
+
+// For backward compatibility
+export type CloudProvider = OAuthProvider | ApiKeyProvider;
 
 export const OAUTH_REDIRECT_URI = `${process.env['VITE_PUBLIC_APP_URL']}/providers/[type]/callback`;

@@ -26,9 +26,8 @@ import { FileIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useFileStore } from '@drivebase/react/lib/contexts/file-store.context';
 import { Button } from '@drivebase/react/components/button';
-import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
+import { useGetProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
 import byteSize from 'byte-size';
-import { useGetConnectedAccountsQuery } from '@drivebase/react/lib/redux/endpoints/accounts';
 import { useUploadFileMutation } from '@drivebase/react/lib/redux/endpoints/files';
 import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
 import { toast } from 'sonner';
@@ -41,24 +40,22 @@ export function UploadModal() {
   const { uploadModalOpen } = useAppSelector((s) => s.uploader);
   const { files, clearFiles, removeFile } = useFileStore();
 
-  const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
 
-  const { data: providers } = useGetAvailableProvidersQuery();
-  const { data: accounts } = useGetConnectedAccountsQuery();
+  console.log('selectedProvider', selectedProvider);
+
+  // const { data: providers } = useGetAvailableProvidersQuery();
+  const { data: connectedProviders } = useGetProvidersQuery();
   const [uploadFile, { isLoading }] = useUploadFileMutation();
 
   async function handleUpload() {
-    if (!selectedAccount) return;
-
-    const account = accounts?.data.find((a) => a.id === selectedAccount);
-
-    if (!account) return;
+    if (!selectedProvider) return;
 
     const path = search.path;
 
     uploadFile({
       files: files.map(({ file }) => file),
-      accountId: account.id,
+      providerId: selectedProvider,
       path: path ?? '/',
     })
       .unwrap()
@@ -92,24 +89,18 @@ export function UploadModal() {
 
           <div className="flex gap-10 justify-between pt-10">
             <Select
-              value={selectedAccount ?? undefined}
-              onValueChange={setSelectedAccount}
+              value={selectedProvider ?? undefined}
+              onValueChange={setSelectedProvider}
             >
               <SelectTrigger className="w-[300px]">
-                <SelectValue placeholder="Select account" />
+                <SelectValue placeholder="Select provider" />
               </SelectTrigger>
               <SelectContent>
-                {accounts?.data.map((account) => {
-                  const provider = providers?.data.find(
-                    (p) => p.type === account.type
-                  );
-
-                  if (!provider) return null;
-
+                {connectedProviders?.data.map((provider) => {
                   const iconUrl = getProviderIcon(provider.type);
 
                   return (
-                    <SelectItem key={account.id} value={account.id}>
+                    <SelectItem key={provider.id} value={provider.id}>
                       <div className="flex items-center gap-2">
                         <img
                           src={iconUrl}
@@ -117,7 +108,7 @@ export function UploadModal() {
                           width={20}
                           height={20}
                         />
-                        {account.alias ?? account.id}
+                        {provider.label}
                       </div>
                     </SelectItem>
                   );

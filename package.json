@@ -69,7 +69,9 @@
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
-    "uniqid": "^5.4.0"
+    "telegram": "^2.26.22",
+    "uniqid": "^5.4.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/compat": "^1.1.1",

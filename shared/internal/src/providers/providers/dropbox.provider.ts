@@ -1,11 +1,11 @@
 import { ProviderType } from '@prisma/client';
 import {
   AuthToken,
-  OAuthProvider,
-  OAuthConfig,
   OAUTH_REDIRECT_URI,
+  OAuthProvider,
 } from '../provider.interface';
 import { Readable } from 'stream';
+import { z } from 'zod';
 
 const redirectUri = OAUTH_REDIRECT_URI.replace('[type]', ProviderType.DROPBOX);
 const drivebaseFolderName = process.env['DRIVEBASE_FOLDER_NAME'];
@@ -13,13 +13,26 @@ const drivebaseFolderName = process.env['DRIVEBASE_FOLDER_NAME'];
 export class DropboxProvider implements OAuthProvider {
   private accessToken?: string;
 
-  constructor(public config: OAuthConfig) {
-    if (!config.clientId || !config.clientSecret) {
-      throw new Error('Dropbox requires OAuth2 authentication');
+  constructor(private config: Record<string, string>) {
+    const schema = z.object({
+      clientId: z.string(),
+      clientSecret: z.string(),
+      accessToken: z.string().optional(),
+    });
+
+    const parsedConfig = schema.parse(config);
+
+    this.config = {
+      clientId: parsedConfig.clientId,
+      clientSecret: parsedConfig.clientSecret,
+    };
+
+    if (parsedConfig.accessToken) {
+      this.accessToken = parsedConfig.accessToken;
     }
   }
 
-  async getUserInfo(): Promise<any> {
+  async getUserInfo() {
     const response = await fetch(
       'https://api.dropboxapi.com/2/users/get_current_account',
       {
@@ -43,15 +56,19 @@ export class DropboxProvider implements OAuthProvider {
     this.accessToken = credentials['accessToken'];
   }
 
+  async validateCredentials(): Promise<boolean> {
+    return !!this.accessToken;
+  }
+
   getAuthUrl(state?: string): string {
-    if (!this.config.clientId || !this.config.clientSecret) {
+    if (!this.config['clientId'] || !this.config['clientSecret']) {
       throw new Error('Dropbox requires OAuth2 authentication');
     }
 
     const authUrl = 'https://www.dropbox.com/oauth2/authorize';
 
     const params = new URLSearchParams({
-      client_id: this.config.clientId,
+      client_id: this.config['clientId'],
       response_type: 'code',
       token_access_type: 'offline',
       state: state || '',
@@ -70,8 +87,8 @@ export class DropboxProvider implements OAuthProvider {
       body: new URLSearchParams({
         code,
         grant_type: 'authorization_code',
-        client_id: this.config.clientId,
-        client_secret: this.config.clientSecret,
+        client_id: this.config['clientId'],
+        client_secret: this.config['clientSecret'],
         redirect_uri: redirectUri,
       }).toString(),
     });
@@ -104,8 +121,8 @@ export class DropboxProvider implements OAuthProvider {
       body: new URLSearchParams({
         refresh_token: refreshToken,
         grant_type: 'refresh_token',
-        client_id: this.config.clientId,
-        client_secret: this.config.clientSecret,
+        client_id: this.config['clientId'],
+        client_secret: this.config['clientSecret'],
       }).toString(),
     });
 

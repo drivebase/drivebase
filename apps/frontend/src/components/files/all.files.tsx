@@ -1,7 +1,21 @@
 import { useRouter, useSearch, Link } from '@tanstack/react-router';
 import { Separator } from '@drivebase/react/components/separator';
-import { DownloadIcon, Grid2X2Icon, ListIcon, TrashIcon } from 'lucide-react';
-import { useGetFilesQuery } from '@drivebase/react/lib/redux/endpoints/files';
+import {
+  DownloadIcon,
+  Grid2X2Icon,
+  InfoIcon,
+  ListIcon,
+  MoveIcon,
+  PencilIcon,
+  StarIcon,
+  StarOffIcon,
+  TrashIcon,
+} from 'lucide-react';
+import {
+  useGetFilesQuery,
+  useStarFileMutation,
+  useUnstarFileMutation,
+} from '@drivebase/react/lib/redux/endpoints/files';
 import {
   Table,
   TableHeader,
@@ -34,19 +48,29 @@ import {
 } from '@drivebase/react/components/context-menu';
 import { toast } from 'sonner';
 import type { File as DBFile } from '@prisma/client';
+import { DropdownMenuSeparator } from '@drivebase/react/components/dropdown-menu';
+import { Input } from '@drivebase/react/components/input';
 
 const baseUrl =
   import.meta.env['VITE_PUBLIC_API_URL'] || 'http://localhost:8000';
 
-function AllFiles() {
+type FileListProps = {
+  starred?: boolean;
+};
+
+function FileList({ starred = false }: FileListProps) {
   const router = useRouter();
-  const search = useSearch({ from: '/_protected/_dashboard/' });
+  const search = useSearch({ strict: false });
 
   const parentPath = search.path ?? '/';
 
   const { data, isLoading } = useGetFilesQuery({
     parentPath,
+    isStarred: starred,
   });
+
+  const [starFile] = useStarFileMutation();
+  const [unstarFile] = useUnstarFileMutation();
 
   const splitPath = parentPath.split('/').filter(Boolean);
 
@@ -74,7 +98,7 @@ function AllFiles() {
     try {
       const loadingToast = toast.loading('Downloading file...');
 
-      const res = await fetch(`${baseUrl}/api/files/download/${fileId}`, {
+      const res = await fetch(`${baseUrl}/files/download/${fileId}`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -110,7 +134,7 @@ function AllFiles() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-medium">All Files</h1>
+        <Input placeholder="Search" className="w-[300px]" />
         <div className="flex items-center gap-2">
           <ListIcon size={20} />
           <Separator orientation="vertical" className="h-4" />
@@ -200,7 +224,12 @@ function AllFiles() {
                         </TableCell>
                       </ContextMenuTrigger>
                       <ContextMenuContent className="w-[200px]">
-                        <ContextMenuLabel>Actions</ContextMenuLabel>
+                        <ContextMenuLabel>{row.original.name}</ContextMenuLabel>
+                        <DropdownMenuSeparator />
+                        <ContextMenuItem>
+                          <InfoIcon className="w-4 h-4 mr-2" />
+                          File info
+                        </ContextMenuItem>
                         <ContextMenuItem
                           disabled={row.original.isFolder}
                           onClick={() => handleDownload(row.original)}
@@ -208,9 +237,37 @@ function AllFiles() {
                           <DownloadIcon className="w-4 h-4 mr-2" />
                           Download
                         </ContextMenuItem>
+                        <DropdownMenuSeparator />
                         <ContextMenuItem>
                           <TrashIcon className="w-4 h-4 mr-2" />
                           Delete
+                        </ContextMenuItem>
+                        <ContextMenuItem>
+                          <PencilIcon className="w-4 h-4 mr-2" />
+                          Rename
+                        </ContextMenuItem>
+                        <ContextMenuItem>
+                          <MoveIcon className="w-4 h-4 mr-2" />
+                          Move
+                        </ContextMenuItem>
+                        <DropdownMenuSeparator />
+                        <ContextMenuItem
+                          onClick={() => {
+                            if (row.original.isStarred) {
+                              unstarFile(row.original.id);
+                            } else {
+                              starFile(row.original.id);
+                            }
+                          }}
+                        >
+                          {row.original.isStarred ? (
+                            <StarOffIcon className="w-4 h-4 mr-2" />
+                          ) : (
+                            <StarIcon className="w-4 h-4 mr-2" />
+                          )}
+                          {row.original.isStarred
+                            ? 'Remove from starred'
+                            : 'Add to starred'}
                         </ContextMenuItem>
                       </ContextMenuContent>
                     </ContextMenu>
@@ -230,86 +287,8 @@ function AllFiles() {
           </TableBody>
         </Table>
       )}
-
-      <div>
-        {/* <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[400px]">Name</TableHead>
-              <TableHead>Size</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading &&
-              new Array(10).fill(0).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell colSpan={5}>
-                    <Skeleton className="w-full h-6" />
-                  </TableCell>
-                </TableRow>
-              ))}
-
-            {data?.data?.map((file) => {
-              const size = byteSize(file.size || 0);
-              const Icon = file.isFolder
-                ? getFolderIcon()
-                : getFileIcon(file.name);
-
-              return (
-                <TableRow
-                  key={file.id}
-                  onDoubleClick={() => {
-                    router.push(`/?parentId=${file.id}`);
-                  }}
-                >
-                  <TableCell className="flex items-center gap-2">
-                    <Icon className="w-4 h-4" />
-                    {file.name}
-                  </TableCell>
-                  <TableCell>
-                    {file.isFolder ? '-' : `${size.value} ${size.unit}`}
-                  </TableCell>
-                  <TableCell>{file.mimeType || 'Folder'}</TableCell>
-                  <TableCell className="text-right">
-                    {format(file.createdAt, 'MMM dd, yyyy')} at{' '}
-                    {format(file.createdAt, 'HH:mm')}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table> */}
-      </div>
-
-      {/* <div className="flex flex-wrap gap-4">
-        {isLoading &&
-          new Array(10)
-            .fill(0)
-            .map((_, index) => (
-              <Skeleton key={index} className="w-40 aspect-square" />
-            ))}
-        {data?.data?.map((file) => {
-          const Icon = file.isFolder ? getFolderIcon() : getFileIcon(file.name);
-
-          return (
-            <div
-              key={file.id}
-              className="relative rounded-md w-32 aspect-square select-none"
-            >
-              <Icon className="w-full h-full" />
-
-              <div className="px-2 space-y-1">
-                <div className="text-sm">{file.name}</div>
-                <div className="text-xs text-muted-foreground">2.3 MB</div>
-              </div>
-            </div>
-          );
-        })}
-      </div> */}
     </div>
   );
 }
 
-export default AllFiles;
+export default FileList;

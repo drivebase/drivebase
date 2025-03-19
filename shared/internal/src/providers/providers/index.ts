@@ -1,49 +1,87 @@
 import { ProviderType } from '@prisma/client';
-import { DropboxProvider } from './dropbox.provider';
-import { GoogleDriveProvider } from './google-drive.provider';
 
 export type ProviderListItem = {
   type: ProviderType;
   label: string;
-  logo: string;
-  authType: 'oauth' | 'api_key' | 'custom';
-  class: unknown;
+  authType: 'oauth' | 'api_key';
+  inputFields: {
+    [key: string]: {
+      label: string;
+      type: 'text' | 'password';
+    };
+  };
+};
+
+const oauthInputFields: ProviderListItem['inputFields'] = {
+  clientId: {
+    label: 'Client ID',
+    type: 'text',
+  },
+  clientSecret: {
+    label: 'Client Secret',
+    type: 'password',
+  },
 };
 
 export const providers: ProviderListItem[] = [
   {
     type: ProviderType.GOOGLE_DRIVE,
     label: 'Google Drive',
-    logo: 'https://api.iconify.design/logos/google-drive.svg?height=16',
-    class: GoogleDriveProvider,
     authType: 'oauth',
+    inputFields: oauthInputFields,
   },
   {
     type: ProviderType.TELEGRAM,
     label: 'Telegram',
-    logo: 'https://api.iconify.design/logos/telegram.svg?height=16',
-    class: class {},
-    authType: 'custom',
+    authType: 'api_key',
+    inputFields: {
+      apiKey: {
+        label: 'API Key',
+        type: 'text',
+      },
+      apiHash: {
+        label: 'API Hash',
+        type: 'text',
+      },
+      session: {
+        label: 'Session',
+        type: 'text',
+      },
+    },
   },
   {
     type: ProviderType.DROPBOX,
     label: 'Dropbox',
-    logo: 'https://api.iconify.design/logos/dropbox.svg?height=16',
-    class: DropboxProvider,
     authType: 'oauth',
+    inputFields: oauthInputFields,
   },
   {
     type: ProviderType.AMAZON_S3,
     label: 'Amazon S3',
-    logo: 'https://api.iconify.design/logos/aws-s3.svg?height=16',
-    class: class {},
     authType: 'api_key',
+    inputFields: {
+      accessKeyId: {
+        label: 'Access Key ID',
+        type: 'text',
+      },
+      secretAccessKey: {
+        label: 'Secret Access Key',
+        type: 'password',
+      },
+      bucket: {
+        label: 'Bucket',
+        type: 'text',
+      },
+      region: {
+        label: 'Region',
+        type: 'text',
+      },
+    },
   },
   {
     type: ProviderType.ONEDRIVE,
     label: 'OneDrive',
-    logo: 'https://api.iconify.design/logos/microsoft-onedrive.svg?height=16',
-    class: class {},
     authType: 'oauth',
+    inputFields: oauthInputFields,
   },
 ];

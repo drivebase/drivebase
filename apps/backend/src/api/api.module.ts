@@ -5,13 +5,12 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from '@drivebase/backend/api/controllers/auth.controller';
 import { ProvidersController } from '@drivebase/backend/api/controllers/providers.controller';
 import { WorkspacesController } from '@drivebase/backend/api/controllers/workspaces.controller';
-import { KeysController } from '@drivebase/backend/api/controllers/keys.controller';
+// import { KeysController } from '@drivebase/backend/api/controllers/keys.controller';
 import { AuthService } from '@drivebase/backend/services/auth/auth.service';
 import { LocalStrategy } from '@drivebase/backend/services/auth/local.strategy';
 import { JwtStrategy } from '@drivebase/backend/services/auth/jwt.strategy';
 import { AuthGuard } from '@drivebase/backend/services/auth/auth.guard';
 import { WorkspaceGuard } from '@drivebase/internal/workspaces/workspace.guard';
-import { AccountsController } from './controllers/accounts.controller';
 import { FilesController } from './controllers/files.controller';
 import { PublicController } from './controllers/public.controller';
 
@@ -28,8 +27,6 @@ import { PublicController } from './controllers/public.controller';
     AuthController,
     ProvidersController,
     WorkspacesController,
-    KeysController,
-    AccountsController,
     FilesController,
     PublicController,
   ],

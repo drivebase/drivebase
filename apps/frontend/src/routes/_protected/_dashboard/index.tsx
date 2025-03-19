@@ -1,9 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
-import AllFiles from '@drivebase/frontend/components/files/all.files';
+import FileList from '@drivebase/frontend/components/files/all.files';
 import NewFolderDialog from '@drivebase/frontend/components/files/new.folder.dialog';
-import { Button } from '@drivebase/react/components/button';
 import { cn } from '@drivebase/react/lib/utils';
-import { FileIcon, ImageIcon, VideoIcon, UploadIcon } from 'lucide-react';
+import { FileIcon, ImageIcon, VideoIcon } from 'lucide-react';
 
 const cards = [
   {
@@ -55,10 +54,6 @@ function Page() {
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <div className="flex items-center gap-2">
           <NewFolderDialog />
-          <Button variant={'outline'}>
-            <UploadIcon />
-            Upload
-          </Button>
         </div>
       </div>
 
@@ -108,7 +103,7 @@ function Page() {
           ))}
         </div>
 
-        <AllFiles />
+        <FileList title="All Files" />
       </div>
     </div>
   );
