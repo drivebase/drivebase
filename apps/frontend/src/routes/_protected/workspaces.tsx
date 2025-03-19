@@ -59,6 +59,7 @@ function Page() {
                 }`;
                 router.navigate({
                   to: '/',
+                  reloadDocument: true,
                 });
               }}
             >

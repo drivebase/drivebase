@@ -26,10 +26,12 @@ import {
   settingsItems,
 } from '@drivebase/frontend/constants/sidebar.items';
 import SidebarUpload from './upload';
+import { useGetProfileQuery } from '@drivebase/react/lib/redux/endpoints/profile';
 
 const AppSidebar = () => {
   const location = useLocation();
   const context = useRouteContext({ from: '/_protected' });
+  const { data: profile } = useGetProfileQuery();
 
   const showSettings = location.pathname.startsWith('/settings');
   const currentItems = showSettings ? settingsItems : mainItems;
@@ -94,17 +96,15 @@ const AppSidebar = () => {
               <div className="flex aspect-square size-8 items-center justify-center">
                 <Avatar className="w-8 h-8 select-none">
                   <AvatarFallback className="bg-primary text-accent">
-                    {context.auth.user?.name?.charAt(0)}
+                    {profile?.data?.name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {context.auth.user?.name}
+                  {profile?.data?.name}
                 </span>
-                <span className="truncate text-xs">
-                  {context.auth.user?.email}
-                </span>
+                <span className="truncate text-xs">{profile?.data?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -118,7 +118,7 @@ const AppSidebar = () => {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                context.auth.logout();
+                // logout();
               }}
             >
               Logout
