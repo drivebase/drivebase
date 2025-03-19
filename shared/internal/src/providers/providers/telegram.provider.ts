@@ -39,12 +39,13 @@ export class TelegramProvider implements ApiKeyProvider {
   }
 
   async uploadFile(folderId: string, file: Express.Multer.File) {
+    if (!this.client.connected) {
+      await this.client.connect();
+    }
     const buffer = file.buffer;
     const toUpload = new CustomFile(file.originalname, file.size, '', buffer);
 
-    const entity = await this.client.getEntity(folderId);
-
-    const res = await this.client.sendFile(entity, {
+    const res = await this.client.sendFile('me', {
       file: toUpload,
       forceDocument: true,
       workers: 10,
@@ -55,29 +56,37 @@ export class TelegramProvider implements ApiKeyProvider {
 
     await this.client.disconnect();
 
-    return `${folderId}/${res.id.toString()}`;
+    return `me/${res.id.toString()}`;
   }
 
   async downloadFile(path: string) {
+    if (!this.client.connected) {
+      await this.client.connect();
+    }
+
     const [folderId, fileId] = path.split('/');
 
     const entity = await this.client.getEntity(folderId);
 
-    const message = await this.client.getMessages(entity, {
+    const messages = await this.client.getMessages(entity, {
       ids: [Number(fileId)],
     });
 
-    console.log('message', message);
+    if (messages.length === 0) {
+      throw new Error('File not found');
+    }
 
-    const emptyBuffer = Buffer.from([]);
+    const message = messages[0];
+
+    const buffer = await this.client.downloadMedia(message);
 
     await this.client.disconnect();
 
-    return new Readable({
-      read() {
-        this.push(emptyBuffer);
-      },
-    });
+    const stream = new Readable();
+    stream.push(buffer);
+    stream.push(null);
+
+    return stream;
   }
 
   async getFileMetadata() {
