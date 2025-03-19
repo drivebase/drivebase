@@ -1,40 +1,44 @@
-import { ProviderType } from '@prisma/client';
-import { OAuthConfig } from '../provider.interface';
-import { BaseProvider } from './base.provider';
+import { ApiKeyProvider, UserInfo } from '../provider.interface';
 import { CustomFile } from 'telegram/client/uploads';
 import { TelegramClient } from 'telegram/client/TelegramClient';
 import { StringSession } from 'telegram/sessions';
 import { Readable } from 'stream';
 
-export class TelegramProvider extends BaseProvider {
+export class TelegramProvider implements ApiKeyProvider {
   client: TelegramClient;
 
-  constructor(config: OAuthConfig) {
-    super(config);
-  }
-
-  override async setCredentials(credentials: Record<string, string>) {
+  constructor(config: Record<string, string>) {
     this.client = new TelegramClient(
-      new StringSession(credentials['session']),
-      Number(this.config.clientId),
-      this.config.clientSecret,
+      new StringSession(config['session']),
+      Number(config['apiKey']),
+      config['apiHash'],
       {
         connectionRetries: 5,
       }
     );
+  }
 
+  async validateCredentials() {
     await this.client.connect();
+
+    if (await this.client.isUserAuthorized()) {
+      return true;
+    }
+
+    return false;
   }
 
-  override getAuthUrl(): string {
-    return `custom://${ProviderType.TELEGRAM}`;
+  async getUserInfo(): Promise<UserInfo> {
+    const user = await this.client.getMe();
+
+    return {
+      id: user.id.toString(),
+      name: user.firstName,
+      email: user.username,
+    };
   }
 
-  override async hasFolder(id: string): Promise<boolean> {
-    return true;
-  }
-
-  override async uploadFile(folderId: string, file: Express.Multer.File) {
+  async uploadFile(folderId: string, file: Express.Multer.File) {
     const buffer = file.buffer;
     const toUpload = new CustomFile(file.originalname, file.size, '', buffer);
 
@@ -54,7 +58,7 @@ export class TelegramProvider extends BaseProvider {
     return `${folderId}/${res.id.toString()}`;
   }
 
-  override async downloadFile(path: string) {
+  async downloadFile(path: string) {
     const [folderId, fileId] = path.split('/');
 
     const entity = await this.client.getEntity(folderId);
@@ -74,5 +78,13 @@ export class TelegramProvider extends BaseProvider {
         this.push(emptyBuffer);
       },
     });
+  }
+
+  async getFileMetadata(fileId: string) {
+    throw new Error('Method `getFileMetadata` not implemented.');
+  }
+
+  async deleteFile(path: string): Promise<boolean> {
+    throw new Error('Method `deleteFile` not implemented.');
   }
 }

@@ -2,7 +2,7 @@ import { IsString } from 'class-validator';
 
 export class UploadFileDto {
   @IsString()
-  accountId: string;
+  providerId: string;
 
   @IsString()
   path: string;
