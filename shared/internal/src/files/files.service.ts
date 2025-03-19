@@ -1,9 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { File, ProviderType } from '@prisma/client';
+import { File, Prisma } from '@prisma/client';
 import { UpdateFileDto } from './dtos/update.file.dto';
 import { PrismaService } from '../prisma.service';
 import { UploadFileDto } from './dtos/upload.file.dto';
-import { ProviderFactory } from '../providers/provider.factory';
+import {
+  ApiKeyProviders,
+  ProviderFactory,
+} from '../providers/provider.factory';
+import { ApiKeyProvider, OAuthProvider } from '../providers/provider.interface';
+
+export type FindWorkspaceFilesQuery = {
+  parentPath?: string;
+  isStarred?: boolean;
+};
 
 @Injectable()
 export class FilesService {
@@ -17,7 +26,6 @@ export class FilesService {
         workspaceId,
         parentPath,
         path: parentPath !== '/' ? `${parentPath}/${name}` : `/${name}`,
-        reference: '',
       },
     });
   }
@@ -27,6 +35,13 @@ export class FilesService {
       where: {
         workspaceId,
       },
+      include: {
+        fileProvider: {
+          select: {
+            type: true,
+          },
+        },
+      },
     });
   }
 
@@ -34,6 +49,36 @@ export class FilesService {
     return this.prisma.file.findUnique({
       where: {
         id,
+      },
+    });
+  }
+
+  async findWorkspaceFiles(
+    workspaceId: string,
+    query: FindWorkspaceFilesQuery
+  ) {
+    const q = {} as Prisma.FileWhereInput;
+
+    if (query.isStarred) {
+      q.isStarred = query.isStarred;
+    } else if (query.parentPath) {
+      q.parentPath = query.parentPath;
+    }
+
+    return this.prisma.file.findMany({
+      where: {
+        ...q,
+        workspaceId,
+      },
+      include: {
+        fileProvider: {
+          select: {
+            type: true,
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc',
       },
     });
   }
@@ -52,6 +97,13 @@ export class FilesService {
         workspaceId,
         parentPath,
       },
+      include: {
+        fileProvider: {
+          select: {
+            type: true,
+          },
+        },
+      },
     });
   }
 
@@ -65,68 +117,69 @@ export class FilesService {
   }
 
   async delete(id: string) {
-    const file = await this.findById(id);
+    const file = await this.prisma.file.findUnique({
+      where: { id },
+      select: {
+        referenceId: true,
+        fileProvider: {
+          select: {
+            type: true,
+            credentials: true,
+          },
+        },
+      },
+    });
 
     if (!file) {
       throw new Error('File not found');
     }
 
-    const account = await this.prisma.account.findFirst({
-      where: {
-        workspaceId: file.workspaceId,
-      },
-    });
-
-    if (!account) {
-      throw new Error('Account not found');
+    if (!file.fileProvider) {
+      throw new Error('Provider not found');
     }
 
     const provider = ProviderFactory.createProvider(
-      account.type,
-      account.credentials as Record<string, string>
+      file.fileProvider.type,
+      file.fileProvider.credentials as Record<string, string>
     );
 
-    await provider.deleteFile(file.reference as string);
+    if (!file.referenceId) {
+      throw new Error('File reference ID not found');
+    }
+
+    await provider.deleteFile(file.referenceId);
   }
 
   async downloadFile(id: string) {
     const file = await this.findById(id);
 
-    if (!file) {
+    if (!file || !file.fileProviderId) {
       throw new Error('File not found');
     }
 
-    const account = await this.prisma.account.findFirst({
+    const provider = await this.prisma.provider.findUnique({
       where: {
-        workspaceId: file.workspaceId,
-        type: file.provider as ProviderType,
+        id: file.fileProviderId,
       },
     });
 
-    if (!account) {
-      throw new Error('Account not found');
+    if (!provider) {
+      throw new Error('Provider not found');
     }
 
-    const keys = await this.prisma.key.findFirst({
-      where: {
-        workspaceId: account.workspaceId,
-        type: account.type,
-      },
-    });
-
-    if (!keys) {
-      throw new Error('Keys not found');
+    if (!file.referenceId) {
+      throw new Error('File reference ID not found');
     }
 
-    const provider = ProviderFactory.createProvider(
-      account.type,
-      keys.keys as Record<string, string>
+    const factoryProvider = ProviderFactory.createProvider(
+      provider.type,
+      provider.credentials as Record<string, string>
     );
 
-    const credentials = account.credentials as Record<string, string>;
-    await provider.setCredentials(credentials);
+    const fileStream = await factoryProvider.downloadFile(
+      file.referenceId as string
+    );
 
-    const fileStream = await provider.downloadFile(file.reference as string);
     const metadata = {
       fileName: file.name,
       mimeType: file.mimeType,
@@ -137,72 +190,81 @@ export class FilesService {
   }
 
   // todo(v2): Add queue for each file using BullMQ
-  async uploadFile(files: Express.Multer.File[], uploadFileDto: UploadFileDto) {
-    const { accountId, path } = uploadFileDto;
-
-    const account = await this.prisma.account.findUnique({
-      where: { id: accountId },
+  async uploadFile(files: Express.Multer.File[], payload: UploadFileDto) {
+    const { providerId, path } = payload;
+    const provider = await this.prisma.provider.findUnique({
+      where: { id: providerId },
       select: {
-        id: true,
         type: true,
         credentials: true,
+        metadata: true,
         workspaceId: true,
-        folderId: true,
       },
     });
 
-    if (!account) {
-      throw new Error('Account not found');
+    if (!provider) {
+      throw new Error('Provider not found');
     }
 
-    const keys = await this.prisma.key.findFirst({
-      where: {
-        workspaceId: account.workspaceId,
-        type: account.type,
-      },
-    });
-
-    if (!keys) {
-      throw new Error('Keys not found');
-    }
+    const metadata = (provider.metadata || {}) as Record<string, string>;
 
     try {
-      const provider = ProviderFactory.createProvider(
-        account.type,
-        keys.keys as Record<string, string>
-      );
+      const credentials = provider.credentials as Record<string, string>;
+      let providerInstance: ApiKeyProvider | OAuthProvider;
 
-      const credentials = account.credentials as Record<string, string>;
+      if (ApiKeyProviders.includes(provider.type)) {
+        providerInstance = ProviderFactory.createApiKeyProvider(
+          provider.type,
+          credentials
+        );
+      } else {
+        providerInstance = ProviderFactory.createOAuthProvider(
+          provider.type,
+          credentials
+        );
+      }
 
-      await provider.setCredentials(credentials);
+      await providerInstance.validateCredentials();
 
       for (const file of files) {
-        const folder = await provider.hasFolder(account.folderId);
+        let folderId = '';
 
-        if (!folder) {
-          const folderId = await provider.createDrivebaseFolder();
+        if ('hasFolder' in providerInstance) {
+          const folder = await providerInstance.hasFolder(metadata['folderId']);
 
-          await this.prisma.account.update({
-            where: { id: account.id },
-            data: {
-              folderId,
-            },
-          });
+          if (metadata['folderId']) {
+            folderId = metadata['folderId'];
+          }
+
+          if (!folder) {
+            const folderId = await providerInstance.createDrivebaseFolder();
+
+            await this.prisma.provider.update({
+              where: { id: providerId },
+              data: {
+                metadata: {
+                  folderId,
+                },
+              },
+            });
+
+            metadata['folderId'] = folderId;
+          }
         }
 
-        const reference = await provider.uploadFile(account.folderId, file);
+        const reference = await providerInstance.uploadFile(folderId, file);
 
         await this.prisma.file.create({
           data: {
-            reference,
             name: file.originalname,
             isFolder: false,
             parentPath: path,
             path: `${path === '/' ? '' : path}/${file.originalname}`,
             mimeType: file.mimetype,
-            workspaceId: account.workspaceId,
-            provider: account.type,
             size: file.size,
+            referenceId: reference,
+            fileProviderId: providerId,
+            workspaceId: provider.workspaceId,
           },
         });
       }
@@ -212,5 +274,19 @@ export class FilesService {
         error instanceof Error ? error.message : 'Unknown error';
       throw new Error(`Failed to upload file: ${errorMessage}`);
     }
+  }
+
+  async starFile(id: string) {
+    return this.prisma.file.update({
+      where: { id },
+      data: { isStarred: true },
+    });
+  }
+
+  async unstarFile(id: string) {
+    return this.prisma.file.update({
+      where: { id },
+      data: { isStarred: false },
+    });
   }
 }

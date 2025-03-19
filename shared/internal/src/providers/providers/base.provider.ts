@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  OAuthProvider,
+  CloudProvider,
   OAuthConfig,
   AuthToken,
   UserInfo,
 } from '../provider.interface';
 import { Readable } from 'stream';
 
-export class BaseProvider implements OAuthProvider {
+export class BaseProvider implements CloudProvider {
   constructor(public config: OAuthConfig) {
     if (!config.clientId || !config.clientSecret) {
       throw new Error('Telegram requires OAuth2 authentication');

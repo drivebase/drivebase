@@ -3,10 +3,7 @@ import { PrismaService } from './prisma.service';
 import { UsersService } from './users/users.service';
 import { ProvidersService } from './providers/providers.service';
 import { WorkspacesService } from './workspaces/workspaces.service';
-import { KeysService } from './keys/keys.service';
-import { AccountsService } from './accounts/accounts.service';
 import { FilesService } from './files/files.service';
-import { TelegramService } from './providers/custom/telegram/telegram.service';
 
 @Global()
 @Module({
@@ -15,12 +12,7 @@ import { TelegramService } from './providers/custom/telegram/telegram.service';
     UsersService,
     ProvidersService,
     WorkspacesService,
-    KeysService,
-    AccountsService,
     FilesService,
-
-    // Custom Oauth
-    TelegramService,
   ],
   get exports() {
     return this.providers;

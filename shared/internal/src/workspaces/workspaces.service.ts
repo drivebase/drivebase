@@ -56,7 +56,7 @@ export class WorkspacesService {
     return this.prisma.workspace.findUnique({
       where: { id },
       include: {
-        accounts: true,
+        providers: true,
       },
     });
   }
