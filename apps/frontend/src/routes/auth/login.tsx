@@ -19,12 +19,11 @@ import {
   CardTitle,
 } from '@drivebase/react/components/card';
 import { Checkbox } from '@drivebase/react/components/checkbox';
-import { DotPattern } from '@drivebase/react/components/dot-pattern';
-import { cn } from '@drivebase/react/lib/utils';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { LoginUserDto } from '@drivebase/internal/auth/dtos/login.user.dto';
 import { useLoginMutation } from '@drivebase/react/lib/redux/endpoints/auth';
 import { toast } from 'sonner';
+import { LockIcon } from 'lucide-react';
 
 function Page() {
   const router = useRouter();
@@ -52,19 +51,18 @@ function Page() {
   return (
     <Form {...form}>
       <div className="h-screen flex justify-center bg-accent items-center gap-6 overflow-hidden relative">
-        <DotPattern
-          className={cn(
-            '[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]'
-          )}
-        />
-        <Card className="w-96 z-10">
-          <CardHeader>
-            <CardTitle className="text-xl">Welcome, back!</CardTitle>
+        <div className="absolute inset-0 h-full w-full bg-background bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <Card className="w-full max-w-sm shadow-xl z-10 rounded-2xl relative">
+          <CardHeader className="border-b text-center py-12">
+            <LockIcon className="w-20 h-20 mx-auto mb-4 p-4 bg-muted rounded-xl" />
+            <CardTitle className="text-xl font-medium">
+              Welcome, back!
+            </CardTitle>
             <CardDescription>
               Enter your email and password to login.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-8 bg-accent/50">
             <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="space-y-3">
                 <FormField

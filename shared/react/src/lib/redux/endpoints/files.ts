@@ -1,8 +1,13 @@
-import { File as DrivebaseFile } from '@prisma/client';
+import { File as DrivebaseFile, Provider } from '@prisma/client';
+import type { FindWorkspaceFilesQuery } from '@drivebase/internal/files/files.service';
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from '@drivebase/react/lib/redux/base.query';
 import { UploadFileDto } from '@drivebase/internal/files/dtos/upload.file.dto';
 import { ApiResponse } from './api.type';
+
+type FileWithProvider = DrivebaseFile & {
+  fileProvider: Provider;
+};
 
 const filesApi = createApi({
   baseQuery,
@@ -10,14 +15,12 @@ const filesApi = createApi({
   tagTypes: ['files'],
   endpoints: (builder) => ({
     getFiles: builder.query<
-      ApiResponse<DrivebaseFile[]>,
-      {
-        parentPath?: string;
-      }
+      ApiResponse<FileWithProvider[]>,
+      FindWorkspaceFilesQuery
     >({
-      query: ({ parentPath }) => ({
+      query: (query) => ({
         url: '/files',
-        params: { parentPath },
+        params: query,
       }),
       providesTags: ['files'],
     }),
@@ -41,10 +44,10 @@ const filesApi = createApi({
         files: File[];
       }
     >({
-      query: ({ files, accountId, path }) => {
+      query: ({ files, providerId, path }) => {
         const formData = new FormData();
 
-        formData.append('accountId', accountId);
+        formData.append('providerId', providerId);
         formData.append('path', path);
 
         files.forEach((file) => {
@@ -59,6 +62,22 @@ const filesApi = createApi({
       },
       invalidatesTags: ['files'],
     }),
+    starFile: builder.mutation<ApiResponse<DrivebaseFile>, string>({
+      query: (id) => ({
+        url: `/files/${id}`,
+        method: 'PUT',
+        body: { isStarred: true },
+      }),
+      invalidatesTags: ['files'],
+    }),
+    unstarFile: builder.mutation<ApiResponse<DrivebaseFile>, string>({
+      query: (id) => ({
+        url: `/files/${id}`,
+        method: 'PUT',
+        body: { isStarred: false },
+      }),
+      invalidatesTags: ['files'],
+    }),
   }),
 });
 
@@ -66,5 +85,7 @@ export const {
   useGetFilesQuery,
   useCreateFolderMutation,
   useUploadFileMutation,
+  useStarFileMutation,
+  useUnstarFileMutation,
 } = filesApi;
 export default filesApi;
