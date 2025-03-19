@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { IsNotEmpty, IsString } from 'class-validator';
 import { Readable } from 'stream';
 

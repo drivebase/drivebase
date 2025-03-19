@@ -80,11 +80,11 @@ export class TelegramProvider implements ApiKeyProvider {
     });
   }
 
-  async getFileMetadata(fileId: string) {
+  async getFileMetadata() {
     throw new Error('Method `getFileMetadata` not implemented.');
   }
 
-  async deleteFile(path: string): Promise<boolean> {
+  async deleteFile(): Promise<boolean> {
     throw new Error('Method `deleteFile` not implemented.');
   }
 }
