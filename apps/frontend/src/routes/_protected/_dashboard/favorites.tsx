@@ -1,4 +1,4 @@
-import FileList from '@drivebase/frontend/components/files/all.files';
+import FileList from '@drivebase/frontend/components/files/file.list';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_protected/_dashboard/favorites')({

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import FileList from '@drivebase/frontend/components/files/all.files';
+import FileList from '@drivebase/frontend/components/files/file.list';
 import NewFolderDialog from '@drivebase/frontend/components/files/new.folder.dialog';
 import { cn } from '@drivebase/react/lib/utils';
 import { FileIcon, ImageIcon, VideoIcon } from 'lucide-react';
@@ -103,7 +103,7 @@ function Page() {
           ))}
         </div>
 
-        <FileList title="All Files" />
+        <FileList />
       </div>
     </div>
   );
