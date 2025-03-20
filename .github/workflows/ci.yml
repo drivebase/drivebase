@@ -11,22 +11,25 @@ env:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     strategy:
       matrix:
+        platform: [linux/amd64, linux/arm64]
         include:
-          - arch: arm64
-            runner: ubuntu-latest-arm64
-            platform: linux/arm64
-          - arch: amd64
-            runner: ubuntu-latest
-            platform: linux/amd64
-    runs-on: ${{ matrix.runner }}
+          - platform: linux/amd64
+            suffix: amd64
+          - platform: linux/arm64
+            suffix: arm64
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        if: matrix.platform == 'linux/arm64'
+        uses: docker/setup-qemu-action@v3
 
       - name: Extract version
         id: version
@@ -55,8 +58,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          platforms: ${{ matrix.platform }}
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}-${{ matrix.arch }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}-${{ matrix.suffix }}
           build-args: |
             APP_VERSION=${{ steps.version.outputs.VERSION }}
           cache-from: type=gha
