@@ -1,6 +1,6 @@
 {
   "name": "@drivebase/source",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "license": "MIT",
   "scripts": {
     "dev": "nx run-many --target=serve --projects=frontend,backend --parallel=2",

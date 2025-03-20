@@ -50,7 +50,6 @@ import { toast } from 'sonner';
 import type { File as DBFile } from '@prisma/client';
 import { DropdownMenuSeparator } from '@drivebase/react/components/dropdown-menu';
 import { Input } from '@drivebase/react/components/input';
-import { useTranslation } from 'react-i18next';
 
 const baseUrl = import.meta.env['VITE_PUBLIC_API_URL'] || '/api';
 
@@ -61,7 +60,6 @@ type FileListProps = {
 function FileList({ starred = false }: FileListProps) {
   const router = useRouter();
   const search = useSearch({ strict: false });
-  const { t } = useTranslation(['common', 'dashboard']);
 
   const parentPath = search.path ?? '/';
 
@@ -135,7 +133,7 @@ function FileList({ starred = false }: FileListProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Input placeholder={t('common:search')} className="w-[300px]" />
+        <Input placeholder="Search" className="w-[300px]" />
         <div className="flex items-center gap-2">
           <ListIcon size={20} />
           <Separator orientation="vertical" className="h-4" />
@@ -149,7 +147,7 @@ function FileList({ starred = false }: FileListProps) {
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/" params={{ path: '/' }}>
-                  {t('common:root')}
+                  root
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
