@@ -7,6 +7,7 @@ import {
 import { GoogleDriveProvider } from './providers/google-drive.provider';
 import { DropboxProvider } from './providers/dropbox.provider';
 import { TelegramProvider } from './providers/telegram.provider';
+import { LocalProvider } from './providers/local.provider';
 
 type ProviderConstructor = new (config: Record<string, string>) => BaseProvider;
 
@@ -14,7 +15,10 @@ export const OAuthProviders: ProviderType[] = [
   ProviderType.GOOGLE_DRIVE,
   ProviderType.DROPBOX,
 ];
-export const ApiKeyProviders: ProviderType[] = [ProviderType.TELEGRAM];
+export const ApiKeyProviders: ProviderType[] = [
+  ProviderType.LOCAL,
+  ProviderType.TELEGRAM,
+];
 
 export class ProviderFactory {
   private static providers = new Map<ProviderType, ProviderConstructor>();
@@ -24,6 +28,7 @@ export class ProviderFactory {
     this.providers.set(ProviderType.GOOGLE_DRIVE, GoogleDriveProvider);
     this.providers.set(ProviderType.DROPBOX, DropboxProvider);
     this.providers.set(ProviderType.TELEGRAM, TelegramProvider);
+    this.providers.set(ProviderType.LOCAL, LocalProvider);
   }
 
   /**
