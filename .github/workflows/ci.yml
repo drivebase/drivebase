@@ -17,12 +17,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: amd64
-            runner: ubuntu-latest
-            platform: linux/amd64
           - arch: arm64
             runner: ubuntu-latest-arm64
             platform: linux/arm64
+          - arch: amd64
+            runner: ubuntu-latest
+            platform: linux/amd64
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Check out the repo
