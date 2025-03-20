@@ -15,22 +15,22 @@ type SidebarItem = {
 
 export const mainItems: SidebarItem[] = [
   {
-    label: 'Dashboard',
+    label: 'dashboard',
     icon: LayoutDashboardIcon,
     href: '/',
   },
   {
-    label: 'Favorites',
+    label: 'favorites',
     icon: StarIcon,
     href: '/favorites',
   },
   {
-    label: 'Recycle Bin',
+    label: 'recycle_bin',
     icon: TrashIcon,
     href: '/recycle-bin',
   },
   {
-    label: 'Settings',
+    label: 'settings',
     icon: SettingsIcon,
     href: '/settings',
   },
@@ -38,12 +38,12 @@ export const mainItems: SidebarItem[] = [
 
 export const settingsItems: SidebarItem[] = [
   {
-    label: 'General',
+    label: 'general',
     icon: SettingsIcon,
     href: '/settings',
   },
   {
-    label: 'Providers',
+    label: 'providers',
     icon: CloudIcon,
     href: '/settings/providers',
     regex: /\/settings\/providers(.*)/,

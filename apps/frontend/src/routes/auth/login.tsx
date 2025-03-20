@@ -24,10 +24,12 @@ import { LoginUserDto } from '@drivebase/internal/auth/dtos/login.user.dto';
 import { useLoginMutation } from '@drivebase/react/lib/redux/endpoints/auth';
 import { toast } from 'sonner';
 import { LockIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 function Page() {
   const router = useRouter();
   const [login, { isLoading }] = useLoginMutation();
+  const { t } = useTranslation(['errors', 'common', 'auth']);
 
   const form = useForm<LoginUserDto>({
     resolver: classValidatorResolver(LoginUserDto),
@@ -56,11 +58,9 @@ function Page() {
           <CardHeader className="border-b text-center py-12">
             <LockIcon className="w-20 h-20 mx-auto mb-4 p-4 bg-muted rounded-xl" />
             <CardTitle className="text-xl font-medium">
-              Welcome, back!
+              {t('auth:login_title')}
             </CardTitle>
-            <CardDescription>
-              Enter your email and password to login.
-            </CardDescription>
+            <CardDescription>{t('auth:login_description')}</CardDescription>
           </CardHeader>
           <CardContent className="pt-8 bg-accent/50">
             <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -70,9 +70,12 @@ function Page() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('auth:email')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="you@domain.com" {...field} />
+                        <Input
+                          placeholder={t('auth:email_placeholder')}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -83,11 +86,11 @@ function Page() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>{t('auth:password')}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
-                          placeholder="Password"
+                          placeholder={t('auth:password_placeholder')}
                           {...field}
                         />
                       </FormControl>
@@ -103,7 +106,7 @@ function Page() {
                     htmlFor="terms"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    Remember me
+                    {t('auth:remember_me')}
                   </label>
                 </div>
 
@@ -111,12 +114,12 @@ function Page() {
                   to="/auth/forget-password"
                   className="text-sm text-muted-foreground"
                 >
-                  Forgot password?
+                  {t('auth:forgot_password')}
                 </Link>
               </div>
               <div className="space-y-2">
                 <Button className="w-full" disabled={isLoading}>
-                  Login
+                  {t('auth:login')}
                 </Button>
 
                 <Button
@@ -125,7 +128,7 @@ function Page() {
                   type="button"
                   asChild
                 >
-                  <Link to="/auth/register">Don&apos;t have an account?</Link>
+                  <Link to="/auth/register">{t('auth:dont_have_account')}</Link>
                 </Button>
               </div>
             </form>

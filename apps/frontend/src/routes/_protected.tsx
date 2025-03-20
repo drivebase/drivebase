@@ -11,6 +11,7 @@ import {
 } from '@drivebase/react/components/card';
 import { SignalIcon } from 'lucide-react';
 import { Button } from '@drivebase/react/components/button';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/_protected')({
   component: RouteComponent,
@@ -18,6 +19,7 @@ export const Route = createFileRoute('/_protected')({
 
 function RouteComponent() {
   const router = useRouter();
+  const { t } = useTranslation(['errors', 'common']);
   const { isLoading, error } = useGetProfileQuery();
 
   useEffect(() => {
@@ -43,9 +45,11 @@ function RouteComponent() {
         <Card className="w-full max-w-sm shadow-xl z-10 rounded-2xl relative">
           <CardHeader className="border-b text-center py-12">
             <SignalIcon className="w-20 h-20 mx-auto mb-4 p-4 bg-muted rounded-xl" />
-            <CardTitle className="text-xl font-medium">Not Reachable</CardTitle>
+            <CardTitle className="text-xl font-medium">
+              {t('errors:not_reachable_title')}
+            </CardTitle>
             <CardDescription>
-              Please check server logs for more information
+              {t('errors:not_reachable_description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-8 space-y-4 bg-accent/50">
@@ -53,7 +57,7 @@ function RouteComponent() {
               variant={'outline'}
               onClick={() => window.location.reload()}
             >
-              Retry
+              {t('common:retry')}
             </Button>
           </CardContent>
         </Card>
