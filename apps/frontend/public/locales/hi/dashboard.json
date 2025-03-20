@@ -1,0 +1,25 @@
+{
+  "dashboard": "डैशबोर्ड",
+  "favorites": "प्रियजनों की सूची",
+  "favorites_description": "आपके द्वारा तारीखित फाइलें यहाँ दिखाई देंगी।",
+  "recycle_bin": "वेस्पेस बिन",
+  "recycle_bin_description": "आपके द्वारा हटाए गए फाइलें यहाँ दिखाई देंगी।",
+  "providers": "प्रदाताओं की सूची",
+  "providers_description": "आपके खाते से जुड़े प्रदाताओं की सूची।",
+  "general": "सेटिंग्स",
+  "settings": "सेटिंग्स",
+  "general_description": "अपने आम सेटिंग्स को प्रबंधित करें।",
+
+  "new_folder": "नया फोल्डर",
+  "new_folder_placeholder": "फोल्डर नाम दर्ज करें",
+
+  "drop_files_here_title": "फाइलें यहाँ छोड़ दें",
+  "drop_files_here_description": "या यहाँ क्लिक करके अपलोड करें।",
+
+  "select_workspace_to_continue": "एक वर्कस्पेस चुनें जारी रखने के लिए",
+
+  "upload_files": "फाइलें अपलोड करें",
+  "upload_files_description": "कृपया अपनी फाइलों को अपलोड करने के लिए आप कहाँ अपलोड करना चाहते हैं।",
+  "select_provider": "एक प्रदाता चुनें",
+  "start_upload": "अपलोड शुरू करें"
+}

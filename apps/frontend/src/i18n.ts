@@ -4,7 +4,14 @@ import Backend from 'i18next-http-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Cookies from 'js-cookie';
 
-export const SUPPORTED_LANGUAGES = ['en', 'ar', 'es', 'id', 'zh'] as const;
+export const SUPPORTED_LANGUAGES = [
+  'en',
+  'ar',
+  'es',
+  'id',
+  'zh',
+  'hi',
+] as const;
 
 export const i18nInstance = i18n
   .use(Backend)
