@@ -2,8 +2,10 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import Cookies from 'js-cookie';
 
-// Create a promise that resolves when i18next is initialized
+export const SUPPORTED_LANGUAGES = ['en', 'ar', 'es', 'id', 'zh'] as const;
+
 export const i18nInstance = i18n
   .use(Backend)
   .use(LanguageDetector)
@@ -28,8 +30,24 @@ export const i18nPromise = i18nInstance.init({
     order: ['querystring', 'navigator', 'htmlTag'],
     caches: ['localStorage'],
   },
+  react: {
+    useSuspense: false,
+  },
+  initImmediate: false,
+  lng: Cookies.get('language') || 'en',
 });
 
-export const SUPPORTED_LANGUAGES = ['en', 'ar', 'es', 'id', 'zh'] as const;
+i18n.on('languageChanged', (lng) => {
+  document.documentElement.lang = lng;
+  if (isLanguageRTL(lng)) {
+    document.documentElement.dir = 'rtl';
+  } else {
+    document.documentElement.dir = 'ltr';
+  }
+});
+
+export function isLanguageRTL(lang: string): boolean {
+  return lang === 'ar';
+}
 
 export default i18n;
