@@ -78,6 +78,17 @@ const filesApi = createApi({
       }),
       invalidatesTags: ['files'],
     }),
+    renameFile: builder.mutation<
+      ApiResponse<DrivebaseFile>,
+      { id: string; name: string }
+    >({
+      query: ({ id, name }) => ({
+        url: `/files/${id}`,
+        method: 'PUT',
+        body: { name },
+      }),
+      invalidatesTags: ['files'],
+    }),
   }),
 });
 
@@ -87,5 +98,6 @@ export const {
   useUploadFileMutation,
   useStarFileMutation,
   useUnstarFileMutation,
+  useRenameFileMutation,
 } = filesApi;
 export default filesApi;

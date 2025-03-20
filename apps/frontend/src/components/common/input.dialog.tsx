@@ -21,6 +21,7 @@ export type InputField = {
   type?: string;
   placeholder?: string;
   validation?: z.ZodTypeAny;
+  defaultValue?: string;
 };
 
 export type InputDialogOptions = {
@@ -36,6 +37,16 @@ export async function inputDialog(
   options: InputDialogOptions
 ): Promise<FormData | null> {
   return new Promise((resolve) => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    // Cleanup function
+    const cleanup = () => {
+      root.unmount();
+      container.remove();
+    };
+
     const DialogComponent = () => {
       const [isOpen, setIsOpen] = useState(true);
 
@@ -58,11 +69,13 @@ export async function inputDialog(
 
       const onSubmit = useCallback((data: FormData) => {
         setIsOpen(false);
+        cleanup();
         resolve(data);
       }, []);
 
       const handleClose = useCallback(() => {
         setIsOpen(false);
+        cleanup();
         resolve(null);
       }, []);
 
@@ -102,6 +115,7 @@ export async function inputDialog(
                   <Input
                     type={field.type}
                     placeholder={field.placeholder}
+                    defaultValue={field.defaultValue}
                     {...form.register(field.name)}
                   />
                 </div>
@@ -117,20 +131,6 @@ export async function inputDialog(
     };
 
     // Mount the dialog component
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    const root = createRoot(container);
     root.render(<DialogComponent />);
-
-    // Cleanup when dialog is closed
-    const cleanup = () => {
-      root.unmount();
-      container.remove();
-    };
-
-    // Add cleanup to both resolve and reject cases
-    Promise.resolve().then(() => {
-      cleanup();
-    });
   });
 }
