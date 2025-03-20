@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.0.0-alpha.5](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2025-03-20)
+
+
+### Bug Fixes
+
+* remove chalk dep ([b00880b](https://github.com/drivebase/drivebase/commit/b00880bba3cc14517a2be435ccf1d27eb208f5b2))
+
 # [1.0.0-alpha.4](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2025-03-20)
 
 
