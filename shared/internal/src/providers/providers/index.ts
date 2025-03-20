@@ -25,6 +25,17 @@ const oauthInputFields: ProviderListItem['inputFields'] = {
 
 export const providers: ProviderListItem[] = [
   {
+    type: ProviderType.LOCAL,
+    label: 'Local Storage',
+    authType: 'api_key',
+    inputFields: {
+      basePath: {
+        label: 'Storage Path (optional)',
+        type: 'text',
+      },
+    },
+  },
+  {
     type: ProviderType.GOOGLE_DRIVE,
     label: 'Google Drive',
     authType: 'oauth',
