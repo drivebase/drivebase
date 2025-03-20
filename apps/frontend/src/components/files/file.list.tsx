@@ -15,6 +15,7 @@ import {
   useGetFilesQuery,
   useStarFileMutation,
   useUnstarFileMutation,
+  useRenameFileMutation,
 } from '@drivebase/react/lib/redux/endpoints/files';
 import {
   Table,
@@ -50,6 +51,7 @@ import { toast } from 'sonner';
 import type { File as DBFile } from '@prisma/client';
 import { DropdownMenuSeparator } from '@drivebase/react/components/dropdown-menu';
 import { Input } from '@drivebase/react/components/input';
+import { inputDialog } from '../common/input.dialog';
 
 const baseUrl = import.meta.env['VITE_PUBLIC_API_URL'] || '/api';
 
@@ -70,6 +72,7 @@ function FileList({ starred = false }: FileListProps) {
 
   const [starFile] = useStarFileMutation();
   const [unstarFile] = useUnstarFileMutation();
+  const [renameFile] = useRenameFileMutation();
 
   const splitPath = parentPath.split('/').filter(Boolean);
 
@@ -241,7 +244,45 @@ function FileList({ starred = false }: FileListProps) {
                           <TrashIcon className="w-4 h-4 mr-2" />
                           Delete
                         </ContextMenuItem>
-                        <ContextMenuItem>
+                        <ContextMenuItem
+                          onClick={async () => {
+                            const data = await inputDialog({
+                              icon: PencilIcon,
+                              title: 'Rename file',
+                              description: 'Enter the new name for the file',
+                              inputFields: [
+                                {
+                                  name: 'name',
+                                  label: 'Name',
+                                  type: 'text',
+                                  defaultValue: row.original.name,
+                                },
+                              ],
+                            });
+
+                            const spinner = toast.loading('Renaming file...');
+
+                            if (data) {
+                              const newName = data.name;
+                              if (newName !== row.original.name) {
+                                await renameFile({
+                                  id: row.original.id,
+                                  name: newName,
+                                }).unwrap();
+                                toast.dismiss(spinner);
+                                toast.success('File renamed');
+                              } else {
+                                toast.dismiss(spinner);
+                                toast.error(
+                                  'New name is the same as the old name'
+                                );
+                              }
+                            } else {
+                              toast.dismiss(spinner);
+                              toast.error('Failed to rename file');
+                            }
+                          }}
+                        >
                           <PencilIcon className="w-4 h-4 mr-2" />
                           Rename
                         </ContextMenuItem>
