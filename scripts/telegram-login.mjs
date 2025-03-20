@@ -1,7 +1,6 @@
 import { TelegramClient } from 'telegram';
 import { StringSession } from 'telegram/sessions/index.js';
 import readline from 'readline';
-import chalk from 'chalk';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -14,8 +13,8 @@ const prompt = (question) =>
   new Promise((resolve) => rl.question(question, resolve));
 
 async function main() {
-  const apiId = await prompt(chalk.blueBright('Enter your API ID: '));
-  const apiHash = await prompt(chalk.blueBright('Enter your API Hash: '));
+  const apiId = await prompt('Enter your API ID: ');
+  const apiHash = await prompt('Enter your API Hash: ');
 
   const client = new TelegramClient(stringSession, Number(apiId), apiHash, {
     connectionRetries: 5,
@@ -23,24 +22,21 @@ async function main() {
   });
 
   await client.start({
-    phoneNumber: async () =>
-      await prompt(chalk.blueBright('Please enter your number: ')),
-    password: async () =>
-      await prompt(chalk.blueBright('Please enter your password: ')),
-    phoneCode: async () =>
-      await prompt(chalk.blueBright('Please enter the code you received: ')),
-    onError: (err) => console.log(chalk.redBright(err)),
+    phoneNumber: async () => await prompt('Please enter your number: '),
+    password: async () => await prompt('Please enter your password: '),
+    phoneCode: async () => await prompt('Please enter the code you received: '),
+    onError: (err) => console.log(err),
   });
 
-  console.log(chalk.cyanBright('Here is your session string:'));
+  console.log('Here is your session string:');
 
-  console.log(chalk.greenBright(client.session.save()));
+  console.log(client.session.save());
 
   await client.disconnect();
 }
 
 process.on('SIGINT', async () => {
-  console.log(chalk.redBright('Disconnecting from Telegram...'));
+  console.log('Disconnecting from Telegram...');
   await client.disconnect();
 });
 
