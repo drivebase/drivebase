@@ -1,0 +1,6 @@
+{
+  "title": "Drivebase",
+  "description": "حفظ الملفات الموحدة عبر مقدمي الخدمات السحابية المتعددة.",
+  "workspace_placeholder": "ادخل اسم مساحة العمل الخاصة بك",
+  "connect_provider_to_workspace": "حدد مقدم الخدمة لربطها بمساحتك."
+}
