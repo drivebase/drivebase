@@ -1,24 +1,37 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
+import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router';
 import AppLayout from '@drivebase/frontend/components/layouts/app.layout';
+import { useGetCurrentWorkspaceQuery } from '@drivebase/react/lib/redux/endpoints/workspaces';
+import { Loader } from 'lucide-react';
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_protected/_dashboard')({
-  beforeLoad() {
-    const workspaceId = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('workspaceId='))
-      ?.split('=')[1];
-
-    if (!workspaceId) {
-      return redirect({ to: '/workspaces' });
-    }
-  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  return (
-    <AppLayout>
-      <Outlet />
-    </AppLayout>
-  );
+  const router = useRouter();
+  const { isLoading, error } = useGetCurrentWorkspaceQuery();
+
+  useEffect(() => {
+    if (error) {
+      if ('status' in error && error.status === 401) {
+        router.navigate({ to: '/workspaces' });
+      }
+    }
+  }, [error, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="w-10 h-10 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!error)
+    return (
+      <AppLayout>
+        <Outlet />
+      </AppLayout>
+    );
 }

@@ -93,9 +93,9 @@ export class GoogleDriveProvider implements OAuthProvider {
 
   async setCredentials(credentials: Record<string, string>): Promise<void> {
     const schema = z.object({
-      refreshToken: z.string(),
       accessToken: z.string(),
-      expiryDate: z.number(),
+      refreshToken: z.string().optional(),
+      expiryDate: z.number().optional(),
     });
 
     const parsedCreds = schema.parse(credentials);

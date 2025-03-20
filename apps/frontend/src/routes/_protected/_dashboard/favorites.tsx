@@ -9,7 +9,7 @@ function RouteComponent() {
   return (
     <div className="space-y-10">
       <div className="space-y-1">
-        <h1 className="text-xl font-bold">Starred Files</h1>
+        <h1 className="text-xl font-bold">Favorites</h1>
         <p className="text-muted-foreground">
           Files you have starred will appear here.
         </p>

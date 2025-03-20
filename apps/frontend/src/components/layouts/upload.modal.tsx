@@ -42,8 +42,6 @@ export function UploadModal() {
 
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
 
-  console.log('selectedProvider', selectedProvider);
-
   // const { data: providers } = useGetAvailableProvidersQuery();
   const { data: connectedProviders } = useGetProvidersQuery();
   const [uploadFile, { isLoading }] = useUploadFileMutation();

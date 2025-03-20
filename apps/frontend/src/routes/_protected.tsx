@@ -1,43 +1,63 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { toast } from 'sonner';
+import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router';
+import { Loader } from 'lucide-react';
+import { useGetProfileQuery } from '@drivebase/react/lib/redux/endpoints/profile';
+import { useEffect } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@drivebase/react/components/card';
+import { SignalIcon } from 'lucide-react';
+import { Button } from '@drivebase/react/components/button';
 
 export const Route = createFileRoute('/_protected')({
-  component: () => <Outlet />,
-  async beforeLoad({ context }) {
-    if (context.auth.isServerAvailable) {
-      if (!context.auth.isServerAvailable) {
-        return redirect({ to: '/auth/login' });
-      }
-    } else {
-      let count = 0;
-
-      const MAX_RETRIES = 3;
-
-      let spinner = toast.loading('Checking server...');
-
-      function checkServer() {
-        fetch(`${import.meta.env.VITE_PUBLIC_API_URL}/public/ping`)
-          .then(() => {
-            toast.success('Connected to server');
-            toast.dismiss(spinner);
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
-          })
-          .catch(() => {
-            count++;
-            toast.dismiss(spinner);
-            if (count <= MAX_RETRIES) {
-              spinner = toast.loading(`Retrying ${count} of ${MAX_RETRIES}...`);
-              setTimeout(checkServer, 3000);
-            } else {
-              toast.error('Server is not responding');
-              toast.dismiss(spinner);
-            }
-          });
-      }
-
-      setTimeout(checkServer, 3000);
-    }
-  },
+  component: RouteComponent,
 });
+
+function RouteComponent() {
+  const router = useRouter();
+  const { isLoading, error } = useGetProfileQuery();
+
+  useEffect(() => {
+    if (error && 'status' in error && error.status === 401) {
+      router.navigate({ to: '/auth/login' });
+    }
+  }, [error, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="w-10 h-10 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!error) return <Outlet />;
+
+  if ('status' in error && error.status === 'FETCH_ERROR') {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="absolute inset-0 h-full w-full bg-background bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <Card className="w-full max-w-sm shadow-xl z-10 rounded-2xl relative">
+          <CardHeader className="border-b text-center py-12">
+            <SignalIcon className="w-20 h-20 mx-auto mb-4 p-4 bg-muted rounded-xl" />
+            <CardTitle className="text-xl font-medium">Not Reachable</CardTitle>
+            <CardDescription>
+              Please check server logs for more information
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-8 space-y-4 bg-accent/50">
+            <Button
+              variant={'outline'}
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+}

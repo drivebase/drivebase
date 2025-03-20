@@ -51,8 +51,7 @@ import type { File as DBFile } from '@prisma/client';
 import { DropdownMenuSeparator } from '@drivebase/react/components/dropdown-menu';
 import { Input } from '@drivebase/react/components/input';
 
-const baseUrl =
-  import.meta.env['VITE_PUBLIC_API_URL'] || 'http://localhost:8000';
+const baseUrl = import.meta.env['VITE_PUBLIC_API_URL'] || '/api';
 
 type FileListProps = {
   starred?: boolean;
