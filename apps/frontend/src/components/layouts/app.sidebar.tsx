@@ -28,18 +28,22 @@ import {
 import SidebarUpload from './upload';
 import { useGetProfileQuery } from '@drivebase/react/lib/redux/endpoints/profile';
 import { useTranslation } from 'react-i18next';
+import { isLanguageRTL } from '@drivebase/frontend/i18n';
 
 const AppSidebar = () => {
   const location = useLocation();
   const context = useRouteContext({ from: '/_protected' });
   const { data: profile } = useGetProfileQuery();
-  const { t } = useTranslation(['common', 'dashboard']);
+  const { t, i18n } = useTranslation(['common', 'dashboard']);
 
   const showSettings = location.pathname.startsWith('/settings');
   const currentItems = showSettings ? settingsItems : mainItems;
 
   return (
-    <Sidebar className="border-transparent w-[15rem]">
+    <Sidebar
+      className="border-transparent w-[15rem]"
+      side={isLanguageRTL(i18n.language) ? 'right' : 'left'}
+    >
       <SidebarHeader className="z-10 space-y-4 justify-between">
         <div className="flex justify-between items-start">
           <img

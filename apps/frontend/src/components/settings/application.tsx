@@ -13,6 +13,7 @@ import {
 } from '@drivebase/react/components/select';
 import { SUPPORTED_LANGUAGES } from '@drivebase/frontend/i18n';
 import ISO6391 from 'iso-639-1';
+import Cookies from 'js-cookie';
 
 type Theme = 'system' | 'light' | 'dark';
 
@@ -63,6 +64,7 @@ function ApplicationSettings() {
             defaultValue={i18n.resolvedLanguage}
             onValueChange={(value) => {
               i18n.changeLanguage(value);
+              Cookies.set('language', value);
             }}
           >
             <SelectTrigger className="w-[200px]">
