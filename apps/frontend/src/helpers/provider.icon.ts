@@ -12,6 +12,8 @@ export const getProviderIcon = (provider: ProviderType) => {
       return 'https://api.iconify.design/logos/aws-s3.svg';
     case 'ONEDRIVE':
       return 'https://api.iconify.design/logos/microsoft-onedrive.svg';
+    case 'LOCAL':
+      return 'https://api.iconify.design/twemoji/laptop-computer.svg';
     default:
       return 'https://api.iconify.design/logos/google-drive.svg';
   }
