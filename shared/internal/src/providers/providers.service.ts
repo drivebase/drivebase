@@ -3,7 +3,6 @@ import type { ProviderType } from '@prisma/client';
 import { PrismaService } from '@drivebase/internal/prisma.service';
 import { ProviderListItem, providers } from './providers';
 import { ProviderFactory } from './provider.factory';
-import { CallbackProviderDto } from './dtos/callback.provider.dto';
 
 type OAuthSession = {
   clientId: string;
