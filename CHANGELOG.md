@@ -1,5 +1,13 @@
 # Changelog
 
+# [1.0.0-alpha.4](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2025-03-20)
+
+
+### Features
+
+* add LocalProvider for file storage management ([405b7ad](https://github.com/drivebase/drivebase/commit/405b7ad5c5ae2609eefe1b35a9fb53e0301add7b))
+* add Telegram login script and update entrypoint for execution ([922373d](https://github.com/drivebase/drivebase/commit/922373d932b899fa3fb84085ce010e2fa5fc22b9))
+
 # [1.0.0-alpha.3](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.2...v1.0.0-alpha.3) (2025-03-20)
 
 
