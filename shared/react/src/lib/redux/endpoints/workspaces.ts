@@ -7,6 +7,12 @@ const workspaceApi = createApi({
   baseQuery,
   reducerPath: 'workspaceApi',
   endpoints: (build) => ({
+    getCurrentWorkspace: build.query<{ data: Workspace }, void>({
+      query: () => ({
+        url: '/workspaces/current',
+        method: 'GET',
+      }),
+    }),
     getWorkspaces: build.query<{ data: Workspace[] }, void>({
       query: () => ({
         url: '/workspaces',
@@ -23,6 +29,9 @@ const workspaceApi = createApi({
   }),
 });
 
-export const { useCreateWorkspaceMutation, useGetWorkspacesQuery } =
-  workspaceApi;
+export const {
+  useCreateWorkspaceMutation,
+  useGetWorkspacesQuery,
+  useGetCurrentWorkspaceQuery,
+} = workspaceApi;
 export default workspaceApi;

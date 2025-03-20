@@ -7,12 +7,15 @@ import {
   Body,
   Param,
   ForbiddenException,
+  UseGuards,
 } from '@nestjs/common';
 import { WorkspacesService } from '@drivebase/internal/workspaces/workspaces.service';
 import { CreateWorkspaceDto } from '@drivebase/internal/workspaces/dtos/create.workspace.dto';
 import { UpdateWorkspaceDto } from '@drivebase/internal/workspaces/dtos/update.workspace.dto';
 import { GetUserFromRequest } from '@drivebase/internal/users/user.from.request';
-import { User } from '@prisma/client';
+import { User, Workspace } from '@prisma/client';
+import { WorkspaceGuard } from '@drivebase/internal/workspaces/workspace.guard';
+import { GetWorkspaceFromRequest } from '@drivebase/internal/workspaces/workspace.from.request';
 
 @Controller('workspaces')
 export class WorkspacesController {
@@ -24,6 +27,12 @@ export class WorkspacesController {
     @GetUserFromRequest() user: User
   ) {
     return this.workspacesService.create(user.id, createWorkspaceDto);
+  }
+
+  @Get('/current')
+  @UseGuards(WorkspaceGuard)
+  async findActive(@GetWorkspaceFromRequest() workspace: Workspace) {
+    return workspace;
   }
 
   @Get()
