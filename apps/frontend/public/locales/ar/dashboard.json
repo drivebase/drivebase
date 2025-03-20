@@ -1,0 +1,25 @@
+{
+  "dashboard": "لوحة التحكم",
+  "favorites": "المفضلة",
+  "favorites_description": "سيظهر هنا الملفات التي قمت بتمييزها.",
+  "recycle_bin": "مخازن النفايات",
+  "recycle_bin_description": "سيظهر هنا الملفات التي قمت بحذفها.",
+  "providers": "المنشئين",
+  "providers_description": "قائمة المنشئين الذين يرتبطون بمحضرتك.",
+  "general": "الإعدادات العامة",
+  "settings": "الإعدادات",
+  "general_description": "إدارة إعداداتك العامة.",
+
+  "new_folder": "مجلد جديد",
+  "new_folder_placeholder": "ادخل اسم المجلد",
+
+  "drop_files_here_title": "ألقِ الملفات هنا",
+  "drop_files_here_description": "أو انقر هنا لتحميل الملفات",
+
+  "select_workspace_to_continue": "حدد مساحة عمل لمتابعة العمل",
+
+  "upload_files": "تحميل الملفات",
+  "upload_files_description": "الرجاء تحديد مكان لتسجيل الملفات.",
+  "select_provider": "حدد المنشئ",
+  "start_upload": "ابدأ التحميل"
+}

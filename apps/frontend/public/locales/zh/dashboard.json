@@ -1,0 +1,25 @@
+{
+  "dashboard": "控制台",
+  "favorites": "收藏夹",
+  "favorites_description": "您已标记的文件将在此处显示。",
+  "recycle_bin": "回收站",
+  "recycle_bin_description": "您已删除的文件将在此处显示。",
+  "providers": "提供商",
+  "providers_description": "连接到您的帐户的提供商列表。",
+  "general": "设置",
+  "settings": "设置",
+  "general_description": "管理您的通用设置。",
+
+  "new_folder": "新文件夹",
+  "new_folder_placeholder": "输入文件夹名称",
+
+  "drop_files_here_title": "将文件拖放到此处",
+  "drop_files_here_description": "或单击这里上传",
+
+  "select_workspace_to_continue": "选择工作空间继续",
+
+  "upload_files": "上传文件",
+  "upload_files_description": "请选定您要上传文件的位置。",
+  "select_provider": "选择提供商",
+  "start_upload": "开始上传"
+}
