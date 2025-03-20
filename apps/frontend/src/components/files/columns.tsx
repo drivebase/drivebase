@@ -1,10 +1,11 @@
 import { File, Provider } from '@prisma/client';
 import { ColumnDef } from '@tanstack/react-table';
-import { FolderIcon, StarOffIcon, StarIcon } from 'lucide-react';
+import { FolderIcon, StarIcon } from 'lucide-react';
 import byteSize from 'byte-size';
 import { getFileIcon } from './file.icons';
 import { format } from 'date-fns';
 import ProviderIcon from '../providers/provider.icon';
+import { Trans } from 'react-i18next';
 
 type FileWithProvider = File & {
   fileProvider: Provider;
@@ -14,7 +15,11 @@ export const columns: ColumnDef<FileWithProvider>[] = [
   {
     accessorKey: 'name',
     header: () => {
-      return <div className="w-[300px]">Name</div>;
+      return (
+        <div className="w-[300px]">
+          <Trans i18nKey="common:name" />
+        </div>
+      );
     },
     cell: ({ row }) => {
       const Icon = row.original.isFolder
@@ -34,7 +39,13 @@ export const columns: ColumnDef<FileWithProvider>[] = [
   },
   {
     accessorKey: 'size',
-    header: 'Size',
+    header: () => {
+      return (
+        <div className="w-[100px]">
+          <Trans i18nKey="common:size" />
+        </div>
+      );
+    },
     cell: ({ row }) => {
       const size = byteSize(row.original.size || 0);
 
@@ -43,14 +54,26 @@ export const columns: ColumnDef<FileWithProvider>[] = [
   },
   {
     accessorKey: 'mimeType',
-    header: 'Type',
+    header: () => {
+      return (
+        <div className="w-[100px]">
+          <Trans i18nKey="common:type" />
+        </div>
+      );
+    },
     cell: ({ row }) => {
       return row.original.isFolder ? 'Folder' : row.original.mimeType;
     },
   },
   {
     accessorKey: 'type',
-    header: 'Provider',
+    header: () => {
+      return (
+        <div className="w-[100px]">
+          <Trans i18nKey="common:provider" />
+        </div>
+      );
+    },
     cell: ({ row }) => {
       if (!row.original.fileProviderId) return '-';
       const provider = row.original.fileProvider;
@@ -66,7 +89,11 @@ export const columns: ColumnDef<FileWithProvider>[] = [
   {
     accessorKey: 'createdAt',
     header: () => {
-      return <div className="text-right">Created</div>;
+      return (
+        <div className="w-[100px] text-right">
+          <Trans i18nKey="common:created" />
+        </div>
+      );
     },
     cell: ({ row }) => {
       const date = format(row.original.createdAt, 'MMM dd, yyyy');

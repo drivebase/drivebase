@@ -1,9 +1,11 @@
+import './i18n';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
 import { Providers } from './providers';
 import { useGetVersionQuery } from '@drivebase/react/lib/redux/endpoints/public';
 import { Loader } from 'lucide-react';
+import { I18nLoader } from './components/I18nLoader';
 
 const router = createRouter({
   routeTree,
@@ -46,7 +48,9 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <Providers>
-      <InnserApp />
+      <I18nLoader>
+        <InnserApp />
+      </I18nLoader>
     </Providers>
   );
 }

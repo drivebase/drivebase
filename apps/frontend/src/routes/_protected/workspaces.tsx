@@ -11,10 +11,12 @@ import {
 import { ArrowRight, LibraryIcon, Loader } from 'lucide-react';
 import type { Workspace } from '@prisma/client';
 import { useGetWorkspacesQuery } from '@drivebase/react/lib/redux/endpoints/workspaces';
+import { useTranslation } from 'react-i18next';
 
 function Page() {
   const router = useRouter();
   const { data: workspaces, isLoading } = useGetWorkspacesQuery();
+  const { t } = useTranslation(['common', 'dashboard']);
 
   if (isLoading) {
     return (
@@ -40,8 +42,12 @@ function Page() {
           <div className="mx-auto p-4 bg-accent rounded-2xl mb-4">
             <LibraryIcon size={40} />
           </div>
-          <CardTitle className={'text-xl font-medium'}>Workspaces</CardTitle>
-          <CardDescription>Select a workspace to continue</CardDescription>
+          <CardTitle className={'text-xl font-medium'}>
+            {t('common:workspaces')}
+          </CardTitle>
+          <CardDescription>
+            {t('dashboard:select_workspace_to_continue')}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 bg-accent/50 border-t py-10">
           {workspaces.data.map((workspace: Workspace) => (
@@ -67,7 +73,9 @@ function Page() {
               <div className="space-y-1 z-10">
                 <div className="text-sm font-medium">{workspace.name}</div>
                 <div className="text-muted-foreground text-xs">
-                  Created on {format(workspace.createdAt, 'MMM d, yyyy')}
+                  {t('common:created_on', {
+                    date: format(workspace.createdAt, 'MMM d, yyyy'),
+                  })}
                 </div>
               </div>
               <ArrowRight

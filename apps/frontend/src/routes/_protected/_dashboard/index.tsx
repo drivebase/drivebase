@@ -3,6 +3,7 @@ import FileList from '@drivebase/frontend/components/files/all.files';
 import NewFolderDialog from '@drivebase/frontend/components/files/new.folder.dialog';
 import { cn } from '@drivebase/react/lib/utils';
 import { FileIcon, ImageIcon, VideoIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const cards = [
   {
@@ -48,10 +49,12 @@ const cards = [
 ];
 
 function Page() {
+  const { t } = useTranslation(['common', 'dashboard']);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <h1 className="text-2xl font-semibold">{t('dashboard:dashboard')}</h1>
         <div className="flex items-center gap-2">
           <NewFolderDialog />
         </div>

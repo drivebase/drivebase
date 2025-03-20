@@ -18,15 +18,19 @@ import {
   CardHeader,
   CardTitle,
 } from '@drivebase/react/components/card';
-import { Checkbox } from '@drivebase/react/components/checkbox';
+
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { CreateUserDto } from '@drivebase/internal/auth/dtos/create.user.dto';
 import { useRegisterMutation } from '@drivebase/react/lib/redux/endpoints/auth';
 import { toast } from 'sonner';
-import { LockIcon, UserPlus2Icon } from 'lucide-react';
+import { UserPlus2Icon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 function Page() {
   const r = useRouter();
   const [register, { isLoading }] = useRegisterMutation();
+
+  const { t } = useTranslation(['errors', 'common', 'auth']);
 
   const form = useForm<CreateUserDto>({
     resolver: classValidatorResolver(CreateUserDto),
@@ -57,11 +61,9 @@ function Page() {
           <CardHeader className="border-b text-center py-12">
             <UserPlus2Icon className="w-20 h-20 mx-auto mb-4 p-4 bg-muted rounded-xl" />
             <CardTitle className="text-xl font-medium">
-              Create an account
+              {t('auth:register_title')}
             </CardTitle>
-            <CardDescription>
-              Enter your details to create an account.
-            </CardDescription>
+            <CardDescription>{t('auth:register_description')}</CardDescription>
           </CardHeader>
           <CardContent className="pt-8 bg-accent/50">
             <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -71,9 +73,12 @@ function Page() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>{t('auth:name')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} />
+                        <Input
+                          placeholder={t('auth:name_placeholder')}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -84,9 +89,12 @@ function Page() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('auth:email')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="you@domain.com" {...field} />
+                        <Input
+                          placeholder={t('auth:email_placeholder')}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -97,11 +105,11 @@ function Page() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>{t('auth:password')}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
-                          placeholder="Password"
+                          placeholder={t('auth:password_placeholder')}
                           {...field}
                         />
                       </FormControl>
@@ -112,7 +120,7 @@ function Page() {
               </div>
               <div className="space-y-2">
                 <Button className="w-full" disabled={isLoading}>
-                  Register
+                  {t('auth:register')}
                 </Button>
 
                 <Button
@@ -121,7 +129,7 @@ function Page() {
                   type="button"
                   asChild
                 >
-                  <Link to="/auth/login">Already have an account?</Link>
+                  <Link to="/auth/login">{t('auth:already_have_account')}</Link>
                 </Button>
               </div>
             </form>

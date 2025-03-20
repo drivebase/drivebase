@@ -3,12 +3,14 @@ import { motion } from 'framer-motion';
 import { Button } from '@drivebase/react/components/button';
 import { Input } from '@drivebase/react/components/input';
 import { useCreateWorkspaceMutation } from '@drivebase/react/lib/redux/endpoints/workspaces';
+import { useTranslation } from 'react-i18next';
 
 type StepOneProps = {
   onNext: (workspaceId: string) => void;
 };
 
 function StepOne({ onNext }: StepOneProps) {
+  const { t } = useTranslation(['common', 'onboarding']);
   const nameRef = useRef<HTMLInputElement>(null);
   const [createWorkspace, { isLoading }] = useCreateWorkspaceMutation();
 
@@ -33,7 +35,10 @@ function StepOne({ onNext }: StepOneProps) {
         transition={{ duration: 0.5, delay: 0.3 }}
         className="text-sm text-muted-foreground"
       >
-        <Input placeholder="Enter your workspace name" ref={nameRef} />
+        <Input
+          placeholder={t('onboarding:workspace_placeholder')}
+          ref={nameRef}
+        />
       </motion.div>
 
       <motion.div
@@ -47,7 +52,7 @@ function StepOne({ onNext }: StepOneProps) {
           onClick={handleNext}
           isLoading={isLoading}
         >
-          Create
+          {t('common:create')}
         </Button>
       </motion.div>
     </div>
