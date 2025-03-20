@@ -1,0 +1,25 @@
+{
+  "dashboard": "Tablero",
+  "favorites": "Favoritos",
+  "favorites_description": "Los archivos que has marcado como favoritos aparecerán aquí.",
+  "recycle_bin": "Papelera de Reciclaje",
+  "recycle_bin_description": "Los archivos que has eliminado aparecerán aquí.",
+  "providers": "Proveedores",
+  "providers_description": "Lista de proveedores conectados a tu cuenta.",
+  "general": "Configuración",
+  "settings": "Configuración",
+  "general_description": "Administra tus configuraciones generales.",
+
+  "new_folder": "Nueva Carpeta",
+  "new_folder_placeholder": "Ingrese el nombre de la carpeta",
+
+  "drop_files_here_title": "Coloca archivos aquí",
+  "drop_files_here_description": "o haz clic aquí para subir",
+
+  "select_workspace_to_continue": "Selecciona un espacio de trabajo para continuar",
+
+  "upload_files": "Subir Archivos",
+  "upload_files_description": "Por favor, selecciona dónde deseas subir tus archivos.",
+  "select_provider": "Seleccionar Proveedor",
+  "start_upload": "Iniciar Subida"
+}

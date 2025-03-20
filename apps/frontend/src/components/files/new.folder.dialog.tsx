@@ -14,8 +14,11 @@ import { FolderIcon, PlusIcon } from 'lucide-react';
 import { useCreateFolderMutation } from '@drivebase/react/lib/redux/endpoints/files';
 import { toast } from 'sonner';
 import { useSearch } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 
 function NewFolderDialog() {
+  const { t } = useTranslation(['common', 'dashboard']);
+
   const search = useSearch({ from: '/_protected/_dashboard/' });
   const ref = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -49,7 +52,7 @@ function NewFolderDialog() {
       <DialogTrigger asChild>
         <Button variant={'outline'}>
           <PlusIcon className="w-4 h-4" />
-          New Folder
+          {t('dashboard:new_folder')}
         </Button>
       </DialogTrigger>
       <DialogContent className="p-0 w-96 gap-0">
@@ -63,13 +66,15 @@ function NewFolderDialog() {
                 size={75}
                 className="mx-auto mb-4 p-4 bg-muted rounded-xl"
               />
-              <h1 className="text-2xl font-medium">New Folder</h1>
+              <h1 className="text-2xl font-medium">
+                {t('dashboard:new_folder')}
+              </h1>
             </div>
           </DialogTitle>
         </DialogHeader>
         <div className="py-10 px-8 bg-accent/30 border-t">
           <Input
-            placeholder="Folder Name"
+            placeholder={t('dashboard:new_folder_placeholder')}
             className="w-full"
             ref={ref}
             onKeyDown={(e) => {
@@ -84,7 +89,7 @@ function NewFolderDialog() {
             onClick={handleCreate}
             isLoading={isLoading}
           >
-            Create
+            {t('common:create')}
           </Button>
         </div>
       </DialogContent>

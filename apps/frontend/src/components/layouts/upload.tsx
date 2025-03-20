@@ -8,11 +8,13 @@ import {
   setUploadModalOpen,
 } from '@drivebase/react/lib/redux/reducers/uploader.reducer';
 import { useFileStore } from '@drivebase/react/lib/contexts/file-store.context';
+import { useTranslation } from 'react-i18next';
 
 function SidebarUpload() {
   const ref = useRef<HTMLInputElement>(null);
   const dispatch = useAppDispatch();
   const { storeFiles } = useFileStore();
+  const { t } = useTranslation(['common', 'dashboard']);
 
   const dragCounter = useRef(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -94,8 +96,10 @@ function SidebarUpload() {
       />
       <FileIcon size={32} />
       <div className="text-center">
-        <p className="text-sm font-medium">Drop files here</p>
-        <p className="text-xs">or click here to upload</p>
+        <p className="text-sm font-medium">
+          {t('dashboard:drop_files_here_title')}
+        </p>
+        <p className="text-xs">{t('dashboard:drop_files_here_description')}</p>
       </div>
     </div>
   );

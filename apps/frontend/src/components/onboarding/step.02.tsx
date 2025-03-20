@@ -2,6 +2,7 @@ import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoi
 import { Button } from '@drivebase/react/components/button';
 import { ArrowRight } from 'lucide-react';
 import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
+import { useTranslation } from 'react-i18next';
 
 type StepTwoProps = {
   onNext: () => void;
@@ -9,6 +10,7 @@ type StepTwoProps = {
 };
 
 function StepTwo({ onNext, onSkip }: StepTwoProps) {
+  const { t } = useTranslation(['common', 'onboarding']);
   const { data: providers } = useGetAvailableProvidersQuery();
 
   return (
@@ -36,7 +38,7 @@ function StepTwo({ onNext, onSkip }: StepTwoProps) {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Select a provider to connect to your workspace.
+        {t('onboarding:connect_provider_to_workspace')}
       </p>
 
       <div className="flex items-center gap-2 justify-between">
@@ -45,10 +47,10 @@ function StepTwo({ onNext, onSkip }: StepTwoProps) {
           onClick={onSkip}
           className="pl-0 text-muted-foreground"
         >
-          Skip
+          {t('common:skip')}
         </Button>
         <Button variant="outline" onClick={onNext} disabled>
-          Next <ArrowRight className="w-4 h-4" />
+          {t('common:next')} <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
     </div>
