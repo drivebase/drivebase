@@ -13,7 +13,7 @@ const store = makeStore();
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <ThemeProvider defaultTheme="dark">
+    <ThemeProvider defaultTheme="system">
       <ReduxProvider store={store}>
         <Toaster position="bottom-center" />
         {children}

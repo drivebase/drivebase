@@ -1,17 +1,20 @@
 import FileList from '@drivebase/frontend/components/files/all.files';
 import { createFileRoute } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/_protected/_dashboard/favorites')({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { t } = useTranslation(['dashboard']);
+
   return (
     <div className="space-y-10">
       <div className="space-y-1">
-        <h1 className="text-xl font-bold">Favorites</h1>
+        <h1 className="text-xl font-bold">{t('dashboard:favorites')}</h1>
         <p className="text-muted-foreground">
-          Files you have starred will appear here.
+          {t('dashboard:favorites_description')}
         </p>
       </div>
       <FileList starred />

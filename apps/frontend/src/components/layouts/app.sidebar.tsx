@@ -27,11 +27,13 @@ import {
 } from '@drivebase/frontend/constants/sidebar.items';
 import SidebarUpload from './upload';
 import { useGetProfileQuery } from '@drivebase/react/lib/redux/endpoints/profile';
+import { useTranslation } from 'react-i18next';
 
 const AppSidebar = () => {
   const location = useLocation();
   const context = useRouteContext({ from: '/_protected' });
   const { data: profile } = useGetProfileQuery();
+  const { t } = useTranslation(['common', 'dashboard']);
 
   const showSettings = location.pathname.startsWith('/settings');
   const currentItems = showSettings ? settingsItems : mainItems;
@@ -61,7 +63,7 @@ const AppSidebar = () => {
                 <ChevronLeftIcon className="w-4 h-4" />
               </Link>
             )}
-            {showSettings ? 'Settings' : 'Application'}
+            {showSettings ? t('common:settings') : t('common:application')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -75,7 +77,7 @@ const AppSidebar = () => {
                     <SidebarMenuButton asChild isActive={isActive}>
                       <Link to={item.href}>
                         <Icon />
-                        <span>{item.label}</span>
+                        <span>{t(`dashboard:${item.label}`)}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -110,18 +112,18 @@ const AppSidebar = () => {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-[200px]">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{t('common:my_account')}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
+            <DropdownMenuItem>{t('common:profile')}</DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/settings">Settings</Link>
+              <Link to="/settings">{t('common:settings')}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 // logout();
               }}
             >
-              Logout
+              {t('common:logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

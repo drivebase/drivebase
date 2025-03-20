@@ -11,10 +11,12 @@ import {
 } from '@drivebase/react/components/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function Page() {
   const router = useRouter();
   const { step } = Route.useSearch();
+  const { t } = useTranslation(['common', 'onboarding']);
 
   const steps = useMemo(
     () => [
@@ -105,7 +107,9 @@ function Page() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <CardTitle className={'text-xl font-medium'}>Drivebase</CardTitle>
+            <CardTitle className={'text-xl font-medium'}>
+              {t('onboarding:title')}
+            </CardTitle>
           </motion.div>
 
           <motion.div
@@ -113,10 +117,7 @@ function Page() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <CardDescription>
-              Your unified file storage management across multiple cloud
-              providers.
-            </CardDescription>
+            <CardDescription>{t('onboarding:description')}</CardDescription>
           </motion.div>
         </CardHeader>
 
