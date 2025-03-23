@@ -3,6 +3,7 @@ import { Workspace } from '@prisma/client';
 import { PrismaService } from '@drivebase/internal/prisma.service';
 import { CreateWorkspaceDto } from './dtos/create.workspace.dto';
 import { UpdateWorkspaceDto } from './dtos/update.workspace.dto';
+import { WorkspaceStats } from '../types/workspace.types';
 
 @Injectable()
 export class WorkspacesService {
@@ -59,5 +60,41 @@ export class WorkspacesService {
         providers: true,
       },
     });
+  }
+
+  async getWorkspaceStats(id: string): Promise<WorkspaceStats> {
+    const files = await this.prisma.file.findMany({
+      where: {
+        workspaceId: id,
+      },
+      select: {
+        mimeType: true,
+        size: true,
+      },
+    });
+
+    const stats = {
+      image: { size: 0, count: 0 },
+      video: { size: 0, count: 0 },
+      application: { size: 0, count: 0 },
+      others: { size: 0, count: 0 },
+    };
+
+    for (const file of files) {
+      if (file.mimeType.startsWith('image')) {
+        stats.image.size += file.size;
+        stats.image.count += 1;
+      } else if (file.mimeType.startsWith('video')) {
+        stats.video.size += file.size;
+        stats.video.count += 1;
+      } else if (file.mimeType.startsWith('application')) {
+        stats.application.size += file.size;
+        stats.application.count += 1;
+      } else {
+        stats.others.size += file.size;
+        stats.others.count += 1;
+      }
+    }
+    return stats;
   }
 }
