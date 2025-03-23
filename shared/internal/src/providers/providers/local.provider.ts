@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { UserInfo, ApiKeyProvider } from '../provider.interface';
+import { UserInfo, ApiKeyProvider, ProviderFile } from '../provider.interface';
 import { Readable } from 'stream';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -10,6 +10,8 @@ const writeFile = promisify(fs.writeFile);
 const readFile = promisify(fs.readFile);
 const stat = promisify(fs.stat);
 const unlink = promisify(fs.unlink);
+const readdir = promisify(fs.readdir);
+const join = path.join;
 
 export class LocalProvider implements ApiKeyProvider {
   private basePath: string;
@@ -108,5 +110,22 @@ export class LocalProvider implements ApiKeyProvider {
       name: 'Local Storage',
       email: 'storage@localhost',
     };
+  }
+
+  async listFiles(path?: string): Promise<ProviderFile[]> {
+    const files = await readdir(path ? path : this.basePath);
+    return Promise.all(
+      files.map(async (file) => {
+        const filePath = path ? join(path, file) : file;
+        const stats = await stat(filePath);
+        return {
+          id: file,
+          name: file,
+          size: stats.size,
+          type: stats.isDirectory() ? 'folder' : 'file',
+          isFolder: stats.isDirectory(),
+        };
+      })
+    );
   }
 }

@@ -1,4 +1,12 @@
-import { Controller, Get, Query, UseGuards, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  UseGuards,
+  Post,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { ProvidersService } from '@drivebase/internal/providers/providers.service';
 import { Workspace } from '@prisma/client';
 import { GetWorkspaceFromRequest } from '@drivebase/internal/workspaces/workspace.from.request';
@@ -61,5 +69,14 @@ export class ProvidersController {
   @Post('/oauth/callback')
   async callback(@Body() body: CallbackProviderDto) {
     return this.providersService.callback(body.state, body.code);
+  }
+
+  @Get('/:providerId/files')
+  @UseGuards(WorkspaceGuard)
+  async listFiles(
+    @Param('providerId') providerId: string,
+    @Query('path') path?: string
+  ) {
+    return this.providersService.listFiles(providerId, path);
   }
 }
