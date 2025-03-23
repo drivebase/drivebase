@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { ApiKeyProvider } from '../provider.interface';
+import { ApiKeyProvider, ProviderFile } from '../provider.interface';
 import { S3 } from 'aws-sdk';
 
 export class AwsS3Provider implements ApiKeyProvider {
@@ -115,6 +115,37 @@ export class AwsS3Provider implements ApiKeyProvider {
             reject(err);
           } else {
             resolve(data);
+          }
+        }
+      );
+    });
+  }
+
+  async listFiles(path?: string): Promise<ProviderFile[]> {
+    const client = this.s3;
+    return new Promise((resolve, reject) => {
+      client.listObjectsV2(
+        {
+          Bucket: this.bucket,
+          Prefix: path,
+        },
+        (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            const files = data?.Contents?.map((file) => ({
+              id: file.Key ?? '',
+              name: file.Key ?? '',
+              size: file.Size ?? 0,
+              type: file.Key?.endsWith('/') ? 'folder' : 'file',
+              isFolder: file.Key?.endsWith('/') ?? false,
+            }));
+
+            if (!files) {
+              resolve([]);
+            } else {
+              resolve(files);
+            }
           }
         }
       );
