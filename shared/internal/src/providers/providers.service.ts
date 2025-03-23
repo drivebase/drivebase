@@ -164,4 +164,23 @@ export class ProvidersService {
       },
     });
   }
+
+  async listFiles(providerId: string, path?: string) {
+    const provider = await this.prisma.provider.findUnique({
+      where: {
+        id: providerId,
+      },
+    });
+
+    if (!provider) {
+      throw new Error('Provider not found');
+    }
+
+    const providerInstance = ProviderFactory.createProvider(
+      provider.type,
+      provider.credentials as Record<string, string>
+    );
+
+    return providerInstance.listFiles(path);
+  }
 }

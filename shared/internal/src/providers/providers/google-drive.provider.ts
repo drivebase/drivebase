@@ -4,6 +4,7 @@ import {
   AuthToken,
   OAuthProvider,
   OAUTH_REDIRECT_URI,
+  ProviderFile,
 } from '../provider.interface';
 import { ProviderType } from '@prisma/client';
 import { Readable } from 'stream';
@@ -150,13 +151,21 @@ export class GoogleDriveProvider implements OAuthProvider {
     };
   }
 
-  async listFiles(path?: string) {
-    const query = path ? `'${path}' in parents` : "'root' in parents";
+  async listFiles(path = '/'): Promise<ProviderFile[]> {
+    const query = path !== '/' ? `'${path}' in parents` : "'root' in parents";
     const response = await this.driveClient.files.list({
       q: query,
       fields: 'files(id, name, mimeType, size, parents)',
     });
-    return response.data.files || [];
+    return (
+      response.data.files?.map((file) => ({
+        id: file.id || '',
+        name: file.name || '',
+        size: file.size ? Number(file.size) : 0,
+        type: file.mimeType || '',
+        isFolder: file.mimeType === 'application/vnd.google-apps.folder',
+      })) || []
+    );
   }
 
   async createFolder(name: string) {

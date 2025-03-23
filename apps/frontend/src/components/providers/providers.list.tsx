@@ -11,36 +11,26 @@ import {
 } from '@drivebase/react/components/table';
 import { useGetProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
 import {
-  Dialog,
-  DialogTitle,
-  DialogHeader,
-  DialogContent,
-} from '@drivebase/react/components/dialog';
-import { ProviderListItem } from '@drivebase/internal/providers/providers';
-import { useState, useRef, useMemo } from 'react';
-import { InfoIcon } from 'lucide-react';
-import { useGetAuthUrlMutation } from '@drivebase/react/lib/redux/endpoints/providers';
-import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
-import { CustomProvider } from '../providers';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@drivebase/react/components/sheet';
+import { useState, useMemo } from 'react';
+import { InfoIcon, Link2Icon } from 'lucide-react';
 import ProviderIcon from './provider.icon';
 import ConnectProviderDialog from './provider.connect';
 import { formatDistance } from 'date-fns';
+import { Provider } from '@prisma/client';
+import ConfigureProvider from './provider.configure';
 
 function ProviderList() {
-  const clientIdRef = useRef<HTMLInputElement>(null);
-  const clientSecretRef = useRef<HTMLInputElement>(null);
-
   const [search, setSearch] = useState('');
-
-  const [CustomProvider, setCustomProvider] = useState<
-    CustomProvider[keyof CustomProvider] | null
-  >(null);
-
-  const [selectedProvider, setSelectedProvider] =
-    useState<ProviderListItem | null>(null);
+  const [configureProvider, setConfigureProvider] = useState<Provider | null>(
+    null
+  );
 
   const { data: providers, isLoading } = useGetProvidersQuery();
-  const [getAuthUrl, { isLoading: isGettingAuthUrl }] = useGetAuthUrlMutation();
 
   const filteredProviders = useMemo(() => {
     return providers?.data.filter((provider) =>
@@ -59,7 +49,10 @@ function ProviderList() {
         />
         <div className="flex gap-2">
           <ConnectProviderDialog>
-            <Button variant={'outline'}>Connect Provider</Button>
+            <Button variant={'outline'}>
+              <Link2Icon />
+              Connect Provider
+            </Button>
           </ConnectProviderDialog>
           <a
             href="https://drivebase.github.io/docs/providers"
@@ -105,6 +98,15 @@ function ProviderList() {
                   })}
                 </TableCell>
                 <TableCell className="gap-2 flex items-center justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setConfigureProvider(provider);
+                    }}
+                  >
+                    Configure
+                  </Button>
                   <Button size="sm" variant="outline">
                     Disconnect
                   </Button>
@@ -115,79 +117,30 @@ function ProviderList() {
         </TableBody>
       </Table>
 
-      {/* OAuth Dialog */}
-      <Dialog
-        open={!!selectedProvider}
+      <Sheet
+        open={!!configureProvider}
         onOpenChange={(isOpen) => {
           if (!isOpen) {
-            setSelectedProvider(null);
+            setConfigureProvider(null);
           }
         }}
       >
-        <DialogContent className="p-0 w-96">
-          <DialogHeader className="px-8 py-16">
-            <DialogTitle
-              asChild
-              className="mx-auto text-2xl select-none text-center"
-            >
-              <div>
-                {selectedProvider && (
-                  <img
-                    src={getProviderIcon(selectedProvider.type)}
-                    alt={selectedProvider?.label}
-                    width={75}
-                    height={75}
-                    className="mx-auto mb-4 p-4 bg-muted rounded-xl"
-                    draggable={false}
-                  />
-                )}
-
-                <h1 className="text-2xl font-medium">
-                  {selectedProvider?.label}
-                </h1>
-              </div>
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-10 px-8 bg-accent/30 border-t">
-            {selectedProvider?.authType === 'oauth' && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <Input placeholder="Client ID" ref={clientIdRef} />
-                  </div>
-                  <div className="col-span-2">
-                    <Input placeholder="Client Secret" ref={clientSecretRef} />
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  className="w-32"
-                  isLoading={isGettingAuthUrl}
-                  onClick={() => {
-                    getAuthUrl({
-                      type: selectedProvider.type,
-                      clientId: clientIdRef.current?.value,
-                      clientSecret: clientSecretRef.current?.value,
-                    }).then((res) => {
-                      console.log('res', res);
-                    });
-                  }}
-                >
-                  Authorize
-                </Button>
-              </div>
+        <SheetContent
+          onInteractOutside={(e) => {
+            e.preventDefault();
+          }}
+          className="min-w-[40rem]"
+        >
+          <SheetHeader>
+            <SheetTitle>Configure Provider</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6">
+            {configureProvider && (
+              <ConfigureProvider provider={configureProvider} />
             )}
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {CustomProvider && (
-        <CustomProvider
-          onClose={() => {
-            setCustomProvider(null);
-          }}
-        />
-      )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

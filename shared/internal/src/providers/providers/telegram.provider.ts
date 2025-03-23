@@ -1,4 +1,4 @@
-import { ApiKeyProvider, UserInfo } from '../provider.interface';
+import { ApiKeyProvider, ProviderFile, UserInfo } from '../provider.interface';
 import { CustomFile } from 'telegram/client/uploads';
 import { TelegramClient } from 'telegram/client/TelegramClient';
 import { StringSession } from 'telegram/sessions';
@@ -95,5 +95,9 @@ export class TelegramProvider implements ApiKeyProvider {
 
   async deleteFile(): Promise<boolean> {
     throw new Error('Method `deleteFile` not implemented.');
+  }
+
+  async listFiles(): Promise<ProviderFile[]> {
+    throw new Error('Method `listFiles` not implemented.');
   }
 }

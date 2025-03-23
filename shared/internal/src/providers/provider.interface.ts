@@ -33,6 +33,14 @@ export type UserInfo = {
   email?: string;
 };
 
+export type ProviderFile = {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  isFolder: boolean;
+  path?: string;
+};
 // Base provider interface with common file operations
 export interface BaseProvider {
   // File Management
@@ -41,6 +49,7 @@ export interface BaseProvider {
   getFileMetadata(fileId: string): Promise<any>;
   deleteFile(path: string): Promise<boolean>;
   getUserInfo(): Promise<UserInfo>;
+  listFiles(path?: string): Promise<ProviderFile[]>;
 }
 
 // OAuth specific provider
