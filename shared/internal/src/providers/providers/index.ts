@@ -87,6 +87,10 @@ export const providers: ProviderListItem[] = [
         label: 'Region',
         type: 'text',
       },
+      endpoint: {
+        label: 'Endpoint (optional)',
+        type: 'text',
+      },
     },
   },
   {
