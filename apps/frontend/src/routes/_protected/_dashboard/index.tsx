@@ -42,7 +42,7 @@ const cards = [
     total: 456,
     size: '2 GB',
     maxSize: '120 GB',
-    usage: (100 / 120) * 100,
+    usage: (2 / 120) * 100,
     color: 'text-green-500',
     progressColor: 'bg-green-500',
   },
