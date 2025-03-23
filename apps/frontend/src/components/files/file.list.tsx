@@ -12,7 +12,9 @@ import {
   TrashIcon,
 } from 'lucide-react';
 import {
+  useDeleteFileMutation,
   useGetFilesQuery,
+  useRenameFileMutation,
   useStarFileMutation,
   useUnstarFileMutation,
 } from '@drivebase/react/lib/redux/endpoints/files';
@@ -50,6 +52,7 @@ import { toast } from 'sonner';
 import type { File as DBFile } from '@prisma/client';
 import { DropdownMenuSeparator } from '@drivebase/react/components/dropdown-menu';
 import { Input } from '@drivebase/react/components/input';
+import { inputDialog } from '../common/input.dialog';
 
 const baseUrl = import.meta.env['VITE_PUBLIC_API_URL'] || '/api';
 
@@ -70,6 +73,8 @@ function FileList({ starred = false }: FileListProps) {
 
   const [starFile] = useStarFileMutation();
   const [unstarFile] = useUnstarFileMutation();
+  const [deleteFile] = useDeleteFileMutation();
+  const [renameFile] = useRenameFileMutation();
 
   const splitPath = parentPath.split('/').filter(Boolean);
 
@@ -189,9 +194,9 @@ function FileList({ starred = false }: FileListProps) {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   );
                 })}
@@ -241,11 +246,76 @@ function FileList({ starred = false }: FileListProps) {
                           Download
                         </ContextMenuItem>
                         <DropdownMenuSeparator />
-                        <ContextMenuItem>
+                        <ContextMenuItem
+                          onClick={async () => {
+                            const name = row.original.name;
+                            const res = await inputDialog({
+                              title: `Are you sure?`,
+                              description: 'This action cannot be undone.',
+                              icon: TrashIcon,
+                              inputFields: [
+                                {
+                                  label: `To confirm, type "${name}"`,
+                                  name: 'name',
+                                  type: 'text',
+                                  placeholder: '',
+                                },
+                              ],
+                            });
+                            if (res?.name === name) {
+                              deleteFile(row.original.id)
+                                .unwrap()
+                                .then(() => {
+                                  toast.success('File deleted successfully');
+                                })
+                                .catch((err) => {
+                                  console.error(err);
+                                  toast.error('Failed to delete file');
+                                });
+                            } else {
+                              toast.error('Incorrect name');
+                            }
+                          }}
+                        >
                           <TrashIcon className="w-4 h-4 mr-2" />
                           Delete
                         </ContextMenuItem>
-                        <ContextMenuItem>
+                        <ContextMenuItem
+                          onClick={async () => {
+                            const name = row.original.name;
+                            const res = await inputDialog({
+                              title: `Rename`,
+                              description: 'Enter the new name for the file',
+                              icon: PencilIcon,
+                              inputFields: [
+                                {
+                                  label: `Enter new name`,
+                                  name: 'name',
+                                  type: 'text',
+                                  defaultValue: name,
+                                },
+                              ],
+                            });
+
+                            if (!res?.name) {
+                              toast.error('Invalid name');
+                              return;
+                            }
+
+                            renameFile({
+                              id: row.original.id,
+                              name: res.name,
+                            })
+                              .unwrap()
+                              .then(() => {
+                                toast.success('File renamed successfully');
+                              })
+                              .catch((err) => {
+                                console.error(err);
+                                toast.error('Failed to rename file');
+                              });
+                          }}
+                        >
                           <PencilIcon className="w-4 h-4 mr-2" />
                           Rename
                         </ContextMenuItem>
