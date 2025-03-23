@@ -28,6 +28,12 @@ export class WorkspacesController {
   ) {
     return this.workspacesService.create(user.id, createWorkspaceDto);
   }
+  
+  @Get('stats')
+  @UseGuards(WorkspaceGuard)
+  async getStats(@GetWorkspaceFromRequest() workspace: Workspace) {
+    return this.workspacesService.getWorkspaceStats(workspace.id);
+  }
 
   @Get('/current')
   @UseGuards(WorkspaceGuard)
@@ -49,6 +55,7 @@ export class WorkspacesController {
     }
     return workspace;
   }
+  
 
   @Put(':id')
   async update(
