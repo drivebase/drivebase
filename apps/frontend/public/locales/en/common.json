@@ -27,5 +27,10 @@
   "logout": "Logout",
   "system": "System",
   "light": "Light",
-  "dark": "Dark"
+  "dark": "Dark",
+  "images": "Images",
+  "videos": "Videos",
+  "audios": "Audios",
+  "documents": "Documents",
+  "others": "Others"
 }
