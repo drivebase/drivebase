@@ -1,7 +1,9 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from '@drivebase/react/lib/redux/base.query';
 import { CreateWorkspaceDto } from '@drivebase/internal/workspaces/dtos/create.workspace.dto';
+import { WorkspaceStatDto } from '@drivebase/internal/workspaces/dtos/stats.workspace.dto';
 import { Workspace } from '@prisma/client';
+import { ApiResponse } from './api.type';
 
 const workspaceApi = createApi({
   baseQuery,
@@ -26,6 +28,12 @@ const workspaceApi = createApi({
         body,
       }),
     }),
+    getStats: build.query<ApiResponse<WorkspaceStatDto[]>, void>({
+      query: () => ({
+        url: '/workspaces/stats',
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -33,5 +41,6 @@ export const {
   useCreateWorkspaceMutation,
   useGetWorkspacesQuery,
   useGetCurrentWorkspaceQuery,
+  useGetStatsQuery,
 } = workspaceApi;
 export default workspaceApi;
