@@ -89,6 +89,13 @@ const filesApi = createApi({
       }),
       invalidatesTags: ['files'],
     }),
+    deleteFile: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/files/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['files'],
+    }),
   }),
 });
 
@@ -99,5 +106,6 @@ export const {
   useStarFileMutation,
   useUnstarFileMutation,
   useRenameFileMutation,
+  useDeleteFileMutation,
 } = filesApi;
 export default filesApi;
