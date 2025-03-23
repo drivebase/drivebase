@@ -146,24 +146,28 @@ function FileList({ starred = false }: FileListProps) {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/" params={{ path: '/' }}>
+                <Link to="/" search={{ path: '/' }}>
                   root
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            {splitPath.map((path, index) => (
-              <Fragment key={path}>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/" params={{ path: '/' + path }}>
-                      {path ?? '/'}
-                    </Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                {index !== splitPath.length - 1 && <BreadcrumbSeparator />}
-              </Fragment>
-            ))}
+            {splitPath.map((path, index) => {
+              const updatedPath = '/' + splitPath.slice(0, index + 1).join('/');
+
+              return (
+                <Fragment key={path}>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link to="/" search={{ path: updatedPath }}>
+                        {path ?? '/'}
+                      </Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  {index !== splitPath.length - 1 && <BreadcrumbSeparator />}
+                </Fragment>
+              );
+            })}
           </BreadcrumbList>
         </Breadcrumb>
       </div>
