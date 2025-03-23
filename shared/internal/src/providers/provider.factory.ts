@@ -8,6 +8,7 @@ import { GoogleDriveProvider } from './providers/google-drive.provider';
 import { DropboxProvider } from './providers/dropbox.provider';
 import { TelegramProvider } from './providers/telegram.provider';
 import { LocalProvider } from './providers/local.provider';
+import { AwsS3Provider } from './providers/aws.s3.provider';
 
 type ProviderConstructor = new (config: Record<string, string>) => BaseProvider;
 
@@ -18,6 +19,7 @@ export const OAuthProviders: ProviderType[] = [
 export const ApiKeyProviders: ProviderType[] = [
   ProviderType.LOCAL,
   ProviderType.TELEGRAM,
+  ProviderType.AMAZON_S3,
 ];
 
 export class ProviderFactory {
@@ -29,6 +31,7 @@ export class ProviderFactory {
     this.providers.set(ProviderType.DROPBOX, DropboxProvider);
     this.providers.set(ProviderType.TELEGRAM, TelegramProvider);
     this.providers.set(ProviderType.LOCAL, LocalProvider);
+    this.providers.set(ProviderType.AMAZON_S3, AwsS3Provider);
   }
 
   /**
