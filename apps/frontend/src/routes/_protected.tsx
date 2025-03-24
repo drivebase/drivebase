@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router';
 import { Loader } from 'lucide-react';
-import { useGetProfileQuery } from '@drivebase/react/lib/redux/endpoints/profile';
+import { useGetProfileQuery } from '@drivebase/react/redux/endpoints/profile';
 import { useEffect } from 'react';
 import {
   Card,
@@ -42,7 +42,7 @@ function RouteComponent() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="absolute inset-0 h-full w-full bg-background bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        <Card className="w-full max-w-sm shadow-xl z-10 rounded-2xl relative">
+        <Card className="w-full bg-background max-w-sm shadow-xl z-10 rounded-2xl relative">
           <CardHeader className="border-b text-center py-12">
             <SignalIcon className="w-20 h-20 mx-auto mb-4 p-4 bg-muted rounded-xl" />
             <CardTitle className="text-xl font-medium">

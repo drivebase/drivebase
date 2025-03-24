@@ -10,7 +10,7 @@ import {
   CardDescription,
 } from '@drivebase/react/components/card';
 import { ProviderType } from '@prisma/client';
-import { useCallbackMutation } from '@drivebase/react/lib/redux/endpoints/providers';
+import { useCallbackMutation } from '@drivebase/react/redux/endpoints/providers';
 
 function Page() {
   const r = useRouter();
@@ -52,10 +52,7 @@ function Page() {
             <p className="text-sm text-muted-foreground">
               Please check console for more details.
             </p>
-            <Button
-              variant={'outline'}
-              onClick={() => r.navigate({ to: '/settings/providers' })}
-            >
+            <Button onClick={() => r.navigate({ to: '/settings/providers' })}>
               Go back
             </Button>
           </CardContent>

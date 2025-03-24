@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@drivebase/react/components/table';
-import { useGetProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
+import { useGetProvidersQuery } from '@drivebase/react/redux/endpoints/providers';
 import {
   Sheet,
   SheetContent,
@@ -27,14 +27,14 @@ import ConfigureProvider from './provider.configure';
 function ProviderList() {
   const [search, setSearch] = useState('');
   const [configureProvider, setConfigureProvider] = useState<Provider | null>(
-    null
+    null,
   );
 
   const { data: providers, isLoading } = useGetProvidersQuery();
 
   const filteredProviders = useMemo(() => {
     return providers?.data.filter((provider) =>
-      provider.label.toLowerCase().includes(search.toLowerCase())
+      provider.label.toLowerCase().includes(search.toLowerCase()),
     );
   }, [providers, search]);
 

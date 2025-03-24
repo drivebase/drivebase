@@ -1,0 +1,6 @@
+{
+  "extends": "@drivebase/typescript-config/nestjs.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  }
+}

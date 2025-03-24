@@ -10,7 +10,7 @@ import {
 import { Input } from '@drivebase/react/components/input';
 import { Label } from '@drivebase/react/components/label';
 import { Button } from '@drivebase/react/components/button';
-import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
+import { useGetAvailableProvidersQuery } from '@drivebase/react/redux/endpoints/providers';
 import { KeyIcon } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -28,7 +28,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   useGetAuthUrlMutation,
   useAuthorizeApiKeyMutation,
-} from '@drivebase/react/lib/redux/endpoints/providers';
+} from '@drivebase/react/redux/endpoints/providers';
 import { toast } from 'sonner';
 
 const createKeySchema = z.object({
@@ -124,7 +124,7 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
             <Select
               onValueChange={(value) => {
                 const provider = providers?.data?.find(
-                  (provider) => provider.type === value
+                  (provider) => provider.type === value,
                 );
                 if (provider) {
                   form.setValue('provider', provider.type);

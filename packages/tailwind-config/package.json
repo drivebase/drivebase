@@ -1,0 +1,13 @@
+{
+  "name": "@drivebase/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./tailwind.config.ts"
+  },
+  "devDependencies": {
+    "@drivebase/typescript-config": "workspace:*",
+    "tailwindcss": "^3.4.17",
+    "tailwindcss-animate": "^1.0.7"
+  }
+}

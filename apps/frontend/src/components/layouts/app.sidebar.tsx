@@ -26,7 +26,7 @@ import {
   settingsItems,
 } from '@drivebase/frontend/constants/sidebar.items';
 import SidebarUpload from './upload';
-import { useGetProfileQuery } from '@drivebase/react/lib/redux/endpoints/profile';
+import { useGetProfileQuery } from '@drivebase/react/redux/endpoints/profile';
 import { useTranslation } from 'react-i18next';
 import { isLanguageRTL } from '@drivebase/frontend/i18n';
 

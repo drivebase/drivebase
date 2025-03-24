@@ -14,21 +14,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@drivebase/react/components/select';
-import {
-  useAppDispatch,
-  useAppSelector,
-} from '@drivebase/react/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@drivebase/react/redux/hooks';
 import {
   setUploadModalOpen,
   clearFileIds,
-} from '@drivebase/react/lib/redux/reducers/uploader.reducer';
+} from '@drivebase/react/redux/reducers/uploader.reducer';
 import { FileIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
-import { useFileStore } from '@drivebase/react/lib/contexts/file-store.context';
+import { useFileStore } from '@drivebase/react/contexts/file-store.context';
 import { Button } from '@drivebase/react/components/button';
-import { useGetProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
+import { useGetProvidersQuery } from '@drivebase/react/redux/endpoints/providers';
 import byteSize from 'byte-size';
-import { useUploadFileMutation } from '@drivebase/react/lib/redux/endpoints/files';
+import { useUploadFileMutation } from '@drivebase/react/redux/endpoints/files';
 import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
 import { toast } from 'sonner';
 import { useSearch } from '@tanstack/react-router';

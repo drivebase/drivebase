@@ -34,7 +34,7 @@ export type InputDialogOptions = {
 type FormData = Record<string, string>;
 
 export async function inputDialog(
-  options: InputDialogOptions
+  options: InputDialogOptions,
 ): Promise<FormData | null> {
   return new Promise((resolve) => {
     const container = document.createElement('div');
@@ -59,8 +59,8 @@ export async function inputDialog(
               field.validation ||
               z.string().min(1, `${field.label} is required`),
           }),
-          {}
-        )
+          {},
+        ),
       );
 
       const form = useForm<z.infer<typeof schema>>({

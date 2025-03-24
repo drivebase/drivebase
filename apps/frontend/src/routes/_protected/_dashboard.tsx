@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router';
 import AppLayout from '@drivebase/frontend/components/layouts/app.layout';
-import { useGetCurrentWorkspaceQuery } from '@drivebase/react/lib/redux/endpoints/workspaces';
+import { useGetCurrentWorkspaceQuery } from '@drivebase/react/redux/endpoints/workspaces';
 import { Loader } from 'lucide-react';
 import { useEffect } from 'react';
 

@@ -1,8 +1,6 @@
-import '@drivebase/react/globals.css';
-
 import { Provider as ReduxProvider } from 'react-redux';
+import { makeStore } from '@drivebase/react/redux/store';
 import { ThemeProvider } from './theme.provider';
-import { makeStore } from '@drivebase/react/lib/redux/store';
 import { Toaster } from 'sonner';
 
 interface ProvidersProps {

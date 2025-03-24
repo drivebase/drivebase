@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { UsersService } from '@drivebase/internal/users/users.service';
+import { UsersService } from '@drivebase/backend/services/users/users.service';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -18,7 +18,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
-    private usersService: UsersService
+    private usersService: UsersService,
   ) {}
 
   async canActivate(context: ExecutionContext) {

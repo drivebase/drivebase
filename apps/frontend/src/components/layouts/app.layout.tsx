@@ -1,8 +1,8 @@
 import AppSidebar from '@drivebase/frontend/components/layouts/app.sidebar';
 import { SidebarProvider } from '@drivebase/react/components/sidebar';
-import { FileStoreProvider } from '@drivebase/react/lib/contexts/file-store.context';
+import { FileStoreProvider } from '@drivebase/react/contexts/file-store.context';
 import { UploadModal } from '@drivebase/frontend/components/layouts/upload.modal';
-import { useGetCurrentWorkspaceQuery } from '@drivebase/react/lib/redux/endpoints/workspaces';
+import { useGetCurrentWorkspaceQuery } from '@drivebase/react/redux/endpoints/workspaces';
 import { Loader } from 'lucide-react';
 import { useRouter } from '@tanstack/react-router';
 

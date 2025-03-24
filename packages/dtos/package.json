@@ -1,0 +1,21 @@
+{
+  "name": "@drivebase/dtos",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "class-validator": "^0.14.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

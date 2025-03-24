@@ -1,0 +1,3 @@
+{
+  "extends": "@drivebase/typescript-config/base.json"
+}

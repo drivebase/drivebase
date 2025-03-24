@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
-
 import { Input } from '@drivebase/react/components/input';
 import { Button } from '@drivebase/react/components/button';
 import {
@@ -20,8 +19,8 @@ import {
 } from '@drivebase/react/components/card';
 import { Checkbox } from '@drivebase/react/components/checkbox';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { LoginUserDto } from '@drivebase/internal/auth/dtos/login.user.dto';
-import { useLoginMutation } from '@drivebase/react/lib/redux/endpoints/auth';
+import { LoginUserDto } from '@drivebase/dtos/login.user.dto';
+import { useLoginMutation } from '@drivebase/react/redux/endpoints/auth';
 import { toast } from 'sonner';
 import { LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -42,7 +41,7 @@ function Page() {
   function onSubmit(data: LoginUserDto) {
     login({ ...data })
       .unwrap()
-      .then((res) => {
+      .then(() => {
         router.navigate({ to: '/', reloadDocument: true });
       })
       .catch((err) => {

@@ -1,6 +1,6 @@
 import { useRef } from 'react';
-import { useAppStore } from '@drivebase/react/lib/redux/hooks';
-import { setWorkspace } from '@drivebase/react/lib/redux/reducers/workspace.reducer';
+import { useAppStore } from '@drivebase/react/redux/hooks';
+import { setWorkspace } from '@drivebase/react/redux/reducers/workspace.reducer';
 import type { Workspace } from '@prisma/client';
 
 type WorkspaceProviderProps = {

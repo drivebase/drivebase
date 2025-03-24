@@ -1,0 +1,24 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "globalEnv": [
+    "AUTH_SECRET",
+    "DATABASE_URL",
+    "VITE_PUBLIC_APP_URL",
+    "VITE_PUBLIC_API_URL"
+  ],
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "inputs": ["$TURBO_DEFAULT$", ".env"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "lint": {},
+    "test": {},
+    "test:e2e": {}
+  }
+}

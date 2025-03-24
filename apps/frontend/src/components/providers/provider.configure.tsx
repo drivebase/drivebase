@@ -1,6 +1,6 @@
 import { Provider } from '@prisma/client';
 import { useState } from 'react';
-import { useListProviderFilesQuery } from '@drivebase/react/lib/redux/endpoints/providers';
+import { useListProviderFilesQuery } from '@drivebase/react/redux/endpoints/providers';
 import {
   Tabs,
   TabsContent,

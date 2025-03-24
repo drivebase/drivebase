@@ -11,7 +11,7 @@ import {
 import { Input } from '@drivebase/react/components/input';
 import { Button } from '@drivebase/react/components/button';
 import { FolderIcon, PlusIcon } from 'lucide-react';
-import { useCreateFolderMutation } from '@drivebase/react/lib/redux/endpoints/files';
+import { useCreateFolderMutation } from '@drivebase/react/redux/endpoints/files';
 import { toast } from 'sonner';
 import { useSearch } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';

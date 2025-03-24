@@ -1,45 +1,120 @@
-<p align="center">
-  <a href="https://github.com/drivebase/drivebase">
-    <img src="./drivebase.svg" width="80px" alt="Drivebase Logo" />
-  </a>
-</p>
+# Turborepo starter
 
-<h3 align="center">
-  Self-Hosted Cloud File Manager
-</h3>
-<p align="center">
-Open-source, self-hosted cloud file manager designed to unify file storage across multiple cloud providers into one seamless interface.
-</p>
+This is a community-maintained example. If you experience a problem, please submit a pull request with a fix. GitHub Issues will be closed.
 
-<p align="center"><a href="https://github.com/drivebase/drivebase/discussions">Discussions</a> · <a href="https://drivebase.github.io/docs">Documentation</a> · <a href="https://discord.gg/3kUSy2d">Discord</a></p>
+## Using this example
 
-> [!WARNING]
-> This project is currently in early development, expect breaking changes with each commit.
+Run the following command:
 
-![drivebase-banner-1](https://github.com/user-attachments/assets/fbac28ab-02ae-4077-af79-06ee938ce08b)
+```bash
+npx create-turbo@latest -e with-nestjs
+```
 
-Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
+## What's inside?
 
-## Features
-- 💪 Free and Open Source
-- 🔗 Multi-Cloud Integration (Google Drive, Dropbox, etc.)
-- 📂 Unified Folder Structure
-- ⚡ Storage Mapping with Cloud Provider Selection
-- 🔍 Cross-Cloud Search
-- 🔁 File Routing Rules for Automated Uploads
+This Turborepo includes the following packages/apps:
 
-## Installation
+### Apps and Packages
 
-Head over to [Quickstart](https://drivebase.github.io/docs/quickstart.html) guide to get your own Drivebase up and running.
+    .
+    ├── apps
+    │   ├── api                       # NestJS app (https://nestjs.com).
+    │   └── web                       # Next.js app (https://nextjs.org).
+    └── packages
+        ├── @drivebase/api                 # Shared `NestJS` resources.
+        ├── @drivebase/eslint-config       # `eslint` configurations (includes `prettier`)
+        ├── @drivebase/jest-config         # `jest` configurations
+        ├── @drivebase/typescript-config   # `tsconfig.json`s used throughout the monorepo
+        └── @drivebase/react                  # Shareable stub React component library.
 
-## Contributing
+Each package and application are 100% [TypeScript](https://www.typescriptlang.org/) safe.
 
-Contributions are welcome! Please feel free to submit a PR.
+### Utilities
 
-## License
+This `Turborepo` has some additional tools already set for you:
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+- [TypeScript](https://www.typescriptlang.org/) for static type-safety
+- [ESLint](https://eslint.org/) for code linting
+- [Prettier](https://prettier.io) for code formatting
+- [Jest](https://prettier.io) & [Playwright](https://playwright.dev/) for testing
 
-## Contact
+### Commands
 
-Join our [Discord server](https://discord.gg/3kUSy2d) to stay updated on the project and get help from the community.
+This `Turborepo` already configured useful commands for all your apps and packages.
+
+#### Build
+
+```bash
+# Will build all the app & packages with the supported `build` script.
+pnpm run build
+
+# ℹ️ If you plan to only build apps individually,
+# Please make sure you've built the packages first.
+```
+
+#### Develop
+
+```bash
+# Will run the development server for all the app & packages with the supported `dev` script.
+pnpm run dev
+```
+
+#### test
+
+```bash
+# Will launch a test suites for all the app & packages with the supported `test` script.
+pnpm run test
+
+# You can launch e2e testes with `test:e2e`
+pnpm run test:e2e
+
+# See `@drivebase/jest-config` to customize the behavior.
+```
+
+#### Lint
+
+```bash
+# Will lint all the app & packages with the supported `lint` script.
+# See `@drivebase/eslint-config` to customize the behavior.
+pnpm run lint
+```
+
+#### Format
+
+```bash
+# Will format all the supported `.ts,.js,json,.tsx,.jsx` files.
+# See `@drivebase/eslint-config/prettier-base.js` to customize the behavior.
+pnpm format
+```
+
+### Remote Caching
+
+> [!TIP]
+> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+
+Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+
+By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+
+```bash
+npx turbo login
+```
+
+This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+
+Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+
+```bash
+npx turbo link
+```
+
+## Useful Links
+
+Learn more about the power of Turborepo:
+
+- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
+- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
+- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
+- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
+- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
+- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, Transition } from 'framer-motion';
-import { cn } from '@drivebase/react/lib/utils';
+import { cn } from '@drivebase/react/utils';
 import { FileIcon } from 'lucide-react';
-import { useAppDispatch } from '@drivebase/react/lib/redux/hooks';
+import { useAppDispatch } from '@drivebase/react/redux/hooks';
 import {
   setFileIds,
   setUploadModalOpen,
-} from '@drivebase/react/lib/redux/reducers/uploader.reducer';
-import { useFileStore } from '@drivebase/react/lib/contexts/file-store.context';
+} from '@drivebase/react/redux/reducers/uploader.reducer';
+import { useFileStore } from '@drivebase/react/contexts/file-store.context';
 import { useTranslation } from 'react-i18next';
 
 function SidebarUpload() {
@@ -77,7 +77,7 @@ function SidebarUpload() {
     <div
       className={cn(
         'relative bg-background text-muted-foreground flex h-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed',
-        'hover:bg-accent/50 transition-all duration-200'
+        'hover:bg-accent/50 transition-all duration-200',
       )}
       onClick={() => ref.current?.click()}
     >

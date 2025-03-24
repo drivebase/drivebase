@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@drivebase/react/components/button';
 import { Input } from '@drivebase/react/components/input';
-import { useCreateWorkspaceMutation } from '@drivebase/react/lib/redux/endpoints/workspaces';
+import { useCreateWorkspaceMutation } from '@drivebase/react/redux/endpoints/workspaces';
 import { useTranslation } from 'react-i18next';
 
 type StepOneProps = {

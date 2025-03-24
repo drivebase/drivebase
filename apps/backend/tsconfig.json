@@ -1,16 +1,10 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "files": [],
-  "include": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
-    }
-  ],
+  "extends": "@drivebase/typescript-config/nestjs.json",
   "compilerOptions": {
-    "esModuleInterop": true
+    "baseUrl": "./",
+    "outDir": "./dist",
+    "paths": {
+      "@drivebase/backend/*": ["src/*"]
+    }
   }
 }

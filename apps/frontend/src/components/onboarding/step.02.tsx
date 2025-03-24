@@ -1,4 +1,4 @@
-import { useGetAvailableProvidersQuery } from '@drivebase/react/lib/redux/endpoints/providers';
+import { useGetAvailableProvidersQuery } from '@drivebase/react/redux/endpoints/providers';
 import { Button } from '@drivebase/react/components/button';
 import { ArrowRight } from 'lucide-react';
 import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';

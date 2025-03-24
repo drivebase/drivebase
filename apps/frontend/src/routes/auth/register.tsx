@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
-
 import { Input } from '@drivebase/react/components/input';
 import { Button } from '@drivebase/react/components/button';
 import {
@@ -18,10 +17,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@drivebase/react/components/card';
-
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { CreateUserDto } from '@drivebase/internal/auth/dtos/create.user.dto';
-import { useRegisterMutation } from '@drivebase/react/lib/redux/endpoints/auth';
+import { CreateUserDto } from '@drivebase/dtos/create.user.dto';
+import { useRegisterMutation } from '@drivebase/react/redux/endpoints/auth';
 import { toast } from 'sonner';
 import { UserPlus2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

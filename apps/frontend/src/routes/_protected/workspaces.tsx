@@ -10,7 +10,7 @@ import {
 } from '@drivebase/react/components/card';
 import { ArrowRight, LibraryIcon, Loader } from 'lucide-react';
 import type { Workspace } from '@prisma/client';
-import { useGetWorkspacesQuery } from '@drivebase/react/lib/redux/endpoints/workspaces';
+import { useGetWorkspacesQuery } from '@drivebase/react/redux/endpoints/workspaces';
 import { useTranslation } from 'react-i18next';
 
 function Page() {

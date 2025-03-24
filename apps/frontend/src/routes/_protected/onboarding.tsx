@@ -69,7 +69,7 @@ function Page() {
         ),
       },
     ],
-    [router]
+    [router],
   );
 
   const currentStep = steps.find((s) => s.id === step.toString());

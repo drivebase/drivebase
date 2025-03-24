@@ -1,15 +1,15 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
-import { UsersService } from '@drivebase/internal/users/users.service';
-import { CreateUserDto } from '@drivebase/internal/auth/dtos/create.user.dto';
+import { UsersService } from '@drivebase/backend/services/users/users.service';
+import { CreateUserDto } from '@drivebase/backend/services/auth/dtos/create.user.dto';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
   constructor(
     private _usersService: UsersService,
-    private _jwtService: JwtService
+    private _jwtService: JwtService,
   ) {}
 
   async validateUser(email: string, password: string) {

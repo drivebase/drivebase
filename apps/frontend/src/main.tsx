@@ -1,9 +1,11 @@
 import './i18n';
+// @ts-expect-error - valid
+import '@drivebase/react/globals.css';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
 import { Providers } from './providers';
-import { useGetVersionQuery } from '@drivebase/react/lib/redux/endpoints/public';
+import { useGetVersionQuery } from '@drivebase/react/redux/endpoints/public';
 import { Loader } from 'lucide-react';
 import { I18nLoader } from './components/I18nLoader';
 
@@ -22,6 +24,7 @@ declare module '@tanstack/react-router' {
 
 const rootElement = document.getElementById('root') as HTMLElement;
 
+// eslint-disable-next-line react-refresh/only-export-components
 function InnserApp() {
   const { data: version, isLoading } = useGetVersionQuery();
 
@@ -51,6 +54,6 @@ if (!rootElement.innerHTML) {
       <I18nLoader>
         <InnserApp />
       </I18nLoader>
-    </Providers>
+    </Providers>,
   );
 }

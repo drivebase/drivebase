@@ -17,7 +17,7 @@ import {
   useRenameFileMutation,
   useStarFileMutation,
   useUnstarFileMutation,
-} from '@drivebase/react/lib/redux/endpoints/files';
+} from '@drivebase/react/redux/endpoints/files';
 import {
   Table,
   TableHeader,
@@ -195,7 +195,7 @@ function FileList({ starred = false }: FileListProps) {
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -227,7 +227,7 @@ function FileList({ starred = false }: FileListProps) {
                         <TableCell>
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       </ContextMenuTrigger>

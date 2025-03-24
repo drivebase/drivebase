@@ -1,6 +1,6 @@
 import { ProviderType } from '@prisma/client';
 import { getProviderIcon } from '@drivebase/frontend/helpers/provider.icon';
-import { cn } from '@drivebase/react/lib/utils';
+import { cn } from '@drivebase/react/utils';
 
 type ProviderIconProps = {
   provider: ProviderType;

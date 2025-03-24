@@ -1,5 +1,3 @@
-export default {
-  displayName: 'backend',
-  preset: '../../jest.preset.js',
-  coverageDirectory: '../../coverage/apps/backend',
-};
+import { config } from '@drivebase/jest-config/nest';
+
+export default config;
