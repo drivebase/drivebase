@@ -1,19 +1,11 @@
 import { DatabaseModule } from '@drivebase/database/db.module';
 import { Global, Module } from '@nestjs/common';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 
 import { ApiModule } from './api/api.module';
 
 @Global()
 @Module({
-  imports: [
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'frontend'),
-    }),
-    DatabaseModule,
-    ApiModule,
-  ],
+  imports: [DatabaseModule, ApiModule],
   controllers: [],
   providers: [],
   exports: [],
