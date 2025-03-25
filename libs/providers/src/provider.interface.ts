@@ -70,4 +70,4 @@ export interface ApiKeyProvider extends BaseProvider {
 // For backward compatibility
 export type CloudProvider = OAuthProvider | ApiKeyProvider;
 
-export const OAUTH_REDIRECT_URI = `${process.env['VITE_PUBLIC_APP_URL']}/providers/[type]/callback`;
+export const OAUTH_REDIRECT_URI = `${process.env['FRONTEND_URL']}/providers/[type]/callback`;
