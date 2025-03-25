@@ -16,56 +16,38 @@ const redirectUri = OAUTH_REDIRECT_URI.replace(
   ProviderType.GOOGLE_DRIVE,
 );
 
+interface GoogleDriveConfig {
+  clientId: string;
+  clientSecret: string;
+  refreshToken?: string;
+  accessToken?: string;
+  expiryDate?: number;
+}
+
+interface GoogleDriveCredentials {
+  accessToken: string;
+  refreshToken?: string;
+  expiryDate?: number;
+}
+
+interface GoogleTokens {
+  access_token: string;
+  refresh_token?: string;
+  expiry_date?: number;
+  token_type?: string;
+}
+
 export class GoogleDriveProvider implements OAuthProvider {
-  private oauth2Client: OAuth2Client;
+  private readonly oauth2Client: OAuth2Client;
   private driveClient: drive_v3.Drive;
 
-  constructor(private config: Record<string, string>) {
-    const parsedConfig = z
-      .object({
-        clientId: z.string(),
-        clientSecret: z.string(),
-        refreshToken: z.string().optional(),
-        accessToken: z.string().optional(),
-        expiryDate: z.number().optional(),
-      })
-      .parse(config);
-
-    this.oauth2Client = new OAuth2Client(
-      parsedConfig.clientId,
-      parsedConfig.clientSecret,
-      redirectUri,
-    );
-
-    this.driveClient = google.drive({
-      version: 'v3',
-      auth: this.oauth2Client,
-    });
-
-    if (
-      parsedConfig.refreshToken &&
-      parsedConfig.accessToken &&
-      parsedConfig.expiryDate
-    ) {
-      this.oauth2Client.setCredentials({
-        refresh_token: parsedConfig.refreshToken,
-        access_token: parsedConfig.accessToken,
-        expiry_date: parsedConfig.expiryDate,
-      });
-    }
+  constructor(private readonly config: GoogleDriveConfig) {
+    this.oauth2Client = this.initializeOAuthClient();
+    this.driveClient = this.initializeDriveClient();
+    this.setupInitialCredentials();
   }
 
-  async getUserInfo() {
-    const response = await this.driveClient.about.get({
-      fields: 'user',
-    });
-
-    return {
-      name: response.data.user?.displayName || undefined,
-      email: response.data.user?.emailAddress || undefined,
-    };
-  }
-
+  // Authentication Methods
   getAuthUrl(state?: string): string {
     return this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
@@ -86,21 +68,18 @@ export class GoogleDriveProvider implements OAuthProvider {
       access_token: tokens.access_token,
     });
 
-    return {
-      accessToken: tokens.access_token,
-      expiryDate: tokens.expiry_date,
-      refreshToken: tokens.refresh_token || undefined,
-    };
+    return this.mapTokensToAuthToken({
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token || undefined,
+      expiry_date: tokens.expiry_date,
+      token_type: tokens.token_type || undefined,
+    });
   }
 
-  async setCredentials(credentials: Record<string, string>): Promise<void> {
-    const schema = z.object({
-      accessToken: z.string(),
-      refreshToken: z.string().optional(),
-      expiryDate: z.number().optional(),
-    });
-
-    const parsedCreds = schema.parse(credentials);
+  async setCredentials(credentials: Record<string, string>) {
+    const parsedCreds = this.validateCredentialsSchema(
+      credentials as unknown as GoogleDriveCredentials,
+    );
 
     this.oauth2Client.setCredentials({
       refresh_token: parsedCreds.refreshToken,
@@ -108,10 +87,7 @@ export class GoogleDriveProvider implements OAuthProvider {
       expiry_date: parsedCreds.expiryDate,
     });
 
-    this.driveClient = google.drive({
-      version: 'v3',
-      auth: this.oauth2Client,
-    });
+    this.driveClient = this.initializeDriveClient();
 
     return Promise.resolve();
   }
@@ -121,8 +97,8 @@ export class GoogleDriveProvider implements OAuthProvider {
     const expiryDate = this.oauth2Client.credentials.expiry_date;
 
     if (expiryDate && expiryDate < currentDate) {
-      if (this.config['refreshToken']) {
-        await this.refreshAccessToken(this.config['refreshToken']);
+      if (this.config.refreshToken) {
+        await this.refreshAccessToken(this.config.refreshToken);
       } else {
         throw new Error('Refresh token not found');
       }
@@ -132,10 +108,7 @@ export class GoogleDriveProvider implements OAuthProvider {
   }
 
   async refreshAccessToken(refreshToken: string): Promise<AuthToken> {
-    this.oauth2Client.setCredentials({
-      refresh_token: refreshToken,
-    });
-
+    this.oauth2Client.setCredentials({ refresh_token: refreshToken });
     const { credentials } = await this.oauth2Client.refreshAccessToken();
 
     if (!credentials.access_token || !credentials.expiry_date) {
@@ -146,29 +119,35 @@ export class GoogleDriveProvider implements OAuthProvider {
       access_token: credentials.access_token,
     });
 
+    return this.mapTokensToAuthToken({
+      access_token: credentials.access_token,
+      refresh_token: credentials.refresh_token || undefined,
+      expiry_date: credentials.expiry_date,
+      token_type: credentials.token_type || undefined,
+    });
+  }
+
+  // User Information Methods
+  async getUserInfo() {
+    const response = await this.driveClient.about.get({
+      fields: 'user',
+    });
+
     return {
-      accessToken: credentials.access_token,
-      refreshToken: credentials.refresh_token || refreshToken,
-      expiryDate: credentials.expiry_date,
-      tokenType: credentials.token_type || undefined,
+      name: response.data.user?.displayName || undefined,
+      email: response.data.user?.emailAddress || undefined,
     };
   }
 
+  // File Operations Methods
   async listFiles(path = '/'): Promise<ProviderFile[]> {
-    const query = path !== '/' ? `'${path}' in parents` : "'root' in parents";
+    const query = this.buildFileQuery(path);
     const response = await this.driveClient.files.list({
       q: query,
       fields: 'files(id, name, mimeType, size, parents)',
     });
-    return (
-      response.data.files?.map((file) => ({
-        id: file.id || '',
-        name: file.name || '',
-        size: file.size ? Number(file.size) : 0,
-        type: file.mimeType || '',
-        isFolder: file.mimeType === 'application/vnd.google-apps.folder',
-      })) || []
-    );
+
+    return this.mapDriveFilesToProviderFiles(response.data.files || []);
   }
 
   async createFolder(name: string) {
@@ -180,15 +159,13 @@ export class GoogleDriveProvider implements OAuthProvider {
       fields: 'id',
     });
 
-    const json = folder.data;
-
-    if (!json.id) {
+    if (!folder.data.id) {
       throw new Error('Failed to create folder');
     }
 
     return {
-      id: json.id,
-      name: name,
+      id: folder.data.id,
+      name,
       path: `/${name}`,
     };
   }
@@ -202,20 +179,16 @@ export class GoogleDriveProvider implements OAuthProvider {
       fields: 'id',
     });
 
-    const json = folder.data;
-
-    if (!json.id) {
+    if (!folder.data.id) {
       throw new Error('Failed to create folder');
     }
 
-    return json.id;
+    return folder.data.id;
   }
 
   async hasFolder(id: string): Promise<boolean> {
     try {
-      await this.driveClient.files.get({
-        fileId: id,
-      });
+      await this.driveClient.files.get({ fileId: id });
       return true;
     } catch {
       return false;
@@ -223,10 +196,7 @@ export class GoogleDriveProvider implements OAuthProvider {
   }
 
   async uploadFile(folderId: string, file: Express.Multer.File) {
-    const fileStream = new Readable();
-    fileStream.push(file.buffer);
-    fileStream.push(null);
-
+    const fileStream = this.createFileStream(file.buffer);
     const media = {
       mimeType: file.mimetype,
       body: fileStream,
@@ -278,9 +248,81 @@ export class GoogleDriveProvider implements OAuthProvider {
   }
 
   async deleteFile(fileId: string): Promise<boolean> {
-    await this.driveClient.files.delete({
-      fileId,
-    });
+    await this.driveClient.files.delete({ fileId });
     return true;
+  }
+
+  // Private Helper Methods
+  private initializeOAuthClient(): OAuth2Client {
+    return new OAuth2Client(
+      this.config.clientId,
+      this.config.clientSecret,
+      redirectUri,
+    );
+  }
+
+  private initializeDriveClient(): drive_v3.Drive {
+    return google.drive({
+      version: 'v3',
+      auth: this.oauth2Client,
+    });
+  }
+
+  private setupInitialCredentials(): void {
+    if (
+      this.config.refreshToken &&
+      this.config.accessToken &&
+      this.config.expiryDate
+    ) {
+      this.oauth2Client.setCredentials({
+        refresh_token: this.config.refreshToken,
+        access_token: this.config.accessToken,
+        expiry_date: this.config.expiryDate,
+      });
+    }
+  }
+
+  private validateCredentialsSchema(
+    credentials: GoogleDriveCredentials,
+  ): GoogleDriveCredentials {
+    return z
+      .object({
+        accessToken: z.string(),
+        refreshToken: z.string().optional(),
+        expiryDate: z.number().optional(),
+      })
+      .parse(credentials);
+  }
+
+  private mapTokensToAuthToken(tokens: GoogleTokens): AuthToken {
+    return {
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiryDate: tokens.expiry_date,
+      tokenType: tokens.token_type,
+    };
+  }
+
+  private buildFileQuery(path: string): string {
+    return path !== '/' ? `'${path}' in parents` : "'root' in parents";
+  }
+
+  private mapDriveFilesToProviderFiles(
+    files: drive_v3.Schema$File[],
+  ): ProviderFile[] {
+    return files.map((file) => ({
+      id: file.id || '',
+      name: file.name || '',
+      size: file.size ? Number(file.size) : 0,
+      type: file.mimeType || '',
+      isFolder: file.mimeType === 'application/vnd.google-apps.folder',
+    }));
+  }
+
+  private createFileStream(buffer: Buffer): Readable {
+    const fileStream = new Readable();
+    fileStream.push(buffer);
+    fileStream.push(null);
+    return fileStream;
   }
 }
