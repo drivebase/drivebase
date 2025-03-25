@@ -15,6 +15,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -44,11 +47,11 @@ jobs:
             image=moby/buildkit:master
             network=host
 
-      - name: Build and push multi-platform image
+      - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform }}
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}
