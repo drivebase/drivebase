@@ -1,145 +1,161 @@
 import { S3 } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
+import { z } from 'zod';
 
 import { ApiKeyProvider, ProviderFile } from '../provider.interface';
 
-export class AwsS3Provider implements ApiKeyProvider {
+interface AwsS3Config {
   region: string;
   accessKeyId: string;
   secretAccessKey: string;
   endpoint: string;
   bucket: string;
-  s3: S3;
+}
+
+interface S3ObjectMetadata {
+  Key?: string;
+  Size?: number;
+  LastModified?: Date;
+  ETag?: string;
+  ContentType?: string;
+}
+
+export class AwsS3Provider implements ApiKeyProvider {
+  private readonly s3: S3;
+  private readonly bucket: string;
 
   constructor(config: Record<string, string>) {
-    this.region = config['region'];
-    this.accessKeyId = config['accessKeyId'];
-    this.secretAccessKey = config['secretAccessKey'];
-    this.endpoint = config['endpoint'];
-    this.bucket = config['bucket'];
-    this.s3 = this.createS3Client();
+    const parsedConfig = this.validateConfig(config);
+    this.bucket = parsedConfig.bucket;
+    this.s3 = this.createS3Client(parsedConfig);
   }
 
-  createS3Client() {
-    return new S3({
-      region: this.region,
-      apiVersion: 'latest',
-      credentials: {
-        accessKeyId: this.accessKeyId,
-        secretAccessKey: this.secretAccessKey,
-      },
-      endpoint: this.endpoint,
-    });
-  }
-
+  // File Operations Methods
   async uploadFile(_: string, file: Express.Multer.File): Promise<string> {
-    const client = this.s3;
-    return new Promise((resolve, reject) => {
-      client.putObject(
-        {
-          Bucket: this.bucket,
-          Key: `${file.originalname}`,
-          Body: file.buffer,
-        },
-        (err) => {
-          if (err) {
-            reject(new Error(err.message));
-          } else {
-            resolve(file.originalname);
-          }
-        },
+    try {
+      await this.s3.putObject({
+        Bucket: this.bucket,
+        Key: file.originalname,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      });
+      return file.originalname;
+    } catch (error) {
+      throw new Error(
+        `Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
-    });
+    }
   }
 
   async downloadFile(fileId: string): Promise<Readable> {
-    const client = this.s3;
-    return new Promise((resolve, reject) => {
-      client.getObject(
-        {
-          Bucket: this.bucket,
-          Key: fileId,
-        },
-        (err, data) => {
-          if (err) {
-            reject(new Error(err.message));
-          } else {
-            resolve(data?.Body as Readable);
-          }
-        },
+    try {
+      const response = await this.s3.getObject({
+        Bucket: this.bucket,
+        Key: fileId,
+      });
+      return response.Body as Readable;
+    } catch (error) {
+      throw new Error(
+        `Failed to download file: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
-    });
+    }
   }
 
-  deleteFile(path: string): Promise<boolean> {
-    const client = this.s3;
-
-    return new Promise((resolve, reject) => {
-      client.deleteObject(
-        {
-          Bucket: this.bucket,
-          Key: path,
-        },
-        (err) => {
-          if (err) {
-            reject(new Error(err.message));
-          } else {
-            resolve(true);
-          }
-        },
+  async deleteFile(path: string): Promise<boolean> {
+    try {
+      await this.s3.deleteObject({
+        Bucket: this.bucket,
+        Key: path,
+      });
+      return true;
+    } catch (error) {
+      throw new Error(
+        `Failed to delete file: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
-    });
+    }
   }
 
-  async validateCredentials() {
-    return Promise.resolve(true);
+  async listFiles(path: string): Promise<ProviderFile[]> {
+    try {
+      const response = await this.s3.listObjectsV2({
+        Bucket: this.bucket,
+        Prefix: path,
+      });
+
+      return this.mapS3ObjectsToProviderFiles(response.Contents || []);
+    } catch (error) {
+      throw new Error(
+        `Failed to list files: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
   }
 
-  async getUserInfo() {
+  async getFileMetadata(fileId: string): Promise<S3ObjectMetadata> {
+    try {
+      const response = await this.s3.headObject({
+        Bucket: this.bucket,
+        Key: fileId,
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Failed to get file metadata: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  // User Information Methods
+  getUserInfo() {
     return Promise.resolve({
-      id: this.accessKeyId,
+      id: this.bucket,
       name: this.bucket,
       email: this.bucket,
     });
   }
 
-  async getFileMetadata(fileId: string) {
-    const client = this.s3;
-    return new Promise((resolve, reject) => {
-      client.headObject(
-        {
-          Bucket: this.bucket,
-          Key: fileId,
-        },
-        (err, data) => {
-          if (err) {
-            reject(new Error(err.message));
-          } else {
-            resolve(data);
-          }
-        },
-      );
+  async validateCredentials(): Promise<boolean> {
+    try {
+      await this.s3.listBuckets({});
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Private Helper Methods
+  private validateConfig(config: Record<string, string>): AwsS3Config {
+    return z
+      .object({
+        region: z.string(),
+        accessKeyId: z.string(),
+        secretAccessKey: z.string(),
+        endpoint: z.string(),
+        bucket: z.string(),
+      })
+      .parse(config);
+  }
+
+  private createS3Client(config: AwsS3Config): S3 {
+    return new S3({
+      region: config.region,
+      apiVersion: 'latest',
+      credentials: {
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey,
+      },
+      endpoint: config.endpoint,
     });
   }
 
-  async listFiles(path: string): Promise<ProviderFile[]> {
-    const client = this.s3;
-    return new Promise((resolve) => {
-      client.listObjectsV2({ Bucket: this.bucket, Prefix: path }, (_, data) => {
-        if (data) {
-          resolve(
-            data.Contents?.map((file) => ({
-              id: file.Key ?? '',
-              name: file.Key ?? '',
-              size: file.Size ?? 0,
-              type: file.Key?.split('.').pop() ?? '',
-              isFolder: file.Key?.endsWith('/') ?? false,
-            })) ?? [],
-          );
-        } else {
-          resolve([]);
-        }
-      });
-    });
+  private mapS3ObjectsToProviderFiles(
+    objects: S3ObjectMetadata[],
+  ): ProviderFile[] {
+    return objects.map((file) => ({
+      id: file.Key ?? '',
+      name: file.Key ?? '',
+      size: file.Size ?? 0,
+      type: file.Key?.split('.').pop() ?? '',
+      isFolder: file.Key?.endsWith('/') ?? false,
+    }));
   }
 }
