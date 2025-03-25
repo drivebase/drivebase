@@ -1,5 +1,25 @@
 # Changelog
 
+# [0.1.0-alpha.0](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.5...v0.1.0-alpha.0) (2025-03-25)
+
+
+### Bug Fixes
+
+* **provider:** implement listFiles method in AwsS3Provider for file retrieval from S3 ([0036ead](https://github.com/drivebase/drivebase/commit/0036eaddd9203aa21f5f6acea939f7bd000a5c53))
+
+
+### Features
+
+* **dashboard:** add DashboardStats component to display file statistics ([8176057](https://github.com/drivebase/drivebase/commit/8176057740831010a1719866c8ddaedd38aaf41a))
+* **dashboard:** integrate stats fetching and display with loading skeletons ([69f16b7](https://github.com/drivebase/drivebase/commit/69f16b730b2864925e59ea2361c4399c14a59473))
+* **files:** add delete and rename file functionalities with confirmation dialogs ([5c1d1cd](https://github.com/drivebase/drivebase/commit/5c1d1cde2168684a83c9cca40c7431fe0a935ef5))
+* **lang:** add support for hindi ([fdc4f3d](https://github.com/drivebase/drivebase/commit/fdc4f3d9baa9fe9c4946b43fea6f2ae878e4975f))
+* **locales:** add additional media type labels to common.json ([deb1dda](https://github.com/drivebase/drivebase/commit/deb1dda3c770a0adfa5be7eb92e7cff927983164))
+* **migrations:** add migration management tool for squashing and validating migrations ([242072f](https://github.com/drivebase/drivebase/commit/242072fd047e64a0eb8fd2b9d9d077eed2295d17))
+* **package:** update database commands in package.json ([9ea4070](https://github.com/drivebase/drivebase/commit/9ea40705d2a1acf06ad681fee3767c162cdf284b))
+* **scripts:** add translation tool for locale files ([886d4d4](https://github.com/drivebase/drivebase/commit/886d4d4634d35766cdc5329ac76f88f55c03c79e))
+* **workspaces:** implement WorkspaceStatDto and update getWorkspaceStats method ([c5d64d9](https://github.com/drivebase/drivebase/commit/c5d64d9b636909e9d21275427c529f82466a7e21))
+
 # [1.0.0-alpha.5](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2025-03-20)
 
 
