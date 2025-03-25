@@ -24,7 +24,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "BROWSER=null prisma studio",
+    "db:squash": "node scripts/manage-migrations.mjs squash",
+    "db:validate": "node scripts/manage-migrations.mjs validate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.772.0",
