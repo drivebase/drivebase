@@ -17,7 +17,7 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["node", "multer"],
+    "types": ["node", "multer", "vitest/globals"],
     "jsx": "react-jsx",
     "paths": {
       "@drivebase/web/*": ["web/*"],
