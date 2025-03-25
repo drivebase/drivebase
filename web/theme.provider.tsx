@@ -27,25 +27,40 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
   );
 
   useEffect(() => {
     const root = window.document.documentElement;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-    root.classList.remove('light', 'dark');
+    // Function to update theme based on system preference
+    const updateTheme = () => {
+      root.classList.remove('light', 'dark');
 
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light';
+      if (theme === 'system') {
+        const systemTheme = mediaQuery.matches ? 'dark' : 'light';
+        root.classList.add(systemTheme);
+        return;
+      }
 
-      root.classList.add(systemTheme);
-      return;
-    }
+      root.classList.add(theme);
+    };
 
-    root.classList.add(theme);
+    // Initial theme update
+    updateTheme();
+
+    // Listen for system theme changes
+    const listener = (e: MediaQueryListEvent) => {
+      if (theme === 'system') {
+        const systemTheme = e.matches ? 'dark' : 'light';
+        root.classList.remove('light', 'dark');
+        root.classList.add(systemTheme);
+      }
+    };
+
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
   }, [theme]);
 
   const value = {
