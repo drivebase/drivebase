@@ -1,5 +1,18 @@
 # Changelog
 
+# [v1.0.0-alpha.6](https://github.com/drivebase/drivebase/compare/v0.1.0-alpha.0...vv1.0.0-alpha.6) (2025-03-25)
+
+
+### Bug Fixes
+
+* **theme:** implement dark mode support and enhance theme management ([33ec05e](https://github.com/drivebase/drivebase/commit/33ec05eb7f9ce123e2ebd78a1bf1af2ed4ca7cba))
+
+
+### Features
+
+* **ci:** add multi-platform build support in CI workflow ([5b32125](https://github.com/drivebase/drivebase/commit/5b32125e39bb42990bbe060ec0c36e4c02548bd0))
+* **config:** add Vitest configuration files for testing ([42b73fd](https://github.com/drivebase/drivebase/commit/42b73fd8a8a58e742a41cc410b36662aa2474a09))
+
 # [0.1.0-alpha.0](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.5...v0.1.0-alpha.0) (2025-03-25)
 
 
