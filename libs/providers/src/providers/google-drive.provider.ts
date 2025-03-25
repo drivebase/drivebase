@@ -16,14 +16,6 @@ const redirectUri = OAUTH_REDIRECT_URI.replace(
   ProviderType.GOOGLE_DRIVE,
 );
 
-interface GoogleDriveConfig {
-  clientId: string;
-  clientSecret: string;
-  refreshToken?: string;
-  accessToken?: string;
-  expiryDate?: number;
-}
-
 interface GoogleDriveCredentials {
   accessToken: string;
   refreshToken?: string;
@@ -41,7 +33,7 @@ export class GoogleDriveProvider implements OAuthProvider {
   private readonly oauth2Client: OAuth2Client;
   private driveClient: drive_v3.Drive;
 
-  constructor(private readonly config: GoogleDriveConfig) {
+  constructor(private readonly config: Record<string, string>) {
     this.oauth2Client = this.initializeOAuthClient();
     this.driveClient = this.initializeDriveClient();
     this.setupInitialCredentials();
@@ -277,7 +269,7 @@ export class GoogleDriveProvider implements OAuthProvider {
       this.oauth2Client.setCredentials({
         refresh_token: this.config.refreshToken,
         access_token: this.config.accessToken,
-        expiry_date: this.config.expiryDate,
+        expiry_date: Number(this.config.expiryDate),
       });
     }
   }
