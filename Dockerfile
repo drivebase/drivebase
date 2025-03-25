@@ -1,66 +1,62 @@
 FROM node:22-alpine AS base
 
-ENV NPM_CONFIG_UPDATE_NOTIFIER=false
-ENV NEXT_TELEMETRY_DISABLED=1
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
 
+# Set working directory
 WORKDIR /app
 
-COPY package.json .
-COPY pnpm-lock.yaml .
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
 
-RUN npm i -g pnpm
-RUN pnpm install --frozen-lockfile
+# Install dependencies
+RUN npm i -g pnpm@9 && \
+  pnpm install --frozen-lockfile
 
-COPY apps apps
-COPY shared shared
-COPY schema.prisma .
-COPY nx.json tsconfig.base.json eslint.config.mjs jest.* /app/ 
+# Copy the rest of the application
+COPY apps ./apps
+COPY libs ./libs
+COPY web ./web
+COPY tsconfig.json tsconfig.build.json ./
+COPY nest-cli.json schema.prisma webpack.config.js ./
 
-RUN npm run db:generate
-RUN npx nx run-many --target=build --projects=frontend,backend
+# Generate Prisma client
+RUN pnpm db:generate
+
+ENV NODE_ENV=production
+
+# Build the application
+RUN pnpm run build && \
+  pnpm prune --production && \
+  pnpm store prune
 
 FROM node:22-alpine AS runner
 
-ARG APP_VERSION
-ENV APP_VERSION=${APP_VERSION}
-ENV NODE_ENV=production
+# Install nginx
+RUN apk add --no-cache nginx
 
-RUN apk add --no-cache \
-  caddy \
-  supervisor
+# Create nginx config directory
+RUN mkdir -p /etc/nginx/conf.d
 
-RUN npm i -g pnpm
-
-WORKDIR /app
-
-COPY --from=base /app/dist/apps .
-
-WORKDIR /app/backend
-
-COPY schema.prisma .
-
-RUN pnpm install --frozen-lockfile --prod && \
-  pnpm add tslib && \
-  pnpm store prune && \
-  npx prisma generate && \
-  npm cache clean --force && \
-  rm -rf /root/.cache && \
-  rm -rf /root/.npm
-
-COPY scripts scripts
-COPY migrations migrations
-COPY var/docker/entrypoint.sh .
-
-EXPOSE 7337
+# Copy docker configs
+COPY var/docker/nginx.conf /etc/nginx/nginx.conf
+COPY var/docker/default.conf /etc/nginx/conf.d/default.conf
+COPY var/docker/entrypoint.sh /app/entrypoint.sh
 
 WORKDIR /app
 
-COPY var/docker/Caddyfile .
-COPY var/docker/supervisord.conf /etc/supervisord.conf
-COPY var/docker/supervisord /app/supervisord
+# Copy the package files
+COPY --from=base /app/package.json ./package.json
+COPY --from=base /app/pnpm-lock.yaml ./pnpm-lock.yaml
 
-WORKDIR /app/backend
+# Copy the node_modules
+COPY --from=base /app/node_modules ./node_modules
 
-RUN chmod +x entrypoint.sh
+# Copy the dist
+COPY --from=base /app/dist/apps/drivebase ./dist
+COPY --from=base /app/web/dist ./web
 
-CMD ["./entrypoint.sh"]
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
+
