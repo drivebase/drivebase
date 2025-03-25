@@ -1,5 +1,6 @@
 import { Skeleton } from '@drivebase/web/components/ui/skeleton';
 import { useGetStatsQuery } from '@drivebase/web/lib/redux/endpoints/workspaces';
+import { cn } from '@drivebase/web/lib/utils';
 import { Link } from '@tanstack/react-router';
 import byteSize from 'byte-size';
 import {
@@ -63,7 +64,6 @@ function DashboardStats() {
         for (const stat of statData.data) {
           const index = prev.findIndex((s) => s.title === stat.title);
           if (index !== -1) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             newStat[index] = {
               ...newStat[index],
               ...stat,
@@ -86,23 +86,19 @@ function DashboardStats() {
             <div key={stat.title} className="bg-background border rounded-lg">
               <div className="flex items-center p-6">
                 <div
-                  className={`flex items-center justify-center w-12 h-12 ${stat.bgColor} rounded-full mr-4`}
+                  className={cn(
+                    'flex items-center justify-center w-12 h-12 rounded-full mr-4',
+                    stat.bgColor,
+                  )}
                 >
                   <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <p className="text-sm font-medium opacity-50">
                     {t(`common:${stat.title.toLowerCase()}`)}
                   </p>
                   <div className="flex items-baseline">
-                    <p className="text-2xl font-semibold dark:text-white">
-                      {stat.count}
-                    </p>
-                    {stat.suffix && (
-                      <span className="ml-1 text-gray-400 dark:text-gray-500 text-sm">
-                        {stat.suffix}
-                      </span>
-                    )}
+                    <p className="text-2xl font-semibold">{stat.count}</p>
                   </div>
                 </div>
               </div>

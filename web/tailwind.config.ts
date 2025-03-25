@@ -2,6 +2,7 @@ import type { Config } from 'tailwindcss';
 import animate from 'tailwindcss-animate';
 
 const config: Config = {
+  darkMode: 'class',
   content: ['./**/*!(*.stories|*.spec).{ts,tsx,html}'],
   theme: {
     extend: {
