@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2023",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "noFallthroughCasesInSwitch": false,
+    "types": ["node", "multer"],
+    "jsx": "react-jsx",
+    "paths": {
+      "@drivebase/web/*": ["web/*"],
+      "@drivebase/auth": ["libs/auth/src"],
+      "@drivebase/auth/*": ["libs/auth/src/*"],
+      "@drivebase/database": ["libs/database/src"],
+      "@drivebase/database/*": ["libs/database/src/*"],
+      "@drivebase/files": ["libs/files/src"],
+      "@drivebase/files/*": ["libs/files/src/*"],
+      "@drivebase/providers": ["libs/providers/src"],
+      "@drivebase/providers/*": ["libs/providers/src/*"],
+      "@drivebase/users": ["libs/users/src"],
+      "@drivebase/users/*": ["libs/users/src/*"],
+      "@drivebase/workspaces": ["libs/workspaces/src"],
+      "@drivebase/workspaces/*": ["libs/workspaces/src/*"]
+    }
+  }
+}

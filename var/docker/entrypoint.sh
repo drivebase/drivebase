@@ -1,14 +1,27 @@
 #!/bin/sh
 
-if [ "$1" = "telegram-login" ]; then
-  echo "Running Telegram login..."
-  node scripts/telegram-login.mjs
-  exit 0
-fi
+# Start nginx in the background
+nginx -g "daemon off;" &
 
-# Run database migrations
-echo "Running database migrations..."
-node scripts/migrate-deploy.mjs
+# Store nginx's PID
+NGINX_PID=$!
 
+# Start the application
+node dist/main &
 
-/usr/bin/supervisord -c /etc/supervisord.conf
+# Store the application's PID
+APP_PID=$!
+
+# Function to handle shutdown
+shutdown() {
+    echo "Shutting down..."
+    kill $NGINX_PID
+    kill $APP_PID
+    exit 0
+}
+
+# Trap SIGTERM and SIGINT
+trap shutdown SIGTERM SIGINT
+
+# Wait for both processes
+wait

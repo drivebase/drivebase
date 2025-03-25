@@ -1,9 +1,0 @@
-{
-  "name": "internal",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "shared/internal/src",
-  "projectType": "library",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project internal --web",
-  "targets": {}
-}

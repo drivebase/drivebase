@@ -1,0 +1,27 @@
+{
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "@drivebase/auth": "<rootDir>/../libs/auth/src",
+    "@drivebase/auth/(.*)": "<rootDir>/../libs/auth/src/$1",
+    "@drivebase/db": "<rootDir>/../libs/db/src",
+    "@drivebase/db/(.*)": "<rootDir>/../libs/db/src/$1",
+    "@drivebase/files": "<rootDir>/../libs/files/src",
+    "@drivebase/files/(.*)": "<rootDir>/../libs/files/src/$1",
+    "@drivebase/providers": "<rootDir>/../libs/providers/src",
+    "@drivebase/providers/(.*)": "<rootDir>/../libs/providers/src/$1",
+    "@drivebase/shared": "<rootDir>/../libs/shared/src",
+    "@drivebase/shared/(.*)": "<rootDir>/../libs/shared/src/$1",
+    "@drivebase/users": "<rootDir>/../libs/users/src",
+    "@drivebase/users/(.*)": "<rootDir>/../libs/users/src/$1"
+  }
+}
