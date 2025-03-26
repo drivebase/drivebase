@@ -1,29 +1,16 @@
 import {
+  DataTable,
+  FilterParams,
+} from '@drivebase/web/components/common/data.table';
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@drivebase/web/components/ui/breadcrumb';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuLabel,
-  ContextMenuTrigger,
-} from '@drivebase/web/components/ui/context-menu';
-import { DropdownMenuSeparator } from '@drivebase/web/components/ui/dropdown-menu';
-import { Input } from '@drivebase/web/components/ui/input';
+import { Button } from '@drivebase/web/components/ui/button';
 import { Separator } from '@drivebase/web/components/ui/separator';
-import { Skeleton } from '@drivebase/web/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@drivebase/web/components/ui/table';
 import {
   useDeleteFileMutation,
   useGetFilesQuery,
@@ -31,29 +18,26 @@ import {
   useStarFileMutation,
   useUnstarFileMutation,
 } from '@drivebase/web/lib/redux/endpoints/files';
+import { useGetProvidersQuery } from '@drivebase/web/lib/redux/endpoints/providers';
+import { formatDate, formatFileSize } from '@drivebase/web/lib/utils/format';
 import type { File as DBFile } from '@prisma/client';
 import { Link, useRouter, useSearch } from '@tanstack/react-router';
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import {
   DownloadIcon,
   Grid2X2Icon,
-  InfoIcon,
   ListIcon,
-  MoveIcon,
   PencilIcon,
   StarIcon,
   StarOffIcon,
   TrashIcon,
 } from 'lucide-react';
-import { Fragment, useMemo } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { inputDialog } from '../common/input.dialog';
-import { columns } from './columns';
+import ProviderIcon from '../providers/provider.icon';
+import { FileIcon } from './file.icon';
 
 const baseUrl = import.meta.env['VITE_PUBLIC_API_URL'] || '/api';
 
@@ -64,12 +48,34 @@ type FileListProps = {
 function FileList({ starred = false }: FileListProps) {
   const router = useRouter();
   const search = useSearch({ strict: false });
-
   const parentPath = search.path ?? '/';
 
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  // State for search/filter
+  const [searchFilters, setSearchFilters] = useState<FilterParams[]>([]);
+
+  // Get actual page and limit from pagination state
+  const page = pagination.pageIndex + 1;
+  const limit = pagination.pageSize;
+
+  // Build search query string from filters
+  const searchQuery = useMemo(() => {
+    const nameFilter = searchFilters.find((f) => f.columnId === 'name');
+    // Return either the value or undefined (not empty string) to ensure it's properly omitted from query params when empty
+    return nameFilter?.value || undefined;
+  }, [searchFilters]);
+
+  const { data: providers } = useGetProvidersQuery();
   const { data, isLoading } = useGetFilesQuery({
     parentPath,
     isStarred: starred,
+    page,
+    limit,
+    search: searchQuery, // Add search parameter
   });
 
   const [starFile] = useStarFileMutation();
@@ -79,23 +85,17 @@ function FileList({ starred = false }: FileListProps) {
 
   const splitPath = parentPath.split('/').filter(Boolean);
 
-  const filteredFiles = useMemo(() => {
-    const files = Array.from(data?.data ?? []);
+  const handlePaginationChange = useCallback(
+    (newPagination: PaginationState) => {
+      setPagination(newPagination);
+    },
+    [],
+  );
 
-    const sortedFiles = files.sort((a, b) => {
-      if (a.isFolder && !b.isFolder) return -1;
-      if (!a.isFolder && b.isFolder) return 1;
-      return 0;
-    });
-
-    return sortedFiles;
-  }, [data?.data]);
-
-  const table = useReactTable({
-    data: filteredFiles,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
+  // Handle search/filter changes
+  const handleFilterChange = useCallback((filters: FilterParams[]) => {
+    setSearchFilters(filters);
+  }, []);
 
   const handleDownload = async (file: DBFile) => {
     const fileId = file.id;
@@ -136,10 +136,264 @@ function FileList({ starred = false }: FileListProps) {
     }
   };
 
+  const handleRename = useCallback(
+    (file: DBFile) => {
+      const name = file.name;
+      inputDialog({
+        title: `Rename`,
+        description: 'Enter the new name for the file',
+        icon: PencilIcon,
+        inputFields: [
+          {
+            label: `Enter new name`,
+            name: 'name',
+            type: 'text',
+            defaultValue: name,
+          },
+        ],
+      })
+        .then((res) => {
+          if (!res?.name) {
+            toast.error('Invalid name');
+            return;
+          }
+          renameFile({
+            id: file.id,
+            name: res.name,
+          })
+            .unwrap()
+            .then(() => {
+              toast.success('File renamed successfully');
+            })
+            .catch((err) => {
+              console.error(err);
+              toast.error('Failed to rename file');
+            });
+        })
+        .catch((err) => {
+          console.error(err);
+          toast.error('Failed to rename file');
+        });
+    },
+    [renameFile],
+  );
+
+  const handleDelete = useCallback(
+    (file: DBFile) => {
+      const name = file.name;
+      inputDialog({
+        title: `Are you sure?`,
+        description: 'This action cannot be undone.',
+        icon: TrashIcon,
+        inputFields: [
+          {
+            label: `To confirm, type "${name}"`,
+            name: 'name',
+            type: 'text',
+            placeholder: '',
+          },
+        ],
+      })
+        .then((res) => {
+          if (res?.name === name) {
+            deleteFile(file.id)
+              .unwrap()
+              .then(() => {
+                toast.success('File deleted successfully');
+              })
+              .catch((err) => {
+                console.error(err);
+                toast.error('Failed to delete file');
+              });
+          } else if (res) {
+            toast.error('Incorrect name');
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          toast.error('Failed to delete file');
+        });
+    },
+    [deleteFile],
+  );
+
+  const handleToggleStar = useCallback(
+    (file: DBFile) => {
+      if (file.isStarred) {
+        unstarFile(file.id)
+          .unwrap()
+          .catch((err) => {
+            console.error(err);
+            toast.error('Failed to unstar file');
+          });
+      } else {
+        starFile(file.id)
+          .unwrap()
+          .then(() => {
+            toast.success('File starred successfully');
+          })
+          .catch((err) => {
+            console.error(err);
+            toast.error('Failed to star file');
+          });
+      }
+    },
+    [starFile, unstarFile],
+  );
+
+  const columns = useMemo<ColumnDef<DBFile>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        cell: ({ row }) => {
+          const file = row.original;
+          return (
+            <div className="flex items-center gap-2">
+              <FileIcon file={file} size={24} />
+              <span>{file.name}</span>
+              {file.isStarred && (
+                <StarIcon className="h-4 w-4 text-yellow-500" />
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'size',
+        header: 'Size',
+        cell: ({ row }) => {
+          const file = row.original;
+          return file.isFolder ? '-' : formatFileSize(file.size || 0);
+        },
+      },
+      {
+        accessorKey: 'updatedAt',
+        header: 'Last Modified',
+        cell: ({ row }) => {
+          return formatDate(row.original.updatedAt);
+        },
+      },
+      {
+        accessorKey: 'fileProviderId',
+        header: 'Provider',
+        cell: ({ row }) => {
+          const file = row.original;
+          const provider = providers?.data?.find(
+            (p) => p.id === file.fileProviderId,
+          );
+          if (!provider) return '-';
+          return (
+            <div className="flex items-center gap-2 capitalize">
+              <ProviderIcon provider={provider.type} className="w-5 h-5" />
+              {provider.type.replace('_', ' ').toLocaleLowerCase()}
+            </div>
+          );
+        },
+      },
+      {
+        id: 'actions',
+        cell: ({ row }) => {
+          const file = row.original;
+          return (
+            <div className="flex justify-end">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleStar(file);
+                }}
+              >
+                {file.isStarred ? (
+                  <StarOffIcon className="h-4 w-4" />
+                ) : (
+                  <StarIcon className="h-4 w-4" />
+                )}
+                <span className="sr-only">
+                  {file.isStarred ? 'Unstar' : 'Star'}
+                </span>
+              </Button>
+              {!file.isFolder && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload(file).catch((err) => {
+                      console.error(err);
+                      toast.error('Failed to download file');
+                    });
+                  }}
+                >
+                  <DownloadIcon className="h-4 w-4" />
+                  <span className="sr-only">Download</span>
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRename(file);
+                }}
+              >
+                <PencilIcon className="h-4 w-4" />
+                <span className="sr-only">Rename</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(file);
+                }}
+              >
+                <TrashIcon className="h-4 w-4" />
+                <span className="sr-only">Delete</span>
+              </Button>
+            </div>
+          );
+        },
+      },
+    ],
+    [handleToggleStar, handleDownload, handleRename, handleDelete],
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Input placeholder="Search" className="w-[300px]" />
+        <div className="w-full">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/" search={{ path: '/' }}>
+                    root
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              {splitPath.map((path, index) => {
+                const updatedPath =
+                  '/' + splitPath.slice(0, index + 1).join('/');
+
+                return (
+                  <Fragment key={path}>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink asChild>
+                        <Link to="/" search={{ path: updatedPath }}>
+                          {path ?? '/'}
+                        </Link>
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    {index !== splitPath.length - 1 && <BreadcrumbSeparator />}
+                  </Fragment>
+                );
+              })}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
         <div className="flex items-center gap-2">
           <ListIcon size={20} />
           <Separator orientation="vertical" className="h-4" />
@@ -147,243 +401,30 @@ function FileList({ starred = false }: FileListProps) {
         </div>
       </div>
 
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/" search={{ path: '/' }}>
-                  root
-                </Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            {splitPath.map((path, index) => {
-              const updatedPath = '/' + splitPath.slice(0, index + 1).join('/');
-
-              return (
-                <Fragment key={path}>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link to="/" search={{ path: updatedPath }}>
-                        {path ?? '/'}
-                      </Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  {index !== splitPath.length - 1 && <BreadcrumbSeparator />}
-                </Fragment>
-              );
-            })}
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-
-      {isLoading ? (
-        <div className="flex flex-col gap-4">
-          {new Array(10).fill(0).map((_, index) => (
-            <Skeleton key={index} className="w-full h-12" />
-          ))}
-        </div>
-      ) : (
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  onDoubleClick={() => {
-                    if (row.original.isFolder) {
-                      router.navigate({
-                        to: '/',
-                        search: {
-                          path: row.original.path,
-                        },
-                      });
-                    }
-                  }}
-                  className="select-none"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <ContextMenu key={cell.id}>
-                      <ContextMenuTrigger asChild>
-                        <TableCell>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      </ContextMenuTrigger>
-                      <ContextMenuContent className="w-[200px]">
-                        <ContextMenuLabel>{row.original.name}</ContextMenuLabel>
-                        <DropdownMenuSeparator />
-                        <ContextMenuItem>
-                          <InfoIcon className="w-4 h-4 mr-2" />
-                          File info
-                        </ContextMenuItem>
-                        <ContextMenuItem
-                          disabled={row.original.isFolder}
-                          onClick={() => {
-                            handleDownload(row.original).catch((err) => {
-                              console.error(err);
-                              toast.error('Failed to download file');
-                            });
-                          }}
-                        >
-                          <DownloadIcon className="w-4 h-4 mr-2" />
-                          Download
-                        </ContextMenuItem>
-                        <DropdownMenuSeparator />
-                        <ContextMenuItem
-                          // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                          onClick={async () => {
-                            const name = row.original.name;
-                            const res = await inputDialog({
-                              title: `Are you sure?`,
-                              description: 'This action cannot be undone.',
-                              icon: TrashIcon,
-                              inputFields: [
-                                {
-                                  label: `To confirm, type "${name}"`,
-                                  name: 'name',
-                                  type: 'text',
-                                  placeholder: '',
-                                },
-                              ],
-                            });
-                            if (res?.name === name) {
-                              deleteFile(row.original.id)
-                                .unwrap()
-                                .then(() => {
-                                  toast.success('File deleted successfully');
-                                })
-                                .catch((err) => {
-                                  console.error(err);
-                                  toast.error('Failed to delete file');
-                                });
-                            } else {
-                              toast.error('Incorrect name');
-                            }
-                          }}
-                        >
-                          <TrashIcon className="w-4 h-4 mr-2" />
-                          Delete
-                        </ContextMenuItem>
-                        <ContextMenuItem
-                          onClick={() => {
-                            const name = row.original.name;
-                            inputDialog({
-                              title: `Rename`,
-                              description: 'Enter the new name for the file',
-                              icon: PencilIcon,
-                              inputFields: [
-                                {
-                                  label: `Enter new name`,
-                                  name: 'name',
-                                  type: 'text',
-                                  defaultValue: name,
-                                },
-                              ],
-                            })
-                              .then((res) => {
-                                if (!res?.name) {
-                                  toast.error('Invalid name');
-                                  return;
-                                }
-                                renameFile({
-                                  id: row.original.id,
-                                  name: res.name,
-                                })
-                                  .unwrap()
-                                  .then(() => {
-                                    toast.success('File renamed successfully');
-                                  })
-                                  .catch((err) => {
-                                    console.error(err);
-                                    toast.error('Failed to rename file');
-                                  });
-                              })
-                              .catch((err) => {
-                                console.error(err);
-                                toast.error('Failed to rename file');
-                              });
-                          }}
-                        >
-                          <PencilIcon className="w-4 h-4 mr-2" />
-                          Rename
-                        </ContextMenuItem>
-                        <ContextMenuItem>
-                          <MoveIcon className="w-4 h-4 mr-2" />
-                          Move
-                        </ContextMenuItem>
-                        <DropdownMenuSeparator />
-                        <ContextMenuItem
-                          onClick={() => {
-                            if (row.original.isStarred) {
-                              unstarFile(row.original.id)
-                                .unwrap()
-                                .catch((err) => {
-                                  console.error(err);
-                                  toast.error('Failed to unstar file');
-                                });
-                            } else {
-                              starFile(row.original.id)
-                                .unwrap()
-                                .then(() => {
-                                  toast.success('File starred successfully');
-                                })
-                                .catch((err) => {
-                                  console.error(err);
-                                  toast.error('Failed to star file');
-                                });
-                            }
-                          }}
-                        >
-                          {row.original.isStarred ? (
-                            <StarOffIcon className="w-4 h-4 mr-2" />
-                          ) : (
-                            <StarIcon className="w-4 h-4 mr-2" />
-                          )}
-                          {row.original.isStarred
-                            ? 'Remove from starred'
-                            : 'Add to starred'}
-                        </ContextMenuItem>
-                      </ContextMenuContent>
-                    </ContextMenu>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow className="hover:bg-transparent">
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      )}
+      <DataTable
+        columns={columns}
+        data={data?.data?.data || []}
+        paginationMeta={data?.data?.meta}
+        serverPagination={true}
+        onPaginationChange={handlePaginationChange}
+        serverFiltering={true}
+        onFilterChange={handleFilterChange}
+        filterDebounce={500}
+        isLoading={isLoading}
+        showSearch={true}
+        searchColumn="name"
+        searchPlaceholder="Search files..."
+        onRowClick={(file) => {
+          if (file.isFolder) {
+            void router.navigate({
+              to: '/',
+              search: {
+                path: file.path,
+              },
+            });
+          }
+        }}
+      />
     </div>
   );
 }
