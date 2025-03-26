@@ -38,7 +38,7 @@ function AppLayout({ children }: AppLayoutProps) {
       <SidebarProvider>
         <AppSidebar />
         <main className="h-screen flex-1 flex items-start bg-sidebar pt-2 gap-2">
-          <div className="flex-1 rounded-tl-2xl border bg-background p-10 h-[100vh-2rem] overflow-auto">
+          <div className="h-full flex-1 rounded-tl-2xl border bg-background p-10 overflow-auto">
             {children}
           </div>
         </main>
