@@ -185,10 +185,10 @@ export class FilesService {
       },
       orderBy: [
         {
-          isFolder: 'desc', // Folders first
+          isFolder: 'desc',
         },
         {
-          updatedAt: 'desc', // Then by most recent update
+          createdAt: 'asc',
         },
       ],
     });
@@ -378,7 +378,7 @@ export class FilesService {
       throw new Error('Provider not found');
     }
 
-    const metadata = (provider.metadata || {}) as Record<string, string>;
+    const metadata = (provider.metadata || {}) as Record<string, unknown>;
 
     try {
       const credentials = provider.credentials as Record<string, string>;
@@ -402,10 +402,12 @@ export class FilesService {
         let folderId = '';
 
         if ('hasFolder' in providerInstance) {
-          const folder = await providerInstance.hasFolder(metadata['folderId']);
+          const folder = await providerInstance.hasFolder(
+            metadata['folderId'] as string,
+          );
 
           if (metadata['folderId']) {
-            folderId = metadata['folderId'];
+            folderId = metadata['folderId'] as string;
           }
 
           if (!folder) {
