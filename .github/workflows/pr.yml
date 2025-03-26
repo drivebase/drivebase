@@ -1,0 +1,58 @@
+name: Run Tests
+
+on:
+  pull_request:
+    paths:
+      - '**/*.ts'
+      - '**/*.js'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        id: test-run
+        run: |
+          echo "::group::Test Results"
+          TEST_OUTPUT=$(pnpm test)
+          echo "$TEST_OUTPUT"
+          echo "::endgroup::"
+
+          # Save output for PR comment
+          echo "result<<EOF" >> $GITHUB_OUTPUT
+          echo "$TEST_OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Post test results as PR comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const testResults = `### Test Results
+            \`\`\`
+            ${{ steps.test-run.outputs.result }}
+            \`\`\`
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: testResults
+            });
