@@ -7,8 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
-    "api:dev": "nest start --watch",
-    "api:debug": "nest start --debug --watch",
+    "api:dev": "nest start --debug --watch",
     "api:prod": "node dist/apps/drivebase/main",
     "api:build": "nest build",
     "web:dev": "cd web && vite",
