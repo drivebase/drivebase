@@ -8,6 +8,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -78,5 +79,26 @@ export class ProvidersController {
     @Query('path') path?: string,
   ) {
     return this.providersService.listFiles(providerId, path);
+  }
+
+  @Patch('/:providerId/metadata')
+  @UseGuards(WorkspaceGuard)
+  updateMetadata(
+    @Param('providerId') providerId: string,
+    @Body() body: { metadata: Record<string, unknown> },
+  ) {
+    return this.providersService.updateProviderMetadata(
+      providerId,
+      body.metadata,
+    );
+  }
+
+  @Patch('/:providerId')
+  @UseGuards(WorkspaceGuard)
+  updateProvider(
+    @Param('providerId') providerId: string,
+    @Body() body: { label?: string },
+  ) {
+    return this.providersService.updateProvider(providerId, body);
   }
 }
