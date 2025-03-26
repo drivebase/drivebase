@@ -401,6 +401,10 @@ export class FilesService {
       for (const file of files) {
         let folderId = '';
 
+        if (metadata['defaultUploadPath']) {
+          folderId = metadata['defaultUploadPath'] as string;
+        }
+
         if ('hasFolder' in providerInstance) {
           const folder = await providerInstance.hasFolder(
             metadata['folderId'] as string,
