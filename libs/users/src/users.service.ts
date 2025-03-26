@@ -33,4 +33,12 @@ export class UsersService {
       select: userProfile.select,
     });
   }
+
+  async update(id: string, data: Prisma.UserUpdateInput) {
+    const user = await this.prisma.user.update({
+      where: { id },
+      data,
+    });
+    return user;
+  }
 }

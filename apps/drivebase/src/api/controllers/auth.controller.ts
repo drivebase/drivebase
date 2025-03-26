@@ -1,9 +1,15 @@
 import { Public } from '@drivebase/auth/auth.guard';
 import { AuthService } from '@drivebase/auth/auth.service';
 import { CreateUserDto } from '@drivebase/auth/dtos/create.user.dto';
+import {
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  VerifyForgotCodeDto,
+} from '@drivebase/auth/dtos/forgot.password.dto';
 import { LocalAuthGuard } from '@drivebase/auth/local-auth.guard';
 import { GetUserFromRequest } from '@drivebase/users/user.from.request';
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -49,5 +55,31 @@ export class AuthController {
       ...user,
       password: undefined,
     };
+  }
+
+  @Public()
+  @Post('forgot-password/send-code')
+  async forgotPasswordSendCode(@Body() body: ForgotPasswordDto) {
+    const { email } = body;
+    return this._authService.forgotPasswordSendCode(email);
+  }
+
+  @Public()
+  @Post('forgot-password/verify-code')
+  forgotPasswordVerifyCode(@Body() body: VerifyForgotCodeDto) {
+    const { code, email } = body;
+    if (this._authService.forgotPasswordVerifyCode(email, code)) {
+      return {
+        ok: true,
+      };
+    }
+    throw new BadRequestException('Invalid code');
+  }
+
+  @Public()
+  @Post('forgot-password/reset')
+  forgotPasswordReset(@Body() body: ResetPasswordDto) {
+    const { code, email, password } = body;
+    return this._authService.forgotPasswordReset(email, code, password);
   }
 }
