@@ -1,4 +1,9 @@
 import { CreateUserDto } from '@drivebase/auth/dtos/create.user.dto';
+import {
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  VerifyForgotCodeDto,
+} from '@drivebase/auth/dtos/forgot.password.dto';
 import { LoginUserDto } from '@drivebase/auth/dtos/login.user.dto';
 import { UserPublicData } from '@drivebase/users/users.validator';
 import { baseQuery } from '@drivebase/web/lib/redux/base.query';
@@ -28,9 +33,36 @@ const authApi = createApi({
         method: 'GET',
       }),
     }),
+    forgotPassswordSendCode: build.mutation<void, ForgotPasswordDto>({
+      query: (body) => ({
+        url: '/auth/forgot-password/send-code',
+        method: 'POST',
+        body,
+      }),
+    }),
+    forgotPassswordVerifyCode: build.mutation<void, VerifyForgotCodeDto>({
+      query: (body) => ({
+        url: '/auth/forgot-password/verify-code',
+        method: 'POST',
+        body,
+      }),
+    }),
+    forgotPassswordReset: build.mutation<void, ResetPasswordDto>({
+      query: (body) => ({
+        url: '/auth/forgot-password/reset',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation, useProfileQuery } =
-  authApi;
+export const {
+  useRegisterMutation,
+  useLoginMutation,
+  useProfileQuery,
+  useForgotPassswordSendCodeMutation,
+  useForgotPassswordVerifyCodeMutation,
+  useForgotPassswordResetMutation,
+} = authApi;
 export default authApi;
