@@ -122,8 +122,9 @@ function Page() {
                 </div>
 
                 <Link
-                  to="/auth/forget-password"
+                  to="/auth/forgot-password"
                   className="text-sm text-muted-foreground"
+                  search={{ step: 'send-code' }}
                 >
                   {t('auth:forgot_password')}
                 </Link>
