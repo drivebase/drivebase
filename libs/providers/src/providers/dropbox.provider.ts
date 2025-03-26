@@ -32,7 +32,7 @@ interface DropboxListFolderEntry {
   id: string;
   name: string;
   size: number;
-  type: string;
+  '.tag': string;
   media_info?: {
     metadata: {
       mime_type: string;
@@ -69,6 +69,7 @@ interface DropboxError {
     error?: string;
     error_summary: string;
   };
+  error_summary: string;
 }
 
 const redirectUri = OAUTH_REDIRECT_URI.replace('[type]', ProviderType.DROPBOX);
@@ -243,7 +244,7 @@ export class DropboxProvider implements OAuthProvider {
 
       return response.metadata.id;
     } catch (error: any) {
-      if (error.message && error.message.includes('path/conflict')) {
+      if (error.message && error.message.includes('409 Conflict')) {
         const listResponse = await this.listFiles();
         const drivebaseFolder = listResponse.find(
           (f) => f.name === drivebaseFolderName && f.isFolder,
@@ -294,9 +295,9 @@ export class DropboxProvider implements OAuthProvider {
     return response.entries.map((entry) => ({
       id: entry.id,
       name: entry.name,
-      size: entry.size,
-      type: entry.type,
-      isFolder: entry.type === 'folder',
+      size: entry.size || 0,
+      type: '',
+      isFolder: entry['.tag'] === 'folder',
     }));
   }
 
@@ -386,9 +387,12 @@ export class DropboxProvider implements OAuthProvider {
   ): Promise<T> {
     const headers = {
       Authorization: `Bearer ${this.accessToken}`,
-      'Content-Type': 'application/json',
       ...options.headers,
     };
+
+    if (options.body) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     const response = await fetch(url, {
       ...options,
@@ -410,7 +414,7 @@ export class DropboxProvider implements OAuthProvider {
 
       try {
         const errorJson = JSON.parse(errorText) as DropboxError;
-        errorMessage += ` - ${errorJson.error.error_summary}`;
+        errorMessage += ` - ${errorJson.error_summary}`;
       } catch {
         errorMessage += ` - ${errorText}`;
       }
