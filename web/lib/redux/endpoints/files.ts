@@ -1,10 +1,18 @@
 import { UploadFileDto } from '@drivebase/files/dtos/upload.file.dto';
-import type { FindWorkspaceFilesQuery } from '@drivebase/files/files.service';
+import type {
+  FindWorkspaceFilesQuery,
+  PaginatedResult,
+} from '@drivebase/files/files.service';
 import { baseQuery } from '@drivebase/web/lib/redux/base.query';
 import { File as DrivebaseFile, Provider } from '@prisma/client';
 import { createApi } from '@reduxjs/toolkit/query/react';
 
-import { ApiResponse } from './api.type';
+import type { ApiResponse } from './api.type';
+
+// Extended query interface to add search param
+export interface FilesQueryParams extends FindWorkspaceFilesQuery {
+  search?: string;
+}
 
 type FileWithProvider = DrivebaseFile & {
   fileProvider: Provider;
@@ -16,8 +24,8 @@ const filesApi = createApi({
   tagTypes: ['files'],
   endpoints: (builder) => ({
     getFiles: builder.query<
-      ApiResponse<FileWithProvider[]>,
-      FindWorkspaceFilesQuery
+      ApiResponse<PaginatedResult<FileWithProvider>>,
+      FilesQueryParams
     >({
       query: (query) => ({
         url: '/files',
