@@ -62,6 +62,34 @@ const providersApi = createApi({
         method: 'GET',
       }),
     }),
+    updateProviderMetadata: build.mutation<
+      ApiResponse<Provider>,
+      {
+        providerId: string;
+        metadata: Record<string, unknown>;
+      }
+    >({
+      query: ({ providerId, metadata }) => ({
+        url: `/providers/${providerId}/metadata`,
+        method: 'PATCH',
+        body: { metadata },
+      }),
+      invalidatesTags: ['Providers'],
+    }),
+    updateProviderLabel: build.mutation<
+      ApiResponse<Provider>,
+      {
+        providerId: string;
+        label: string;
+      }
+    >({
+      query: ({ providerId, label }) => ({
+        url: `/providers/${providerId}`,
+        method: 'PATCH',
+        body: { label },
+      }),
+      invalidatesTags: ['Providers'],
+    }),
   }),
 });
 
@@ -72,5 +100,7 @@ export const {
   useCallbackMutation,
   useAuthorizeApiKeyMutation,
   useListProviderFilesQuery,
+  useUpdateProviderMetadataMutation,
+  useUpdateProviderLabelMutation,
 } = providersApi;
 export default providersApi;
