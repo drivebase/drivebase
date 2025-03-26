@@ -1,6 +1,6 @@
 import { PrismaService } from '@drivebase/database/prisma.service';
 import { Injectable } from '@nestjs/common';
-import type { ProviderType } from '@prisma/client';
+import type { Prisma, ProviderType } from '@prisma/client';
 
 import { ProviderFactory } from './provider.factory';
 import { ProviderListItem, providers } from './providers';
@@ -31,6 +31,9 @@ export class ProvidersService {
     return this.prisma.provider.findMany({
       where: {
         workspaceId,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
   }
@@ -183,5 +186,55 @@ export class ProvidersService {
     );
 
     return providerInstance.listFiles(path);
+  }
+
+  async updateProviderMetadata(
+    providerId: string,
+    metadata: Record<string, unknown>,
+  ) {
+    const provider = await this.prisma.provider.findUnique({
+      where: {
+        id: providerId,
+      },
+    });
+
+    if (!provider) {
+      throw new Error('Provider not found');
+    }
+
+    // Merge the existing metadata with the new metadata
+    const existingMetadata = (provider.metadata || {}) as Record<
+      string,
+      unknown
+    >;
+    const updatedMetadata = { ...existingMetadata, ...metadata };
+
+    return this.prisma.provider.update({
+      where: {
+        id: providerId,
+      },
+      data: {
+        metadata: updatedMetadata as Prisma.InputJsonValue,
+      },
+    });
+  }
+
+  async updateProvider(providerId: string, data: { label?: string }) {
+    const provider = await this.prisma.provider.findUnique({
+      where: {
+        id: providerId,
+      },
+    });
+
+    if (!provider) {
+      throw new Error('Provider not found');
+    }
+
+    return this.prisma.provider.update({
+      where: {
+        id: providerId,
+      },
+      data,
+    });
   }
 }
