@@ -48,10 +48,16 @@ export class FilesController {
     @GetWorkspaceFromRequest() workspace: Workspace,
     @Query('parentPath') parentPath?: string,
     @Query('isStarred') isStarred?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
   ) {
     return this.filesService.findWorkspaceFiles(workspace.id, {
       parentPath,
       isStarred: isStarred === 'true',
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      search,
     });
   }
 
