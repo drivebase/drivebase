@@ -3,6 +3,7 @@ import { UploadModal } from '@drivebase/web/components/layouts/upload.modal';
 import { SidebarProvider } from '@drivebase/web/components/ui/sidebar';
 import { FileStoreProvider } from '@drivebase/web/lib/contexts/file-store.context';
 import { useGetCurrentWorkspaceQuery } from '@drivebase/web/lib/redux/endpoints/workspaces';
+import { cn } from '@drivebase/web/lib/utils';
 import { useRouter } from '@tanstack/react-router';
 import { Loader } from 'lucide-react';
 
@@ -38,7 +39,11 @@ function AppLayout({ children }: AppLayoutProps) {
       <SidebarProvider>
         <AppSidebar />
         <main className="h-screen flex-1 flex items-start bg-sidebar pt-2 gap-2">
-          <div className="h-full flex-1 rounded-tl-2xl border bg-background p-10 overflow-auto">
+          <div
+            className={cn(
+              'h-full flex-1 rounded-tl-2xl border bg-background p-10 overflow-auto [&::-webkit-scrollbar]:hidden',
+            )}
+          >
             {children}
           </div>
         </main>
