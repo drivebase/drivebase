@@ -207,13 +207,10 @@ export class FilesService {
     const file = await this.prisma.file.findUnique({
       where: { id },
       select: {
+        id: true,
+        isFolder: true,
+        fileProvider: true,
         referenceId: true,
-        fileProvider: {
-          select: {
-            type: true,
-            credentials: true,
-          },
-        },
       },
     });
 
@@ -221,8 +218,12 @@ export class FilesService {
       throw new Error('File not found');
     }
 
+    if (file.isFolder) {
+      return await this.deleteFolder(file.id);
+    }
+
     if (!file.fileProvider) {
-      throw new Error('Provider not found');
+      throw new Error('File provider not found');
     }
 
     const provider = ProviderFactory.createProvider(
@@ -235,6 +236,92 @@ export class FilesService {
     }
 
     await provider.deleteFile(file.referenceId);
+
+    await this.prisma.file.delete({ where: { id } });
+  }
+
+  async deleteFolder(fileId: string) {
+    const file = await this.prisma.file.findUnique({
+      where: { id: fileId },
+      select: {
+        id: true,
+        path: true,
+        workspaceId: true,
+      },
+    });
+
+    if (!file || !file.workspaceId) {
+      throw new Error('File not found');
+    }
+
+    const allChildren = await this.getAllChildren(file.path, file.workspaceId);
+
+    for (const child of allChildren.reverse()) {
+      if (!child.isFolder) {
+        if (child.fileProviderId && child.referenceId) {
+          try {
+            const provider = await this.prisma.provider.findUnique({
+              where: { id: child.fileProviderId },
+              select: { type: true, credentials: true },
+            });
+
+            if (provider) {
+              const storageProvider = ProviderFactory.createProvider(
+                provider.type,
+                provider.credentials as Record<string, string>,
+              );
+              await storageProvider.deleteFile(child.referenceId);
+            }
+          } catch (error) {
+            console.error(
+              `Failed to delete file ${child.name} from storage:`,
+              error,
+            );
+          }
+        }
+      }
+
+      await this.prisma.file.delete({ where: { id: child.id } });
+    }
+
+    await this.prisma.file.delete({ where: { id: file.id } });
+
+    return {
+      success: true,
+      message: `Folder ${file.path} and all contents deleted`,
+    };
+  }
+
+  private async getAllChildren(
+    folderPath: string,
+    workspaceId: string,
+  ): Promise<File[]> {
+    // Find all direct children of this path
+    const children = await this.prisma.file.findMany({
+      where: {
+        parentPath: folderPath,
+        workspaceId,
+      },
+      include: {
+        fileProvider: {
+          select: {
+            type: true,
+          },
+        },
+      },
+    });
+
+    let allChildren: File[] = [...children];
+
+    // Process folder children and collect their children recursively
+    for (const child of children) {
+      if (child.isFolder) {
+        const subChildren = await this.getAllChildren(child.path, workspaceId);
+        allChildren = [...allChildren, ...subChildren];
+      }
+    }
+
+    return allChildren;
   }
 
   async downloadFile(id: string) {
