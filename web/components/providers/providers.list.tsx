@@ -106,10 +106,7 @@ function ProviderList() {
                       setConfigureProvider(provider);
                     }}
                   >
-                    Configure
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    Disconnect
+                    Manage
                   </Button>
                 </TableCell>
               </TableRow>
@@ -130,10 +127,10 @@ function ProviderList() {
           onInteractOutside={(e) => {
             e.preventDefault();
           }}
-          className="min-w-[40rem]"
+          className="min-w-[40rem] overflow-auto"
         >
           <SheetHeader>
-            <SheetTitle>Configure Provider</SheetTitle>
+            <SheetTitle>{configureProvider?.label}</SheetTitle>
           </SheetHeader>
           <div className="mt-6">
             {configureProvider && (
