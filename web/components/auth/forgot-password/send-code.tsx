@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from '@drivebase/web/components/ui/form';
 import { Input } from '@drivebase/web/components/ui/input';
-import { useForgotPassswordSendCodeMutation } from '@drivebase/web/lib/redux/endpoints/auth';
+import { useForgotPasswordSendCodeMutation } from '@drivebase/web/lib/redux/endpoints/auth';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { Link } from '@tanstack/react-router';
 import { LockIcon } from 'lucide-react';
@@ -29,7 +29,7 @@ type Props = {
 };
 
 const ForgotPasswordSendCode = ({ onNext }: Props) => {
-  const [sendCode, { isLoading }] = useForgotPassswordSendCodeMutation();
+  const [sendCode, { isLoading }] = useForgotPasswordSendCodeMutation();
   const { t } = useTranslation(['errors', 'common', 'auth']);
 
   const form = useForm<ForgotPasswordDto>({

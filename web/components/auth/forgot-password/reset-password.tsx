@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from '@drivebase/web/components/ui/form';
 import { Input } from '@drivebase/web/components/ui/input';
-import { useForgotPassswordResetMutation } from '@drivebase/web/lib/redux/endpoints/auth';
+import { useForgotPasswordResetMutation } from '@drivebase/web/lib/redux/endpoints/auth';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { useRouter } from '@tanstack/react-router';
 import { LockIcon } from 'lucide-react';
@@ -32,7 +32,7 @@ const ForgotPasswordResetPassword = ({ code, email }: Props) => {
   const router = useRouter();
   const { t } = useTranslation(['auth', 'common']);
 
-  const [resetPassword, { isLoading }] = useForgotPassswordResetMutation();
+  const [resetPassword, { isLoading }] = useForgotPasswordResetMutation();
 
   const form = useForm<ResetPasswordDto>({
     resolver: classValidatorResolver(ResetPasswordDto),

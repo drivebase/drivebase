@@ -9,7 +9,7 @@ import {
 } from '@drivebase/web/components/ui/card';
 import { Form } from '@drivebase/web/components/ui/form';
 import { Input } from '@drivebase/web/components/ui/input';
-import { useForgotPassswordVerifyCodeMutation } from '@drivebase/web/lib/redux/endpoints/auth';
+import { useForgotPasswordVerifyCodeMutation } from '@drivebase/web/lib/redux/endpoints/auth';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { useRouter } from '@tanstack/react-router';
 import { LockIcon } from 'lucide-react';
@@ -26,7 +26,7 @@ type Props = {
 const ForgotPasswordVerifyCode = ({ email, onNext }: Props) => {
   const router = useRouter();
   const { t } = useTranslation(['auth', 'common']);
-  const [verifyCode, { isLoading }] = useForgotPassswordVerifyCodeMutation();
+  const [verifyCode, { isLoading }] = useForgotPasswordVerifyCodeMutation();
 
   const form = useForm<VerifyForgotCodeDto>({
     resolver: classValidatorResolver(VerifyForgotCodeDto),

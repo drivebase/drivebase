@@ -33,21 +33,21 @@ const authApi = createApi({
         method: 'GET',
       }),
     }),
-    forgotPassswordSendCode: build.mutation<void, ForgotPasswordDto>({
+    forgotPasswordSendCode: build.mutation<void, ForgotPasswordDto>({
       query: (body) => ({
         url: '/auth/forgot-password/send-code',
         method: 'POST',
         body,
       }),
     }),
-    forgotPassswordVerifyCode: build.mutation<void, VerifyForgotCodeDto>({
+    forgotPasswordVerifyCode: build.mutation<void, VerifyForgotCodeDto>({
       query: (body) => ({
         url: '/auth/forgot-password/verify-code',
         method: 'POST',
         body,
       }),
     }),
-    forgotPassswordReset: build.mutation<void, ResetPasswordDto>({
+    forgotPasswordReset: build.mutation<void, ResetPasswordDto>({
       query: (body) => ({
         url: '/auth/forgot-password/reset',
         method: 'POST',
@@ -61,8 +61,8 @@ export const {
   useRegisterMutation,
   useLoginMutation,
   useProfileQuery,
-  useForgotPassswordSendCodeMutation,
-  useForgotPassswordVerifyCodeMutation,
-  useForgotPassswordResetMutation,
+  useForgotPasswordSendCodeMutation,
+  useForgotPasswordVerifyCodeMutation,
+  useForgotPasswordResetMutation,
 } = authApi;
 export default authApi;
