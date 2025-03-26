@@ -16,7 +16,7 @@ export class LocalProvider implements ApiKeyProvider {
   private basePath: string;
 
   constructor(config: Record<string, string>) {
-    this.basePath = config['basePath'] || path.join(process.cwd(), 'storage');
+    this.basePath = config['basePath'] || '/';
     this.ensureBasePathExists();
   }
 
@@ -92,11 +92,8 @@ export class LocalProvider implements ApiKeyProvider {
   }
 
   async deleteFile(filePath: string): Promise<boolean> {
-    const [folderId, fileName] = filePath.split('/');
-    const fullPath = path.join(this.basePath, folderId, fileName);
-
     try {
-      await unlink(fullPath);
+      await unlink(filePath);
       return true;
     } catch (error) {
       return false;
@@ -113,18 +110,26 @@ export class LocalProvider implements ApiKeyProvider {
 
   async listFiles(path?: string): Promise<ProviderFile[]> {
     const files = await readdir(path ? path : this.basePath);
-    return Promise.all(
-      files.map(async (file) => {
+    const children: ProviderFile[] = [];
+
+    for (const file of files) {
+      try {
         const filePath = path ? join(path, file) : file;
         const stats = await stat(filePath);
-        return {
+
+        children.push({
           id: file,
           name: file,
           size: stats.size,
           type: stats.isDirectory() ? 'folder' : 'file',
           isFolder: stats.isDirectory(),
-        };
-      }),
-    );
+        });
+      } catch (error) {
+        // Ignore files that are not readable
+        continue;
+      }
+    }
+
+    return children;
   }
 }
