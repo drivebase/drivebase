@@ -286,7 +286,7 @@ export class DropboxProvider implements OAuthProvider {
       {
         method: 'POST',
         body: JSON.stringify({
-          path: path || '',
+          path: path === '/' ? '' : path,
           include_media_info: true,
         }),
       },
