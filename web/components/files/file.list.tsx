@@ -360,6 +360,22 @@ function FileList({ starred = false }: FileListProps) {
     [handleToggleStar, handleDownload, handleRename, handleDelete],
   );
 
+  // Sort data to ensure folders are always first
+  const sortedData = useMemo(() => {
+    const fileData = data?.data?.data || [];
+
+    // If data is already sorted by the server, we can just return it
+    // But we'll do an additional sort as a safety measure
+    return [...fileData].sort((a, b) => {
+      // Folders first
+      if (a.isFolder && !b.isFolder) return -1;
+      if (!a.isFolder && b.isFolder) return 1;
+
+      // Then alphabetically by name
+      return a.name.localeCompare(b.name);
+    });
+  }, [data?.data?.data]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -403,7 +419,7 @@ function FileList({ starred = false }: FileListProps) {
 
       <DataTable
         columns={columns}
-        data={data?.data?.data || []}
+        data={sortedData}
         paginationMeta={data?.data?.meta}
         serverPagination={true}
         onPaginationChange={handlePaginationChange}

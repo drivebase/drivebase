@@ -295,7 +295,20 @@ export function DataTable<TData, TValue>({
         value={searchValue}
         onChange={(event) => {
           const value = event.target.value;
-          handleColumnFilterChange(searchColumn, value);
+          // Handle empty search input explicitly to ensure filters are properly cleared
+          if (value === '') {
+            if (serverFiltering) {
+              // For server filtering, remove this filter
+              setFilters((prev) =>
+                prev.filter((f) => f.columnId !== searchColumn),
+              );
+            } else {
+              // For client filtering, clear the column filter
+              table.getColumn(searchColumn)?.setFilterValue('');
+            }
+          } else {
+            handleColumnFilterChange(searchColumn, value);
+          }
         }}
         className="w-60"
       />
