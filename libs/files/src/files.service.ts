@@ -62,6 +62,14 @@ export class FilesService {
         },
         skip,
         take: limit,
+        orderBy: [
+          {
+            isFolder: 'desc', // Folders first
+          },
+          {
+            updatedAt: 'desc', // Then by most recent update
+          },
+        ],
       }),
       this.prisma.file.count({
         where: {
@@ -127,9 +135,14 @@ export class FilesService {
         },
         skip,
         take: limit,
-        orderBy: {
-          updatedAt: 'desc',
-        },
+        orderBy: [
+          {
+            isFolder: 'desc', // Folders first
+          },
+          {
+            createdAt: 'desc', // Then by most recent update
+          },
+        ],
       }),
       this.prisma.file.count({
         where: whereClause,
@@ -170,6 +183,14 @@ export class FilesService {
           },
         },
       },
+      orderBy: [
+        {
+          isFolder: 'desc', // Folders first
+        },
+        {
+          updatedAt: 'desc', // Then by most recent update
+        },
+      ],
     });
   }
 
