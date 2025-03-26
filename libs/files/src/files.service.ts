@@ -10,6 +10,19 @@ import { UploadFileDto } from './dtos/upload.file.dto';
 export type FindWorkspaceFilesQuery = {
   parentPath?: string;
   isStarred?: boolean;
+  page?: number;
+  limit?: number;
+  search?: string;
+};
+
+export type PaginatedResult<T> = {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 };
 
 @Injectable()
@@ -28,19 +41,46 @@ export class FilesService {
     });
   }
 
-  async findAll(workspaceId: string): Promise<File[]> {
-    return this.prisma.file.findMany({
-      where: {
-        workspaceId,
-      },
-      include: {
-        fileProvider: {
-          select: {
-            type: true,
+  async findAll(
+    workspaceId: string,
+    options: { page?: number; limit?: number } = {},
+  ): Promise<PaginatedResult<File>> {
+    const { page = 1, limit = 10 } = options;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.file.findMany({
+        where: {
+          workspaceId,
+        },
+        include: {
+          fileProvider: {
+            select: {
+              type: true,
+            },
           },
         },
+        skip,
+        take: limit,
+      }),
+      this.prisma.file.count({
+        where: {
+          workspaceId,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
       },
-    });
+    };
   }
 
   async findById(id: string): Promise<File | null> {
@@ -54,31 +94,59 @@ export class FilesService {
   async findWorkspaceFiles(
     workspaceId: string,
     query: FindWorkspaceFilesQuery,
-  ) {
-    const q = {} as Prisma.FileWhereInput;
+  ): Promise<PaginatedResult<File>> {
+    const { page = 1, limit = 10, search, ...restQuery } = query;
+    const skip = (page - 1) * limit;
 
-    if (query.isStarred) {
-      q.isStarred = query.isStarred;
-    } else if (query.parentPath) {
-      q.parentPath = query.parentPath;
+    const whereClause = {} as Prisma.FileWhereInput;
+
+    if (restQuery.isStarred) {
+      whereClause.isStarred = restQuery.isStarred;
+    } else if (restQuery.parentPath) {
+      whereClause.parentPath = restQuery.parentPath;
     }
 
-    return this.prisma.file.findMany({
-      where: {
-        ...q,
-        workspaceId,
-      },
-      include: {
-        fileProvider: {
-          select: {
-            type: true,
+    whereClause.workspaceId = workspaceId;
+
+    if (search && search.trim()) {
+      whereClause.name = {
+        contains: search.trim(),
+        mode: 'insensitive',
+      };
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.file.findMany({
+        where: whereClause,
+        include: {
+          fileProvider: {
+            select: {
+              type: true,
+            },
           },
         },
+        skip,
+        take: limit,
+        orderBy: {
+          updatedAt: 'desc',
+        },
+      }),
+      this.prisma.file.count({
+        where: whereClause,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
       },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    };
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<File[]> {
