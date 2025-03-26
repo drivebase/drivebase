@@ -1,5 +1,34 @@
 # Changelog
 
+# [1.0.0-alpha.7](https://github.com/drivebase/drivebase/compare/vv1.0.0-alpha.6...v1.0.0-alpha.7) (2025-03-26)
+
+
+### Bug Fixes
+
+* **app.layout:** adjust layout height for better responsiveness ([47bd587](https://github.com/drivebase/drivebase/commit/47bd587cffb0b6a9c7ba5f6964e2bc9df6090d02))
+* **app.layout:** update layout height to ensure full utilization of available space ([7aa21dd](https://github.com/drivebase/drivebase/commit/7aa21dd66c171ca16f621161c364e00d6a541626))
+* **data.table:** explicitly handle empty search input to clear filters for both server and client filtering ([6c1af33](https://github.com/drivebase/drivebase/commit/6c1af330db837e85f7d2bdec0b3eec9722f2e912))
+* **dropbox.provider:** adjust path handling to ensure correct formatting for root path ([7ffad85](https://github.com/drivebase/drivebase/commit/7ffad851fb72fae27cb0a65a660f8afc8ca2dc3a))
+* **dropbox.provider:** update Dropbox provider to use correct error handling and improve folder type identification ([2e409f1](https://github.com/drivebase/drivebase/commit/2e409f1666c87b51d93723c56604c391efea8018))
+* **files.service:** add defaultUploadPath handling to improve folder identification during file processing ([35fdfae](https://github.com/drivebase/drivebase/commit/35fdfae9e70efe6c3ae1bd280754ea06cbb87238))
+* **files.service:** enhance file retrieval sorting by adding folder prioritization and updated timestamp ordering ([71ceedc](https://github.com/drivebase/drivebase/commit/71ceedcd5dd7b7a490de2b3615099c48dd88210b))
+* **files.service:** update metadata type and adjust sorting criteria for file retrieval ([99af095](https://github.com/drivebase/drivebase/commit/99af09524142d8850b70eb8c533f621acff68b76))
+* **local.provider:** update basePath default value and improve file handling in listFiles and deleteFile methods ([df2baa2](https://github.com/drivebase/drivebase/commit/df2baa20089927e02aa979489e501c09c2cf5b09))
+* **provider.interface:** update OAUTH_REDIRECT_URI to use FRONTEND_URL for improved environment configuration ([89e206f](https://github.com/drivebase/drivebase/commit/89e206f899835465214369bbc73497f0b5b9f957))
+
+
+### Features
+
+* **data.table:** implement a new DataTable component with pagination, filtering, and sorting capabilities ([deaa3cf](https://github.com/drivebase/drivebase/commit/deaa3cf2f335e9f3d9635a55e5998d71a0958e5d))
+* **file.list:** integrate DataTable for file listing with pagination, filtering, and search functionality ([c7733ea](https://github.com/drivebase/drivebase/commit/c7733ea1e98e29f7f8183a21bc5bdd7dea390524))
+* **files.controller:** add pagination and search query parameters for file retrieval ([11680d5](https://github.com/drivebase/drivebase/commit/11680d500ee4a41d79ec3c3920a99c07139fd2e2))
+* **files.service:** implement folder deletion functionality and enhance file deletion logic ([3e3e3d1](https://github.com/drivebase/drivebase/commit/3e3e3d16e9bca9ead251692add21cbe843c22654))
+* **files.service:** implement pagination and search functionality for file retrieval ([3d60b0b](https://github.com/drivebase/drivebase/commit/3d60b0bc2388368c274cff12bb99a71061bb8ec3))
+* **provider.configure:** enhance provider configuration with upload path management and label editing functionality ([797cc74](https://github.com/drivebase/drivebase/commit/797cc74d30a9ad9917f131401d06fad3d5ca29b4))
+* **providers.api:** add mutations for updating provider metadata and label ([128270f](https://github.com/drivebase/drivebase/commit/128270f9108824ff3e75833f80a8dd8209f27cbf))
+* **providers.controller:** add update metadata and update provider endpoints with validation ([a521e66](https://github.com/drivebase/drivebase/commit/a521e669e4c625bc5dbd3db437846635a0ce037b))
+* **providers.service:** add provider metadata update functionality and enhance provider retrieval with sorting ([32e323d](https://github.com/drivebase/drivebase/commit/32e323d2ec4e58f4422a350942c39dd488100b8d))
+
 # [v1.0.0-alpha.6](https://github.com/drivebase/drivebase/compare/v0.1.0-alpha.0...vv1.0.0-alpha.6) (2025-03-25)
 
 
