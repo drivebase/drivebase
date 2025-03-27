@@ -19,23 +19,8 @@ export interface BasicAuthCredentials extends AuthCredentials {
   password: string;
 }
 
-// Provider-specific credential interfaces
-export interface LocalCredentials extends AuthCredentials {
+export interface FileSystemCredentials extends AuthCredentials {
   basePath?: string;
-}
-
-export interface S3Credentials extends ApiKeyCredentials {
-  accessKeyId: string;
-  secretAccessKey: string;
-  bucket: string;
-  region: string;
-  endpoint?: string;
-}
-
-export interface GoogleDriveCredentials extends OAuth2Credentials {
-  clientId: string;
-  clientSecret: string;
-  folderId?: string;
 }
 
 export interface UserInfo {

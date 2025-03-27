@@ -1,11 +1,4 @@
-import { ProviderType } from '@prisma/client';
-
-export enum AuthType {
-  NONE = 'none',
-  OAUTH2 = 'oauth2',
-  API_KEY = 'api_key',
-  BASIC = 'basic',
-}
+import { AuthType, ProviderType } from '@prisma/client';
 
 export enum ProviderCapability {
   READ = 'read',

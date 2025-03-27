@@ -17,10 +17,6 @@ export interface OAuthCapable {
   };
 }
 
-export interface RootFolderCapable {
-  getDrivebaseFolder(): Promise<string>;
-}
-
 export interface MetadataCapable {
   setMetadata(metadata: Record<string, any>): void;
 }
