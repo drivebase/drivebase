@@ -1,6 +1,6 @@
 import { PrismaService } from '@drivebase/database/prisma.service';
-import { ApiKeyProviders, ProviderFactory } from '@drivebase/providers';
-import { ApiKeyProvider, OAuthProvider } from '@drivebase/providers';
+import { ProviderFactory } from '@drivebase/providers';
+import { BaseProvider } from '@drivebase/providers/core/base-provider';
 import { Injectable } from '@nestjs/common';
 import { File, Prisma } from '@prisma/client';
 
@@ -54,7 +54,7 @@ export class FilesService {
           workspaceId,
         },
         include: {
-          fileProvider: {
+          provider: {
             select: {
               type: true,
             },
@@ -127,7 +127,7 @@ export class FilesService {
       this.prisma.file.findMany({
         where: whereClause,
         include: {
-          fileProvider: {
+          provider: {
             select: {
               type: true,
             },
@@ -177,7 +177,7 @@ export class FilesService {
         parentPath,
       },
       include: {
-        fileProvider: {
+        provider: {
           select: {
             type: true,
           },
@@ -209,7 +209,7 @@ export class FilesService {
       select: {
         id: true,
         isFolder: true,
-        fileProvider: true,
+        provider: true,
         referenceId: true,
       },
     });
@@ -222,13 +222,13 @@ export class FilesService {
       return await this.deleteFolder(file.id);
     }
 
-    if (!file.fileProvider) {
+    if (!file.provider) {
       throw new Error('File provider not found');
     }
 
     const provider = ProviderFactory.createProvider(
-      file.fileProvider.type,
-      file.fileProvider.credentials as Record<string, string>,
+      file.provider.type,
+      file.provider.credentials as Record<string, string>,
     );
 
     if (!file.referenceId) {
@@ -258,10 +258,10 @@ export class FilesService {
 
     for (const child of allChildren.reverse()) {
       if (!child.isFolder) {
-        if (child.fileProviderId && child.referenceId) {
+        if (child.providerId && child.referenceId) {
           try {
             const provider = await this.prisma.provider.findUnique({
-              where: { id: child.fileProviderId },
+              where: { id: child.providerId },
               select: { type: true, credentials: true },
             });
 
@@ -303,7 +303,7 @@ export class FilesService {
         workspaceId,
       },
       include: {
-        fileProvider: {
+        provider: {
           select: {
             type: true,
           },
@@ -327,13 +327,13 @@ export class FilesService {
   async downloadFile(id: string) {
     const file = await this.findById(id);
 
-    if (!file || !file.fileProviderId) {
+    if (!file || !file.providerId) {
       throw new Error('File not found');
     }
 
     const provider = await this.prisma.provider.findUnique({
       where: {
-        id: file.fileProviderId,
+        id: file.providerId,
       },
     });
 
@@ -367,7 +367,9 @@ export class FilesService {
     const provider = await this.prisma.provider.findUnique({
       where: { id: providerId },
       select: {
+        id: true,
         type: true,
+        authType: true,
         credentials: true,
         metadata: true,
         workspaceId: true,
@@ -378,60 +380,23 @@ export class FilesService {
       throw new Error('Provider not found');
     }
 
-    const metadata = (provider.metadata || {}) as Record<string, unknown>;
-
     try {
       const credentials = provider.credentials as Record<string, string>;
-      let providerInstance: ApiKeyProvider | OAuthProvider;
 
-      if (ApiKeyProviders.includes(provider.type)) {
-        providerInstance = ProviderFactory.createApiKeyProvider(
-          provider.type,
-          credentials,
-        );
-      } else {
-        providerInstance = ProviderFactory.createOAuthProvider(
-          provider.type,
-          credentials,
-        );
-      }
+      // Create provider instance
+      const providerInstance: BaseProvider = ProviderFactory.createProvider(
+        provider.type,
+        credentials,
+      );
 
-      await providerInstance.validateCredentials();
+      // Authenticate the provider
+      await providerInstance.authenticate(credentials);
 
+      // Upload each file
       for (const file of files) {
-        let folderId = '';
+        const uploadedFile = await providerInstance.uploadFile(path, file);
 
-        if (metadata['defaultUploadPath']) {
-          folderId = metadata['defaultUploadPath'] as string;
-        }
-
-        if ('hasFolder' in providerInstance) {
-          const folder = await providerInstance.hasFolder(
-            metadata['folderId'] as string,
-          );
-
-          if (metadata['folderId']) {
-            folderId = metadata['folderId'] as string;
-          }
-
-          if (!folder) {
-            const folderId = await providerInstance.createDrivebaseFolder();
-
-            await this.prisma.provider.update({
-              where: { id: providerId },
-              data: {
-                metadata: {
-                  folderId,
-                },
-              },
-            });
-
-            metadata['folderId'] = folderId;
-          }
-        }
-
-        const reference = await providerInstance.uploadFile(folderId, file);
-
+        // Save file metadata to database
         await this.prisma.file.create({
           data: {
             name: file.originalname,
@@ -440,8 +405,8 @@ export class FilesService {
             path: `${path === '/' ? '' : path}/${file.originalname}`,
             mimeType: file.mimetype,
             size: file.size,
-            referenceId: reference,
-            fileProviderId: providerId,
+            referenceId: uploadedFile.id,
+            providerId: providerId,
             workspaceId: provider.workspaceId,
           },
         });
