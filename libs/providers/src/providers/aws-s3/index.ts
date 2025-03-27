@@ -1,4 +1,4 @@
-import { AuthType } from '@prisma/client';
+import { AuthType } from '@drivebase/providers/provider.entity';
 
 import { ProviderRegistry } from '../../core/provider.registry';
 import { ProviderCapability, ProviderType } from '../../types';

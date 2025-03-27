@@ -1,6 +1,8 @@
 import { AuthorizeAPIProviderDto } from '@drivebase/providers/dtos/auth.provider.dto';
 import { CallbackProviderDto } from '@drivebase/providers/dtos/callback.provider.dto';
+import { ProviderType } from '@drivebase/providers/provider.entity';
 import { ProvidersService } from '@drivebase/providers/providers.service';
+import { Workspace } from '@drivebase/workspaces/workspace.entity';
 import { GetWorkspaceFromRequest } from '@drivebase/workspaces/workspace.from.request';
 import { WorkspaceGuard } from '@drivebase/workspaces/workspace.guard';
 import {
@@ -13,8 +15,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { Workspace } from '@prisma/client';
-import { ProviderType } from '@prisma/client';
 
 const REDIRECT_URI = 'http://localhost:3000/providers/oauth/callback';
 
