@@ -1,4 +1,4 @@
-import { CreateUserDto } from '@drivebase/auth/dtos/create.user.dto';
+import { RegisterInput } from '@drivebase/sdk';
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Card,
@@ -16,8 +16,7 @@ import {
   FormMessage,
 } from '@drivebase/web/components/ui/form';
 import { Input } from '@drivebase/web/components/ui/input';
-import { useRegisterMutation } from '@drivebase/web/lib/redux/endpoints/auth';
-import { classValidatorResolver } from '@hookform/resolvers/class-validator';
+import { useRegisterMutation } from '@drivebase/web/gql/hooks';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { UserPlus2Icon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -26,12 +25,11 @@ import { toast } from 'sonner';
 
 function Page() {
   const r = useRouter();
-  const [register, { isLoading }] = useRegisterMutation();
+  const [register, { loading }] = useRegisterMutation();
 
   const { t } = useTranslation(['errors', 'common', 'auth']);
 
-  const form = useForm<CreateUserDto>({
-    resolver: classValidatorResolver(CreateUserDto),
+  const form = useForm<RegisterInput>({
     defaultValues: {
       name: '',
       email: '',
@@ -39,12 +37,15 @@ function Page() {
     },
   });
 
-  function onSubmit(data: CreateUserDto) {
-    register({ ...data })
-      .unwrap()
+  function onSubmit(data: RegisterInput) {
+    register({
+      variables: {
+        input: data,
+      },
+    })
       .then(() => {
         toast.success('Account created successfully');
-        r.navigate({ to: '/auth/login' });
+        void r.navigate({ to: '/auth/login' });
       })
       .catch((err) => {
         toast.error(err.data?.message ?? 'An unknown error occurred');
@@ -129,7 +130,7 @@ function Page() {
                 />
               </div>
               <div className="space-y-2">
-                <Button className="w-full" disabled={isLoading}>
+                <Button className="w-full" disabled={loading}>
                   {t('auth:register')}
                 </Button>
 
