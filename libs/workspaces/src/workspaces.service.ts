@@ -1,39 +1,45 @@
-import { PrismaService } from '@drivebase/database/prisma.service';
+import { File } from '@drivebase/files/file.entity';
 import { Injectable } from '@nestjs/common';
-import type { Workspace } from '@prisma/client';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import { CreateWorkspaceDto } from './dtos/create.workspace.dto';
 import { UpdateWorkspaceDto } from './dtos/update.workspace.dto';
 import { WorkspaceStatDto } from './dtos/workspace.stats.dto';
+import { Workspace } from './workspace.entity';
 
 @Injectable()
 export class WorkspacesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Workspace)
+    private readonly workspaceRepository: Repository<Workspace>,
+    @InjectRepository(File)
+    private readonly fileRepository: Repository<File>,
+  ) {}
 
   async create(
     ownerId: string,
     createWorkspaceDto: CreateWorkspaceDto,
   ): Promise<Workspace> {
-    return this.prisma.workspace.create({
-      data: {
-        name: createWorkspaceDto.name,
-        ownerId,
-      },
+    const workspace = this.workspaceRepository.create({
+      name: createWorkspaceDto.name,
+      ownerId,
     });
+    return this.workspaceRepository.save(workspace);
   }
 
   async findAll(): Promise<Workspace[]> {
-    return this.prisma.workspace.findMany();
+    return this.workspaceRepository.find();
   }
 
   async findByUserId(ownerId: string): Promise<Workspace[]> {
-    return this.prisma.workspace.findMany({
+    return this.workspaceRepository.find({
       where: { ownerId },
     });
   }
 
   async findById(id: string): Promise<Workspace | null> {
-    return this.prisma.workspace.findUnique({
+    return this.workspaceRepository.findOne({
       where: { id },
     });
   }
@@ -41,30 +47,25 @@ export class WorkspacesService {
   async update(
     id: string,
     updateWorkspaceDto: UpdateWorkspaceDto,
-  ): Promise<Workspace> {
-    return this.prisma.workspace.update({
-      where: { id },
-      data: updateWorkspaceDto,
-    });
+  ): Promise<void> {
+    await this.workspaceRepository.update(id, updateWorkspaceDto);
   }
 
-  async delete(id: string): Promise<Workspace> {
-    return this.prisma.workspace.delete({
-      where: { id },
-    });
+  async delete(id: string): Promise<void> {
+    await this.workspaceRepository.delete(id);
   }
 
   async getWorkspaceWithProviders(id: string) {
-    return this.prisma.workspace.findUnique({
+    return this.workspaceRepository.findOne({
       where: { id },
-      include: {
+      relations: {
         providers: true,
       },
     });
   }
 
   async getWorkspaceStats(id: string): Promise<WorkspaceStatDto[]> {
-    const files = await this.prisma.file.findMany({
+    const files = await this.fileRepository.find({
       where: {
         workspaceId: id,
       },
