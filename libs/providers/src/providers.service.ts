@@ -1,17 +1,20 @@
-import { PrismaService } from '@drivebase/database/prisma.service';
 import { Injectable } from '@nestjs/common';
-import type { Prisma, Provider as DbProvider } from '@prisma/client';
-import { AuthType } from '@prisma/client';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import { BaseProvider } from './core/base-provider';
 import { ProviderFactory } from './core/provider.factory';
 import { ProviderRegistry } from './core/provider.registry';
 import {
+  AuthType,
+  Provider as DbProvider,
+  ProviderType,
+} from './provider.entity';
+import {
   AuthCredentials,
   MetadataCapable,
   OAuth2Credentials,
   OAuthCapable,
-  ProviderType,
 } from './types';
 
 interface OAuthSession {
@@ -26,7 +29,10 @@ interface OAuthSession {
 export class ProvidersService {
   private sessions = new Map<string, OAuthSession>();
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(DbProvider)
+    private readonly providerRepository: Repository<DbProvider>,
+  ) {}
 
   /**
    * Find provider credentials by workspace and type
@@ -35,7 +41,7 @@ export class ProvidersService {
     workspaceId: string,
     type: ProviderType,
   ): Promise<Record<string, any>> {
-    const provider = await this.prisma.provider.findFirst({
+    const provider = await this.providerRepository.findOne({
       where: {
         workspaceId,
         type,
@@ -49,12 +55,12 @@ export class ProvidersService {
    * Find all providers for a workspace
    */
   async findProviders(workspaceId: string): Promise<DbProvider[]> {
-    return this.prisma.provider.findMany({
+    return this.providerRepository.find({
       where: {
         workspaceId,
       },
-      orderBy: {
-        createdAt: 'desc',
+      order: {
+        createdAt: 'DESC',
       },
     });
   }
@@ -174,19 +180,20 @@ export class ProvidersService {
       // Get user info
       const userInfo = await provider.getUserInfo();
 
-      // Save provider to database
-      const dbProvider = await this.prisma.provider.create({
-        data: {
-          type,
-          name: userInfo.email || userInfo.name || String(type),
-          authType: AuthType.OAUTH2,
-          workspaceId,
-          credentials: fullCredentials as unknown as Prisma.InputJsonValue,
-          metadata: {
-            userInfo,
-          } as unknown as Prisma.InputJsonValue,
+      // Create the provider entity
+      const dbProvider = this.providerRepository.create({
+        type,
+        name: userInfo.email || userInfo.name || String(type),
+        authType: AuthType.OAUTH2,
+        workspaceId,
+        credentials: fullCredentials,
+        metadata: {
+          userInfo,
         },
       });
+
+      // Save the provider to the database
+      await this.providerRepository.save(dbProvider);
 
       // Clean up session
       this.sessions.delete(state);
@@ -231,19 +238,22 @@ export class ProvidersService {
       // Get user info
       const userInfo = await provider.getUserInfo();
 
-      // Save provider to database
-      return this.prisma.provider.create({
-        data: {
-          type,
-          name: userInfo.email || userInfo.name || String(type),
-          authType: metadata.authType,
-          workspaceId,
-          credentials: credentials as unknown as Prisma.InputJsonValue,
-          metadata: {
-            userInfo,
-          } as unknown as Prisma.InputJsonValue,
+      // Create the provider entity
+      const dbProvider = this.providerRepository.create({
+        type,
+        name: userInfo.email || userInfo.name || String(type),
+        authType: metadata.authType,
+        workspaceId,
+        credentials: credentials,
+        metadata: {
+          userInfo,
         },
       });
+
+      // Save to database
+      await this.providerRepository.save(dbProvider);
+
+      return dbProvider;
     } catch (error) {
       console.error('API key authorization error:', error);
       throw new Error(`Failed to connect provider: ${error.message}`);
@@ -265,59 +275,72 @@ export class ProvidersService {
     providerId: string,
     metadata: Record<string, any>,
   ): Promise<DbProvider> {
-    const dbProvider = await this.prisma.provider.findUnique({
-      where: {
-        id: providerId,
-      },
+    const dbProvider = await this.providerRepository.findOne({
+      where: { id: providerId },
     });
 
     if (!dbProvider) {
-      throw new Error('Provider not found');
+      throw new Error(`Provider with ID ${providerId} not found`);
     }
 
-    // Merge the existing metadata with the new metadata
-    const existingMetadata = (dbProvider.metadata || {}) as Record<string, any>;
-    const updatedMetadata = { ...existingMetadata, ...metadata };
-
-    // Update provider instance if it's already active
-    const provider = await this.getProviderInstance(providerId);
-    if (hasMetadataCapability(provider)) {
-      provider.setMetadata(metadata);
+    // Update provider metadata
+    if (!dbProvider.metadata) {
+      dbProvider.metadata = {};
     }
 
-    return this.prisma.provider.update({
-      where: {
-        id: providerId,
-      },
-      data: {
-        metadata: updatedMetadata as unknown as Prisma.InputJsonValue,
-      },
-    });
+    // Merge existing metadata with new metadata
+    dbProvider.metadata = {
+      ...dbProvider.metadata,
+      ...metadata,
+    };
+
+    // Save updated provider
+    await this.providerRepository.save(dbProvider);
+
+    // Update metadata in provider instance if possible
+    try {
+      const provider = await this.getProviderInstance(providerId);
+
+      if (hasMetadataCapability(provider)) {
+        provider.setMetadata(dbProvider.metadata);
+      }
+    } catch (error) {
+      console.warn(
+        `Could not update provider instance metadata: ${error.message}`,
+      );
+    }
+
+    return dbProvider;
   }
 
   /**
-   * Update provider details
+   * Update provider data
    */
   async updateProvider(
     providerId: string,
     data: { name?: string; isActive?: boolean },
   ): Promise<DbProvider> {
-    const dbProvider = await this.prisma.provider.findUnique({
-      where: {
-        id: providerId,
-      },
+    const dbProvider = await this.providerRepository.findOne({
+      where: { id: providerId },
     });
 
     if (!dbProvider) {
-      throw new Error('Provider not found');
+      throw new Error(`Provider with ID ${providerId} not found`);
     }
 
-    return this.prisma.provider.update({
-      where: {
-        id: providerId,
-      },
-      data,
-    });
+    // Update fields
+    if (data.name !== undefined) {
+      dbProvider.name = data.name;
+    }
+
+    if (data.isActive !== undefined) {
+      dbProvider.isActive = data.isActive;
+    }
+
+    // Save updated provider
+    await this.providerRepository.save(dbProvider);
+
+    return dbProvider;
   }
 
   /**
@@ -337,60 +360,56 @@ export class ProvidersService {
   }
 
   /**
-   * Get or create a provider instance
+   * Get a provider instance
    */
   private async getProviderInstance(providerId: string): Promise<BaseProvider> {
-    const dbProvider = await this.prisma.provider.findUnique({
-      where: {
-        id: providerId,
-      },
+    // Find provider in database
+    const dbProvider = await this.providerRepository.findOne({
+      where: { id: providerId },
     });
 
     if (!dbProvider) {
-      throw new Error('Provider not found');
+      throw new Error(`Provider with ID ${providerId} not found`);
     }
 
+    if (!dbProvider.isActive) {
+      throw new Error(`Provider with ID ${providerId} is not active`);
+    }
+
+    // Create provider instance
     const provider = ProviderFactory.createProvider(
       dbProvider.type,
-      dbProvider.credentials as Record<string, any>,
+      dbProvider.credentials as AuthCredentials,
     );
 
+    // Authenticate provider
     await provider.authenticate(dbProvider.credentials as AuthCredentials);
 
-    // Apply metadata if the provider supports it
-    if (hasMetadataCapability(provider) && dbProvider.metadata) {
-      provider.setMetadata(dbProvider.metadata as Record<string, any>);
+    // Set metadata if available
+    if (dbProvider.metadata && hasMetadataCapability(provider)) {
+      provider.setMetadata(dbProvider.metadata);
     }
 
     return provider;
   }
 }
 
-/**
- * Type guard to check if a provider has OAuth capability
- */
 function hasOAuthCapability(provider: unknown): provider is OAuthCapable {
+  if (!provider) {
+    return false;
+  }
+
   return (
-    !!provider &&
-    typeof provider === 'object' &&
-    'authStrategy' in provider &&
-    !!provider.authStrategy &&
-    typeof provider.authStrategy === 'object' &&
-    'getAuthUrl' in provider.authStrategy &&
-    typeof provider.authStrategy.getAuthUrl === 'function' &&
-    'getAccessToken' in provider.authStrategy &&
-    typeof provider.authStrategy.getAccessToken === 'function'
+    typeof (provider as OAuthCapable).authStrategy === 'object' &&
+    typeof (provider as OAuthCapable).authStrategy.getAuthUrl === 'function' &&
+    typeof (provider as OAuthCapable).authStrategy.getAccessToken === 'function'
   );
 }
 
-/**
- * Type guard to check if a provider supports metadata
- */
 function hasMetadataCapability(provider: unknown): provider is MetadataCapable {
-  return (
-    !!provider &&
-    typeof provider === 'object' &&
-    'setMetadata' in provider &&
-    typeof provider.setMetadata === 'function'
-  );
+  if (!provider) {
+    return false;
+  }
+
+  return typeof (provider as MetadataCapable).setMetadata === 'function';
 }
