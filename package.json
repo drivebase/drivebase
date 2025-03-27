@@ -52,6 +52,7 @@
     "@reduxjs/toolkit": "^2.6.1",
     "@tanstack/react-router": "^1.114.27",
     "@tanstack/react-table": "^8.21.2",
+    "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
     "byte-size": "^9.0.1",
     "class-transformer": "^0.5.1",
