@@ -16,6 +16,8 @@ import {
 import { Workspace } from '@prisma/client';
 import { ProviderType } from '@prisma/client';
 
+const REDIRECT_URI = 'http://localhost:3000/providers/oauth/callback';
+
 @Controller('providers')
 export class ProvidersController {
   constructor(private readonly providersService: ProvidersService) {}
@@ -64,12 +66,16 @@ export class ProvidersController {
       clientId,
       clientSecret,
       workspace.id,
+      REDIRECT_URI,
     );
   }
 
   @Post('/oauth/callback')
   async callback(@Body() body: CallbackProviderDto) {
-    return this.providersService.callback(body.state ?? '', body.code);
+    return this.providersService.handleOAuthCallback(
+      body.state ?? '',
+      body.code,
+    );
   }
 
   @Get('/:providerId/files')
@@ -99,6 +105,8 @@ export class ProvidersController {
     @Param('providerId') providerId: string,
     @Body() body: { label?: string },
   ) {
-    return this.providersService.updateProvider(providerId, body);
+    return this.providersService.updateProvider(providerId, {
+      name: body.label,
+    });
   }
 }
