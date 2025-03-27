@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
@@ -31,7 +32,8 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
+    const ctx = GqlExecutionContext.create(context);
+    const request = ctx.getContext().req as Request;
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {

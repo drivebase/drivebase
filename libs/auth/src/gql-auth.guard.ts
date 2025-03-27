@@ -6,7 +6,7 @@ import { AuthGuard } from '@nestjs/passport';
 @Injectable()
 export class GqlAuthGuard extends AuthGuard('local') {
   constructor() {
-    super({ usernameField: 'email' });
+    super();
   }
 
   getRequest(context: ExecutionContext) {
