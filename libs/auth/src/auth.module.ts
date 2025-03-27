@@ -1,6 +1,7 @@
 import { UsersModule } from '@drivebase/users';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
@@ -27,22 +28,17 @@ import { LocalAuthGuard } from './local-auth.guard';
     }),
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
     AuthService,
-    LocalStrategy,
-    JwtStrategy,
-    LocalAuthGuard,
-    JwtAuthGuard,
-    AuthGuard,
     AuthResolver,
-    GqlAuthGuard,
-  ],
-  exports: [
-    AuthService,
     LocalStrategy,
-    JwtStrategy,
     LocalAuthGuard,
+    JwtStrategy,
     JwtAuthGuard,
-    AuthGuard,
+    GqlAuthGuard,
   ],
 })
 export class AuthModule {}

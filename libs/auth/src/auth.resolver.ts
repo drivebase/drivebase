@@ -1,6 +1,6 @@
 import { User } from '@drivebase/users';
 import { UseGuards } from '@nestjs/common';
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { AuthService } from './auth.service';
 import {
@@ -17,6 +17,7 @@ import {
   VerifyCodeResponse,
 } from './dtos/auth.response';
 import { GqlAuthGuard } from './gql-auth.guard';
+import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './user.decorator';
 
 @Resolver('Auth')
@@ -35,6 +36,12 @@ export class AuthResolver {
   @Mutation(() => RegisterResponse)
   register(@Args('input') input: RegisterInput): Promise<RegisterResponse> {
     return Promise.resolve(this.authService.register(input));
+  }
+
+  @Query(() => User)
+  @UseGuards(JwtAuthGuard)
+  async me(@CurrentUser() user: User): Promise<User> {
+    return Promise.resolve(user);
   }
 
   @Mutation(() => ForgotPasswordResponse)
