@@ -13,7 +13,7 @@ const config: CodegenConfig = {
         documentMode: 'string',
       },
     },
-    'web/gql/hooks.tsx': {
+    'sdk/gql/hooks.tsx': {
       plugins: [
         'typescript',
         'typescript-operations',
