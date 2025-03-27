@@ -2,6 +2,7 @@ import { User } from '@drivebase/users';
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
+import { Public } from './auth.guard';
 import { AuthService } from './auth.service';
 import {
   ForgotPasswordResetInput,
@@ -33,6 +34,7 @@ export class AuthResolver {
     return Promise.resolve(this.authService.login(user));
   }
 
+  @Public()
   @Mutation(() => RegisterResponse)
   register(@Args('input') input: RegisterInput): Promise<RegisterResponse> {
     return Promise.resolve(this.authService.register(input));
