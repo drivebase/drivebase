@@ -9,6 +9,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  type Relation,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -58,7 +59,7 @@ export class File {
 
   @ManyToOne(() => Provider, (provider) => provider.files, { nullable: true })
   @JoinColumn({ name: 'providerId' })
-  provider?: Provider;
+  provider?: Relation<Provider>;
 
   @Column({ type: 'uuid', nullable: true })
   parentId?: string;
