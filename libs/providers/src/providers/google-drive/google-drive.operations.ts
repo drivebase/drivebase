@@ -17,18 +17,10 @@ import {
  */
 export class GoogleDriveOperations extends SdkOperationsAdapter {
   private driveClient: drive_v3.Drive;
-  private folderId?: string;
 
   constructor(oauth2Client: OAuth2Client) {
     super(oauth2Client);
     this.driveClient = google.drive({ version: 'v3', auth: oauth2Client });
-  }
-
-  /**
-   * Set the root folder ID for operations
-   */
-  setRootFolder(folderId: string): void {
-    this.folderId = folderId;
   }
 
   /**
@@ -48,7 +40,6 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
         throw new Error('Failed to create DriveBase folder');
       }
 
-      this.folderId = response.data.id;
       return response.data.id;
     } catch (error) {
       throw new Error(`Failed to create DriveBase folder: ${error.message}`);
@@ -254,44 +245,32 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
    * Build a query for listing files
    */
   private buildFileQuery(path: string): string {
-    if (path === '/' && this.folderId) {
-      return `'${this.folderId}' in parents and trashed = false`;
-    }
-
     // For subfolders, we need to find the parent folder ID first
     if (path !== '/') {
       return `'${path}' in parents and trashed = false`;
     }
 
-    // If no root folder is set, return all files (should not happen)
-    return 'trashed = false';
+    // If listing root, search for files owned by the user
+    return `'root' in parents and trashed = false`;
   }
 
   /**
    * Get or create a folder path
    */
   private async getOrCreateFolder(path: string): Promise<string> {
-    if (path === '/' && this.folderId) {
-      return Promise.resolve(this.folderId);
+    if (path === '/') {
+      // Use the user's Drive root
+      return Promise.resolve('root');
     }
 
     // TODO: Implement folder path creation
-    if (!this.folderId) {
-      throw new Error('Root folder not set');
-    }
-
-    return Promise.resolve(this.folderId);
+    return 'root';
   }
 
   /**
    * Get the parent ID for a path
    */
   private async getParentId(path: string): Promise<string> {
-    if (path === '/' && this.folderId) {
-      return this.folderId;
-    }
-
-    // In a real implementation, we would resolve the path to a folder ID
     return Promise.resolve(path);
   }
 

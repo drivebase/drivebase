@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { AuthType } from '@prisma/client';
 import { Readable } from 'stream';
 
 import { BaseProvider } from '../../core/base-provider';
 import {
   AuthContext,
   AuthCredentials,
-  AuthType,
   FileMetadata,
   FileUpload,
-  GoogleDriveCredentials,
   ListOptions,
+  OAuth2Credentials,
   ProviderCapability,
   ProviderType,
   SearchOptions,
@@ -19,6 +19,11 @@ import {
 import { ensureInitialized } from '../../utils';
 import { GoogleDriveAuthStrategy } from './google-drive.auth';
 import { GoogleDriveOperations } from './google-drive.operations';
+
+interface GoogleDriveCredentials extends OAuth2Credentials {
+  clientId: string;
+  clientSecret: string;
+}
 
 /**
  * Google Drive provider implementation
@@ -75,13 +80,6 @@ export class GoogleDriveProvider extends BaseProvider {
     const oauth2Client = this.authStrategy.getOAuth2Client(googleCreds);
     this.operations = new GoogleDriveOperations(oauth2Client);
 
-    // Set up root folder if available in metadata
-    if (googleCreds.folderId) {
-      this.operations.setRootFolder(googleCreds.folderId);
-    } else if (this.metadata.folderId) {
-      this.operations.setRootFolder(this.metadata.folderId);
-    }
-
     this.credentials = googleCreds;
     this.isInitialized = true;
   }
@@ -114,19 +112,8 @@ export class GoogleDriveProvider extends BaseProvider {
    */
   @ensureInitialized
   async getDrivebaseFolder(): Promise<string> {
-    // If we already have a folder ID stored, check if it's valid
-    if (this.metadata.folderId) {
-      const exists = await this.operations.folderExists(this.metadata.folderId);
-      if (exists) {
-        return this.metadata.folderId as string;
-      }
-    }
-
     // Create a new folder
     const folderId = await this.operations.createDrivebaseFolder();
-    this.metadata.folderId = folderId;
-    this.operations.setRootFolder(folderId);
-
     return folderId;
   }
 
@@ -195,10 +182,5 @@ export class GoogleDriveProvider extends BaseProvider {
    */
   setMetadata(metadata: Record<string, any>): void {
     this.metadata = { ...this.metadata, ...metadata };
-
-    // If a folder ID is provided in the metadata, set it on the operations
-    if (metadata.folderId && this.operations) {
-      this.operations.setRootFolder(metadata.folderId);
-    }
   }
 }
