@@ -1,5 +1,7 @@
+import { AuthType } from '@prisma/client';
+
 import { ProviderRegistry } from '../../core/provider.registry';
-import { AuthType, ProviderCapability, ProviderType } from '../../types';
+import { ProviderCapability, ProviderType } from '../../types';
 import { GoogleDriveProvider } from './google-drive.provider';
 
 // Export the provider
