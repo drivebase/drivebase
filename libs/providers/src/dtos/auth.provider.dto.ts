@@ -1,4 +1,4 @@
-import { ProviderType } from '@prisma/client';
+import { ProviderType } from '@drivebase/providers/provider.entity';
 import { IsNotEmpty, IsObject, IsString } from 'class-validator';
 
 export class AuthorizeAPIProviderDto {
