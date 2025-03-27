@@ -10,8 +10,7 @@ export interface OAuth2Credentials extends AuthCredentials {
 }
 
 export interface ApiKeyCredentials extends AuthCredentials {
-  apiKey: string;
-  [key: string]: any;
+  [key: string]: string;
 }
 
 export interface BasicAuthCredentials extends AuthCredentials {
