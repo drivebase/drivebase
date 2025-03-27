@@ -100,3 +100,6 @@ export const providers: ProviderListItem[] = [
     inputFields: oauthInputFields,
   },
 ];
+
+export * from './google-drive';
+export * from './local';
