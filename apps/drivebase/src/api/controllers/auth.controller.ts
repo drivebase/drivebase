@@ -7,6 +7,7 @@ import {
   VerifyForgotCodeDto,
 } from '@drivebase/auth/dtos/forgot.password.dto';
 import { LocalAuthGuard } from '@drivebase/auth/local-auth.guard';
+import { User } from '@drivebase/users';
 import { GetUserFromRequest } from '@drivebase/users/user.from.request';
 import {
   BadRequestException,
@@ -18,7 +19,6 @@ import {
   Response,
   UseGuards,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
 import type { Response as ExpressResponse } from 'express';
 
 @Controller('auth')
