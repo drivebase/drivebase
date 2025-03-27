@@ -1,15 +1,28 @@
-import { DatabaseModule, entities } from '@drivebase/database/db.module';
-import { Global, Module } from '@nestjs/common';
+import { AuthModule } from '@drivebase/auth';
+import { FilesModule } from '@drivebase/files';
+import { File } from '@drivebase/files/file.entity';
+import { ProvidersModule } from '@drivebase/providers';
+import { Provider } from '@drivebase/providers/provider.entity';
+import { UsersModule } from '@drivebase/users';
+import { User } from '@drivebase/users/user.entity';
+import { WorkspacesModule } from '@drivebase/workspaces';
+import { Workspace } from '@drivebase/workspaces/workspace.entity';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { ApiModule } from './api/api.module';
+const entities = [User, Workspace, Provider, File];
 
-@Global()
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: './schema.gql',
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -21,11 +34,13 @@ import { ApiModule } from './api/api.module';
       }),
       inject: [ConfigService],
     }),
-    DatabaseModule,
-    ApiModule,
+    AuthModule,
+    UsersModule,
+    WorkspacesModule,
+    ProvidersModule,
+    FilesModule,
   ],
   controllers: [],
   providers: [],
-  exports: [],
 })
 export class AppModule {}
