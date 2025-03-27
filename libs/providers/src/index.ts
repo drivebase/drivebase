@@ -13,5 +13,7 @@ export * from './auth';
 export * from './operations';
 
 // Export providers
+export * from './provider.entity';
 export * from './providers';
+export * from './providers.module';
 export * from './providers.service';
