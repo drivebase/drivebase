@@ -7,7 +7,7 @@ import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: ['eslint.config.mjs', 'web/gql/**/*.ts?'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
