@@ -1,4 +1,5 @@
-import { AuthType, ProviderType } from '../types';
+import { AuthType, ProviderType } from '@prisma/client';
+
 import { BaseProvider } from './base-provider';
 import { ProviderRegistry } from './provider.registry';
 

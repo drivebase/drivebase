@@ -1,9 +1,9 @@
+import { AuthType } from '@prisma/client';
 import { Readable } from 'stream';
 
 import {
   AuthContext,
   AuthCredentials,
-  AuthType,
   FileMetadata,
   FileUpload,
   ListOptions,
