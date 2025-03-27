@@ -1,16 +1,21 @@
-import { PrismaService } from '@drivebase/database/prisma.service';
 import {
   CanActivate,
   ExecutionContext,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { Workspace } from '@prisma/client';
+import { InjectRepository } from '@nestjs/typeorm';
 import type { Request } from 'express';
+import { Repository } from 'typeorm';
+
+import { Workspace } from './workspace.entity';
 
 @Injectable()
 export class WorkspaceGuard implements CanActivate {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Workspace)
+    private readonly workspaceRepository: Repository<Workspace>,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context
@@ -24,7 +29,7 @@ export class WorkspaceGuard implements CanActivate {
       throw new UnauthorizedException('Workspace ID is required');
     }
 
-    const workspace = await this.prisma.workspace.findUnique({
+    const workspace = await this.workspaceRepository.findOne({
       where: { id: workspaceId as string },
     });
 
