@@ -7,6 +7,7 @@ import {
   FileMetadata,
   FileUpload,
   ListOptions,
+  PaginatedResult,
   ProviderCapability,
   ProviderType,
   SearchOptions,
@@ -52,9 +53,11 @@ export abstract class BaseProvider {
   abstract getUserInfo(): Promise<UserInfo>;
 
   /**
-   * List files in a directory
+   * List files in a directory with pagination support
    */
-  abstract listFiles(options?: ListOptions): Promise<FileMetadata[]>;
+  abstract listFiles(
+    options?: ListOptions,
+  ): Promise<PaginatedResult<FileMetadata>>;
 
   /**
    * Upload a file to the provider
@@ -88,7 +91,7 @@ export abstract class BaseProvider {
   /**
    * Search for files (optional operation)
    */
-  searchFiles?(options: SearchOptions): Promise<FileMetadata[]>;
+  searchFiles?(options: SearchOptions): Promise<PaginatedResult<FileMetadata>>;
 
   /**
    * Move a file (optional operation)

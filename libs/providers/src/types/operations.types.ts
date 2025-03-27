@@ -19,12 +19,72 @@ export interface UploadOptions {
   onProgress?: (progress: number) => void;
 }
 
+/**
+ * Options for listing files
+ */
 export interface ListOptions {
+  /**
+   * Path to list files from
+   */
   path?: string;
+
+  /**
+   * Limit the number of results
+   */
   limit?: number;
+
+  /**
+   * Cursor for pagination (provider-specific token)
+   */
   cursor?: string;
-  recursive?: boolean;
-  includeDeleted?: boolean;
+
+  /**
+   * Filter by file type
+   */
+  filter?: {
+    mimeType?: string;
+    isFolder?: boolean;
+  };
+}
+
+/**
+ * Pagination metadata
+ */
+export interface PaginationMeta {
+  /**
+   * Total number of items (if available)
+   */
+  total?: number;
+
+  /**
+   * Next page cursor (if available)
+   */
+  nextCursor?: string;
+
+  /**
+   * Previous page cursor (if available)
+   */
+  prevCursor?: string;
+
+  /**
+   * Whether there are more items
+   */
+  hasMore: boolean;
+}
+
+/**
+ * Paginated result interface
+ */
+export interface PaginatedResult<T> {
+  /**
+   * Array of items
+   */
+  data: T[];
+
+  /**
+   * Pagination metadata
+   */
+  pagination: PaginationMeta;
 }
 
 export interface SearchOptions {

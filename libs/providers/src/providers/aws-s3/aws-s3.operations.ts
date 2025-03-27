@@ -16,6 +16,8 @@ import {
   FileMetadata,
   FileUpload,
   ListOptions,
+  PaginatedResult,
+  PaginationMeta,
   SearchOptions,
   UploadOptions,
 } from '../../types';
@@ -42,20 +44,30 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
   }
 
   /**
-   * List files in a directory
+   * List files in a directory with pagination
    */
-  async listFiles(options?: ListOptions): Promise<FileMetadata[]> {
+  async listFiles(
+    options?: ListOptions,
+  ): Promise<PaginatedResult<FileMetadata>> {
     try {
       // Handle path formatting
       const path = options?.path || '/';
       const prefix = this.getS3Prefix(path);
+      const limit = options?.limit || 1000;
+
+      // Set up pagination parameters
+      let continuationToken: string | undefined;
+      if (options?.cursor) {
+        continuationToken = options.cursor;
+      }
 
       // List objects
       const command = new ListObjectsV2Command({
         Bucket: this.bucket,
         Prefix: prefix,
         Delimiter: '/',
-        MaxKeys: options?.limit || 1000,
+        MaxKeys: limit,
+        ContinuationToken: continuationToken,
       });
 
       const response = await this.sdk.send(command);
@@ -68,6 +80,11 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
         for (const prefix of response.CommonPrefixes) {
           if (prefix.Prefix) {
             const name = this.getNameFromPrefix(prefix.Prefix);
+            // Apply filtering if needed
+            if (options?.filter?.isFolder === false) {
+              continue;
+            }
+
             files.push({
               id: prefix.Prefix,
               name,
@@ -87,7 +104,22 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
           if (item.Key === prefix) continue;
 
           // Skip items that appear to be directories
-          if (item.Key?.endsWith('/')) continue;
+          if (item.Key?.endsWith('/')) {
+            if (options?.filter?.isFolder === false) {
+              continue;
+            }
+          } else if (options?.filter?.isFolder === true) {
+            continue;
+          }
+
+          // Apply MIME type filtering if specified
+          const mimeType = this.getMimeTypeFromKey(item.Key || '');
+          if (
+            options?.filter?.mimeType &&
+            mimeType !== options.filter.mimeType
+          ) {
+            continue;
+          }
 
           const name = this.getNameFromKey(item.Key || '');
           files.push({
@@ -96,13 +128,23 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
             path: this.getPathFromKey(item.Key || ''),
             size: item.Size || 0,
             isFolder: false,
-            mimeType: getMimeType(item.Key || ''),
+            mimeType,
             modifiedAt: item.LastModified,
           });
         }
       }
 
-      return files;
+      // Build pagination metadata
+      const pagination: PaginationMeta = {
+        hasMore: !!response.NextContinuationToken,
+        nextCursor: response.NextContinuationToken,
+        total: response.KeyCount,
+      };
+
+      return {
+        data: files,
+        pagination,
+      };
     } catch (error) {
       throw new Error(`Failed to list files: ${error.message}`);
     }
@@ -250,7 +292,9 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
   /**
    * Search for files
    */
-  async searchFiles(options: SearchOptions): Promise<FileMetadata[]> {
+  async searchFiles(
+    options: SearchOptions,
+  ): Promise<PaginatedResult<FileMetadata>> {
     try {
       const path = options.path || '/';
       const prefix = this.getS3Prefix(path);
@@ -287,7 +331,15 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
         }
       }
 
-      return files;
+      return {
+        data: files,
+        pagination: {
+          hasMore: false,
+          nextCursor: undefined,
+          prevCursor: undefined,
+          total: files.length,
+        },
+      };
     } catch (error) {
       throw new Error(`Failed to search files: ${error.message}`);
     }
@@ -424,5 +476,11 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
     }
 
     return `/${withoutTrailingSlash.substring(0, lastSlashIndex)}`;
+  }
+
+  private getMimeTypeFromKey(key: string): string {
+    // Implement the logic to determine MIME type from the key
+    // This is a placeholder and should be replaced with the actual implementation
+    return getMimeType(key);
   }
 }

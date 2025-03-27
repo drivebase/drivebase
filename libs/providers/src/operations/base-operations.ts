@@ -4,6 +4,7 @@ import {
   FileMetadata,
   FileUpload,
   ListOptions,
+  PaginatedResult,
   SearchOptions,
   UploadOptions,
 } from '../types';
@@ -14,9 +15,11 @@ import {
  */
 export abstract class BaseOperations {
   /**
-   * List files in a directory
+   * List files in a directory with pagination support
    */
-  abstract listFiles(options?: ListOptions): Promise<FileMetadata[]>;
+  abstract listFiles(
+    options?: ListOptions,
+  ): Promise<PaginatedResult<FileMetadata>>;
 
   /**
    * Upload a file
@@ -50,7 +53,7 @@ export abstract class BaseOperations {
   /**
    * Search for files (optional)
    */
-  searchFiles?(options: SearchOptions): Promise<FileMetadata[]>;
+  searchFiles?(options: SearchOptions): Promise<PaginatedResult<FileMetadata>>;
 
   /**
    * Move a file (optional)

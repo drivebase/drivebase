@@ -9,6 +9,7 @@ import {
   FileSystemCredentials,
   FileUpload,
   ListOptions,
+  PaginatedResult,
   ProviderCapability,
   ProviderType,
   UploadOptions,
@@ -75,8 +76,11 @@ export class LocalProvider extends BaseProvider {
    * List files in a directory
    */
   @ensureInitialized
-  async listFiles(options?: ListOptions): Promise<FileMetadata[]> {
-    return this.operations.listFiles(options);
+  async listFiles(
+    options?: ListOptions,
+  ): Promise<PaginatedResult<FileMetadata>> {
+    const result = await this.operations.listFiles(options);
+    return result;
   }
 
   /**

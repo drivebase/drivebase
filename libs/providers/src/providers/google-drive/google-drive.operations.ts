@@ -8,6 +8,8 @@ import {
   FileMetadata,
   FileUpload,
   ListOptions,
+  PaginatedResult,
+  PaginationMeta,
   SearchOptions,
   UploadOptions,
 } from '../../types';
@@ -62,22 +64,72 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
   }
 
   /**
-   * List files in a directory
+   * List files in a directory with pagination
    */
-  async listFiles(options?: ListOptions): Promise<FileMetadata[]> {
+  async listFiles(
+    options?: ListOptions,
+  ): Promise<PaginatedResult<FileMetadata>> {
     try {
       const path = options?.path || '/';
       const query = this.buildFileQuery(path);
+      const limit = options?.limit || 100;
 
-      const response = await this.driveClient.files.list({
+      // Create list request
+      const listOptions: drive_v3.Params$Resource$Files$List = {
         q: query,
+        pageSize: limit,
         fields:
-          'files(id, name, mimeType, size, parents, createdTime, modifiedTime)',
-        pageSize: options?.limit || 100,
+          'nextPageToken, files(id, name, mimeType, size, createdTime, modifiedTime, parents, trashed)',
         orderBy: 'folder,name',
-      });
+        includeItemsFromAllDrives: false,
+        supportsAllDrives: false,
+      };
 
-      return this.mapDriveFilesToFileMetadata(response.data.files || []);
+      // Add page token if cursor is provided
+      if (options?.cursor) {
+        listOptions.pageToken = options.cursor;
+      }
+
+      // Apply filter if provided
+      if (options?.filter) {
+        let filterQuery = query;
+
+        if (options.filter.mimeType) {
+          filterQuery += ` and mimeType = '${options.filter.mimeType}'`;
+        }
+
+        if (options.filter.isFolder !== undefined) {
+          filterQuery += options.filter.isFolder
+            ? " and mimeType = 'application/vnd.google-apps.folder'"
+            : " and mimeType != 'application/vnd.google-apps.folder'";
+        }
+
+        listOptions.q = filterQuery;
+      }
+
+      // Execute the request
+      const response = await this.driveClient.files.list(listOptions);
+
+      // Process the results
+      const files = response.data.files || [];
+      const nextCursor = response.data.nextPageToken || undefined;
+
+      // Transform to FileMetadata array
+      const result = files
+        .filter((file) => !file.trashed)
+        .map((file) => this.transformFileResponse(file, path));
+
+      // Build pagination metadata
+      const pagination: PaginationMeta = {
+        nextCursor,
+        // Google Drive API doesn't provide total count or previous cursor
+        hasMore: !!nextCursor,
+      };
+
+      return {
+        data: result,
+        pagination,
+      };
     } catch (error) {
       throw new Error(`Failed to list files: ${error.message}`);
     }
@@ -202,7 +254,9 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
   /**
    * Search for files
    */
-  async searchFiles(options: SearchOptions): Promise<FileMetadata[]> {
+  async searchFiles(
+    options: SearchOptions,
+  ): Promise<PaginatedResult<FileMetadata>> {
     try {
       let query = `name contains '${options.query.replace(/'/g, "\\'")}'`;
 
@@ -225,7 +279,15 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
         pageSize: options.limit || 100,
       });
 
-      return this.mapDriveFilesToFileMetadata(response.data.files || []);
+      return {
+        data: this.mapDriveFilesToFileMetadata(response.data.files || []),
+        pagination: {
+          hasMore: false,
+          nextCursor: undefined,
+          prevCursor: undefined,
+          total: response.data.files?.length || 0,
+        },
+      };
     } catch (error) {
       throw new Error(`Failed to search files: ${error.message}`);
     }

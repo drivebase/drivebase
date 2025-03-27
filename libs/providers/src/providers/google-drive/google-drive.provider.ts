@@ -10,6 +10,7 @@ import {
   FileUpload,
   ListOptions,
   OAuth2Credentials,
+  PaginatedResult,
   ProviderCapability,
   ProviderType,
   SearchOptions,
@@ -121,8 +122,11 @@ export class GoogleDriveProvider extends BaseProvider {
    * List files in a directory
    */
   @ensureInitialized
-  async listFiles(options?: ListOptions): Promise<FileMetadata[]> {
-    return this.operations.listFiles(options);
+  async listFiles(
+    options?: ListOptions,
+  ): Promise<PaginatedResult<FileMetadata>> {
+    const result = await this.operations.listFiles(options);
+    return result;
   }
 
   /**
@@ -173,7 +177,9 @@ export class GoogleDriveProvider extends BaseProvider {
    * Search for files
    */
   @ensureInitialized
-  async searchFiles(options: SearchOptions): Promise<FileMetadata[]> {
+  async searchFiles(
+    options: SearchOptions,
+  ): Promise<PaginatedResult<FileMetadata>> {
     return this.operations.searchFiles(options);
   }
 

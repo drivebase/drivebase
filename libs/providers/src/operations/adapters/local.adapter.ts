@@ -6,6 +6,7 @@ import {
   FileMetadata,
   FileUpload,
   ListOptions,
+  PaginatedResult,
   UploadOptions,
 } from '../../types';
 import { getMimeType } from '../../utils/mime.util';
@@ -60,7 +61,9 @@ export class LocalOperationsAdapter extends BaseOperations {
     };
   }
 
-  async listFiles(options?: ListOptions): Promise<FileMetadata[]> {
+  async listFiles(
+    options?: ListOptions,
+  ): Promise<PaginatedResult<FileMetadata>> {
     const directory = options?.path
       ? this.getFullPath(options.path)
       : this.basePath;
@@ -74,7 +77,15 @@ export class LocalOperationsAdapter extends BaseOperations {
         }),
       );
 
-      return fileStats;
+      return {
+        data: fileStats,
+        pagination: {
+          hasMore: false,
+          nextCursor: undefined,
+          prevCursor: undefined,
+          total: fileStats.length,
+        },
+      };
     } catch (error) {
       throw new Error(`Failed to list files: ${error.message}`);
     }
