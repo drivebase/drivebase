@@ -1,11 +1,12 @@
-import { PrismaService } from '@drivebase/database/prisma.service';
 import { ProviderFactory } from '@drivebase/providers';
-import { BaseProvider } from '@drivebase/providers/core/base-provider';
+import { Provider } from '@drivebase/providers/provider.entity';
 import { Injectable } from '@nestjs/common';
-import { File, Prisma } from '@prisma/client';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsWhere, ILike, Like, Repository } from 'typeorm';
 
 import { UpdateFileDto } from './dtos/update.file.dto';
 import { UploadFileDto } from './dtos/upload.file.dto';
+import { File } from './file.entity';
 
 export type FindWorkspaceFilesQuery = {
   parentPath?: string;
@@ -27,18 +28,22 @@ export type PaginatedResult<T> = {
 
 @Injectable()
 export class FilesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(File)
+    private readonly fileRepository: Repository<File>,
+    @InjectRepository(Provider)
+    private readonly providerRepository: Repository<Provider>,
+  ) {}
 
   async createFolder(workspaceId: string, name: string, parentPath = '/') {
-    return this.prisma.file.create({
-      data: {
-        name,
-        isFolder: true,
-        workspaceId,
-        parentPath,
-        path: parentPath !== '/' ? `${parentPath}/${name}` : `/${name}`,
-      },
+    const file = this.fileRepository.create({
+      name,
+      isFolder: true,
+      workspaceId,
+      parentPath,
+      path: parentPath !== '/' ? `${parentPath}/${name}` : `/${name}`,
     });
+    return this.fileRepository.save(file);
   }
 
   async findAll(
@@ -49,29 +54,21 @@ export class FilesService {
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
-      this.prisma.file.findMany({
+      this.fileRepository.find({
         where: {
           workspaceId,
         },
-        include: {
-          provider: {
-            select: {
-              type: true,
-            },
-          },
+        relations: {
+          provider: true,
         },
         skip,
         take: limit,
-        orderBy: [
-          {
-            isFolder: 'desc', // Folders first
-          },
-          {
-            updatedAt: 'desc', // Then by most recent update
-          },
-        ],
+        order: {
+          isFolder: 'DESC',
+          updatedAt: 'DESC',
+        },
       }),
-      this.prisma.file.count({
+      this.fileRepository.count({
         where: {
           workspaceId,
         },
@@ -92,10 +89,8 @@ export class FilesService {
   }
 
   async findById(id: string): Promise<File | null> {
-    return this.prisma.file.findUnique({
-      where: {
-        id,
-      },
+    return this.fileRepository.findOne({
+      where: { id },
     });
   }
 
@@ -106,7 +101,7 @@ export class FilesService {
     const { page = 1, limit = 10, search, ...restQuery } = query;
     const skip = (page - 1) * limit;
 
-    const whereClause = {} as Prisma.FileWhereInput;
+    const whereClause: FindOptionsWhere<File> = { workspaceId };
 
     if (restQuery.isStarred) {
       whereClause.isStarred = restQuery.isStarred;
@@ -114,37 +109,24 @@ export class FilesService {
       whereClause.parentPath = restQuery.parentPath;
     }
 
-    whereClause.workspaceId = workspaceId;
-
     if (search && search.trim()) {
-      whereClause.name = {
-        contains: search.trim(),
-        mode: 'insensitive',
-      };
+      whereClause.name = ILike(`%${search.trim()}%`);
     }
 
     const [data, total] = await Promise.all([
-      this.prisma.file.findMany({
+      this.fileRepository.find({
         where: whereClause,
-        include: {
-          provider: {
-            select: {
-              type: true,
-            },
-          },
+        relations: {
+          provider: true,
         },
         skip,
         take: limit,
-        orderBy: [
-          {
-            isFolder: 'desc', // Folders first
-          },
-          {
-            createdAt: 'desc', // Then by most recent update
-          },
-        ],
+        order: {
+          isFolder: 'DESC',
+          createdAt: 'DESC',
+        },
       }),
-      this.prisma.file.count({
+      this.fileRepository.count({
         where: whereClause,
       }),
     ]);
@@ -163,7 +145,7 @@ export class FilesService {
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<File[]> {
-    return this.prisma.file.findMany({
+    return this.fileRepository.find({
       where: {
         workspaceId,
       },
@@ -171,47 +153,30 @@ export class FilesService {
   }
 
   async findByParentPath(workspaceId: string, parentPath: string) {
-    return this.prisma.file.findMany({
+    return this.fileRepository.find({
       where: {
         workspaceId,
         parentPath,
       },
-      include: {
-        provider: {
-          select: {
-            type: true,
-          },
-        },
+      relations: {
+        provider: true,
       },
-      orderBy: [
-        {
-          isFolder: 'desc',
-        },
-        {
-          createdAt: 'asc',
-        },
-      ],
+      order: {
+        isFolder: 'DESC',
+        createdAt: 'ASC',
+      },
     });
   }
 
   async update(id: string, updateFileDto: UpdateFileDto) {
-    return this.prisma.file.update({
-      where: {
-        id,
-      },
-      data: updateFileDto,
-    });
+    await this.fileRepository.update(id, updateFileDto);
+    return this.fileRepository.findOne({ where: { id } });
   }
 
   async delete(id: string) {
-    const file = await this.prisma.file.findUnique({
+    const file = await this.fileRepository.findOne({
       where: { id },
-      select: {
-        id: true,
-        isFolder: true,
-        provider: true,
-        referenceId: true,
-      },
+      relations: { provider: true },
     });
 
     if (!file) {
@@ -237,11 +202,11 @@ export class FilesService {
 
     await provider.deleteFile(file.referenceId);
 
-    await this.prisma.file.delete({ where: { id } });
+    await this.fileRepository.delete(id);
   }
 
   async deleteFolder(fileId: string) {
-    const file = await this.prisma.file.findUnique({
+    const file = await this.fileRepository.findOne({
       where: { id: fileId },
       select: {
         id: true,
@@ -250,186 +215,158 @@ export class FilesService {
       },
     });
 
-    if (!file || !file.workspaceId) {
-      throw new Error('File not found');
+    if (!file || !file.path || !file.workspaceId) {
+      throw new Error('Folder not found');
     }
 
-    const allChildren = await this.getAllChildren(file.path, file.workspaceId);
+    // Get all child files and folders
+    const children = await this.getAllChildren(file.path, file.workspaceId);
 
-    for (const child of allChildren.reverse()) {
-      if (!child.isFolder) {
-        if (child.providerId && child.referenceId) {
-          try {
-            const provider = await this.prisma.provider.findUnique({
-              where: { id: child.providerId },
-              select: { type: true, credentials: true },
-            });
+    // Delete files from providers
+    const providerFiles = children.filter(
+      (child) => !child.isFolder && child.providerId && child.referenceId,
+    );
 
-            if (provider) {
-              const storageProvider = ProviderFactory.createProvider(
-                provider.type,
-                provider.credentials as Record<string, string>,
-              );
-              await storageProvider.deleteFile(child.referenceId);
-            }
-          } catch (error) {
-            console.error(
-              `Failed to delete file ${child.name} from storage:`,
-              error,
+    for (const providerFile of providerFiles) {
+      try {
+        if (providerFile.providerId && providerFile.referenceId) {
+          const provider = await this.providerRepository.findOne({
+            where: { id: providerFile.providerId },
+          });
+
+          if (provider) {
+            const providerInstance = ProviderFactory.createProvider(
+              provider.type,
+              provider.credentials as Record<string, string>,
             );
+            await providerInstance.deleteFile(providerFile.referenceId);
           }
         }
+      } catch (error) {
+        console.error(`Error deleting provider file: ${error.message}`);
       }
-
-      await this.prisma.file.delete({ where: { id: child.id } });
     }
 
-    await this.prisma.file.delete({ where: { id: file.id } });
+    // Delete all child files and folders from database
+    for (const child of children) {
+      await this.fileRepository.delete(child.id);
+    }
 
-    return {
-      success: true,
-      message: `Folder ${file.path} and all contents deleted`,
-    };
+    // Delete the folder itself
+    await this.fileRepository.delete(fileId);
   }
 
   private async getAllChildren(
     folderPath: string,
     workspaceId: string,
   ): Promise<File[]> {
-    // Find all direct children of this path
-    const children = await this.prisma.file.findMany({
+    if (!folderPath) {
+      return [];
+    }
+
+    // Find all files that have a path that starts with the folder path
+    const files = await this.fileRepository.find({
       where: {
-        parentPath: folderPath,
         workspaceId,
-      },
-      include: {
-        provider: {
-          select: {
-            type: true,
-          },
-        },
+        path: Like(`${folderPath}%`),
       },
     });
 
-    let allChildren: File[] = [...children];
-
-    // Process folder children and collect their children recursively
-    for (const child of children) {
-      if (child.isFolder) {
-        const subChildren = await this.getAllChildren(child.path, workspaceId);
-        allChildren = [...allChildren, ...subChildren];
-      }
-    }
-
-    return allChildren;
+    return files;
   }
 
   async downloadFile(id: string) {
-    const file = await this.findById(id);
+    const file = await this.fileRepository.findOne({
+      where: { id },
+      relations: { provider: true },
+    });
 
-    if (!file || !file.providerId) {
+    if (!file) {
       throw new Error('File not found');
     }
 
-    const provider = await this.prisma.provider.findUnique({
-      where: {
-        id: file.providerId,
-      },
-    });
-
-    if (!provider) {
-      throw new Error('Provider not found');
+    if (file.isFolder) {
+      throw new Error('Cannot download a folder');
     }
+
+    if (!file.provider) {
+      throw new Error('File provider not found');
+    }
+
+    const provider = ProviderFactory.createProvider(
+      file.provider.type,
+      file.provider.credentials as Record<string, string>,
+    );
 
     if (!file.referenceId) {
       throw new Error('File reference ID not found');
     }
 
-    const factoryProvider = ProviderFactory.createProvider(
-      provider.type,
-      provider.credentials as Record<string, string>,
-    );
-
-    const fileStream = await factoryProvider.downloadFile(file.referenceId);
-
-    const metadata = {
-      fileName: file.name,
-      mimeType: file.mimeType,
-      size: file.size,
-    };
-
-    return { fileStream, metadata };
+    return provider.downloadFile(file.referenceId);
   }
 
-  // todo(v2): Add queue for each file using BullMQ
   async uploadFile(files: Express.Multer.File[], payload: UploadFileDto) {
-    const { providerId, path } = payload;
-    const provider = await this.prisma.provider.findUnique({
+    const { providerId } = payload;
+
+    if (!providerId) {
+      throw new Error('Provider ID is required');
+    }
+
+    const provider = await this.providerRepository.findOne({
       where: { id: providerId },
-      select: {
-        id: true,
-        type: true,
-        authType: true,
-        credentials: true,
-        metadata: true,
-        workspaceId: true,
-      },
     });
 
     if (!provider) {
       throw new Error('Provider not found');
     }
 
-    try {
-      const credentials = provider.credentials as Record<string, string>;
+    const providerInstance = ProviderFactory.createProvider(
+      provider.type,
+      provider.credentials as Record<string, string>,
+    );
 
-      // Create provider instance
-      const providerInstance: BaseProvider = ProviderFactory.createProvider(
-        provider.type,
-        credentials,
+    const uploadedFiles: File[] = [];
+
+    for (const file of files) {
+      const uploadResult = await providerInstance.uploadFile(
+        file.originalname,
+        {
+          buffer: file.buffer,
+          originalname: file.originalname,
+          mimetype: file.mimetype,
+          size: file.size,
+        },
       );
 
-      // Authenticate the provider
-      await providerInstance.authenticate(credentials);
-
-      // Upload each file
-      for (const file of files) {
-        const uploadedFile = await providerInstance.uploadFile(path, file);
-
-        // Save file metadata to database
-        await this.prisma.file.create({
-          data: {
-            name: file.originalname,
-            isFolder: false,
-            parentPath: path,
-            path: `${path === '/' ? '' : path}/${file.originalname}`,
-            mimeType: file.mimetype,
-            size: file.size,
-            referenceId: uploadedFile.id,
-            providerId: providerId,
-            workspaceId: provider.workspaceId,
-          },
-        });
+      if (!uploadResult || !uploadResult.id) {
+        throw new Error('Failed to upload file to provider');
       }
-    } catch (error) {
-      console.error('Upload error:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to upload file: ${errorMessage}`);
+
+      const newFile = this.fileRepository.create({
+        name: file.originalname,
+        isFolder: false,
+        path: file.originalname,
+        parentPath: '/',
+        providerId,
+        mimeType: file.mimetype,
+        size: file.size,
+        referenceId: uploadResult.id,
+      });
+
+      const savedFile = await this.fileRepository.save(newFile);
+      uploadedFiles.push(savedFile);
     }
+
+    return uploadedFiles;
   }
 
   async starFile(id: string) {
-    return this.prisma.file.update({
-      where: { id },
-      data: { isStarred: true },
-    });
+    await this.fileRepository.update(id, { isStarred: true });
+    return this.fileRepository.findOne({ where: { id } });
   }
 
   async unstarFile(id: string) {
-    return this.prisma.file.update({
-      where: { id },
-      data: { isStarred: false },
-    });
+    await this.fileRepository.update(id, { isStarred: false });
+    return this.fileRepository.findOne({ where: { id } });
   }
 }
