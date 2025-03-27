@@ -1,11 +1,7 @@
 import { OAuth2Client } from 'google-auth-library';
 
 import { OAuth2Strategy } from '../../auth';
-import {
-  GoogleDriveCredentials,
-  OAuth2Credentials,
-  UserInfo,
-} from '../../types';
+import { OAuth2Credentials, UserInfo } from '../../types';
 
 /**
  * Google Drive OAuth2 authentication strategy
@@ -140,7 +136,7 @@ export class GoogleDriveAuthStrategy extends OAuth2Strategy {
   /**
    * Get the initialized OAuth2 client
    */
-  getOAuth2Client(credentials?: GoogleDriveCredentials): OAuth2Client {
+  getOAuth2Client(credentials?: OAuth2Credentials): OAuth2Client {
     if (credentials) {
       this.setClientCredentials(credentials);
     }
