@@ -1,4 +1,4 @@
-import { AuthType, ProviderType } from '@prisma/client';
+import { AuthType, ProviderType } from '../provider.entity';
 
 export enum ProviderCapability {
   READ = 'read',
