@@ -1,4 +1,4 @@
-import { RegisterInput } from '@drivebase/sdk';
+import { RegisterInput, useRegisterMutation } from '@drivebase/sdk';
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Card,
@@ -16,7 +16,6 @@ import {
   FormMessage,
 } from '@drivebase/web/components/ui/form';
 import { Input } from '@drivebase/web/components/ui/input';
-import { useRegisterMutation } from '@drivebase/web/gql/hooks';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { UserPlus2Icon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
