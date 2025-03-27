@@ -22,7 +22,6 @@ const entities = [User, Workspace, Provider, File];
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: './schema.gql',
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
