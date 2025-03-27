@@ -9,6 +9,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  type Relation,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -25,13 +26,13 @@ export class Workspace {
 
   @ManyToOne(() => User, (user) => user.workspaces)
   @JoinColumn({ name: 'ownerId' })
-  owner: User;
+  owner: Relation<User>;
 
   @OneToMany(() => Provider, (provider) => provider.workspace)
-  providers: Provider[];
+  providers: Relation<Provider>[];
 
   @OneToMany(() => File, (file) => file.workspace)
-  files: File[];
+  files: Relation<File>[];
 
   @CreateDateColumn()
   createdAt: Date;
