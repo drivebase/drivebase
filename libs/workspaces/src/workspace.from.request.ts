@@ -1,21 +1,17 @@
-import {
-  createParamDecorator,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
 import type { Workspace } from '@prisma/client';
 import type { Request } from 'express';
 
-export const GetWorkspaceFromRequest = createParamDecorator(
-  (_, ctx: ExecutionContext) => {
-    const request = ctx
-      .switchToHttp()
-      .getRequest<Request & { workspace: Workspace }>();
+import { ExecutionContext, UnauthorizedException, createParamDecorator } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
-    if (!request.workspace) {
-      throw new UnauthorizedException('Workspace not available.');
-    }
+export const GetWorkspaceFromRequest = createParamDecorator((_, context: ExecutionContext) => {
+  const ctx = GqlExecutionContext.create(context);
 
-    return request.workspace;
-  },
-);
+  const request = ctx.getContext().req as Request & { workspace?: Workspace };
+
+  if (!request.workspace) {
+    throw new UnauthorizedException('Workspace not available.');
+  }
+
+  return request.workspace;
+});

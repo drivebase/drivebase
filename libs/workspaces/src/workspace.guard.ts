@@ -1,12 +1,15 @@
+import type { Request } from 'express';
+import { Repository } from 'typeorm';
+
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
-  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { Request } from 'express';
-import { Repository } from 'typeorm';
 
 import { Workspace } from './workspace.entity';
 
@@ -18,15 +21,14 @@ export class WorkspaceGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context
-      .switchToHttp()
-      .getRequest<Request & { workspace: Workspace }>();
+    const ctx = GqlExecutionContext.create(context);
+    const request = ctx.getContext().req as Request & { workspace: Workspace };
 
     const cookies = request.cookies as Record<string, string>;
-    const workspaceId = cookies.workspaceId || request.query['workspaceId'];
+    const workspaceId = cookies.workspaceId || request.headers['x-workspace-id'];
 
     if (!workspaceId) {
-      throw new UnauthorizedException('Workspace ID is required');
+      throw new ForbiddenException('Workspace ID is required');
     }
 
     const workspace = await this.workspaceRepository.findOne({
@@ -34,7 +36,7 @@ export class WorkspaceGuard implements CanActivate {
     });
 
     if (!workspace) {
-      throw new UnauthorizedException('Workspace not found');
+      throw new NotFoundException('Workspace not found');
     }
 
     request.workspace = workspace;
