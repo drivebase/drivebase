@@ -25,7 +25,8 @@
     "migration:create": "npx ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create -d ./typeorm.config.ts ./migrations/migration",
     "migration:run": "npx ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./typeorm.config.ts",
     "migration:revert": "npx ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d ./typeorm.config.ts",
-    "codegen": "graphql-codegen --config codegen.ts"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen:watch": "graphql-codegen --config codegen.ts --watch"
   },
   "dependencies": {
     "@apollo/client": "^3.13.5",
@@ -72,6 +73,7 @@
     "google-auth-library": "^9.15.1",
     "googleapis": "^148.0.0",
     "graphql": "^16.10.0",
+    "graphql-type-json": "^0.3.2",
     "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.0.4",
     "i18next-http-backend": "^3.0.2",
@@ -114,6 +116,7 @@
     "@swc/cli": "^0.6.0",
     "@swc/core": "^1.11.13",
     "@tanstack/router-plugin": "^1.114.27",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/byte-size": "^8.1.2",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
@@ -131,7 +134,6 @@
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^16.0.0",
     "ollama-ai-provider": "^1.2.0",
     "postcss": "^8.5.3",
