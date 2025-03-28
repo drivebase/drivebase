@@ -7,7 +7,6 @@ export default defineConfig({
   test: {
     globals: true,
     root: './',
-    reporters: ['default', 'github-actions'],
   },
   plugins: [
     swc.vite({
