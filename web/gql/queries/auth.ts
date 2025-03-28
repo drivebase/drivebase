@@ -1,9 +1,10 @@
 import { gql } from '@drivebase/sdk';
 
-export const GetMe = gql(`
+export const GET_ME = gql(`
   query GetMe {
     me {
       name
+      email
     }
   }
 `);

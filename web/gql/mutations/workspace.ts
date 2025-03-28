@@ -1,6 +1,6 @@
 import { gql } from '@drivebase/sdk';
 
-export const CreateWorkspace = gql(`
+export const CREATE_WORKSPACE = gql(`
   mutation CreateWorkspace($input: CreateWorkspaceInput!) {
     createWorkspace(input: $input) {
       id
