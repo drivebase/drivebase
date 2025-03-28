@@ -24,41 +24,45 @@ ProviderRegistry.register(ProviderType.AMAZON_S3, AwsS3Provider, {
     ProviderCapability.SEARCH,
   ],
   configSchema: {
-    fields: {
-      accessKeyId: {
+    fields: [
+      {
+        id: 'accessKeyId',
         type: 'string',
         label: 'Access Key ID',
         description: 'AWS Access Key ID',
       },
-      secretAccessKey: {
+      {
+        id: 'secretAccessKey',
         type: 'secret',
         label: 'Secret Access Key',
         description: 'AWS Secret Access Key',
       },
-      region: {
+      {
+        id: 'region',
         type: 'string',
         label: 'Region',
         description: 'AWS region (e.g., us-east-1)',
         default: 'us-east-1',
       },
-      bucket: {
+      {
+        id: 'bucket',
         type: 'string',
         label: 'Bucket Name',
         description: 'S3 bucket to use for storage',
       },
-      basePath: {
+      {
+        id: 'basePath',
         type: 'string',
         label: 'Base Path',
-        description:
-          'Optional folder prefix within the bucket (e.g., drivebase/)',
+        description: 'Optional folder prefix within the bucket (e.g., drivebase/)',
       },
-      endpoint: {
+      {
+        id: 'endpoint',
         type: 'string',
         label: 'Custom Endpoint',
-        description:
-          'Optional endpoint URL for S3-compatible storage (e.g., MinIO)',
+        description: 'Optional endpoint URL for S3-compatible storage (e.g., MinIO)',
       },
-    },
+    ],
     required: ['accessKeyId', 'secretAccessKey', 'bucket'],
   },
 });
