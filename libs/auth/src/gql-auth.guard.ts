@@ -11,7 +11,7 @@ export class GqlAuthGuard extends AuthGuard('local') {
 
   getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
-    const request = ctx.getContext();
+    const request = ctx.getContext().req;
     request.body = ctx.getArgs().input;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return request;
