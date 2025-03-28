@@ -1,20 +1,18 @@
+import { Repository } from 'typeorm';
+
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
 import { BaseProvider } from './core/base-provider';
 import { ProviderFactory } from './core/provider.factory';
 import { ProviderRegistry } from './core/provider.registry';
-import {
-  AuthType,
-  Provider as DbProvider,
-  ProviderType,
-} from './provider.entity';
+import { AuthType, Provider as DbProvider, ProviderType } from './provider.entity';
 import {
   AuthCredentials,
   MetadataCapable,
   OAuth2Credentials,
   OAuthCapable,
+  ProviderMetadata,
 } from './types';
 
 interface OAuthSession {
@@ -24,6 +22,8 @@ interface OAuthSession {
   type: ProviderType;
   redirectUri: string;
 }
+
+const REDIRECT_URI = 'http://localhost:3000/oauth/callback';
 
 @Injectable()
 export class ProvidersService {
@@ -37,10 +37,7 @@ export class ProvidersService {
   /**
    * Find provider credentials by workspace and type
    */
-  async findCredentials(
-    workspaceId: string,
-    type: ProviderType,
-  ): Promise<Record<string, any>> {
+  async findCredentials(workspaceId: string, type: ProviderType): Promise<Record<string, any>> {
     const provider = await this.providerRepository.findOne({
       where: {
         workspaceId,
@@ -68,16 +65,8 @@ export class ProvidersService {
   /**
    * Get all available provider types and their metadata
    */
-  findAvailableProviders() {
-    return ProviderRegistry.getAllProviders().map((provider) => ({
-      ...provider,
-      id: provider.id,
-      type: provider.type,
-      displayName: provider.displayName,
-      description: provider.description,
-      authType: provider.authType,
-      configSchema: provider.configSchema,
-    }));
+  findAvailableProviders(): ProviderMetadata[] {
+    return ProviderRegistry.getAllProviders();
   }
 
   /**
@@ -88,7 +77,6 @@ export class ProvidersService {
     clientId: string,
     clientSecret: string,
     workspaceId: string,
-    redirectUri: string,
   ): string {
     const metadata = ProviderRegistry.getProviderMetadata(type);
 
@@ -97,9 +85,7 @@ export class ProvidersService {
     }
 
     if (metadata.authType !== AuthType.OAUTH2) {
-      throw new Error(
-        `Provider type ${type} does not support OAuth authentication`,
-      );
+      throw new Error(`Provider type ${type} does not support OAuth authentication`);
     }
 
     // Create provider instance
@@ -117,13 +103,13 @@ export class ProvidersService {
       clientSecret,
       workspaceId,
       type,
-      redirectUri,
+      redirectUri: REDIRECT_URI,
     });
 
     // Get the auth URL
     // Check if the provider has an authStrategy with getAuthUrl method
     if (hasOAuthCapability(provider)) {
-      return provider.authStrategy.getAuthUrl(redirectUri, stateId);
+      return provider.authStrategy.getAuthUrl(REDIRECT_URI, stateId);
     }
 
     throw new Error(`Provider ${type} does not support OAuth authentication`);
@@ -153,16 +139,11 @@ export class ProvidersService {
 
       // Check if provider supports OAuth
       if (!hasOAuthCapability(provider)) {
-        throw new Error(
-          `Provider ${type} does not support OAuth authentication`,
-        );
+        throw new Error(`Provider ${type} does not support OAuth authentication`);
       }
 
       // Get access token using the provider's authStrategy
-      const tokenResponse = await provider.authStrategy.getAccessToken(
-        code,
-        redirectUri,
-      );
+      const tokenResponse = await provider.authStrategy.getAccessToken(code, redirectUri);
 
       // Combine credentials
       const fullCredentials: OAuth2Credentials = {
@@ -219,13 +200,8 @@ export class ProvidersService {
       throw new Error(`Provider type ${type} not found`);
     }
 
-    if (
-      metadata.authType !== AuthType.API_KEY &&
-      metadata.authType !== AuthType.BASIC
-    ) {
-      throw new Error(
-        `Provider type ${type} does not support API key authentication`,
-      );
+    if (metadata.authType !== AuthType.API_KEY && metadata.authType !== AuthType.BASIC) {
+      throw new Error(`Provider type ${type} does not support API key authentication`);
     }
 
     try {
@@ -305,9 +281,7 @@ export class ProvidersService {
         provider.setMetadata(dbProvider.metadata);
       }
     } catch (error) {
-      console.warn(
-        `Could not update provider instance metadata: ${error.message}`,
-      );
+      console.warn(`Could not update provider instance metadata: ${error.message}`);
     }
 
     return dbProvider;
