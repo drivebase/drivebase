@@ -1,4 +1,10 @@
-import { ProviderListItem } from '@drivebase/providers/providers';
+import { useMutation, useQuery } from '@apollo/client';
+import { KeyIcon } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+
+import { AuthType } from '@drivebase/sdk';
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Dialog,
@@ -19,67 +25,58 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@drivebase/web/components/ui/select';
-import { useGetAvailableProvidersQuery } from '@drivebase/web/lib/redux/endpoints/providers';
-import {
-  useAuthorizeApiKeyMutation,
-  useGetAuthUrlMutation,
-} from '@drivebase/web/lib/redux/endpoints/providers';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { KeyIcon } from 'lucide-react';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { z } from 'zod';
-
-const createKeySchema = z.object({
-  label: z.string().min(1),
-  provider: z.string().min(1),
-  inputFields: z.record(z.string(), z.string()),
-});
+import { AUTHORIZE_API_KEY, GET_AUTH_URL } from '@drivebase/web/gql/mutations/providers';
+import { GET_AVAILABLE_PROVIDERS } from '@drivebase/web/gql/queries/providers';
 
 type ConnectProviderDialogProps = {
   children: React.ReactNode;
 };
 
 function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
+  const form = useForm();
+
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedProvider, setSelectedProvider] =
-    useState<ProviderListItem | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
 
-  const [getAuthUrl, { isLoading: isGettingAuthUrl }] = useGetAuthUrlMutation();
-  const [authorizeApiKey, { isLoading: isAuthorizingApiKey }] =
-    useAuthorizeApiKeyMutation();
+  const [getAuthUrl, { loading: isGettingAuthUrl }] = useMutation(GET_AUTH_URL);
+  const [authorizeApiKey, { loading: isAuthorizingApiKey }] = useMutation(AUTHORIZE_API_KEY);
 
-  const form = useForm<z.infer<typeof createKeySchema>>({
-    resolver: zodResolver(createKeySchema),
-    defaultValues: {
-      label: '',
-    },
-  });
+  const { data } = useQuery(GET_AVAILABLE_PROVIDERS);
 
-  const { data: providers } = useGetAvailableProvidersQuery();
+  const selectedProvider = data?.availableProviders?.find(
+    (provider) => provider.type === selectedProviderId,
+  );
 
-  const onSubmit = (data: z.infer<typeof createKeySchema>) => {
-    if (selectedProvider?.authType === 'oauth') {
+  const onSubmit = (data: Record<string, any>) => {
+    console.log('data', data);
+    if (!selectedProvider) return;
+
+    if (selectedProvider?.authType === AuthType.Oauth2) {
       getAuthUrl({
-        type: selectedProvider.type,
-        clientId: data.inputFields.clientId,
-        clientSecret: data.inputFields.clientSecret,
+        variables: {
+          input: {
+            type: selectedProvider.type,
+            clientId: data.inputFields.clientId,
+            clientSecret: data.inputFields.clientSecret,
+          },
+        },
       })
-        .unwrap()
-        .then((data) => {
-          window.location.href = data.data;
+        .then(({ data }) => {
+          window.location.href = data?.getAuthUrl.url ?? '';
         })
         .catch((error) => {
           toast.error(error.data.message);
         });
-    } else if (selectedProvider?.authType === 'api_key') {
+    } else if (selectedProvider?.authType === AuthType.ApiKey) {
       authorizeApiKey({
-        type: selectedProvider.type,
-        label: data.label,
-        credentials: data.inputFields,
+        variables: {
+          input: {
+            label: data.label,
+            credentials: data.inputFields,
+            type: selectedProvider.type,
+          },
+        },
       })
-        .unwrap()
         .then(() => {
           toast.success('Provider connected successfully');
         })
@@ -99,15 +96,9 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
         }}
       >
         <DialogHeader className="px-8 py-10">
-          <DialogTitle
-            asChild
-            className="mx-auto text-2xl select-none text-center"
-          >
+          <DialogTitle asChild className="mx-auto text-2xl select-none text-center">
             <div>
-              <KeyIcon
-                size={60}
-                className="mx-auto mb-4 p-4 bg-muted rounded-xl"
-              />
+              <KeyIcon size={60} className="mx-auto mb-4 p-4 bg-muted rounded-xl" />
               <h1 className="text-2xl font-medium">Connect Provider</h1>
             </div>
           </DialogTitle>
@@ -116,7 +107,7 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <form
-          className="py-8 px-6 bg-accent/30 border-t space-y-4 max-h-[500px] overflow-y-auto"
+          className="py-8 px-6 bg-accent/30 border-t space-y-4 max-h-[500px] overflow-y-auto [&::-webkit-scrollbar]:hidden"
           onSubmit={(e) => {
             e.preventDefault();
             form
@@ -130,14 +121,12 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
             <Label>Provider</Label>
             <Select
               onValueChange={(value) => {
-                const provider = providers?.data?.find(
+                const provider = data?.availableProviders?.find(
                   (provider) => provider.type === value,
                 );
                 if (provider) {
                   form.setValue('provider', provider.type);
-                  setSelectedProvider(provider);
-
-                  form.setValue('label', provider.label);
+                  setSelectedProviderId(provider.type);
                 }
               }}
             >
@@ -147,9 +136,9 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Providers</SelectLabel>
-                  {providers?.data?.map((provider) => (
+                  {data?.availableProviders?.map((provider) => (
                     <SelectItem key={provider.type} value={provider.type}>
-                      {provider.label}
+                      {provider.displayName}
                     </SelectItem>
                   ))}
                 </SelectGroup>
@@ -158,26 +147,19 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
           </div>
 
           {selectedProvider &&
-            Object.entries(selectedProvider.inputFields).map(([key, field]) => (
-              <div className="space-y-1" key={key}>
+            selectedProvider.configSchema.fields.map((field) => (
+              <div className="space-y-1" key={field.id}>
                 <Label>{field.label}</Label>
-                <Input
-                  type={field.type}
-                  {...form.register(`inputFields.${key}`)}
-                />
+                <Input type={field.type} {...form.register(`inputFields.${field.id}`)} />
               </div>
             ))}
 
           <Button
             variant={'outline'}
             className="w-full mt-4"
-            disabled={
-              isGettingAuthUrl ||
-              isAuthorizingApiKey ||
-              selectedProvider === null
-            }
+            disabled={isGettingAuthUrl || isAuthorizingApiKey || selectedProvider === null}
           >
-            {selectedProvider?.authType === 'oauth' ? 'Authorize' : 'Submit'}
+            {selectedProvider?.authType === AuthType.Oauth2 ? 'Authorize' : 'Submit'}
           </Button>
         </form>
       </DialogContent>
