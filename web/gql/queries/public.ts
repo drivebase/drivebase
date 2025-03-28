@@ -1,6 +1,6 @@
 import { gql } from '@drivebase/sdk';
 
-export const GetVersion = gql(`
+export const GET_VERSION = gql(`
   query GetVersion {
     version
   }
