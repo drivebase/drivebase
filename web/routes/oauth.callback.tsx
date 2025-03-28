@@ -1,3 +1,8 @@
+import { ApolloError, useMutation } from '@apollo/client';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Loader } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Card,
@@ -6,36 +11,39 @@ import {
   CardHeader,
   CardTitle,
 } from '@drivebase/web/components/ui/card';
-import { useCallbackMutation } from '@drivebase/web/lib/redux/endpoints/providers';
-import { ProviderType } from '@prisma/client';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Loader } from 'lucide-react';
-import { useEffect, useState } from 'react';
+
+import { HANDLE_OAUTH_CALLBACK } from '../gql/mutations/providers';
 
 function Page() {
   const r = useRouter();
-  const params = Route.useParams();
   const searchParams = Route.useSearch();
   const [error, setError] = useState<string | null>(null);
-  const [callback] = useCallbackMutation();
+  const [handleOAuthCallback] = useMutation(HANDLE_OAUTH_CALLBACK);
 
   useEffect(() => {
     const code = searchParams.code;
     const state = searchParams.state;
 
     if (code && state) {
-      callback({ code, state, type: params.type as ProviderType })
-        .unwrap()
+      handleOAuthCallback({
+        variables: {
+          input: { code, state },
+        },
+      })
         .then(() => {
           r.navigate({ to: '/settings/providers' });
         })
-        .catch(() => {
-          setError('Failed to connect provider');
+        .catch((err) => {
+          if (err instanceof ApolloError) {
+            setError(err.message);
+          } else {
+            setError('Failed to connect provider');
+          }
         });
     } else {
       r.navigate({ to: '/settings/providers' });
     }
-  }, [callback, params.type, r, searchParams]);
+  }, [handleOAuthCallback, r, searchParams]);
 
   return (
     <div className="h-screen flex items-center justify-center relative">
@@ -44,14 +52,10 @@ function Page() {
         <Card className="shadow-xl rounded-2xl z-20 w-[25rem]">
           <CardHeader className="border-b pb-6">
             <CardTitle className="text-2xl font-semibold">Error</CardTitle>
-            <CardDescription>
-              An error occurred while connecting to the provider.
-            </CardDescription>
+            <CardDescription>An error occurred while connecting to the provider</CardDescription>
           </CardHeader>
           <CardContent className="pt-6 space-y-4 bg-accent/50">
-            <p className="text-sm text-muted-foreground">
-              Please check console for more details.
-            </p>
+            <p className="text-sm text-muted-foreground">{error}</p>
             <Button
               variant={'outline'}
               onClick={() => {
@@ -74,7 +78,7 @@ type SearchParams = {
   state: string;
 };
 
-export const Route = createFileRoute('/providers/$type/callback')({
+export const Route = createFileRoute('/oauth/callback')({
   component: Page,
   validateSearch: (search: SearchParams) => {
     return search;
