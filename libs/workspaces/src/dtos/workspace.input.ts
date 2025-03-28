@@ -1,5 +1,6 @@
-import { Field, InputType } from '@nestjs/graphql';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
+import { Field, InputType } from '@nestjs/graphql';
 
 @InputType()
 export class CreateWorkspaceInput {
@@ -11,11 +12,6 @@ export class CreateWorkspaceInput {
 
 @InputType()
 export class UpdateWorkspaceInput {
-  @Field(() => String)
-  @IsNotEmpty()
-  @IsString()
-  id: string;
-
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
