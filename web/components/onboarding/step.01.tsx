@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@drivebase/web/components/ui/button';
 import { Input } from '@drivebase/web/components/ui/input';
-import { CREATE_WORKSPACE } from '@drivebase/web/gql/mutations/workspace';
+import { CREATE_WORKSPACE } from '@drivebase/web/gql/mutations/workspaces';
 
 type StepOneProps = {
   onNext: (workspaceId: string) => void;

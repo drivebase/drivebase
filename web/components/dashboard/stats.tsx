@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Skeleton } from '@drivebase/web/components/ui/skeleton';
-import { GET_WORKSPACE_STATS } from '@drivebase/web/gql/queries/workspace';
+import { GET_WORKSPACE_STATS } from '@drivebase/web/gql/queries/workspaces';
 import { cn } from '@drivebase/web/lib/utils';
 
 const baseStats = [
