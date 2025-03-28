@@ -28,33 +28,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        id: test-run
-        run: |
-          echo "::group::Test Results"
-          TEST_OUTPUT=$(pnpm test -- --no-color)
-          echo "$TEST_OUTPUT"
-          echo "::endgroup::"
-
-          # Save output for PR comment
-          echo "result<<EOF" >> $GITHUB_OUTPUT
-          echo "$TEST_OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        continue-on-error: true
-
-      - name: Post test results as PR comment
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const testResults = `### Test Results
-            \`\`\`
-            ${{ steps.test-run.outputs.result }}
-            \`\`\`
-            `;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: testResults
-            });
+        run: pnpm test
