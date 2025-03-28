@@ -1,6 +1,4 @@
-import { File } from '@drivebase/files/file.entity';
-import { Workspace } from '@drivebase/workspaces/workspace.entity';
-import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
+import GraphQLJSON from 'graphql-type-json';
 import {
   Column,
   CreateDateColumn,
@@ -13,6 +11,11 @@ import {
   type Relation,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
+
+import { File } from '@drivebase/files/file.entity';
+import { Workspace } from '@drivebase/workspaces/workspace.entity';
 
 export enum ProviderType {
   LOCAL = 'LOCAL',
@@ -65,11 +68,11 @@ export class Provider {
   })
   authType: AuthType;
 
-  @Field(() => String)
+  @Field(() => GraphQLJSON)
   @Column('json')
   credentials: Record<string, any>;
 
-  @Field(() => String, { nullable: true })
+  @Field(() => GraphQLJSON)
   @Column('json', { nullable: true })
   metadata?: Record<string, any>;
 
