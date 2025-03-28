@@ -25,6 +25,7 @@ import { CurrentUser } from './user.decorator';
 export class AuthResolver {
   constructor(private authService: AuthService) {}
 
+  @Public()
   @Mutation(() => LoginResponse)
   @UseGuards(GqlAuthGuard)
   login(
@@ -32,7 +33,7 @@ export class AuthResolver {
     @CurrentUser() user: User,
   ): Promise<LoginResponse> {
     return Promise.resolve(this.authService.login(user));
-  }
+  } 
 
   @Public()
   @Mutation(() => RegisterResponse)
