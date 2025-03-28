@@ -1,3 +1,8 @@
+import GraphQLJSON from 'graphql-type-json';
+
+import { Field, registerEnumType } from '@nestjs/graphql';
+import { ObjectType } from '@nestjs/graphql';
+
 import { AuthType, ProviderType } from '../provider.entity';
 
 export enum ProviderCapability {
@@ -10,26 +15,59 @@ export enum ProviderCapability {
   VERSIONS = 'versions',
 }
 
-export interface ProviderMetadata {
-  id: string;
-  type: ProviderType;
-  displayName: string;
-  description: string;
-  authType: AuthType;
-  capabilities: ProviderCapability[];
-  configSchema: ConfigurationSchema;
-}
+registerEnumType(ProviderCapability, {
+  name: 'ProviderCapability',
+});
 
-export interface ConfigurationSchema {
-  fields: Record<string, ConfigField>;
+@ObjectType()
+export class ConfigurationSchema {
+  @Field(() => [ConfigField])
+  fields: ConfigField[];
+
+  @Field(() => [String])
   required: string[];
 }
 
-export interface ConfigField {
+@ObjectType()
+export class ProviderMetadata {
+  @Field(() => String)
+  id: string;
+
+  @Field(() => ProviderType)
+  type: ProviderType;
+
+  @Field(() => String)
+  displayName: string;
+
+  @Field(() => String)
+  description: string;
+
+  @Field(() => AuthType)
+  authType: AuthType;
+
+  @Field(() => [ProviderCapability])
+  capabilities: ProviderCapability[];
+
+  @Field(() => ConfigurationSchema)
+  configSchema: ConfigurationSchema;
+}
+
+@ObjectType()
+export class ConfigField {
+  @Field(() => String)
+  id: string;
+
+  @Field(() => String)
   type: 'string' | 'number' | 'boolean' | 'secret';
+
+  @Field(() => String)
   label: string;
+
+  @Field(() => String, { nullable: true })
   description?: string;
-  default?: any;
+
+  @Field(() => String, { nullable: true })
+  default?: string;
 }
 
 export { ProviderType };

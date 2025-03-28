@@ -22,13 +22,14 @@ ProviderRegistry.register(ProviderType.LOCAL, LocalProvider, {
     ProviderCapability.LIST,
   ],
   configSchema: {
-    fields: {
-      basePath: {
+    fields: [
+      {
+        id: 'basePath',
         type: 'string',
         label: 'Storage Path',
         description: 'Directory path for file storage (optional)',
       },
-    },
+    ],
     required: [],
   },
 });

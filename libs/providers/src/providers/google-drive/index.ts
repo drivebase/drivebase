@@ -24,18 +24,20 @@ ProviderRegistry.register(ProviderType.GOOGLE_DRIVE, GoogleDriveProvider, {
     ProviderCapability.SEARCH,
   ],
   configSchema: {
-    fields: {
-      clientId: {
+    fields: [
+      {
+        id: 'clientId',
         type: 'string',
         label: 'Client ID',
         description: 'OAuth Client ID from Google Cloud Console',
       },
-      clientSecret: {
+      {
+        id: 'clientSecret',
         type: 'secret',
         label: 'Client Secret',
         description: 'OAuth Client Secret from Google Cloud Console',
       },
-    },
+    ],
     required: ['clientId', 'clientSecret'],
   },
 });
