@@ -1,17 +1,13 @@
-import { Skeleton } from '@drivebase/web/components/ui/skeleton';
-import { useGetStatsQuery } from '@drivebase/web/lib/redux/endpoints/workspaces';
-import { cn } from '@drivebase/web/lib/utils';
+import { useQuery } from '@apollo/client';
 import { Link } from '@tanstack/react-router';
 import byteSize from 'byte-size';
-import {
-  ArrowRight,
-  FileTextIcon,
-  FolderIcon,
-  ImageIcon,
-  VideoIcon,
-} from 'lucide-react';
+import { ArrowRight, FileTextIcon, FolderIcon, ImageIcon, VideoIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { Skeleton } from '@drivebase/web/components/ui/skeleton';
+import { GET_WORKSPACE_STATS } from '@drivebase/web/gql/queries/workspace';
+import { cn } from '@drivebase/web/lib/utils';
 
 const baseStats = [
   {
@@ -54,14 +50,14 @@ const baseStats = [
 
 function DashboardStats() {
   const [stats, setStats] = useState(baseStats);
-  const { data: statData, isLoading } = useGetStatsQuery();
+  const { data: statData, loading } = useQuery(GET_WORKSPACE_STATS);
   const { t } = useTranslation(['common']);
 
   useEffect(() => {
     if (statData) {
       setStats((prev) => {
         const newStat = [...prev];
-        for (const stat of statData.data) {
+        for (const stat of statData.workspaceStats) {
           const index = prev.findIndex((s) => s.title === stat.title);
           if (index !== -1) {
             newStat[index] = {
@@ -78,10 +74,10 @@ function DashboardStats() {
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {isLoading
-        ? Array(4).map((_, index) => (
-            <Skeleton key={index} className="w-full h-32" />
-          ))
+      {loading
+        ? Array(4)
+            .fill(null)
+            .map((_, index) => <Skeleton key={index} className="w-full h-32" />)
         : stats.map((stat) => (
             <div key={stat.title} className="bg-background border rounded-lg">
               <div className="flex items-center p-6">
@@ -107,10 +103,7 @@ function DashboardStats() {
                   Total size is <strong>{stat.size}</strong>
                 </p>
 
-                <Link
-                  to=""
-                  className="inline-flex items-center gap-2 text-muted-foreground"
-                >
+                <Link to="" className="inline-flex items-center gap-2 text-muted-foreground">
                   View <ArrowRight size={14} />
                 </Link>
               </div>
