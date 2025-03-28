@@ -1,3 +1,10 @@
+import { useQuery } from '@apollo/client';
+import { useSearch } from '@tanstack/react-router';
+import byteSize from 'byte-size';
+import { FileIcon, XIcon } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Dialog,
@@ -13,20 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@drivebase/web/components/ui/select';
+import { GET_CONNECTED_PROVIDERS } from '@drivebase/web/gql/queries/providers';
 import { getProviderIcon } from '@drivebase/web/helpers/provider.icon';
 import { useFileStore } from '@drivebase/web/lib/contexts/file-store.context';
 import { useUploadFileMutation } from '@drivebase/web/lib/redux/endpoints/files';
-import { useGetProvidersQuery } from '@drivebase/web/lib/redux/endpoints/providers';
 import { useAppDispatch, useAppSelector } from '@drivebase/web/lib/redux/hooks';
 import {
   clearFileIds,
   setUploadModalOpen,
 } from '@drivebase/web/lib/redux/reducers/uploader.reducer';
-import { useSearch } from '@tanstack/react-router';
-import byteSize from 'byte-size';
-import { FileIcon, XIcon } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
 
 export function UploadModal() {
   const search = useSearch({ strict: false });
@@ -37,9 +39,8 @@ export function UploadModal() {
 
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
 
-  // const { data: providers } = useGetAvailableProvidersQuery();
-  const { data: connectedProviders } = useGetProvidersQuery();
   const [uploadFile, { isLoading }] = useUploadFileMutation();
+  const { data: connectedProviders } = useQuery(GET_CONNECTED_PROVIDERS);
 
   function handleUpload() {
     if (!selectedProvider) return;
@@ -76,32 +77,22 @@ export function UploadModal() {
       <DialogContent className="p-0 min-w-[40rem]">
         <DialogHeader className="px-8 py-10 select-none">
           <DialogTitle className="text-2xl">Upload Files</DialogTitle>
-          <DialogDescription>
-            Please select where you want to upload your files.
-          </DialogDescription>
+          <DialogDescription>Please select where you want to upload your files.</DialogDescription>
 
           <div className="flex gap-10 justify-between pt-10">
-            <Select
-              value={selectedProvider ?? undefined}
-              onValueChange={setSelectedProvider}
-            >
+            <Select value={selectedProvider ?? undefined} onValueChange={setSelectedProvider}>
               <SelectTrigger className="w-[300px]">
                 <SelectValue placeholder="Select provider" />
               </SelectTrigger>
               <SelectContent>
-                {connectedProviders?.data.map((provider) => {
+                {connectedProviders?.connectedProviders.map((provider) => {
                   const iconUrl = getProviderIcon(provider.type);
 
                   return (
                     <SelectItem key={provider.id} value={provider.id}>
                       <div className="flex items-center gap-2">
-                        <img
-                          src={iconUrl}
-                          alt={provider.label}
-                          width={20}
-                          height={20}
-                        />
-                        {provider.label}
+                        <img src={iconUrl} alt={provider.name} width={20} height={20} />
+                        {provider.name}
                       </div>
                     </SelectItem>
                   );
@@ -133,9 +124,7 @@ export function UploadModal() {
                   />
                 );
               } else {
-                Placeholder = (
-                  <FileIcon className="h-12 w-12 p-2 bg-secondary rounded" />
-                );
+                Placeholder = <FileIcon className="h-12 w-12 p-2 bg-secondary rounded" />;
               }
 
               return (

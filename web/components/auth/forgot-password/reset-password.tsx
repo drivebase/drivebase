@@ -1,4 +1,11 @@
-import { ResetPasswordDto } from '@drivebase/auth/dtos/forgot.password.dto';
+import { useMutation } from '@apollo/client';
+import { useRouter } from '@tanstack/react-router';
+import { LockIcon } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+
+import { ForgotPasswordResetInput } from '@drivebase/sdk';
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Card,
@@ -15,13 +22,7 @@ import {
   FormMessage,
 } from '@drivebase/web/components/ui/form';
 import { Input } from '@drivebase/web/components/ui/input';
-import { useForgotPasswordResetMutation } from '@drivebase/web/lib/redux/endpoints/auth';
-import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { useRouter } from '@tanstack/react-router';
-import { LockIcon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { FORGOT_PASSWORD_RESET } from '@drivebase/web/gql/mutations/auth';
 
 type Props = {
   code: number;
@@ -32,28 +33,24 @@ const ForgotPasswordResetPassword = ({ code, email }: Props) => {
   const router = useRouter();
   const { t } = useTranslation(['auth', 'common']);
 
-  const [resetPassword, { isLoading }] = useForgotPasswordResetMutation();
+  const [resetPassword, { loading }] = useMutation(FORGOT_PASSWORD_RESET);
 
-  const form = useForm<ResetPasswordDto>({
-    resolver: classValidatorResolver(ResetPasswordDto),
+  const form = useForm<ForgotPasswordResetInput>({
     defaultValues: {
       email,
       code,
     },
   });
 
-  const onSubmit = (data: ResetPasswordDto) => {
-    resetPassword({ email, code, password: data.password })
-      .unwrap()
+  const onSubmit = (data: ForgotPasswordResetInput) => {
+    resetPassword({ variables: { input: data } })
       .then(() => {
         toast.success('Password reset successfully');
         void router.navigate({
           to: '/auth/login',
         });
       })
-      .catch((err) =>
-        toast.error(err.data?.message ?? 'An unknown error occurred'),
-      );
+      .catch((err) => toast.error(err.data?.message ?? 'An unknown error occurred'));
   };
 
   return (
@@ -61,12 +58,8 @@ const ForgotPasswordResetPassword = ({ code, email }: Props) => {
       <Card className="w-full max-w-sm shadow-xl z-10 rounded-2xl relative">
         <CardHeader className="border-b text-center py-12">
           <LockIcon className="w-20 h-20 mx-auto mb-4 p-4 bg-muted rounded-xl" />
-          <CardTitle className="text-xl font-medium">
-            {t('auth:reset_password_title')}
-          </CardTitle>
-          <CardDescription>
-            {t('auth:reset_password_description')}
-          </CardDescription>
+          <CardTitle className="text-xl font-medium">{t('auth:reset_password_title')}</CardTitle>
+          <CardDescription>{t('auth:reset_password_description')}</CardDescription>
         </CardHeader>
         <CardContent className="pt-8 bg-accent/50">
           <form
@@ -89,10 +82,7 @@ const ForgotPasswordResetPassword = ({ code, email }: Props) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
-                        placeholder={t('auth:enter_new_password')}
-                        {...field}
-                      />
+                      <Input placeholder={t('auth:enter_new_password')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -101,7 +91,7 @@ const ForgotPasswordResetPassword = ({ code, email }: Props) => {
             </div>
 
             <div className="space-y-2">
-              <Button className="w-full" isLoading={isLoading}>
+              <Button className="w-full" disabled={loading}>
                 {t('common:submit')}
               </Button>
             </div>
