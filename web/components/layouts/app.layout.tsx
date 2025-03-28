@@ -5,7 +5,7 @@ import { Loader } from 'lucide-react';
 import AppSidebar from '@drivebase/web/components/layouts/app.sidebar';
 import { UploadModal } from '@drivebase/web/components/layouts/upload.modal';
 import { SidebarProvider } from '@drivebase/web/components/ui/sidebar';
-import { GET_CURRENT_WORKSPACE } from '@drivebase/web/gql/queries/workspace';
+import { GET_CURRENT_WORKSPACE } from '@drivebase/web/gql/queries/workspaces';
 import { FileStoreProvider } from '@drivebase/web/lib/contexts/file-store.context';
 import { cn } from '@drivebase/web/lib/utils';
 

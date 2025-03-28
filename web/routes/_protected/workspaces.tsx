@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@drivebase/web/components/ui/card';
-import { GET_WORKSPACES } from '@drivebase/web/gql/queries/workspace';
+import { GET_WORKSPACES } from '@drivebase/web/gql/queries/workspaces';
 
 function Page() {
   const router = useRouter();

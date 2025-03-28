@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 import AppLayout from '@drivebase/web/components/layouts/app.layout';
-import { GET_CURRENT_WORKSPACE } from '@drivebase/web/gql/queries/workspace';
+import { GET_CURRENT_WORKSPACE } from '@drivebase/web/gql/queries/workspaces';
 
 export const Route = createFileRoute('/_protected/_dashboard')({
   component: RouteComponent,
@@ -19,7 +19,7 @@ export const Route = createFileRoute('/_protected/_dashboard')({
 
 function RouteComponent() {
   const router = useRouter();
-  const { data, loading, error } = useQuery(GET_CURRENT_WORKSPACE);
+  const { loading, error } = useQuery(GET_CURRENT_WORKSPACE);
 
   useEffect(() => {
     if (error instanceof ApolloError) {
