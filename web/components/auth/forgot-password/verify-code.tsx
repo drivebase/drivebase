@@ -18,7 +18,6 @@ import {
 import { Form } from '@drivebase/web/components/ui/form';
 import { Input } from '@drivebase/web/components/ui/input';
 import { FORGOT_PASSWORD_VERIFY_CODE } from '@drivebase/web/gql/mutations/auth';
-import { useForgotPasswordVerifyCodeMutation } from '@drivebase/web/lib/redux/endpoints/auth';
 
 type Props = {
   email: string;

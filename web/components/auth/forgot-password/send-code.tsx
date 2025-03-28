@@ -1,5 +1,4 @@
 import { useMutation } from '@apollo/client';
-import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { Link } from '@tanstack/react-router';
 import { LockIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
