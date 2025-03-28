@@ -1,3 +1,11 @@
+import GraphQLJSON from 'graphql-type-json';
+
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { GraphQLModule } from '@nestjs/graphql';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AuthModule } from '@drivebase/auth';
 import { FilesModule } from '@drivebase/files';
 import { File } from '@drivebase/files/file.entity';
@@ -7,11 +15,8 @@ import { UsersModule } from '@drivebase/users';
 import { User } from '@drivebase/users/user.entity';
 import { WorkspacesModule } from '@drivebase/workspaces';
 import { Workspace } from '@drivebase/workspaces/workspace.entity';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { GraphQLModule } from '@nestjs/graphql';
-import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { PublicModule } from './public/public.module';
 
 const entities = [User, Workspace, Provider, File];
 
@@ -23,6 +28,9 @@ const entities = [User, Workspace, Provider, File];
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: './schema.gql',
+      resolvers: {
+        JSON: GraphQLJSON,
+      },
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -39,6 +47,7 @@ const entities = [User, Workspace, Provider, File];
     WorkspacesModule,
     ProvidersModule,
     FilesModule,
+    PublicModule,
   ],
   controllers: [],
   providers: [],
