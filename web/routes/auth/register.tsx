@@ -1,4 +1,11 @@
-import { RegisterInput, useRegisterMutation } from '@drivebase/sdk';
+import { useMutation } from '@apollo/client';
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
+import { UserPlus2Icon } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+
+import { RegisterInput } from '@drivebase/sdk';
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Card,
@@ -16,15 +23,11 @@ import {
   FormMessage,
 } from '@drivebase/web/components/ui/form';
 import { Input } from '@drivebase/web/components/ui/input';
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
-import { UserPlus2Icon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { REGISTER_USER } from '@drivebase/web/gql/mutations/auth';
 
 function Page() {
   const r = useRouter();
-  const [register, { loading }] = useRegisterMutation();
+  const [register, { loading }] = useMutation(REGISTER_USER);
 
   const { t } = useTranslation(['errors', 'common', 'auth']);
 
@@ -58,9 +61,7 @@ function Page() {
         <Card className="w-full max-w-sm shadow-xl z-10 rounded-2xl relative">
           <CardHeader className="border-b text-center py-12">
             <UserPlus2Icon className="w-20 h-20 mx-auto mb-4 p-4 bg-muted rounded-xl" />
-            <CardTitle className="text-xl font-medium">
-              {t('auth:register_title')}
-            </CardTitle>
+            <CardTitle className="text-xl font-medium">{t('auth:register_title')}</CardTitle>
             <CardDescription>{t('auth:register_description')}</CardDescription>
           </CardHeader>
           <CardContent className="pt-8 bg-accent/50">
@@ -71,9 +72,7 @@ function Page() {
                 form
                   .handleSubmit(onSubmit)(e)
                   .catch((err) => {
-                    toast.error(
-                      err.data?.message ?? 'An unknown error occurred',
-                    );
+                    toast.error(err.data?.message ?? 'An unknown error occurred');
                   });
               }}
             >
@@ -85,10 +84,7 @@ function Page() {
                     <FormItem>
                       <FormLabel>{t('auth:name')}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder={t('auth:name_placeholder')}
-                          {...field}
-                        />
+                        <Input placeholder={t('auth:name_placeholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -101,10 +97,7 @@ function Page() {
                     <FormItem>
                       <FormLabel>{t('auth:email')}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder={t('auth:email_placeholder')}
-                          {...field}
-                        />
+                        <Input placeholder={t('auth:email_placeholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -133,12 +126,7 @@ function Page() {
                   {t('auth:register')}
                 </Button>
 
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  type="button"
-                  asChild
-                >
+                <Button className="w-full" variant="outline" type="button" asChild>
                   <Link to="/auth/login">{t('auth:already_have_account')}</Link>
                 </Button>
               </div>

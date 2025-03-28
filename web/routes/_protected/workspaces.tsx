@@ -1,3 +1,9 @@
+import { useQuery } from '@apollo/client';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { format } from 'date-fns';
+import { ArrowRight, LibraryIcon, Loader } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 import {
   Card,
   CardContent,
@@ -5,19 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@drivebase/web/components/ui/card';
-import { useGetWorkspacesQuery } from '@drivebase/web/lib/redux/endpoints/workspaces';
-import type { Workspace } from '@prisma/client';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { format } from 'date-fns';
-import { ArrowRight, LibraryIcon, Loader } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { GET_WORKSPACES } from '@drivebase/web/gql/queries/workspace';
 
 function Page() {
   const router = useRouter();
-  const { data: workspaces, isLoading } = useGetWorkspacesQuery();
+  const { data, error, loading } = useQuery(GET_WORKSPACES);
   const { t } = useTranslation(['common', 'dashboard']);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="h-screen flex justify-center items-center">
         <Loader className="w-10 h-10 animate-spin" />
@@ -25,11 +26,11 @@ function Page() {
     );
   }
 
-  if (!workspaces?.data) {
+  if (error) {
     return <div>An error occurred. Please try again.</div>;
   }
 
-  if (workspaces.data.length === 0) {
+  if (data?.workspaces.length === 0) {
     window.location.href = '/onboarding';
     return;
   }
@@ -41,27 +42,17 @@ function Page() {
           <div className="mx-auto p-4 bg-accent rounded-2xl mb-4">
             <LibraryIcon size={40} />
           </div>
-          <CardTitle className={'text-xl font-medium'}>
-            {t('common:workspaces')}
-          </CardTitle>
-          <CardDescription>
-            {t('dashboard:select_workspace_to_continue')}
-          </CardDescription>
+          <CardTitle className={'text-xl font-medium'}>{t('common:workspaces')}</CardTitle>
+          <CardDescription>{t('dashboard:select_workspace_to_continue')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 bg-accent/50 border-t py-10">
-          {workspaces.data.map((workspace: Workspace) => (
+          {data?.workspaces.map((workspace) => (
             <button
               key={workspace.id}
               className="flex items-center group justify-between text-left relative cursor-pointer w-full"
               role="group"
               onClick={() => {
-                const cookieValue = `workspaceId=${workspace.id}`;
-                const isLocalhost =
-                  window.location.hostname === 'localhost' ||
-                  window.location.hostname === '127.0.0.1';
-                document.cookie = `${cookieValue}; path=/; SameSite=Strict${
-                  isLocalhost ? '' : '; secure'
-                }`;
+                localStorage.setItem('workspaceId', workspace.id);
                 router.navigate({
                   to: '/',
                   reloadDocument: true,

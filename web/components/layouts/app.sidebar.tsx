@@ -1,3 +1,8 @@
+import { useQuery } from '@apollo/client';
+import { Link, useLocation, useRouteContext } from '@tanstack/react-router';
+import { ChevronLeftIcon, ChevronsUpDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 import { Avatar, AvatarFallback } from '@drivebase/web/components/ui/avatar';
 import {
   DropdownMenu,
@@ -19,22 +24,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@drivebase/web/components/ui/sidebar';
-import {
-  mainItems,
-  settingsItems,
-} from '@drivebase/web/constants/sidebar.items';
+import { mainItems, settingsItems } from '@drivebase/web/constants/sidebar.items';
+import { GET_ME } from '@drivebase/web/gql/queries/auth';
 import { isLanguageRTL } from '@drivebase/web/i18n';
-import { useGetProfileQuery } from '@drivebase/web/lib/redux/endpoints/profile';
-import { Link, useLocation, useRouteContext } from '@tanstack/react-router';
-import { ChevronLeftIcon, ChevronsUpDown } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 import SidebarUpload from './upload';
 
 const AppSidebar = () => {
   const location = useLocation();
+  const { data: me } = useQuery(GET_ME);
   const context = useRouteContext({ from: '/_protected' });
-  const { data: profile } = useGetProfileQuery();
   const { t, i18n } = useTranslation(['common', 'dashboard']);
 
   const showSettings = location.pathname.startsWith('/settings');
@@ -103,15 +102,13 @@ const AppSidebar = () => {
               <div className="flex aspect-square size-8 items-center justify-center">
                 <Avatar className="w-8 h-8 select-none">
                   <AvatarFallback className="bg-primary text-accent">
-                    {profile?.data?.name?.charAt(0)}
+                    {me?.me?.name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
-                  {profile?.data?.name}
-                </span>
-                <span className="truncate text-xs">{profile?.data?.email}</span>
+                <span className="truncate font-semibold">{me?.me?.name}</span>
+                <span className="truncate text-xs">{me?.me?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
