@@ -41,7 +41,9 @@ function ConfigureProvider({ id, name, type, metadata: providerMetadata }: Confi
 
   const [providerLabel, setProviderLabel] = useState(name);
   const [currentPath, setCurrentPath] = useState(uploadPath);
-  const [referenceId, setReferenceId] = useState<string | undefined>(undefined);
+  const [referenceId, setReferenceId] = useState<string | undefined>(
+    (providerMetadata?.uploadReferenceId as string) || undefined,
+  );
   const [defaultUploadPath, setDefaultUploadPath] = useState(uploadPath);
 
   const [updateProviderMetadata, { loading: isUpdating }] = useMutation(UPDATE_PROVIDER_METADATA);
@@ -88,6 +90,7 @@ function ConfigureProvider({ id, name, type, metadata: providerMetadata }: Confi
           id,
           metadata: {
             uploadPath: currentPath,
+            uploadReferenceId: referenceId,
           },
         },
       },
@@ -219,7 +222,14 @@ function ConfigureProvider({ id, name, type, metadata: providerMetadata }: Confi
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink onClick={() => setCurrentPath('/')}>root</BreadcrumbLink>
+                <BreadcrumbLink
+                  onClick={() => {
+                    setCurrentPath('/');
+                    setReferenceId('');
+                  }}
+                >
+                  root
+                </BreadcrumbLink>
               </BreadcrumbItem>
               {splitPath.length > 0 && <BreadcrumbSeparator />}
               {splitPath.map((path, index) => {

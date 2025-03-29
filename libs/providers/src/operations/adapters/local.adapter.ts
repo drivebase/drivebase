@@ -90,11 +90,11 @@ export class LocalOperationsAdapter extends BaseOperations {
     file: FileUpload,
     options?: UploadOptions,
   ): Promise<FileMetadata> {
-    if (targetPath === '') {
+    if (targetPath === '/') {
       targetPath = this.defaultUploadDir;
     }
 
-    const fullPath = this.getFullPath(path.join(targetPath, file.originalname));
+    const fullPath = path.join(targetPath, file.originalname);
     const directory = path.dirname(fullPath);
 
     try {
