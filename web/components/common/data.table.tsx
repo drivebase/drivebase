@@ -1,3 +1,21 @@
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  PaginationState,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+import { debounce } from 'lodash';
+import { ChevronDown } from 'lucide-react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+
+import { PaginationMeta } from '@drivebase/sdk';
 import { Button } from '@drivebase/web/components/ui/button';
 import { Checkbox } from '@drivebase/web/components/ui/checkbox';
 import {
@@ -15,29 +33,6 @@ import {
   TableHeader,
   TableRow,
 } from '@drivebase/web/components/ui/table';
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  PaginationState,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from '@tanstack/react-table';
-import { debounce } from 'lodash';
-import { ChevronDown } from 'lucide-react';
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-
-export interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
 
 export interface FilterParams {
   columnId: string;
@@ -107,7 +102,7 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = useState({});
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: paginationMeta?.page ? paginationMeta.page - 1 : 0,
-    pageSize: paginationMeta?.limit || 10,
+    pageSize: paginationMeta?.limit || 100,
   });
   const [filters, setFilters] = useState<FilterParams[]>(initialFilters);
 
@@ -159,7 +154,6 @@ export function DataTable<TData, TValue>({
   // Handle filter changes
   useEffect(() => {
     if (serverFiltering) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const handler = debounce(() => {
         debouncedFilterChange(filters);
       }, filterDebounce);
@@ -184,9 +178,7 @@ export function DataTable<TData, TValue>({
                 table.getIsAllPageRowsSelected() ||
                 (table.getIsSomePageRowsSelected() && 'indeterminate')
               }
-              onCheckedChange={(value) =>
-                table.toggleAllPageRowsSelected(!!value)
-              }
+              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
               aria-label="Select all"
             />
           ),
@@ -214,9 +206,7 @@ export function DataTable<TData, TValue>({
         // For server-side filtering
         setFilters((prev) => {
           const newFilters = [...prev];
-          const existingFilterIndex = newFilters.findIndex(
-            (f) => f.columnId === columnId,
-          );
+          const existingFilterIndex = newFilters.findIndex((f) => f.columnId === columnId);
 
           if (value === '') {
             if (existingFilterIndex !== -1) {
@@ -263,8 +253,7 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel:
       !serverPagination && showPagination ? getPaginationRowModel() : undefined,
-    getSortedRowModel:
-      !serverSorting && enableSorting ? getSortedRowModel() : undefined,
+    getSortedRowModel: !serverSorting && enableSorting ? getSortedRowModel() : undefined,
     getFilteredRowModel: !serverFiltering ? getFilteredRowModel() : undefined,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
@@ -299,9 +288,7 @@ export function DataTable<TData, TValue>({
           if (value === '') {
             if (serverFiltering) {
               // For server filtering, remove this filter
-              setFilters((prev) =>
-                prev.filter((f) => f.columnId !== searchColumn),
-              );
+              setFilters((prev) => prev.filter((f) => f.columnId !== searchColumn));
             } else {
               // For client filtering, clear the column filter
               table.getColumn(searchColumn)?.setFilterValue('');
@@ -340,9 +327,7 @@ export function DataTable<TData, TValue>({
                         key={column.id}
                         className="capitalize"
                         checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
                       >
                         {column.id}
                       </DropdownMenuCheckboxItem>
@@ -363,10 +348,7 @@ export function DataTable<TData, TValue>({
                     <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   );
                 })}
@@ -393,10 +375,7 @@ export function DataTable<TData, TValue>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>

@@ -1,9 +1,8 @@
-import { useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { useSearch } from '@tanstack/react-router';
 import byteSize from 'byte-size';
 import { FileIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@drivebase/web/components/ui/button';
 import {
@@ -20,10 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@drivebase/web/components/ui/select';
+import { config } from '@drivebase/web/constants/config';
+import { GENERATE_UPLOAD_KEY } from '@drivebase/web/gql/mutations/files';
 import { GET_CONNECTED_PROVIDERS } from '@drivebase/web/gql/queries/providers';
 import { getProviderIcon } from '@drivebase/web/helpers/provider.icon';
 import { useFileStore } from '@drivebase/web/lib/contexts/file-store.context';
-import { useUploadFileMutation } from '@drivebase/web/lib/redux/endpoints/files';
 import { useAppDispatch, useAppSelector } from '@drivebase/web/lib/redux/hooks';
 import {
   clearFileIds,
@@ -39,28 +39,31 @@ export function UploadModal() {
 
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
 
-  const [uploadFile, { isLoading }] = useUploadFileMutation();
   const { data: connectedProviders } = useQuery(GET_CONNECTED_PROVIDERS);
+  const [createUploadKey, { loading: isCreatingUploadKey }] = useMutation(GENERATE_UPLOAD_KEY);
 
-  function handleUpload() {
+  async function handleUpload() {
     if (!selectedProvider) return;
 
     const path = search.path;
 
-    uploadFile({
-      files: files.map(({ file }) => file),
-      providerId: selectedProvider,
-      path: path ?? '/',
-    })
-      .unwrap()
-      .then(() => {
-        toast.success('Files uploaded successfully');
-        dispatch(setUploadModalOpen(false));
-        clearFiles();
-      })
-      .catch((error) => {
-        toast.error(error.data.message);
+    const formData = new FormData();
+
+    files.forEach((file) => {
+      formData.append('files', file.file);
+    });
+
+    formData.append('providerId', selectedProvider);
+    formData.append('path', path ?? '/');
+
+    const response = await createUploadKey();
+
+    if (response.data?.generateUploadKey) {
+      void fetch(`${config.apiUrl}/files/upload?key=${response.data.generateUploadKey}`, {
+        method: 'POST',
+        body: formData,
       });
+    }
   }
 
   return (
@@ -151,8 +154,8 @@ export function UploadModal() {
           <Button
             variant={'secondary'}
             className="w-full"
-            onClick={handleUpload}
-            isLoading={isLoading}
+            onClick={() => void handleUpload()}
+            isLoading={isCreatingUploadKey}
           >
             Start Upload
           </Button>
