@@ -74,15 +74,24 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
       const limit = options?.limit || 100;
 
       // Create list request
-      const listOptions: drive_v3.Params$Resource$Files$List = {
-        q: query,
-        pageSize: limit,
-        fields:
-          'nextPageToken, files(id, name, mimeType, size, createdTime, modifiedTime, parents, trashed)',
-        orderBy: 'folder,name',
-        includeItemsFromAllDrives: false,
-        supportsAllDrives: false,
-      };
+      let listOptions: drive_v3.Params$Resource$Files$List;
+
+      if (options?.referenceId) {
+        listOptions = {
+          q: `'${options.referenceId}' in parents`,
+          pageSize: limit,
+        };
+      } else {
+        listOptions = {
+          q: query,
+          pageSize: limit,
+          fields:
+            'nextPageToken, files(id, name, mimeType, size, createdTime, modifiedTime, parents, trashed)',
+          orderBy: 'folder,name',
+          includeItemsFromAllDrives: false,
+          supportsAllDrives: false,
+        };
+      }
 
       // Add page token if cursor is provided
       if (options?.cursor) {

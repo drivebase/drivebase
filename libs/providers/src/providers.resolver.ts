@@ -67,11 +67,11 @@ export class ProvidersResolver {
     return this.providersService.connectLocalProvider(workspace.id, input.basePath);
   }
 
-  @Mutation(() => PaginatedFileMetadata)
+  @Query(() => PaginatedFileMetadata)
   async listProviderFiles(
     @Args('input') input: ListProviderFilesInput,
   ): Promise<PaginatedFileMetadataType> {
-    return this.providersService.listFiles(input.id, input.path);
+    return this.providersService.listFiles(input.id, input.path, input.referenceId);
   }
 
   @Mutation(() => Provider)

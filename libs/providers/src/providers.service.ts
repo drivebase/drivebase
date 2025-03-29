@@ -278,9 +278,9 @@ export class ProvidersService {
   /**
    * List files from a provider
    */
-  async listFiles(providerId: string, path?: string) {
+  async listFiles(providerId: string, path?: string, referenceId?: string) {
     const provider = await this.getProviderInstance(providerId);
-    return provider.listFiles({ path });
+    return provider.listFiles({ path, referenceId });
   }
 
   /**

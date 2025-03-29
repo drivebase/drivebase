@@ -39,10 +39,7 @@ export class GoogleDriveAuthStrategy extends OAuth2Strategy {
   /**
    * Exchange authorization code for access token
    */
-  async getAccessToken(
-    code: string,
-    redirectUri: string,
-  ): Promise<OAuth2Credentials> {
+  async getAccessToken(code: string, redirectUri: string): Promise<OAuth2Credentials> {
     try {
       const { tokens } = await this.oauth2Client.getToken({
         code,

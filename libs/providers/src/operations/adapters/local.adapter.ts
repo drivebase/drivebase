@@ -36,39 +36,43 @@ export class LocalOperationsAdapter extends BaseOperations {
   }
 
   private async getFileStats(filePath: string): Promise<FileMetadata> {
-    const stats = await fs.promises.stat(filePath);
-    const isFolder = stats.isDirectory();
-    const relativePath = this.getRelativePath(filePath);
-    const parentPath = path.dirname(relativePath);
+    try {
+      const stats = await fs.promises.stat(filePath);
+      const isFolder = stats.isDirectory();
+      const relativePath = this.getRelativePath(filePath);
+      const parentPath = path.dirname(relativePath);
 
-    return {
-      id: relativePath,
-      name: path.basename(filePath),
-      path: relativePath,
-      parentPath,
-      size: isFolder ? 0 : stats.size,
-      mimeType: isFolder ? 'folder' : getMimeType(filePath),
-      isFolder,
-      createdAt: stats.birthtime,
-      modifiedAt: stats.mtime,
-      parentId: parentPath === '/' ? undefined : parentPath,
-    };
+      return {
+        id: relativePath,
+        name: path.basename(filePath),
+        path: relativePath,
+        parentPath,
+        size: isFolder ? 0 : stats.size,
+        mimeType: isFolder ? 'folder' : getMimeType(filePath),
+        isFolder,
+        createdAt: stats.birthtime,
+        modifiedAt: stats.mtime,
+        parentId: parentPath === '/' ? undefined : parentPath,
+      };
+    } catch (error) {
+      throw new Error(`Failed to get file stats: ${error.message}`);
+    }
   }
 
   async listFiles(options?: ListOptions): Promise<PaginatedResult<FileMetadata>> {
-    const directory = options?.path ? this.getFullPath(options.path) : this.basePath;
+    const directory = options?.path || this.basePath;
 
     try {
       const files = await fs.promises.readdir(directory);
       const fileStats = await Promise.all(
         files.map(async (file) => {
           const filePath = path.join(directory, file);
-          return this.getFileStats(filePath);
+          return this.getFileStats(filePath).catch(() => null);
         }),
       );
 
       return {
-        data: fileStats,
+        data: fileStats.filter(Boolean) as FileMetadata[],
         meta: {
           hasMore: false,
           nextCursor: undefined,
