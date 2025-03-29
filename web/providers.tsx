@@ -1,15 +1,11 @@
 import { ApolloClient, ApolloProvider, HttpLink, InMemoryCache, from } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-import { Provider as ReduxProvider } from 'react-redux';
 import { Toaster } from 'sonner';
 
 import '@drivebase/web/globals.css';
-import { makeStore } from '@drivebase/web/lib/redux/store';
 
 import { config } from './constants/config';
 import { ThemeProvider } from './theme.provider';
-
-const store = makeStore();
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('accessToken');
@@ -19,7 +15,7 @@ const authLink = setContext((_, { headers }) => {
       ...headers,
       authorization: token ? `Bearer ${token}` : '',
       'x-workspace-id': localStorage.getItem('workspaceId') || '',
-    },
+    } as Record<string, string>,
   };
 });
 
@@ -39,10 +35,8 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <ApolloProvider client={client}>
       <ThemeProvider defaultTheme="system">
-        <ReduxProvider store={store}>
-          <Toaster position="bottom-center" />
-          {children}
-        </ReduxProvider>
+        <Toaster position="bottom-center" />
+        {children}
       </ThemeProvider>
     </ApolloProvider>
   );
