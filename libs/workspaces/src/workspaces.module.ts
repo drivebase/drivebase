@@ -1,6 +1,7 @@
-import { File } from '@drivebase/files/file.entity';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { File } from '@drivebase/files/file.entity';
 
 import { Workspace } from './workspace.entity';
 import { WorkspaceGuard } from './workspace.guard';
@@ -10,12 +11,7 @@ import { WorkspacesService } from './workspaces.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Workspace, File])],
-  providers: [
-    WorkspacesService,
-    WorkspaceGuard,
-    WorkspaceProvider,
-    WorkspacesResolver,
-  ],
+  providers: [WorkspacesService, WorkspaceGuard, WorkspaceProvider, WorkspacesResolver],
   exports: [WorkspacesService, WorkspaceGuard, WorkspaceProvider],
 })
 export class WorkspacesModule {}
