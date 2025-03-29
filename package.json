@@ -96,6 +96,7 @@
     "tailwind-merge": "^3.0.2",
     "telegram": "^2.26.22",
     "typeorm": "^0.3.21",
+    "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
@@ -120,11 +121,14 @@
     "@types/byte-size": "^8.1.2",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
+    "@types/graphql-upload": "^17.0.0",
+    "@types/lodash": "^4.17.16",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.10.7",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@types/supertest": "^6.0.2",
+    "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^3.0.9",
     "ai": "^4.2.3",

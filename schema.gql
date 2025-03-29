@@ -8,7 +8,7 @@ type Provider {
   type: ProviderType!
   authType: AuthType!
   credentials: JSON!
-  metadata: JSON!
+  metadata: JSON
   isActive: Boolean!
   workspaceId: String!
   workspace: Workspace!
@@ -51,6 +51,7 @@ type File {
   path: String!
   mimeType: String
   size: Float
+  metadata: JSON
   isStarred: Boolean!
   referenceId: String
   workspaceId: String
@@ -102,6 +103,16 @@ type VerifyCodeResponse {
   ok: Boolean!
 }
 
+type WorkspaceResponse {
+  ok: Boolean!
+}
+
+type WorkspaceStat {
+  title: String!
+  count: Float!
+  size: Float!
+}
+
 type ConfigurationSchema {
   fields: [ConfigField!]!
   required: [String!]!
@@ -135,18 +146,24 @@ type ConfigField {
   default: String
 }
 
-type WorkspaceResponse {
-  ok: Boolean!
-}
-
-type WorkspaceStat {
-  title: String!
-  count: Float!
-  size: Float!
-}
-
 type AuthUrlResponse {
   url: String!
+}
+
+type PaginationMeta {
+  total: Float!
+  page: Float!
+  limit: Float!
+  totalPages: Float!
+}
+
+type PaginatedFilesResponse {
+  data: [File!]!
+  meta: PaginationMeta!
+}
+
+type OkResponse {
+  ok: Boolean!
 }
 
 type PingResponse {
@@ -163,8 +180,19 @@ type Query {
   workspaceStats: [WorkspaceStat!]!
   connectedProviders: [Provider!]!
   availableProviders: [ProviderMetadata!]!
+  listFiles(input: ListFilesInput): PaginatedFilesResponse!
+  folderContents(parentPath: String!): [File!]!
+  file(id: String!): File
   version: String!
   ping: PingResponse!
+}
+
+input ListFilesInput {
+  parentPath: String!
+  isStarred: Boolean
+  search: String
+  page: Float
+  limit: Float
 }
 
 type Mutation {
@@ -179,8 +207,17 @@ type Mutation {
   getAuthUrl(input: GetAuthUrlInput!): AuthUrlResponse!
   handleOAuthCallback(input: HandleOAuthCallbackInput!): Provider!
   authorizeApiKey(input: AuthorizeApiKeyInput!): Provider!
+  connectLocalProvider(input: ConnectLocalProviderInput!): Provider!
   updateProvider(input: UpdateProviderInput!): Provider!
   updateProviderMetadata(input: UpdateProviderMetadataInput!): Provider!
+  createFolder(input: CreateFolderInput!): File!
+  renameFile(id: String!, name: String!): OkResponse!
+  updateFile(input: UpdateFileInput!): OkResponse!
+  deleteFile(id: String!): OkResponse!
+  deleteFolder(id: String!): OkResponse!
+  generateUploadKey: String!
+  starFile(id: String!): OkResponse!
+  unstarFile(id: String!): OkResponse!
 }
 
 input LoginInput {
@@ -234,6 +271,11 @@ input AuthorizeApiKeyInput {
   credentials: JSON!
 }
 
+input ConnectLocalProviderInput {
+  label: String!
+  basePath: String
+}
+
 input UpdateProviderInput {
   id: String!
   name: String
@@ -243,4 +285,15 @@ input UpdateProviderInput {
 input UpdateProviderMetadataInput {
   id: String!
   metadata: String!
+}
+
+input CreateFolderInput {
+  name: String!
+  parentPath: String
+}
+
+input UpdateFileInput {
+  id: String!
+  name: String
+  isStarred: Boolean
 }

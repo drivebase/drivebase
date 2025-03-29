@@ -19,11 +19,19 @@ type Documents = {
     "\n  mutation ForgotPasswordSendCode($input: ForgotPasswordSendCodeInput!) {\n    forgotPasswordSendCode(input: $input) {\n      ok\n    }\n  }\n": typeof types.ForgotPasswordSendCodeDocument,
     "\n  mutation ForgotPasswordVerifyCode($input: ForgotPasswordVerifyCodeInput!) {\n    forgotPasswordVerifyCode(input: $input) {\n      ok\n    }\n  }\n": typeof types.ForgotPasswordVerifyCodeDocument,
     "\n  mutation ForgotPasswordReset($input: ForgotPasswordResetInput!) {\n    forgotPasswordReset(input: $input) {\n      ok\n    }\n  }\n": typeof types.ForgotPasswordResetDocument,
+    "\n  mutation GenerateUploadKey {\n    generateUploadKey \n  }\n": typeof types.GenerateUploadKeyDocument,
+    "\n  mutation CreateFolder($input: CreateFolderInput!) {\n    createFolder(input: $input) {\n      id\n    }\n  }\n": typeof types.CreateFolderDocument,
+    "\n  mutation StarFile($id: String!) {\n    starFile(id: $id) {\n      ok\n    }\n  }\n": typeof types.StarFileDocument,
+    "\n  mutation UnstarFile($id: String!) {\n    unstarFile(id: $id) {\n      ok\n    }\n  }\n": typeof types.UnstarFileDocument,
+    "\n  mutation RenameFile($id: String!, $name: String!) {\n    renameFile(id: $id, name: $name) {\n      ok\n    }\n  }\n": typeof types.RenameFileDocument,
+    "\n  mutation DeleteFile($id: String!) {\n    deleteFile(id: $id) {\n      ok\n    }\n  }\n": typeof types.DeleteFileDocument,
     "\n  mutation GetAuthUrl($input: GetAuthUrlInput!) {\n    getAuthUrl(input: $input) {\n      url\n    }\n  }\n": typeof types.GetAuthUrlDocument,
     "\n  mutation AuthorizeApiKey($input: AuthorizeApiKeyInput!) {\n    authorizeApiKey(input: $input) {\n      id\n    }\n  }\n": typeof types.AuthorizeApiKeyDocument,
     "\n  mutation HandleOAuthCallback($input: HandleOAuthCallbackInput!) {\n    handleOAuthCallback(input: $input) {\n      id\n    }\n  }\n": typeof types.HandleOAuthCallbackDocument,
+    "\n  mutation ConnectLocalProvider($input: ConnectLocalProviderInput!) {\n    connectLocalProvider(input: $input) {\n      id\n    }\n  }\n": typeof types.ConnectLocalProviderDocument,
     "\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n    }\n  }  \n": typeof types.CreateWorkspaceDocument,
     "\n  query GetMe {\n    me {\n      name\n      email\n    }\n  }\n": typeof types.GetMeDocument,
+    "\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        total\n        page\n        limit\n        totalPages\n      }\n    }\n  }\n": typeof types.GetFilesDocument,
     "\n  query GetAvailableProviders {\n    availableProviders {\n      displayName\n      authType\n      type\n      configSchema {\n        fields {\n          id\n          type\n          label\n          description\n          default\n        }\n        required\n      }\n    }\n  }\n": typeof types.GetAvailableProvidersDocument,
     "\n  query GetConnectedProviders {\n    connectedProviders {\n      id\n      name\n      type\n      authType\n      metadata\n      createdAt\n    }\n  }\n": typeof types.GetConnectedProvidersDocument,
     "\n  query GetVersion {\n    version\n  }\n": typeof types.GetVersionDocument,
@@ -38,11 +46,19 @@ const documents: Documents = {
     "\n  mutation ForgotPasswordSendCode($input: ForgotPasswordSendCodeInput!) {\n    forgotPasswordSendCode(input: $input) {\n      ok\n    }\n  }\n": types.ForgotPasswordSendCodeDocument,
     "\n  mutation ForgotPasswordVerifyCode($input: ForgotPasswordVerifyCodeInput!) {\n    forgotPasswordVerifyCode(input: $input) {\n      ok\n    }\n  }\n": types.ForgotPasswordVerifyCodeDocument,
     "\n  mutation ForgotPasswordReset($input: ForgotPasswordResetInput!) {\n    forgotPasswordReset(input: $input) {\n      ok\n    }\n  }\n": types.ForgotPasswordResetDocument,
+    "\n  mutation GenerateUploadKey {\n    generateUploadKey \n  }\n": types.GenerateUploadKeyDocument,
+    "\n  mutation CreateFolder($input: CreateFolderInput!) {\n    createFolder(input: $input) {\n      id\n    }\n  }\n": types.CreateFolderDocument,
+    "\n  mutation StarFile($id: String!) {\n    starFile(id: $id) {\n      ok\n    }\n  }\n": types.StarFileDocument,
+    "\n  mutation UnstarFile($id: String!) {\n    unstarFile(id: $id) {\n      ok\n    }\n  }\n": types.UnstarFileDocument,
+    "\n  mutation RenameFile($id: String!, $name: String!) {\n    renameFile(id: $id, name: $name) {\n      ok\n    }\n  }\n": types.RenameFileDocument,
+    "\n  mutation DeleteFile($id: String!) {\n    deleteFile(id: $id) {\n      ok\n    }\n  }\n": types.DeleteFileDocument,
     "\n  mutation GetAuthUrl($input: GetAuthUrlInput!) {\n    getAuthUrl(input: $input) {\n      url\n    }\n  }\n": types.GetAuthUrlDocument,
     "\n  mutation AuthorizeApiKey($input: AuthorizeApiKeyInput!) {\n    authorizeApiKey(input: $input) {\n      id\n    }\n  }\n": types.AuthorizeApiKeyDocument,
     "\n  mutation HandleOAuthCallback($input: HandleOAuthCallbackInput!) {\n    handleOAuthCallback(input: $input) {\n      id\n    }\n  }\n": types.HandleOAuthCallbackDocument,
+    "\n  mutation ConnectLocalProvider($input: ConnectLocalProviderInput!) {\n    connectLocalProvider(input: $input) {\n      id\n    }\n  }\n": types.ConnectLocalProviderDocument,
     "\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n    }\n  }  \n": types.CreateWorkspaceDocument,
     "\n  query GetMe {\n    me {\n      name\n      email\n    }\n  }\n": types.GetMeDocument,
+    "\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        total\n        page\n        limit\n        totalPages\n      }\n    }\n  }\n": types.GetFilesDocument,
     "\n  query GetAvailableProviders {\n    availableProviders {\n      displayName\n      authType\n      type\n      configSchema {\n        fields {\n          id\n          type\n          label\n          description\n          default\n        }\n        required\n      }\n    }\n  }\n": types.GetAvailableProvidersDocument,
     "\n  query GetConnectedProviders {\n    connectedProviders {\n      id\n      name\n      type\n      authType\n      metadata\n      createdAt\n    }\n  }\n": types.GetConnectedProvidersDocument,
     "\n  query GetVersion {\n    version\n  }\n": types.GetVersionDocument,
@@ -89,6 +105,30 @@ export function gql(source: "\n  mutation ForgotPasswordReset($input: ForgotPass
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function gql(source: "\n  mutation GenerateUploadKey {\n    generateUploadKey \n  }\n"): (typeof documents)["\n  mutation GenerateUploadKey {\n    generateUploadKey \n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation CreateFolder($input: CreateFolderInput!) {\n    createFolder(input: $input) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation CreateFolder($input: CreateFolderInput!) {\n    createFolder(input: $input) {\n      id\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation StarFile($id: String!) {\n    starFile(id: $id) {\n      ok\n    }\n  }\n"): (typeof documents)["\n  mutation StarFile($id: String!) {\n    starFile(id: $id) {\n      ok\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation UnstarFile($id: String!) {\n    unstarFile(id: $id) {\n      ok\n    }\n  }\n"): (typeof documents)["\n  mutation UnstarFile($id: String!) {\n    unstarFile(id: $id) {\n      ok\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation RenameFile($id: String!, $name: String!) {\n    renameFile(id: $id, name: $name) {\n      ok\n    }\n  }\n"): (typeof documents)["\n  mutation RenameFile($id: String!, $name: String!) {\n    renameFile(id: $id, name: $name) {\n      ok\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation DeleteFile($id: String!) {\n    deleteFile(id: $id) {\n      ok\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteFile($id: String!) {\n    deleteFile(id: $id) {\n      ok\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function gql(source: "\n  mutation GetAuthUrl($input: GetAuthUrlInput!) {\n    getAuthUrl(input: $input) {\n      url\n    }\n  }\n"): (typeof documents)["\n  mutation GetAuthUrl($input: GetAuthUrlInput!) {\n    getAuthUrl(input: $input) {\n      url\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -101,11 +141,19 @@ export function gql(source: "\n  mutation HandleOAuthCallback($input: HandleOAut
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function gql(source: "\n  mutation ConnectLocalProvider($input: ConnectLocalProviderInput!) {\n    connectLocalProvider(input: $input) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation ConnectLocalProvider($input: ConnectLocalProviderInput!) {\n    connectLocalProvider(input: $input) {\n      id\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function gql(source: "\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n    }\n  }  \n"): (typeof documents)["\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n    }\n  }  \n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  query GetMe {\n    me {\n      name\n      email\n    }\n  }\n"): (typeof documents)["\n  query GetMe {\n    me {\n      name\n      email\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        total\n        page\n        limit\n        totalPages\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        total\n        page\n        limit\n        totalPages\n      }\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
