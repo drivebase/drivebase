@@ -11,6 +11,7 @@ export const GET_FILES = gql(`
         isStarred
         size
         mimeType
+        providerId
         createdAt
         updatedAt
       }

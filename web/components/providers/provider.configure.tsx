@@ -1,5 +1,6 @@
+import { useMutation, useQuery } from '@apollo/client';
 import { AlertCircle, CheckCircleIcon, EditIcon, FileIcon, FolderIcon } from 'lucide-react';
-import { Fragment, useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import { AuthType, ProviderType } from '@drivebase/sdk';
@@ -22,11 +23,8 @@ import {
   TableRow,
 } from '@drivebase/web/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@drivebase/web/components/ui/tabs';
-import {
-  useListProviderFilesQuery,
-  useUpdateProviderLabelMutation,
-  useUpdateProviderMetadataMutation,
-} from '@drivebase/web/lib/redux/endpoints/providers';
+import { UPDATE_PROVIDER, UPDATE_PROVIDER_METADATA } from '@drivebase/web/gql/mutations/providers';
+import { LIST_PROVIDER_FILES } from '@drivebase/web/gql/queries/providers';
 
 import ProviderIcon from './provider.icon';
 
@@ -39,40 +37,35 @@ type ConfigureProviderProps = {
 };
 
 function ConfigureProvider({ id, name, type, metadata: providerMetadata }: ConfigureProviderProps) {
+  const uploadPath = (providerMetadata?.uploadPath as string) || '/';
+
   const [providerLabel, setProviderLabel] = useState(name);
-  const defaultPath =
-    ((providerMetadata as Record<string, unknown>)?.defaultUploadPath as string) || '/';
-  const [currentPath, setCurrentPath] = useState('/');
-  const [defaultUploadPath, setDefaultUploadPath] = useState(defaultPath);
-  const [updateProviderMetadata, { isLoading: isUpdating }] = useUpdateProviderMetadataMutation();
-  const [updateProviderLabel, { isLoading: isUpdatingLabel }] = useUpdateProviderLabelMutation();
+  const [currentPath, setCurrentPath] = useState(uploadPath);
+  const [referenceId, setReferenceId] = useState<string | undefined>(undefined);
+  const [defaultUploadPath, setDefaultUploadPath] = useState(uploadPath);
 
-  const { data: files, isLoading } = useListProviderFilesQuery({
-    providerId: id,
-    path: currentPath,
+  const [updateProviderMetadata, { loading: isUpdating }] = useMutation(UPDATE_PROVIDER_METADATA);
+  const [updateProviderLabel, { loading: isUpdatingLabel }] = useMutation(UPDATE_PROVIDER);
+
+  const { data: files, loading } = useQuery(LIST_PROVIDER_FILES, {
+    variables: {
+      input: {
+        id,
+        path: currentPath,
+        referenceId,
+      },
+    },
   });
-
-  useEffect(() => {
-    if (files?.data) {
-      console.log('Files loaded for path:', currentPath);
-      console.log('Files data:', files.data);
-      console.log(
-        'Folders only:',
-        files.data.filter((f) => f.isFolder),
-      );
-    }
-  }, [files, currentPath]);
 
   const splitPath = currentPath.split('/').filter(Boolean);
 
   const handleFolderClick = (path: string) => {
-    console.log('Folder clicked, raw path:', path);
     // Ensure proper path format based on whether it's already an absolute path
     const isAbsolutePath = path.startsWith('/');
     const newPath = isAbsolutePath
       ? path
       : `${currentPath}${currentPath.endsWith('/') ? '' : '/'}${path}`;
-    console.log('Setting new path:', newPath);
+
     setCurrentPath(newPath);
   };
 
@@ -90,12 +83,15 @@ function ConfigureProvider({ id, name, type, metadata: providerMetadata }: Confi
 
   const handleSetDefaultUploadPath = () => {
     updateProviderMetadata({
-      providerId: id,
-      metadata: {
-        defaultUploadPath: currentPath,
+      variables: {
+        input: {
+          id,
+          metadata: {
+            uploadPath: currentPath,
+          },
+        },
       },
     })
-      .unwrap()
       .then(() => {
         setDefaultUploadPath(currentPath);
         toast.success('Default upload location updated');
@@ -122,10 +118,13 @@ function ConfigureProvider({ id, name, type, metadata: providerMetadata }: Confi
 
       if (result && result.label && result.label !== providerLabel) {
         updateProviderLabel({
-          providerId: id,
-          label: result.label,
+          variables: {
+            input: {
+              id,
+              name: result.label,
+            },
+          },
         })
-          .unwrap()
           .then(() => {
             setProviderLabel(result.label);
             toast.success('Provider label updated');
@@ -226,10 +225,6 @@ function ConfigureProvider({ id, name, type, metadata: providerMetadata }: Confi
               {splitPath.map((path, index) => {
                 // Build path incrementally
                 const updatedPath = '/' + splitPath.slice(0, index + 1).join('/');
-                console.log(`Breadcrumb ${index}:`, {
-                  segment: path,
-                  fullPath: updatedPath,
-                });
 
                 return (
                   <Fragment key={path}>
@@ -246,7 +241,7 @@ function ConfigureProvider({ id, name, type, metadata: providerMetadata }: Confi
           </Breadcrumb>
         </div>
 
-        {isLoading ? (
+        {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, index) => (
               <Skeleton key={index} className="h-10 w-full" />
@@ -262,14 +257,14 @@ function ConfigureProvider({ id, name, type, metadata: providerMetadata }: Confi
               </TableRow>
             </TableHeader>
             <TableBody>
-              {!files?.data?.length ? (
+              {!files?.listProviderFiles.data?.length ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-center py-4">
                     No files found in this directory
                   </TableCell>
                 </TableRow>
               ) : (
-                files.data.map((file) => (
+                files.listProviderFiles.data.map((file) => (
                   <TableRow
                     key={file.id}
                     className={file.isFolder ? 'cursor-pointer hover:bg-accent' : ''}
@@ -280,14 +275,16 @@ function ConfigureProvider({ id, name, type, metadata: providerMetadata }: Confi
                     <TableCell
                       onDoubleClick={() => {
                         if (file.isFolder) {
-                          console.log('Navigating to path:', file.name);
                           handleFolderClick(file.name);
+                          if (file.id && file.id !== file.path) {
+                            setReferenceId(file.id);
+                          }
                         }
                       }}
                     >
                       {file.name}
                     </TableCell>
-                    <TableCell>{file.isFolder ? 'Folder' : file.type}</TableCell>
+                    <TableCell>{file.isFolder ? 'Folder' : 'File'}</TableCell>
                   </TableRow>
                 ))
               )}
