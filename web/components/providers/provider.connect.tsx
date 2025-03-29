@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { AuthType } from '@drivebase/sdk';
+import { AuthType, ProviderType } from '@drivebase/sdk';
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Dialog,
@@ -37,7 +37,7 @@ type ConnectProviderDialogProps = {
 };
 
 function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
-  const form = useForm();
+  const form = useForm<{ label: string; inputFields: Record<string, string> }>();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
@@ -53,7 +53,7 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
     (provider) => provider.type === selectedProviderId,
   );
 
-  const onSubmit = (data: Record<string, any>) => {
+  const onSubmit = (data: { label: string; inputFields: Record<string, string> }) => {
     if (!selectedProvider) return;
 
     if (selectedProvider?.authType === AuthType.Oauth2) {
@@ -91,9 +91,18 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
     } else if (selectedProvider?.authType === AuthType.None) {
       connectLocalProvider({
         variables: {
-          input: { label: data.label || 'Local Storage', basePath: data.inputFields.basePath },
+          input: {
+            label: data.label,
+            basePath: data.inputFields.basePath,
+          },
         },
-      });
+      })
+        .then(() => {
+          toast.success('Provider connected successfully');
+        })
+        .catch((error) => {
+          toast.error(error.data.message);
+        });
     }
   };
 
@@ -133,10 +142,9 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
             <Select
               onValueChange={(value) => {
                 const provider = data?.availableProviders?.find(
-                  (provider) => provider.type === value,
+                  (provider) => provider.type === (value as ProviderType),
                 );
                 if (provider) {
-                  form.setValue('provider', provider.type);
                   setSelectedProviderId(provider.type);
                 }
               }}

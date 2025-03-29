@@ -32,3 +32,28 @@ export const GET_CONNECTED_PROVIDERS = gql(`
     }
   }
 `);
+
+export const LIST_PROVIDER_FILES = gql(`
+  query ListProviderFiles($input: ListProviderFilesInput!) {
+    listProviderFiles(input: $input) {
+      data {
+        id
+        name
+        path
+        size
+        createdAt
+        modifiedAt
+        isFolder
+        parentId
+        parentPath
+        thumbnail
+      }
+      meta {
+        total
+        hasMore
+        nextCursor
+        prevCursor
+      }
+    }
+  }
+`);

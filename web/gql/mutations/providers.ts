@@ -31,3 +31,19 @@ export const CONNECT_LOCAL_PROVIDER = gql(`
     }
   }
 `);
+
+export const UPDATE_PROVIDER = gql(`
+  mutation UpdateProvider($input: UpdateProviderInput!) {
+    updateProvider(input: $input) {
+      id
+    }
+  }
+`);
+
+export const UPDATE_PROVIDER_METADATA = gql(`
+  mutation UpdateProviderMetadata($input: UpdateProviderMetadataInput!) {
+    updateProviderMetadata(input: $input) {
+      id
+    }
+  }
+`);
