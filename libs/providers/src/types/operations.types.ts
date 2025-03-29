@@ -75,6 +75,11 @@ export interface ListOptions {
     mimeType?: string;
     isFolder?: boolean;
   };
+
+  /**
+   * Reference ID for the file
+   */
+  referenceId?: string;
 }
 
 export type PaginatedResult<T> = IPaginatedResult<T>;

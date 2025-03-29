@@ -59,7 +59,7 @@ export class UpdateProviderMetadataInput {
   @IsNotEmpty()
   id: string;
 
-  @Field(() => String)
+  @Field(() => GraphQLJSON)
   @IsObject()
   @IsNotEmpty()
   metadata: Record<string, any>;
@@ -138,4 +138,9 @@ export class ListProviderFilesInput {
   @IsString()
   @IsOptional()
   path?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  referenceId?: string;
 }
