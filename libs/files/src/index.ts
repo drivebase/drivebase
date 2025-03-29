@@ -1,1 +1,2 @@
-export * from './files.service';
+export * from './file.entity';
+export * from './files.module';

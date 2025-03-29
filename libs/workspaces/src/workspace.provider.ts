@@ -1,13 +1,18 @@
-import { PrismaService } from '@drivebase/database/prisma.service';
 import { Injectable } from '@nestjs/common';
-import type { Workspace } from '@prisma/client';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { Workspace } from './workspace.entity';
 
 @Injectable()
 export class WorkspaceProvider {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Workspace)
+    private readonly workspaceRepository: Repository<Workspace>,
+  ) {}
 
   async findById(id: string): Promise<Workspace | null> {
-    return this.prisma.workspace.findUnique({
+    return this.workspaceRepository.findOne({
       where: { id },
     });
   }

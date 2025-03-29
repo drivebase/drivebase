@@ -1,11 +1,11 @@
+import { useQuery } from '@apollo/client';
+import { formatDistance } from 'date-fns';
+import { InfoIcon, Link2Icon } from 'lucide-react';
+import { useMemo, useState } from 'react';
+
 import { Button } from '@drivebase/web/components/ui/button';
 import { Input } from '@drivebase/web/components/ui/input';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@drivebase/web/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@drivebase/web/components/ui/sheet';
 import { Skeleton } from '@drivebase/web/components/ui/skeleton';
 import {
   Table,
@@ -15,11 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@drivebase/web/components/ui/table';
-import { useGetProvidersQuery } from '@drivebase/web/lib/redux/endpoints/providers';
-import { Provider } from '@prisma/client';
-import { formatDistance } from 'date-fns';
-import { InfoIcon, Link2Icon } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { GET_CONNECTED_PROVIDERS } from '@drivebase/web/gql/queries/providers';
 
 import ConfigureProvider from './provider.configure';
 import ConnectProviderDialog from './provider.connect';
@@ -27,17 +23,19 @@ import ProviderIcon from './provider.icon';
 
 function ProviderList() {
   const [search, setSearch] = useState('');
-  const [configureProvider, setConfigureProvider] = useState<Provider | null>(
-    null,
-  );
+  const [configureProviderId, setConfigureProviderId] = useState<string | null>(null);
 
-  const { data: providers, isLoading } = useGetProvidersQuery();
+  const { data: providers, loading } = useQuery(GET_CONNECTED_PROVIDERS);
 
   const filteredProviders = useMemo(() => {
-    return providers?.data.filter((provider) =>
-      provider.label.toLowerCase().includes(search.toLowerCase()),
+    return providers?.connectedProviders.filter((provider) =>
+      provider.name.toLowerCase().includes(search.toLowerCase()),
     );
   }, [providers, search]);
+
+  const configureProvider = useMemo(() => {
+    return filteredProviders?.find((provider) => provider.id === configureProviderId);
+  }, [filteredProviders, configureProviderId]);
 
   return (
     <div className="space-y-4">
@@ -77,7 +75,7 @@ function ProviderList() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {isLoading
+          {loading
             ? Array.from({ length: 6 }).map((_, index) => (
                 <TableRow key={index}>
                   <TableCell colSpan={4}>
@@ -88,11 +86,11 @@ function ProviderList() {
             : null}
           {filteredProviders?.map((provider) => {
             return (
-              <TableRow key={provider.type}>
+              <TableRow key={provider.id}>
                 <TableCell>
                   <ProviderIcon provider={provider.type} />
                 </TableCell>
-                <TableCell>{provider.label}</TableCell>
+                <TableCell>{provider.name}</TableCell>
                 <TableCell>
                   {formatDistance(new Date(provider.createdAt), new Date(), {
                     addSuffix: true,
@@ -103,7 +101,7 @@ function ProviderList() {
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      setConfigureProvider(provider);
+                      setConfigureProviderId(provider.id);
                     }}
                   >
                     Manage
@@ -116,10 +114,10 @@ function ProviderList() {
       </Table>
 
       <Sheet
-        open={!!configureProvider}
+        open={!!configureProviderId}
         onOpenChange={(isOpen) => {
           if (!isOpen) {
-            setConfigureProvider(null);
+            setConfigureProviderId(null);
           }
         }}
       >
@@ -130,11 +128,17 @@ function ProviderList() {
           className="min-w-[40rem] overflow-auto"
         >
           <SheetHeader>
-            <SheetTitle>{configureProvider?.label}</SheetTitle>
+            <SheetTitle>{configureProvider?.name}</SheetTitle>
           </SheetHeader>
           <div className="mt-6">
             {configureProvider && (
-              <ConfigureProvider provider={configureProvider} />
+              <ConfigureProvider
+                id={configureProvider.id}
+                name={configureProvider.name}
+                type={configureProvider.type}
+                authType={configureProvider.authType}
+                metadata={configureProvider.metadata as unknown as Record<string, unknown>}
+              />
             )}
           </div>
         </SheetContent>

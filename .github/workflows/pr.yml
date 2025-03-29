@@ -31,7 +31,7 @@ jobs:
         id: test-run
         run: |
           echo "::group::Test Results"
-          TEST_OUTPUT=$(pnpm test)
+          TEST_OUTPUT=$(pnpm test -- --no-color)
           echo "$TEST_OUTPUT"
           echo "::endgroup::"
 

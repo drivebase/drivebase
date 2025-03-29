@@ -1,26 +1,18 @@
+import cookieParser from 'cookie-parser';
 import 'dotenv/config';
+import 'reflect-metadata';
 
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { Reflector } from '@nestjs/core';
-import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
-import { TransformInterceptor } from './helpers/transform.response';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    cors: {
-      origin: process.env.FRONTEND_URL,
-      credentials: true,
-    },
-  });
+  const app = await NestFactory.create(AppModule);
 
+  app.enableCors();
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
-
-  const reflector = new Reflector();
-  app.useGlobalInterceptors(new TransformInterceptor(reflector));
 
   const port = process.env.BACKEND_PORT || 8000;
 

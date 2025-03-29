@@ -21,6 +21,8 @@
     "jsx": "react-jsx",
     "paths": {
       "@drivebase/web/*": ["web/*"],
+      "@drivebase/sdk": ["sdk/index.ts"],
+      "@drivebase/sdk/*": ["sdk/*"],
       "@drivebase/auth": ["libs/auth/src"],
       "@drivebase/auth/*": ["libs/auth/src/*"],
       "@drivebase/database": ["libs/database/src"],
@@ -33,6 +35,12 @@
       "@drivebase/users/*": ["libs/users/src/*"],
       "@drivebase/workspaces": ["libs/workspaces/src"],
       "@drivebase/workspaces/*": ["libs/workspaces/src/*"]
-    }
+    },
+    "plugins": [
+      {
+        "name": "@0no-co/graphqlsp",
+        "schema": "./schema.gql"
+      }
+    ]
   }
 }

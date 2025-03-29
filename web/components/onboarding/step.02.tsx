@@ -1,8 +1,10 @@
-import { Button } from '@drivebase/web/components/ui/button';
-import { getProviderIcon } from '@drivebase/web/helpers/provider.icon';
-import { useGetAvailableProvidersQuery } from '@drivebase/web/lib/redux/endpoints/providers';
+import { useQuery } from '@apollo/client';
 import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+import { Button } from '@drivebase/web/components/ui/button';
+import { GET_AVAILABLE_PROVIDERS } from '@drivebase/web/gql/queries/providers';
+import { getProviderIcon } from '@drivebase/web/helpers/provider.icon';
 
 type StepTwoProps = {
   onNext: () => void;
@@ -11,12 +13,12 @@ type StepTwoProps = {
 
 function StepTwo({ onNext, onSkip }: StepTwoProps) {
   const { t } = useTranslation(['common', 'onboarding']);
-  const { data: providers } = useGetAvailableProvidersQuery();
+  const { data: providers } = useQuery(GET_AVAILABLE_PROVIDERS);
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 gap-4">
-        {providers?.data.map((provider) => {
+        {providers?.availableProviders.map((provider) => {
           const iconUrl = getProviderIcon(provider.type);
 
           return (
@@ -26,12 +28,12 @@ function StepTwo({ onNext, onSkip }: StepTwoProps) {
             >
               <img
                 src={iconUrl}
-                alt={provider.label}
+                alt={provider.displayName || ''}
                 width={15}
                 height={15}
                 className="rounded"
               />
-              <h4 className="text-sm">{provider.label}</h4>
+              <h4 className="text-sm">{provider.displayName}</h4>
             </div>
           );
         })}
@@ -42,11 +44,7 @@ function StepTwo({ onNext, onSkip }: StepTwoProps) {
       </p>
 
       <div className="flex items-center gap-2 justify-between">
-        <Button
-          variant="link"
-          onClick={onSkip}
-          className="pl-0 text-muted-foreground"
-        >
+        <Button variant="link" onClick={onSkip} className="pl-0 text-muted-foreground">
           {t('common:skip')}
         </Button>
         <Button variant="outline" onClick={onNext} disabled>

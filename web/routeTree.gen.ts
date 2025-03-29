@@ -10,209 +10,209 @@
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root';
-import { Route as ProtectedImport } from './routes/_protected';
-import { Route as AuthRegisterImport } from './routes/auth/register';
-import { Route as AuthLoginImport } from './routes/auth/login';
-import { Route as AuthForgotPasswordImport } from './routes/auth/forgot-password';
-import { Route as ProtectedWorkspacesImport } from './routes/_protected/workspaces';
-import { Route as ProtectedOnboardingImport } from './routes/_protected/onboarding';
-import { Route as ProtectedDashboardImport } from './routes/_protected/_dashboard';
-import { Route as ProtectedDashboardIndexImport } from './routes/_protected/_dashboard/index';
-import { Route as ProvidersTypeCallbackImport } from './routes/providers.$type.callback';
-import { Route as ProtectedDashboardRecycleBinImport } from './routes/_protected/_dashboard/recycle-bin';
-import { Route as ProtectedDashboardFavoritesImport } from './routes/_protected/_dashboard/favorites';
-import { Route as ProtectedDashboardSettingsIndexImport } from './routes/_protected/_dashboard/settings/index';
-import { Route as ProtectedDashboardSettingsProvidersImport } from './routes/_protected/_dashboard/settings/providers';
+import { Route as rootRoute } from './routes/__root'
+import { Route as ProtectedImport } from './routes/_protected'
+import { Route as OauthCallbackImport } from './routes/oauth.callback'
+import { Route as AuthRegisterImport } from './routes/auth/register'
+import { Route as AuthLoginImport } from './routes/auth/login'
+import { Route as AuthForgotPasswordImport } from './routes/auth/forgot-password'
+import { Route as ProtectedWorkspacesImport } from './routes/_protected/workspaces'
+import { Route as ProtectedOnboardingImport } from './routes/_protected/onboarding'
+import { Route as ProtectedDashboardImport } from './routes/_protected/_dashboard'
+import { Route as ProtectedDashboardIndexImport } from './routes/_protected/_dashboard/index'
+import { Route as ProtectedDashboardRecycleBinImport } from './routes/_protected/_dashboard/recycle-bin'
+import { Route as ProtectedDashboardFavoritesImport } from './routes/_protected/_dashboard/favorites'
+import { Route as ProtectedDashboardSettingsIndexImport } from './routes/_protected/_dashboard/settings/index'
+import { Route as ProtectedDashboardSettingsProvidersImport } from './routes/_protected/_dashboard/settings/providers'
 
 // Create/Update Routes
 
 const ProtectedRoute = ProtectedImport.update({
   id: '/_protected',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
+
+const OauthCallbackRoute = OauthCallbackImport.update({
+  id: '/oauth/callback',
+  path: '/oauth/callback',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AuthRegisterRoute = AuthRegisterImport.update({
   id: '/auth/register',
   path: '/auth/register',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const AuthLoginRoute = AuthLoginImport.update({
   id: '/auth/login',
   path: '/auth/login',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const AuthForgotPasswordRoute = AuthForgotPasswordImport.update({
   id: '/auth/forgot-password',
   path: '/auth/forgot-password',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const ProtectedWorkspacesRoute = ProtectedWorkspacesImport.update({
   id: '/workspaces',
   path: '/workspaces',
   getParentRoute: () => ProtectedRoute,
-} as any);
+} as any)
 
 const ProtectedOnboardingRoute = ProtectedOnboardingImport.update({
   id: '/onboarding',
   path: '/onboarding',
   getParentRoute: () => ProtectedRoute,
-} as any);
+} as any)
 
 const ProtectedDashboardRoute = ProtectedDashboardImport.update({
   id: '/_dashboard',
   getParentRoute: () => ProtectedRoute,
-} as any);
+} as any)
 
 const ProtectedDashboardIndexRoute = ProtectedDashboardIndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ProtectedDashboardRoute,
-} as any);
-
-const ProvidersTypeCallbackRoute = ProvidersTypeCallbackImport.update({
-  id: '/providers/$type/callback',
-  path: '/providers/$type/callback',
-  getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const ProtectedDashboardRecycleBinRoute =
   ProtectedDashboardRecycleBinImport.update({
     id: '/recycle-bin',
     path: '/recycle-bin',
     getParentRoute: () => ProtectedDashboardRoute,
-  } as any);
+  } as any)
 
 const ProtectedDashboardFavoritesRoute =
   ProtectedDashboardFavoritesImport.update({
     id: '/favorites',
     path: '/favorites',
     getParentRoute: () => ProtectedDashboardRoute,
-  } as any);
+  } as any)
 
 const ProtectedDashboardSettingsIndexRoute =
   ProtectedDashboardSettingsIndexImport.update({
     id: '/settings/',
     path: '/settings/',
     getParentRoute: () => ProtectedDashboardRoute,
-  } as any);
+  } as any)
 
 const ProtectedDashboardSettingsProvidersRoute =
   ProtectedDashboardSettingsProvidersImport.update({
     id: '/settings/providers',
     path: '/settings/providers',
     getParentRoute: () => ProtectedDashboardRoute,
-  } as any);
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/_protected': {
-      id: '/_protected';
-      path: '';
-      fullPath: '';
-      preLoaderRoute: typeof ProtectedImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/_protected'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof ProtectedImport
+      parentRoute: typeof rootRoute
+    }
     '/_protected/_dashboard': {
-      id: '/_protected/_dashboard';
-      path: '';
-      fullPath: '';
-      preLoaderRoute: typeof ProtectedDashboardImport;
-      parentRoute: typeof ProtectedImport;
-    };
+      id: '/_protected/_dashboard'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof ProtectedDashboardImport
+      parentRoute: typeof ProtectedImport
+    }
     '/_protected/onboarding': {
-      id: '/_protected/onboarding';
-      path: '/onboarding';
-      fullPath: '/onboarding';
-      preLoaderRoute: typeof ProtectedOnboardingImport;
-      parentRoute: typeof ProtectedImport;
-    };
+      id: '/_protected/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof ProtectedOnboardingImport
+      parentRoute: typeof ProtectedImport
+    }
     '/_protected/workspaces': {
-      id: '/_protected/workspaces';
-      path: '/workspaces';
-      fullPath: '/workspaces';
-      preLoaderRoute: typeof ProtectedWorkspacesImport;
-      parentRoute: typeof ProtectedImport;
-    };
+      id: '/_protected/workspaces'
+      path: '/workspaces'
+      fullPath: '/workspaces'
+      preLoaderRoute: typeof ProtectedWorkspacesImport
+      parentRoute: typeof ProtectedImport
+    }
     '/auth/forgot-password': {
-      id: '/auth/forgot-password';
-      path: '/auth/forgot-password';
-      fullPath: '/auth/forgot-password';
-      preLoaderRoute: typeof AuthForgotPasswordImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordImport
+      parentRoute: typeof rootRoute
+    }
     '/auth/login': {
-      id: '/auth/login';
-      path: '/auth/login';
-      fullPath: '/auth/login';
-      preLoaderRoute: typeof AuthLoginImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginImport
+      parentRoute: typeof rootRoute
+    }
     '/auth/register': {
-      id: '/auth/register';
-      path: '/auth/register';
-      fullPath: '/auth/register';
-      preLoaderRoute: typeof AuthRegisterImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterImport
+      parentRoute: typeof rootRoute
+    }
+    '/oauth/callback': {
+      id: '/oauth/callback'
+      path: '/oauth/callback'
+      fullPath: '/oauth/callback'
+      preLoaderRoute: typeof OauthCallbackImport
+      parentRoute: typeof rootRoute
+    }
     '/_protected/_dashboard/favorites': {
-      id: '/_protected/_dashboard/favorites';
-      path: '/favorites';
-      fullPath: '/favorites';
-      preLoaderRoute: typeof ProtectedDashboardFavoritesImport;
-      parentRoute: typeof ProtectedDashboardImport;
-    };
+      id: '/_protected/_dashboard/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof ProtectedDashboardFavoritesImport
+      parentRoute: typeof ProtectedDashboardImport
+    }
     '/_protected/_dashboard/recycle-bin': {
-      id: '/_protected/_dashboard/recycle-bin';
-      path: '/recycle-bin';
-      fullPath: '/recycle-bin';
-      preLoaderRoute: typeof ProtectedDashboardRecycleBinImport;
-      parentRoute: typeof ProtectedDashboardImport;
-    };
-    '/providers/$type/callback': {
-      id: '/providers/$type/callback';
-      path: '/providers/$type/callback';
-      fullPath: '/providers/$type/callback';
-      preLoaderRoute: typeof ProvidersTypeCallbackImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/_protected/_dashboard/recycle-bin'
+      path: '/recycle-bin'
+      fullPath: '/recycle-bin'
+      preLoaderRoute: typeof ProtectedDashboardRecycleBinImport
+      parentRoute: typeof ProtectedDashboardImport
+    }
     '/_protected/_dashboard/': {
-      id: '/_protected/_dashboard/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof ProtectedDashboardIndexImport;
-      parentRoute: typeof ProtectedDashboardImport;
-    };
+      id: '/_protected/_dashboard/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof ProtectedDashboardIndexImport
+      parentRoute: typeof ProtectedDashboardImport
+    }
     '/_protected/_dashboard/settings/providers': {
-      id: '/_protected/_dashboard/settings/providers';
-      path: '/settings/providers';
-      fullPath: '/settings/providers';
-      preLoaderRoute: typeof ProtectedDashboardSettingsProvidersImport;
-      parentRoute: typeof ProtectedDashboardImport;
-    };
+      id: '/_protected/_dashboard/settings/providers'
+      path: '/settings/providers'
+      fullPath: '/settings/providers'
+      preLoaderRoute: typeof ProtectedDashboardSettingsProvidersImport
+      parentRoute: typeof ProtectedDashboardImport
+    }
     '/_protected/_dashboard/settings/': {
-      id: '/_protected/_dashboard/settings/';
-      path: '/settings';
-      fullPath: '/settings';
-      preLoaderRoute: typeof ProtectedDashboardSettingsIndexImport;
-      parentRoute: typeof ProtectedDashboardImport;
-    };
+      id: '/_protected/_dashboard/settings/'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof ProtectedDashboardSettingsIndexImport
+      parentRoute: typeof ProtectedDashboardImport
+    }
   }
 }
 
 // Create and export the route tree
 
 interface ProtectedDashboardRouteChildren {
-  ProtectedDashboardFavoritesRoute: typeof ProtectedDashboardFavoritesRoute;
-  ProtectedDashboardRecycleBinRoute: typeof ProtectedDashboardRecycleBinRoute;
-  ProtectedDashboardIndexRoute: typeof ProtectedDashboardIndexRoute;
-  ProtectedDashboardSettingsProvidersRoute: typeof ProtectedDashboardSettingsProvidersRoute;
-  ProtectedDashboardSettingsIndexRoute: typeof ProtectedDashboardSettingsIndexRoute;
+  ProtectedDashboardFavoritesRoute: typeof ProtectedDashboardFavoritesRoute
+  ProtectedDashboardRecycleBinRoute: typeof ProtectedDashboardRecycleBinRoute
+  ProtectedDashboardIndexRoute: typeof ProtectedDashboardIndexRoute
+  ProtectedDashboardSettingsProvidersRoute: typeof ProtectedDashboardSettingsProvidersRoute
+  ProtectedDashboardSettingsIndexRoute: typeof ProtectedDashboardSettingsIndexRoute
 }
 
 const ProtectedDashboardRouteChildren: ProtectedDashboardRouteChildren = {
@@ -222,76 +222,76 @@ const ProtectedDashboardRouteChildren: ProtectedDashboardRouteChildren = {
   ProtectedDashboardSettingsProvidersRoute:
     ProtectedDashboardSettingsProvidersRoute,
   ProtectedDashboardSettingsIndexRoute: ProtectedDashboardSettingsIndexRoute,
-};
+}
 
 const ProtectedDashboardRouteWithChildren =
-  ProtectedDashboardRoute._addFileChildren(ProtectedDashboardRouteChildren);
+  ProtectedDashboardRoute._addFileChildren(ProtectedDashboardRouteChildren)
 
 interface ProtectedRouteChildren {
-  ProtectedDashboardRoute: typeof ProtectedDashboardRouteWithChildren;
-  ProtectedOnboardingRoute: typeof ProtectedOnboardingRoute;
-  ProtectedWorkspacesRoute: typeof ProtectedWorkspacesRoute;
+  ProtectedDashboardRoute: typeof ProtectedDashboardRouteWithChildren
+  ProtectedOnboardingRoute: typeof ProtectedOnboardingRoute
+  ProtectedWorkspacesRoute: typeof ProtectedWorkspacesRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedDashboardRoute: ProtectedDashboardRouteWithChildren,
   ProtectedOnboardingRoute: ProtectedOnboardingRoute,
   ProtectedWorkspacesRoute: ProtectedWorkspacesRoute,
-};
+}
 
 const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
   ProtectedRouteChildren,
-);
+)
 
 export interface FileRoutesByFullPath {
-  '': typeof ProtectedDashboardRouteWithChildren;
-  '/onboarding': typeof ProtectedOnboardingRoute;
-  '/workspaces': typeof ProtectedWorkspacesRoute;
-  '/auth/forgot-password': typeof AuthForgotPasswordRoute;
-  '/auth/login': typeof AuthLoginRoute;
-  '/auth/register': typeof AuthRegisterRoute;
-  '/favorites': typeof ProtectedDashboardFavoritesRoute;
-  '/recycle-bin': typeof ProtectedDashboardRecycleBinRoute;
-  '/providers/$type/callback': typeof ProvidersTypeCallbackRoute;
-  '/': typeof ProtectedDashboardIndexRoute;
-  '/settings/providers': typeof ProtectedDashboardSettingsProvidersRoute;
-  '/settings': typeof ProtectedDashboardSettingsIndexRoute;
+  '': typeof ProtectedDashboardRouteWithChildren
+  '/onboarding': typeof ProtectedOnboardingRoute
+  '/workspaces': typeof ProtectedWorkspacesRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/oauth/callback': typeof OauthCallbackRoute
+  '/favorites': typeof ProtectedDashboardFavoritesRoute
+  '/recycle-bin': typeof ProtectedDashboardRecycleBinRoute
+  '/': typeof ProtectedDashboardIndexRoute
+  '/settings/providers': typeof ProtectedDashboardSettingsProvidersRoute
+  '/settings': typeof ProtectedDashboardSettingsIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '': typeof ProtectedRouteWithChildren;
-  '/onboarding': typeof ProtectedOnboardingRoute;
-  '/workspaces': typeof ProtectedWorkspacesRoute;
-  '/auth/forgot-password': typeof AuthForgotPasswordRoute;
-  '/auth/login': typeof AuthLoginRoute;
-  '/auth/register': typeof AuthRegisterRoute;
-  '/favorites': typeof ProtectedDashboardFavoritesRoute;
-  '/recycle-bin': typeof ProtectedDashboardRecycleBinRoute;
-  '/providers/$type/callback': typeof ProvidersTypeCallbackRoute;
-  '/': typeof ProtectedDashboardIndexRoute;
-  '/settings/providers': typeof ProtectedDashboardSettingsProvidersRoute;
-  '/settings': typeof ProtectedDashboardSettingsIndexRoute;
+  '': typeof ProtectedRouteWithChildren
+  '/onboarding': typeof ProtectedOnboardingRoute
+  '/workspaces': typeof ProtectedWorkspacesRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/oauth/callback': typeof OauthCallbackRoute
+  '/favorites': typeof ProtectedDashboardFavoritesRoute
+  '/recycle-bin': typeof ProtectedDashboardRecycleBinRoute
+  '/': typeof ProtectedDashboardIndexRoute
+  '/settings/providers': typeof ProtectedDashboardSettingsProvidersRoute
+  '/settings': typeof ProtectedDashboardSettingsIndexRoute
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute;
-  '/_protected': typeof ProtectedRouteWithChildren;
-  '/_protected/_dashboard': typeof ProtectedDashboardRouteWithChildren;
-  '/_protected/onboarding': typeof ProtectedOnboardingRoute;
-  '/_protected/workspaces': typeof ProtectedWorkspacesRoute;
-  '/auth/forgot-password': typeof AuthForgotPasswordRoute;
-  '/auth/login': typeof AuthLoginRoute;
-  '/auth/register': typeof AuthRegisterRoute;
-  '/_protected/_dashboard/favorites': typeof ProtectedDashboardFavoritesRoute;
-  '/_protected/_dashboard/recycle-bin': typeof ProtectedDashboardRecycleBinRoute;
-  '/providers/$type/callback': typeof ProvidersTypeCallbackRoute;
-  '/_protected/_dashboard/': typeof ProtectedDashboardIndexRoute;
-  '/_protected/_dashboard/settings/providers': typeof ProtectedDashboardSettingsProvidersRoute;
-  '/_protected/_dashboard/settings/': typeof ProtectedDashboardSettingsIndexRoute;
+  __root__: typeof rootRoute
+  '/_protected': typeof ProtectedRouteWithChildren
+  '/_protected/_dashboard': typeof ProtectedDashboardRouteWithChildren
+  '/_protected/onboarding': typeof ProtectedOnboardingRoute
+  '/_protected/workspaces': typeof ProtectedWorkspacesRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/oauth/callback': typeof OauthCallbackRoute
+  '/_protected/_dashboard/favorites': typeof ProtectedDashboardFavoritesRoute
+  '/_protected/_dashboard/recycle-bin': typeof ProtectedDashboardRecycleBinRoute
+  '/_protected/_dashboard/': typeof ProtectedDashboardIndexRoute
+  '/_protected/_dashboard/settings/providers': typeof ProtectedDashboardSettingsProvidersRoute
+  '/_protected/_dashboard/settings/': typeof ProtectedDashboardSettingsIndexRoute
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | ''
     | '/onboarding'
@@ -299,13 +299,13 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/oauth/callback'
     | '/favorites'
     | '/recycle-bin'
-    | '/providers/$type/callback'
     | '/'
     | '/settings/providers'
-    | '/settings';
-  fileRoutesByTo: FileRoutesByTo;
+    | '/settings'
+  fileRoutesByTo: FileRoutesByTo
   to:
     | ''
     | '/onboarding'
@@ -313,12 +313,12 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/oauth/callback'
     | '/favorites'
     | '/recycle-bin'
-    | '/providers/$type/callback'
     | '/'
     | '/settings/providers'
-    | '/settings';
+    | '/settings'
   id:
     | '__root__'
     | '/_protected'
@@ -328,21 +328,21 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/oauth/callback'
     | '/_protected/_dashboard/favorites'
     | '/_protected/_dashboard/recycle-bin'
-    | '/providers/$type/callback'
     | '/_protected/_dashboard/'
     | '/_protected/_dashboard/settings/providers'
-    | '/_protected/_dashboard/settings/';
-  fileRoutesById: FileRoutesById;
+    | '/_protected/_dashboard/settings/'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  ProtectedRoute: typeof ProtectedRouteWithChildren;
-  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute;
-  AuthLoginRoute: typeof AuthLoginRoute;
-  AuthRegisterRoute: typeof AuthRegisterRoute;
-  ProvidersTypeCallbackRoute: typeof ProvidersTypeCallbackRoute;
+  ProtectedRoute: typeof ProtectedRouteWithChildren
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+  OauthCallbackRoute: typeof OauthCallbackRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -350,12 +350,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
-  ProvidersTypeCallbackRoute: ProvidersTypeCallbackRoute,
-};
+  OauthCallbackRoute: OauthCallbackRoute,
+}
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
@@ -367,7 +367,7 @@ export const routeTree = rootRoute
         "/auth/forgot-password",
         "/auth/login",
         "/auth/register",
-        "/providers/$type/callback"
+        "/oauth/callback"
       ]
     },
     "/_protected": {
@@ -406,6 +406,9 @@ export const routeTree = rootRoute
     "/auth/register": {
       "filePath": "auth/register.tsx"
     },
+    "/oauth/callback": {
+      "filePath": "oauth.callback.tsx"
+    },
     "/_protected/_dashboard/favorites": {
       "filePath": "_protected/_dashboard/favorites.tsx",
       "parent": "/_protected/_dashboard"
@@ -413,9 +416,6 @@ export const routeTree = rootRoute
     "/_protected/_dashboard/recycle-bin": {
       "filePath": "_protected/_dashboard/recycle-bin.tsx",
       "parent": "/_protected/_dashboard"
-    },
-    "/providers/$type/callback": {
-      "filePath": "providers.$type.callback.tsx"
     },
     "/_protected/_dashboard/": {
       "filePath": "_protected/_dashboard/index.tsx",

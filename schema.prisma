@@ -22,6 +22,13 @@ enum ProviderType {
   TELEGRAM
 }
 
+enum AuthType {
+  NONE
+  OAUTH2
+  API_KEY
+  BASIC
+}
+
 model User {
   id         String      @id @default(uuid())
   name       String
@@ -46,31 +53,43 @@ model Workspace {
 
 model Provider {
   id          String       @id @default(uuid())
-  label       String
+  name        String // Display name of the provider
   type        ProviderType
-  credentials Json
-  metadata    Json?
+  authType    AuthType // Type of authentication used
+  credentials Json // Authentication credentials
+  metadata    Json? // Additional metadata (user info, folder IDs, etc.)
+  isActive    Boolean      @default(true)
   workspaceId String
   workspace   Workspace    @relation(fields: [workspaceId], references: [id])
   files       File[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+
+  @@index([workspaceId])
+  @@index([type])
 }
 
 model File {
-  id             String     @id @default(uuid())
-  name           String
-  isFolder       Boolean    @default(false)
-  parentPath     String
-  path           String
-  mimeType       String?
-  size           Float?
-  isStarred      Boolean    @default(false)
-  referenceId    String?
-  workspaceId    String?
-  workspace      Workspace? @relation(fields: [workspaceId], references: [id])
-  fileProviderId String?
-  fileProvider   Provider?  @relation(fields: [fileProviderId], references: [id])
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id          String     @id @default(uuid())
+  name        String
+  isFolder    Boolean    @default(false)
+  parentPath  String
+  path        String
+  mimeType    String?
+  size        Float?
+  isStarred   Boolean    @default(false)
+  referenceId String? // ID on the provider's system
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
+  providerId  String?
+  provider    Provider?  @relation(fields: [providerId], references: [id])
+  parentId    String? // For hierarchical structure
+  parent      File?      @relation("FileHierarchy", fields: [parentId], references: [id])
+  children    File[]     @relation("FileHierarchy")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([workspaceId, path])
+  @@index([providerId, referenceId])
+  @@index([parentId])
 }

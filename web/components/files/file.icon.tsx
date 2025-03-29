@@ -1,12 +1,13 @@
-import { File as DBFile } from '@prisma/client';
 import {
-  FileAudioIcon,
   FileIcon as DefaultFileIcon,
+  FileAudioIcon,
   FileTextIcon,
   FolderIcon,
   ImageIcon,
   VideoIcon,
 } from 'lucide-react';
+
+import { File as DBFile } from '@drivebase/sdk';
 
 interface FileIconProps {
   file: DBFile;
@@ -16,9 +17,7 @@ interface FileIconProps {
 
 export function FileIcon({ file, size = 16, className = '' }: FileIconProps) {
   if (file.isFolder) {
-    return (
-      <FolderIcon size={size} className={`text-yellow-500 ${className}`} />
-    );
+    return <FolderIcon size={size} className={`text-yellow-500 ${className}`} />;
   }
 
   // Get file type from mime type or extension
@@ -32,20 +31,12 @@ export function FileIcon({ file, size = 16, className = '' }: FileIconProps) {
     return <ImageIcon size={size} className={`text-blue-500 ${className}`} />;
   }
 
-  if (
-    mimeType.startsWith('video/') ||
-    ['mp4', 'webm', 'avi', 'mov', 'mkv'].includes(extension)
-  ) {
+  if (mimeType.startsWith('video/') || ['mp4', 'webm', 'avi', 'mov', 'mkv'].includes(extension)) {
     return <VideoIcon size={size} className={`text-red-500 ${className}`} />;
   }
 
-  if (
-    mimeType.startsWith('audio/') ||
-    ['mp3', 'wav', 'ogg', 'flac'].includes(extension)
-  ) {
-    return (
-      <FileAudioIcon size={size} className={`text-purple-500 ${className}`} />
-    );
+  if (mimeType.startsWith('audio/') || ['mp3', 'wav', 'ogg', 'flac'].includes(extension)) {
+    return <FileAudioIcon size={size} className={`text-purple-500 ${className}`} />;
   }
 
   if (
@@ -66,13 +57,9 @@ export function FileIcon({ file, size = 16, className = '' }: FileIconProps) {
       'pptx',
     ].includes(extension)
   ) {
-    return (
-      <FileTextIcon size={size} className={`text-gray-500 ${className}`} />
-    );
+    return <FileTextIcon size={size} className={`text-gray-500 ${className}`} />;
   }
 
   // Default file icon
-  return (
-    <DefaultFileIcon size={size} className={`text-gray-400 ${className}`} />
-  );
+  return <DefaultFileIcon size={size} className={`text-gray-400 ${className}`} />;
 }
