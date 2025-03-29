@@ -1,6 +1,4 @@
-import { Provider } from '@drivebase/providers/provider.entity';
-import { Workspace } from '@drivebase/workspaces/workspace.entity';
-import { Field, ObjectType } from '@nestjs/graphql';
+import GraphQLJSON from 'graphql-type-json';
 import {
   Column,
   CreateDateColumn,
@@ -13,6 +11,11 @@ import {
   type Relation,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { Field, ObjectType } from '@nestjs/graphql';
+
+import { Provider } from '@drivebase/providers/provider.entity';
+import { Workspace } from '@drivebase/workspaces/workspace.entity';
 
 @Entity()
 @ObjectType()
@@ -47,6 +50,10 @@ export class File {
   @Field(() => Number, { nullable: true })
   @Column({ type: 'float', nullable: true })
   size?: number;
+
+  @Field(() => GraphQLJSON, { nullable: true })
+  @Column({ type: 'json', nullable: true })
+  metadata?: Record<string, string>;
 
   @Field(() => Boolean)
   @Column({ type: 'boolean', default: false })
