@@ -23,3 +23,11 @@ export const HANDLE_OAUTH_CALLBACK = gql(`
     }
   }
 `);
+
+export const CONNECT_LOCAL_PROVIDER = gql(`
+  mutation ConnectLocalProvider($input: ConnectLocalProviderInput!) {
+    connectLocalProvider(input: $input) {
+      id
+    }
+  }
+`);

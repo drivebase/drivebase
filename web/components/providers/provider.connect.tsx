@@ -25,7 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@drivebase/web/components/ui/select';
-import { AUTHORIZE_API_KEY, GET_AUTH_URL } from '@drivebase/web/gql/mutations/providers';
+import {
+  AUTHORIZE_API_KEY,
+  CONNECT_LOCAL_PROVIDER,
+  GET_AUTH_URL,
+} from '@drivebase/web/gql/mutations/providers';
 import { GET_AVAILABLE_PROVIDERS } from '@drivebase/web/gql/queries/providers';
 
 type ConnectProviderDialogProps = {
@@ -40,6 +44,8 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
 
   const [getAuthUrl, { loading: isGettingAuthUrl }] = useMutation(GET_AUTH_URL);
   const [authorizeApiKey, { loading: isAuthorizingApiKey }] = useMutation(AUTHORIZE_API_KEY);
+  const [connectLocalProvider, { loading: isConnectingLocalProvider }] =
+    useMutation(CONNECT_LOCAL_PROVIDER);
 
   const { data } = useQuery(GET_AVAILABLE_PROVIDERS);
 
@@ -48,7 +54,6 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
   );
 
   const onSubmit = (data: Record<string, any>) => {
-    console.log('data', data);
     if (!selectedProvider) return;
 
     if (selectedProvider?.authType === AuthType.Oauth2) {
@@ -83,6 +88,12 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
         .catch((error) => {
           toast.error(error.data.message);
         });
+    } else if (selectedProvider?.authType === AuthType.None) {
+      connectLocalProvider({
+        variables: {
+          input: { label: data.label || 'Local Storage', basePath: data.inputFields.basePath },
+        },
+      });
     }
   };
 
@@ -157,7 +168,12 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
           <Button
             variant={'outline'}
             className="w-full mt-4"
-            disabled={isGettingAuthUrl || isAuthorizingApiKey || selectedProvider === null}
+            disabled={
+              isGettingAuthUrl ||
+              isAuthorizingApiKey ||
+              isConnectingLocalProvider ||
+              selectedProvider === null
+            }
           >
             {selectedProvider?.authType === AuthType.Oauth2 ? 'Authorize' : 'Submit'}
           </Button>

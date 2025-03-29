@@ -1,26 +1,4 @@
-import {
-  DataTable,
-  FilterParams,
-} from '@drivebase/web/components/common/data.table';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from '@drivebase/web/components/ui/breadcrumb';
-import { Button } from '@drivebase/web/components/ui/button';
-import { Separator } from '@drivebase/web/components/ui/separator';
-import {
-  useDeleteFileMutation,
-  useGetFilesQuery,
-  useRenameFileMutation,
-  useStarFileMutation,
-  useUnstarFileMutation,
-} from '@drivebase/web/lib/redux/endpoints/files';
-import { useGetProvidersQuery } from '@drivebase/web/lib/redux/endpoints/providers';
-import { formatDate, formatFileSize } from '@drivebase/web/lib/utils/format';
-import type { File as DBFile } from '@prisma/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Link, useRouter, useSearch } from '@tanstack/react-router';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import {
@@ -35,11 +13,31 @@ import {
 import { Fragment, useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { File as DBFile } from '@drivebase/sdk';
+import { DataTable, FilterParams } from '@drivebase/web/components/common/data.table';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from '@drivebase/web/components/ui/breadcrumb';
+import { Button } from '@drivebase/web/components/ui/button';
+import { Separator } from '@drivebase/web/components/ui/separator';
+import { config } from '@drivebase/web/constants/config';
+import {
+  DELETE_FILE,
+  RENAME_FILE,
+  STAR_FILE,
+  UNSTAR_FILE,
+} from '@drivebase/web/gql/mutations/files';
+import { GET_FILES } from '@drivebase/web/gql/queries/files';
+import { GET_CONNECTED_PROVIDERS } from '@drivebase/web/gql/queries/providers';
+import { formatDate, formatFileSize } from '@drivebase/web/lib/utils/format';
+
 import { inputDialog } from '../common/input.dialog';
 import ProviderIcon from '../providers/provider.icon';
 import { FileIcon } from './file.icon';
-
-const baseUrl = import.meta.env['VITE_PUBLIC_API_URL'] || '/api';
 
 type FileListProps = {
   starred?: boolean;
@@ -52,15 +50,11 @@ function FileList({ starred = false }: FileListProps) {
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 100,
   });
 
   // State for search/filter
   const [searchFilters, setSearchFilters] = useState<FilterParams[]>([]);
-
-  // Get actual page and limit from pagination state
-  const page = pagination.pageIndex + 1;
-  const limit = pagination.pageSize;
 
   // Build search query string from filters
   const searchQuery = useMemo(() => {
@@ -69,28 +63,38 @@ function FileList({ starred = false }: FileListProps) {
     return nameFilter?.value || undefined;
   }, [searchFilters]);
 
-  const { data: providers } = useGetProvidersQuery();
-  const { data, isLoading } = useGetFilesQuery({
-    parentPath,
-    isStarred: starred,
-    page,
-    limit,
-    search: searchQuery, // Add search parameter
+  const { data: providers } = useQuery(GET_CONNECTED_PROVIDERS);
+  const { data: files, loading } = useQuery(GET_FILES, {
+    variables: {
+      input: {
+        parentPath,
+        isStarred: starred,
+        search: searchQuery,
+        page: pagination.pageIndex + 1,
+        limit: pagination.pageSize,
+      },
+    },
   });
 
-  const [starFile] = useStarFileMutation();
-  const [unstarFile] = useUnstarFileMutation();
-  const [deleteFile] = useDeleteFileMutation();
-  const [renameFile] = useRenameFileMutation();
+  const [starFile] = useMutation(STAR_FILE, {
+    refetchQueries: [GET_FILES],
+  });
+  const [unstarFile] = useMutation(UNSTAR_FILE, {
+    refetchQueries: [GET_FILES],
+  });
+  const [renameFile] = useMutation(RENAME_FILE, {
+    refetchQueries: [GET_FILES],
+  });
+
+  const [deleteFile] = useMutation(DELETE_FILE, {
+    refetchQueries: [GET_FILES],
+  });
 
   const splitPath = parentPath.split('/').filter(Boolean);
 
-  const handlePaginationChange = useCallback(
-    (newPagination: PaginationState) => {
-      setPagination(newPagination);
-    },
-    [],
-  );
+  const handlePaginationChange = useCallback((newPagination: PaginationState) => {
+    setPagination(newPagination);
+  }, []);
 
   // Handle search/filter changes
   const handleFilterChange = useCallback((filters: FilterParams[]) => {
@@ -103,10 +107,7 @@ function FileList({ starred = false }: FileListProps) {
     try {
       const loadingToast = toast.loading('Downloading file...');
 
-      const res = await fetch(`${baseUrl}/files/download/${fileId}`, {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const res = await fetch(`${config.apiUrl}/files/download?fileId=${fileId}`);
 
       if (!res.ok) {
         toast.dismiss(loadingToast);
@@ -158,10 +159,11 @@ function FileList({ starred = false }: FileListProps) {
             return;
           }
           renameFile({
-            id: file.id,
-            name: res.name,
+            variables: {
+              id: file.id,
+              name: res.name,
+            },
           })
-            .unwrap()
             .then(() => {
               toast.success('File renamed successfully');
             })
@@ -196,8 +198,7 @@ function FileList({ starred = false }: FileListProps) {
       })
         .then((res) => {
           if (res?.name === name) {
-            deleteFile(file.id)
-              .unwrap()
+            deleteFile({ variables: { id: file.id } })
               .then(() => {
                 toast.success('File deleted successfully');
               })
@@ -220,15 +221,12 @@ function FileList({ starred = false }: FileListProps) {
   const handleToggleStar = useCallback(
     (file: DBFile) => {
       if (file.isStarred) {
-        unstarFile(file.id)
-          .unwrap()
-          .catch((err) => {
-            console.error(err);
-            toast.error('Failed to unstar file');
-          });
+        unstarFile({ variables: { id: file.id } }).catch((err) => {
+          console.error(err);
+          toast.error('Failed to unstar file');
+        });
       } else {
-        starFile(file.id)
-          .unwrap()
+        starFile({ variables: { id: file.id } })
           .then(() => {
             toast.success('File starred successfully');
           })
@@ -252,9 +250,7 @@ function FileList({ starred = false }: FileListProps) {
             <div className="flex items-center gap-2">
               <FileIcon file={file} size={24} />
               <span>{file.name}</span>
-              {file.isStarred && (
-                <StarIcon className="h-4 w-4 text-yellow-500" />
-              )}
+              {file.isStarred && <StarIcon className="h-4 w-4 text-yellow-500" />}
             </div>
           );
         },
@@ -271,7 +267,7 @@ function FileList({ starred = false }: FileListProps) {
         accessorKey: 'updatedAt',
         header: 'Last Modified',
         cell: ({ row }) => {
-          return formatDate(row.original.updatedAt);
+          return formatDate(row.original.createdAt as Date);
         },
       },
       {
@@ -279,9 +275,7 @@ function FileList({ starred = false }: FileListProps) {
         header: 'Provider',
         cell: ({ row }) => {
           const file = row.original;
-          const provider = providers?.data?.find(
-            (p) => p.id === file.fileProviderId,
-          );
+          const provider = providers?.connectedProviders?.find((p) => p.id === file.providerId);
           if (!provider) return '-';
           return (
             <div className="flex items-center gap-2 capitalize">
@@ -310,9 +304,7 @@ function FileList({ starred = false }: FileListProps) {
                 ) : (
                   <StarIcon className="h-4 w-4" />
                 )}
-                <span className="sr-only">
-                  {file.isStarred ? 'Unstar' : 'Star'}
-                </span>
+                <span className="sr-only">{file.isStarred ? 'Unstar' : 'Star'}</span>
               </Button>
               {!file.isFolder && (
                 <Button
@@ -362,7 +354,7 @@ function FileList({ starred = false }: FileListProps) {
 
   // Sort data to ensure folders are always first
   const sortedData = useMemo(() => {
-    const fileData = data?.data?.data || [];
+    const fileData = files?.listFiles.data || [];
 
     // If data is already sorted by the server, we can just return it
     // But we'll do an additional sort as a safety measure
@@ -374,7 +366,7 @@ function FileList({ starred = false }: FileListProps) {
       // Then alphabetically by name
       return a.name.localeCompare(b.name);
     });
-  }, [data?.data?.data]);
+  }, [files?.listFiles]);
 
   return (
     <div className="space-y-4">
@@ -391,8 +383,7 @@ function FileList({ starred = false }: FileListProps) {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               {splitPath.map((path, index) => {
-                const updatedPath =
-                  '/' + splitPath.slice(0, index + 1).join('/');
+                const updatedPath = '/' + splitPath.slice(0, index + 1).join('/');
 
                 return (
                   <Fragment key={path}>
@@ -419,14 +410,14 @@ function FileList({ starred = false }: FileListProps) {
 
       <DataTable
         columns={columns}
-        data={sortedData}
-        paginationMeta={data?.data?.meta}
+        data={sortedData as unknown as DBFile[]}
+        paginationMeta={files?.listFiles.meta}
         serverPagination={true}
         onPaginationChange={handlePaginationChange}
         serverFiltering={true}
         onFilterChange={handleFilterChange}
         filterDebounce={500}
-        isLoading={isLoading}
+        isLoading={loading}
         showSearch={true}
         searchColumn="name"
         searchPlaceholder="Search files..."
