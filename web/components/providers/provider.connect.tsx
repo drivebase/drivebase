@@ -76,7 +76,7 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
       authorizeApiKey({
         variables: {
           input: {
-            label: data.label,
+            label: data.label || selectedProvider.displayName,
             credentials: data.inputFields,
             type: selectedProvider.type,
           },

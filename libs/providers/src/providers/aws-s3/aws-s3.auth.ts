@@ -12,11 +12,7 @@ export class AwsS3AuthStrategy extends ApiKeyStrategy {
   async validateCredentials(credentials: ApiKeyCredentials): Promise<boolean> {
     try {
       // Validate required fields
-      if (
-        !credentials.accessKeyId ||
-        !credentials.secretAccessKey ||
-        !credentials.bucket
-      ) {
+      if (!credentials.accessKeyId || !credentials.secretAccessKey || !credentials.bucket) {
         throw new Error(
           'Required credentials missing: accessKeyId, secretAccessKey, and bucket are required',
         );
