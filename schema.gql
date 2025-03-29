@@ -196,11 +196,23 @@ type Query {
   workspaceStats: [WorkspaceStat!]!
   connectedProviders: [Provider!]!
   availableProviders: [ProviderMetadata!]!
+  listProviderFiles(input: ListProviderFilesInput!): PaginatedType!
   listFiles(input: ListFilesInput): PaginatedFilesResponse!
   folderContents(parentPath: String!): [File!]!
   file(id: String!): File
   version: String!
   ping: PingResponse!
+}
+
+type PaginatedType {
+  meta: PaginationMeta!
+  data: [FileMetadata!]!
+}
+
+input ListProviderFilesInput {
+  id: String!
+  path: String
+  referenceId: String
 }
 
 input ListFilesInput {
@@ -224,7 +236,6 @@ type Mutation {
   handleOAuthCallback(input: HandleOAuthCallbackInput!): Provider!
   authorizeApiKey(input: AuthorizeApiKeyInput!): Provider!
   connectLocalProvider(input: ConnectLocalProviderInput!): Provider!
-  listProviderFiles(input: ListProviderFilesInput!): PaginatedType!
   updateProvider(input: UpdateProviderInput!): Provider!
   updateProviderMetadata(input: UpdateProviderMetadataInput!): Provider!
   createFolder(input: CreateFolderInput!): File!
@@ -293,16 +304,6 @@ input ConnectLocalProviderInput {
   basePath: String
 }
 
-type PaginatedType {
-  meta: PaginationMeta!
-  data: [FileMetadata!]!
-}
-
-input ListProviderFilesInput {
-  id: String!
-  path: String
-}
-
 input UpdateProviderInput {
   id: String!
   name: String
@@ -311,7 +312,7 @@ input UpdateProviderInput {
 
 input UpdateProviderMetadataInput {
   id: String!
-  metadata: String!
+  metadata: JSON!
 }
 
 input CreateFolderInput {
