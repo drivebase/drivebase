@@ -372,8 +372,10 @@ export class FilesService {
 
     const uploadedFiles: File[] = [];
 
+    const uploadPath = (provider.metadata as Record<string, string>)?.uploadPath || '/';
+
     for (const file of files) {
-      const uploadResult = await providerInstance.uploadFile(payload.path, {
+      const uploadResult = await providerInstance.uploadFile(uploadPath, {
         buffer: file.buffer,
         originalname: file.originalname,
         mimetype: file.mimetype,
