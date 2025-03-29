@@ -24,17 +24,12 @@ import { GENERATE_UPLOAD_KEY } from '@drivebase/web/gql/mutations/files';
 import { GET_CONNECTED_PROVIDERS } from '@drivebase/web/gql/queries/providers';
 import { getProviderIcon } from '@drivebase/web/helpers/provider.icon';
 import { useFileStore } from '@drivebase/web/lib/contexts/file-store.context';
-import { useAppDispatch, useAppSelector } from '@drivebase/web/lib/redux/hooks';
-import {
-  clearFileIds,
-  setUploadModalOpen,
-} from '@drivebase/web/lib/redux/reducers/uploader.reducer';
+import { useUploadStore } from '@drivebase/web/lib/store/upload.store';
 
 export function UploadModal() {
   const search = useSearch({ strict: false });
 
-  const dispatch = useAppDispatch();
-  const { uploadModalOpen } = useAppSelector((s) => s.uploader);
+  const { uploadModalOpen, setUploadModalOpen, clearFileIds } = useUploadStore();
   const { files, clearFiles, removeFile } = useFileStore();
 
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
@@ -71,9 +66,9 @@ export function UploadModal() {
       open={uploadModalOpen}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          dispatch(setUploadModalOpen(false));
+          setUploadModalOpen(false);
           clearFiles();
-          dispatch(clearFileIds());
+          clearFileIds();
         }
       }}
     >

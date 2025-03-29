@@ -95,7 +95,8 @@
     "telegram": "^2.26.22",
     "typeorm": "^0.3.21",
     "uuid": "^11.1.0",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@0no-co/graphqlsp": "^1.12.16",
