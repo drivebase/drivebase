@@ -102,7 +102,7 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = useState({});
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: paginationMeta?.page ? paginationMeta.page - 1 : 0,
-    pageSize: paginationMeta?.limit || 100,
+    pageSize: paginationMeta?.total || 100,
   });
   const [filters, setFilters] = useState<FilterParams[]>(initialFilters);
 
@@ -121,8 +121,8 @@ export function DataTable<TData, TValue>({
   useEffect(() => {
     if (paginationMeta) {
       setPagination({
-        pageIndex: paginationMeta.page - 1,
-        pageSize: paginationMeta.limit,
+        pageIndex: paginationMeta.page ? paginationMeta.page - 1 : 0,
+        pageSize: paginationMeta.total || 100,
       });
     }
   }, [paginationMeta]);
@@ -246,7 +246,7 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns: tableColumns,
-    pageCount: paginationMeta?.totalPages,
+    pageCount: paginationMeta?.totalPages || 1,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,

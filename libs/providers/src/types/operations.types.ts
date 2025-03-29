@@ -1,18 +1,47 @@
 import { Readable } from 'stream';
 
-export interface FileMetadata {
+import { Field, ObjectType } from '@nestjs/graphql';
+
+import { IPaginatedResult, createPaginatedResult } from '@drivebase/common';
+
+@ObjectType()
+export class FileMetadata {
+  @Field(() => String)
   id: string;
+
+  @Field(() => String)
   name: string;
+
+  @Field(() => String)
   path: string;
+
+  @Field(() => Number, { nullable: true })
   size?: number;
+
+  @Field(() => String, { nullable: true })
   mimeType?: string;
+
+  @Field(() => Boolean)
   isFolder: boolean;
+
+  @Field(() => Date, { nullable: true })
   createdAt?: Date;
+
+  @Field(() => Date, { nullable: true })
   modifiedAt?: Date;
+
+  @Field(() => String, { nullable: true })
   parentId?: string;
+
+  @Field(() => String, { nullable: true })
   parentPath?: string;
+
+  @Field(() => String, { nullable: true })
   thumbnail?: string;
 }
+
+export const PaginatedFileMetadata = createPaginatedResult(FileMetadata);
+export type PaginatedFileMetadataType = InstanceType<typeof PaginatedFileMetadata>;
 
 export interface UploadOptions {
   overwrite?: boolean;
@@ -48,45 +77,7 @@ export interface ListOptions {
   };
 }
 
-/**
- * Pagination metadata
- */
-export interface PaginationMeta {
-  /**
-   * Total number of items (if available)
-   */
-  total?: number;
-
-  /**
-   * Next page cursor (if available)
-   */
-  nextCursor?: string;
-
-  /**
-   * Previous page cursor (if available)
-   */
-  prevCursor?: string;
-
-  /**
-   * Whether there are more items
-   */
-  hasMore: boolean;
-}
-
-/**
- * Paginated result interface
- */
-export interface PaginatedResult<T> {
-  /**
-   * Array of items
-   */
-  data: T[];
-
-  /**
-   * Pagination metadata
-   */
-  pagination: PaginationMeta;
-}
+export type PaginatedResult<T> = IPaginatedResult<T>;
 
 export interface SearchOptions {
   query: string;

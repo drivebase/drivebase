@@ -113,6 +113,29 @@ type WorkspaceStat {
   size: Float!
 }
 
+type PaginationMeta {
+  total: Float
+  totalPages: Float
+  page: Float
+  nextCursor: String
+  prevCursor: String
+  hasMore: Boolean!
+}
+
+type FileMetadata {
+  id: String!
+  name: String!
+  path: String!
+  size: Float
+  mimeType: String
+  isFolder: Boolean!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  parentId: String
+  parentPath: String
+  thumbnail: String
+}
+
 type ConfigurationSchema {
   fields: [ConfigField!]!
   required: [String!]!
@@ -148,13 +171,6 @@ type ConfigField {
 
 type AuthUrlResponse {
   url: String!
-}
-
-type PaginationMeta {
-  total: Float!
-  page: Float!
-  limit: Float!
-  totalPages: Float!
 }
 
 type PaginatedFilesResponse {
@@ -208,6 +224,7 @@ type Mutation {
   handleOAuthCallback(input: HandleOAuthCallbackInput!): Provider!
   authorizeApiKey(input: AuthorizeApiKeyInput!): Provider!
   connectLocalProvider(input: ConnectLocalProviderInput!): Provider!
+  listProviderFiles(input: ListProviderFilesInput!): PaginatedType!
   updateProvider(input: UpdateProviderInput!): Provider!
   updateProviderMetadata(input: UpdateProviderMetadataInput!): Provider!
   createFolder(input: CreateFolderInput!): File!
@@ -274,6 +291,16 @@ input AuthorizeApiKeyInput {
 input ConnectLocalProviderInput {
   label: String!
   basePath: String
+}
+
+type PaginatedType {
+  meta: PaginationMeta!
+  data: [FileMetadata!]!
+}
+
+input ListProviderFilesInput {
+  id: String!
+  path: String
 }
 
 input UpdateProviderInput {

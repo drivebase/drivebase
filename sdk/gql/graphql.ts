@@ -90,6 +90,21 @@ export type File = {
   workspaceId?: Maybe<Scalars['String']['output']>;
 };
 
+export type FileMetadata = {
+  __typename?: 'FileMetadata';
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['String']['output'];
+  isFolder: Scalars['Boolean']['output'];
+  mimeType?: Maybe<Scalars['String']['output']>;
+  modifiedAt?: Maybe<Scalars['DateTime']['output']>;
+  name: Scalars['String']['output'];
+  parentId?: Maybe<Scalars['String']['output']>;
+  parentPath?: Maybe<Scalars['String']['output']>;
+  path: Scalars['String']['output'];
+  size?: Maybe<Scalars['Float']['output']>;
+  thumbnail?: Maybe<Scalars['String']['output']>;
+};
+
 export type ForgotPasswordResetInput = {
   code: Scalars['Float']['input'];
   email: Scalars['String']['input'];
@@ -129,6 +144,11 @@ export type ListFilesInput = {
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type ListProviderFilesInput = {
+  id: Scalars['String']['input'];
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type LoginInput = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
@@ -154,6 +174,7 @@ export type Mutation = {
   generateUploadKey: Scalars['String']['output'];
   getAuthUrl: AuthUrlResponse;
   handleOAuthCallback: Provider;
+  listProviderFiles: PaginatedType;
   login: LoginResponse;
   register: RegisterResponse;
   renameFile: OkResponse;
@@ -221,6 +242,11 @@ export type MutationHandleOAuthCallbackArgs = {
 };
 
 
+export type MutationListProviderFilesArgs = {
+  input: ListProviderFilesInput;
+};
+
+
 export type MutationLoginArgs = {
   input: LoginInput;
 };
@@ -277,12 +303,20 @@ export type PaginatedFilesResponse = {
   meta: PaginationMeta;
 };
 
+export type PaginatedType = {
+  __typename?: 'PaginatedType';
+  data: Array<FileMetadata>;
+  meta: PaginationMeta;
+};
+
 export type PaginationMeta = {
   __typename?: 'PaginationMeta';
-  limit: Scalars['Float']['output'];
-  page: Scalars['Float']['output'];
-  total: Scalars['Float']['output'];
-  totalPages: Scalars['Float']['output'];
+  hasMore: Scalars['Boolean']['output'];
+  nextCursor?: Maybe<Scalars['String']['output']>;
+  page?: Maybe<Scalars['Float']['output']>;
+  prevCursor?: Maybe<Scalars['String']['output']>;
+  total?: Maybe<Scalars['Float']['output']>;
+  totalPages?: Maybe<Scalars['Float']['output']>;
 };
 
 export type PingResponse = {
@@ -556,6 +590,20 @@ export type ConnectLocalProviderMutationVariables = Exact<{
 
 export type ConnectLocalProviderMutation = { __typename?: 'Mutation', connectLocalProvider: { __typename?: 'Provider', id: string } };
 
+export type UpdateProviderMutationVariables = Exact<{
+  input: UpdateProviderInput;
+}>;
+
+
+export type UpdateProviderMutation = { __typename?: 'Mutation', updateProvider: { __typename?: 'Provider', id: string } };
+
+export type UpdateProviderMetadataMutationVariables = Exact<{
+  input: UpdateProviderMetadataInput;
+}>;
+
+
+export type UpdateProviderMetadataMutation = { __typename?: 'Mutation', updateProviderMetadata: { __typename?: 'Provider', id: string } };
+
 export type CreateWorkspaceMutationVariables = Exact<{
   input: CreateWorkspaceInput;
 }>;
@@ -573,7 +621,7 @@ export type GetFilesQueryVariables = Exact<{
 }>;
 
 
-export type GetFilesQuery = { __typename?: 'Query', listFiles: { __typename?: 'PaginatedFilesResponse', data: Array<{ __typename?: 'File', id: string, name: string, path: string, isFolder: boolean, isStarred: boolean, size?: number | null, mimeType?: string | null, createdAt: any, updatedAt: any }>, meta: { __typename?: 'PaginationMeta', total: number, page: number, limit: number, totalPages: number } } };
+export type GetFilesQuery = { __typename?: 'Query', listFiles: { __typename?: 'PaginatedFilesResponse', data: Array<{ __typename?: 'File', id: string, name: string, path: string, isFolder: boolean, isStarred: boolean, size?: number | null, mimeType?: string | null, createdAt: any, updatedAt: any }>, meta: { __typename?: 'PaginationMeta', hasMore: boolean, nextCursor?: string | null, prevCursor?: string | null, total?: number | null } } };
 
 export type GetAvailableProvidersQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -626,9 +674,11 @@ export const GetAuthUrlDocument = {"kind":"Document","definitions":[{"kind":"Ope
 export const AuthorizeApiKeyDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AuthorizeApiKey"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AuthorizeApiKeyInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authorizeApiKey"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<AuthorizeApiKeyMutation, AuthorizeApiKeyMutationVariables>;
 export const HandleOAuthCallbackDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"HandleOAuthCallback"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"HandleOAuthCallbackInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"handleOAuthCallback"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<HandleOAuthCallbackMutation, HandleOAuthCallbackMutationVariables>;
 export const ConnectLocalProviderDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ConnectLocalProvider"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ConnectLocalProviderInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"connectLocalProvider"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<ConnectLocalProviderMutation, ConnectLocalProviderMutationVariables>;
+export const UpdateProviderDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateProvider"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateProviderInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateProvider"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<UpdateProviderMutation, UpdateProviderMutationVariables>;
+export const UpdateProviderMetadataDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateProviderMetadata"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateProviderMetadataInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateProviderMetadata"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<UpdateProviderMetadataMutation, UpdateProviderMetadataMutationVariables>;
 export const CreateWorkspaceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateWorkspace"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateWorkspaceInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createWorkspace"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateWorkspaceMutation, CreateWorkspaceMutationVariables>;
 export const GetMeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMe"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"email"}}]}}]}}]} as unknown as DocumentNode<GetMeQuery, GetMeQueryVariables>;
-export const GetFilesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetFiles"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ListFilesInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listFiles"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"data"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"isFolder"}},{"kind":"Field","name":{"kind":"Name","value":"isStarred"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"mimeType"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"meta"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"page"}},{"kind":"Field","name":{"kind":"Name","value":"limit"}},{"kind":"Field","name":{"kind":"Name","value":"totalPages"}}]}}]}}]}}]} as unknown as DocumentNode<GetFilesQuery, GetFilesQueryVariables>;
+export const GetFilesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetFiles"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ListFilesInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listFiles"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"data"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"isFolder"}},{"kind":"Field","name":{"kind":"Name","value":"isStarred"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"mimeType"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"meta"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasMore"}},{"kind":"Field","name":{"kind":"Name","value":"nextCursor"}},{"kind":"Field","name":{"kind":"Name","value":"prevCursor"}},{"kind":"Field","name":{"kind":"Name","value":"total"}}]}}]}}]}}]} as unknown as DocumentNode<GetFilesQuery, GetFilesQueryVariables>;
 export const GetAvailableProvidersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAvailableProviders"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"availableProviders"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"authType"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"configSchema"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"fields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"default"}}]}},{"kind":"Field","name":{"kind":"Name","value":"required"}}]}}]}}]}}]} as unknown as DocumentNode<GetAvailableProvidersQuery, GetAvailableProvidersQueryVariables>;
 export const GetConnectedProvidersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetConnectedProviders"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"connectedProviders"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"authType"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<GetConnectedProvidersQuery, GetConnectedProvidersQueryVariables>;
 export const GetVersionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetVersion"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}}]}}]} as unknown as DocumentNode<GetVersionQuery, GetVersionQueryVariables>;

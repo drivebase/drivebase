@@ -3,13 +3,14 @@ import { OAuth2Client } from 'google-auth-library';
 import { drive_v3, google } from 'googleapis';
 import { Readable } from 'stream';
 
+import { PaginationMeta } from '@drivebase/common';
+
 import { SdkOperationsAdapter } from '../../operations';
 import {
   FileMetadata,
   FileUpload,
   ListOptions,
   PaginatedResult,
-  PaginationMeta,
   SearchOptions,
   UploadOptions,
 } from '../../types';
@@ -118,7 +119,7 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
         .map((file) => this.transformFileResponse(file, path));
 
       // Build pagination metadata
-      const pagination: PaginationMeta = {
+      const meta: PaginationMeta = {
         nextCursor,
         // Google Drive API doesn't provide total count or previous cursor
         hasMore: !!nextCursor,
@@ -126,7 +127,7 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
 
       return {
         data: result,
-        pagination,
+        meta,
       };
     } catch (error) {
       throw new Error(`Failed to list files: ${error.message}`);
@@ -270,7 +271,7 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
 
       return {
         data: this.mapDriveFilesToFileMetadata(response.data.files || []),
-        pagination: {
+        meta: {
           hasMore: false,
           nextCursor: undefined,
           prevCursor: undefined,

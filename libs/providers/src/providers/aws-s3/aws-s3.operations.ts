@@ -8,16 +8,17 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { getMimeType } from '@drivebase/providers/utils';
 import { Readable } from 'stream';
+
+import { PaginatedResult, PaginationMeta } from '@drivebase/common';
+import { getMimeType } from '@drivebase/providers/utils';
 
 import { SdkOperationsAdapter } from '../../operations';
 import {
   FileMetadata,
   FileUpload,
   ListOptions,
-  PaginatedResult,
-  PaginationMeta,
+  PaginatedFileMetadataType,
   SearchOptions,
   UploadOptions,
 } from '../../types';
@@ -46,9 +47,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
   /**
    * List files in a directory with pagination
    */
-  async listFiles(
-    options?: ListOptions,
-  ): Promise<PaginatedResult<FileMetadata>> {
+  async listFiles(options?: ListOptions): Promise<PaginatedFileMetadataType> {
     try {
       // Handle path formatting
       const path = options?.path || '/';
@@ -114,10 +113,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
 
           // Apply MIME type filtering if specified
           const mimeType = this.getMimeTypeFromKey(item.Key || '');
-          if (
-            options?.filter?.mimeType &&
-            mimeType !== options.filter.mimeType
-          ) {
+          if (options?.filter?.mimeType && mimeType !== options.filter.mimeType) {
             continue;
           }
 
@@ -135,7 +131,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
       }
 
       // Build pagination metadata
-      const pagination: PaginationMeta = {
+      const meta: PaginationMeta = {
         hasMore: !!response.NextContinuationToken,
         nextCursor: response.NextContinuationToken,
         total: response.KeyCount,
@@ -143,7 +139,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
 
       return {
         data: files,
-        pagination,
+        meta,
       };
     } catch (error) {
       throw new Error(`Failed to list files: ${error.message}`);
@@ -153,11 +149,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
   /**
    * Upload a file
    */
-  async uploadFile(
-    path: string,
-    file: FileUpload,
-    options?: UploadOptions,
-  ): Promise<FileMetadata> {
+  async uploadFile(path: string, file: FileUpload, options?: UploadOptions): Promise<FileMetadata> {
     try {
       // Determine the S3 key for the file
       const s3Path = this.getS3Prefix(path);
@@ -177,10 +169,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
       return {
         id: key,
         name: file.originalname,
-        path:
-          path === '/'
-            ? `/${file.originalname}`
-            : `${path}/${file.originalname}`,
+        path: path === '/' ? `/${file.originalname}` : `${path}/${file.originalname}`,
         size: file.buffer.length,
         isFolder: false,
         mimeType: file.mimetype,
@@ -292,9 +281,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
   /**
    * Search for files
    */
-  async searchFiles(
-    options: SearchOptions,
-  ): Promise<PaginatedResult<FileMetadata>> {
+  async searchFiles(options: SearchOptions): Promise<PaginatedResult<FileMetadata>> {
     try {
       const path = options.path || '/';
       const prefix = this.getS3Prefix(path);
@@ -333,7 +320,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
 
       return {
         data: files,
-        pagination: {
+        meta: {
           hasMore: false,
           nextCursor: undefined,
           prevCursor: undefined,
@@ -385,9 +372,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
       path: path || this.getPathFromKey(response.Key || ''),
       size: response.Size || 0,
       isFolder,
-      mimeType: isFolder
-        ? 'application/x-directory'
-        : getMimeType(response.Key || ''),
+      mimeType: isFolder ? 'application/x-directory' : getMimeType(response.Key || ''),
       modifiedAt: response.LastModified,
     };
   }
@@ -411,9 +396,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
    */
   private getNameFromKey(key: string): string {
     // Remove the base path if it exists
-    const keyWithoutBasePath = this.basePath
-      ? key.replace(this.basePath, '')
-      : key;
+    const keyWithoutBasePath = this.basePath ? key.replace(this.basePath, '') : key;
 
     // Get the filename by taking the last part after the last slash
     const parts = keyWithoutBasePath.split('/');
@@ -425,9 +408,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
    */
   private getNameFromPrefix(prefix: string): string {
     // Remove the base path if it exists
-    const prefixWithoutBasePath = this.basePath
-      ? prefix.replace(this.basePath, '')
-      : prefix;
+    const prefixWithoutBasePath = this.basePath ? prefix.replace(this.basePath, '') : prefix;
 
     // Remove trailing slash
     const withoutTrailingSlash = prefixWithoutBasePath.replace(/\/$/, '');
@@ -442,9 +423,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
    */
   private getPathFromKey(key: string): string {
     // Remove the base path if it exists
-    const keyWithoutBasePath = this.basePath
-      ? key.replace(this.basePath, '')
-      : key;
+    const keyWithoutBasePath = this.basePath ? key.replace(this.basePath, '') : key;
 
     // Get the path by removing the filename
     const lastSlashIndex = keyWithoutBasePath.lastIndexOf('/');
@@ -461,9 +440,7 @@ export class AwsS3Operations extends SdkOperationsAdapter<S3Client> {
    */
   private getPathFromPrefix(prefix: string): string {
     // Remove the base path if it exists
-    const prefixWithoutBasePath = this.basePath
-      ? prefix.replace(this.basePath, '')
-      : prefix;
+    const prefixWithoutBasePath = this.basePath ? prefix.replace(this.basePath, '') : prefix;
 
     // Remove trailing slash
     const withoutTrailingSlash = prefixWithoutBasePath.replace(/\/$/, '');

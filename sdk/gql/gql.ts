@@ -29,9 +29,11 @@ type Documents = {
     "\n  mutation AuthorizeApiKey($input: AuthorizeApiKeyInput!) {\n    authorizeApiKey(input: $input) {\n      id\n    }\n  }\n": typeof types.AuthorizeApiKeyDocument,
     "\n  mutation HandleOAuthCallback($input: HandleOAuthCallbackInput!) {\n    handleOAuthCallback(input: $input) {\n      id\n    }\n  }\n": typeof types.HandleOAuthCallbackDocument,
     "\n  mutation ConnectLocalProvider($input: ConnectLocalProviderInput!) {\n    connectLocalProvider(input: $input) {\n      id\n    }\n  }\n": typeof types.ConnectLocalProviderDocument,
+    "\n  mutation UpdateProvider($input: UpdateProviderInput!) {\n    updateProvider(input: $input) {\n      id\n    }\n  }\n": typeof types.UpdateProviderDocument,
+    "\n  mutation UpdateProviderMetadata($input: UpdateProviderMetadataInput!) {\n    updateProviderMetadata(input: $input) {\n      id\n    }\n  }\n": typeof types.UpdateProviderMetadataDocument,
     "\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n    }\n  }  \n": typeof types.CreateWorkspaceDocument,
     "\n  query GetMe {\n    me {\n      name\n      email\n    }\n  }\n": typeof types.GetMeDocument,
-    "\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        total\n        page\n        limit\n        totalPages\n      }\n    }\n  }\n": typeof types.GetFilesDocument,
+    "\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        hasMore\n        nextCursor\n        prevCursor\n        total\n      }\n    }\n  }\n": typeof types.GetFilesDocument,
     "\n  query GetAvailableProviders {\n    availableProviders {\n      displayName\n      authType\n      type\n      configSchema {\n        fields {\n          id\n          type\n          label\n          description\n          default\n        }\n        required\n      }\n    }\n  }\n": typeof types.GetAvailableProvidersDocument,
     "\n  query GetConnectedProviders {\n    connectedProviders {\n      id\n      name\n      type\n      authType\n      metadata\n      createdAt\n    }\n  }\n": typeof types.GetConnectedProvidersDocument,
     "\n  query GetVersion {\n    version\n  }\n": typeof types.GetVersionDocument,
@@ -56,9 +58,11 @@ const documents: Documents = {
     "\n  mutation AuthorizeApiKey($input: AuthorizeApiKeyInput!) {\n    authorizeApiKey(input: $input) {\n      id\n    }\n  }\n": types.AuthorizeApiKeyDocument,
     "\n  mutation HandleOAuthCallback($input: HandleOAuthCallbackInput!) {\n    handleOAuthCallback(input: $input) {\n      id\n    }\n  }\n": types.HandleOAuthCallbackDocument,
     "\n  mutation ConnectLocalProvider($input: ConnectLocalProviderInput!) {\n    connectLocalProvider(input: $input) {\n      id\n    }\n  }\n": types.ConnectLocalProviderDocument,
+    "\n  mutation UpdateProvider($input: UpdateProviderInput!) {\n    updateProvider(input: $input) {\n      id\n    }\n  }\n": types.UpdateProviderDocument,
+    "\n  mutation UpdateProviderMetadata($input: UpdateProviderMetadataInput!) {\n    updateProviderMetadata(input: $input) {\n      id\n    }\n  }\n": types.UpdateProviderMetadataDocument,
     "\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n    }\n  }  \n": types.CreateWorkspaceDocument,
     "\n  query GetMe {\n    me {\n      name\n      email\n    }\n  }\n": types.GetMeDocument,
-    "\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        total\n        page\n        limit\n        totalPages\n      }\n    }\n  }\n": types.GetFilesDocument,
+    "\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        hasMore\n        nextCursor\n        prevCursor\n        total\n      }\n    }\n  }\n": types.GetFilesDocument,
     "\n  query GetAvailableProviders {\n    availableProviders {\n      displayName\n      authType\n      type\n      configSchema {\n        fields {\n          id\n          type\n          label\n          description\n          default\n        }\n        required\n      }\n    }\n  }\n": types.GetAvailableProvidersDocument,
     "\n  query GetConnectedProviders {\n    connectedProviders {\n      id\n      name\n      type\n      authType\n      metadata\n      createdAt\n    }\n  }\n": types.GetConnectedProvidersDocument,
     "\n  query GetVersion {\n    version\n  }\n": types.GetVersionDocument,
@@ -145,6 +149,14 @@ export function gql(source: "\n  mutation ConnectLocalProvider($input: ConnectLo
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function gql(source: "\n  mutation UpdateProvider($input: UpdateProviderInput!) {\n    updateProvider(input: $input) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateProvider($input: UpdateProviderInput!) {\n    updateProvider(input: $input) {\n      id\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation UpdateProviderMetadata($input: UpdateProviderMetadataInput!) {\n    updateProviderMetadata(input: $input) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateProviderMetadata($input: UpdateProviderMetadataInput!) {\n    updateProviderMetadata(input: $input) {\n      id\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function gql(source: "\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n    }\n  }  \n"): (typeof documents)["\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n    }\n  }  \n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -153,7 +165,7 @@ export function gql(source: "\n  query GetMe {\n    me {\n      name\n      emai
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        total\n        page\n        limit\n        totalPages\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        total\n        page\n        limit\n        totalPages\n      }\n    }\n  }\n"];
+export function gql(source: "\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        hasMore\n        nextCursor\n        prevCursor\n        total\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetFiles($input: ListFilesInput!) {\n    listFiles(input: $input) {\n      data {\n        id\n        name\n        path\n        isFolder\n        isStarred\n        size\n        mimeType\n        createdAt\n        updatedAt\n      }\n      meta {\n        hasMore\n        nextCursor\n        prevCursor\n        total\n      }\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

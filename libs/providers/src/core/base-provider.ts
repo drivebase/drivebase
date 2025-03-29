@@ -7,6 +7,7 @@ import {
   FileMetadata,
   FileUpload,
   ListOptions,
+  PaginatedFileMetadataType,
   PaginatedResult,
   ProviderCapability,
   ProviderType,
@@ -52,7 +53,7 @@ export abstract class BaseProvider {
   /**
    * List files in a directory with pagination support
    */
-  abstract listFiles(options?: ListOptions): Promise<PaginatedResult<FileMetadata>>;
+  abstract listFiles(options?: ListOptions): Promise<PaginatedFileMetadataType>;
 
   /**
    * Upload a file to the provider

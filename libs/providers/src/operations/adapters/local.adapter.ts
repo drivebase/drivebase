@@ -69,7 +69,7 @@ export class LocalOperationsAdapter extends BaseOperations {
 
       return {
         data: fileStats,
-        pagination: {
+        meta: {
           hasMore: false,
           nextCursor: undefined,
           prevCursor: undefined,
