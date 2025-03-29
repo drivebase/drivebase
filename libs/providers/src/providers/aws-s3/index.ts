@@ -51,12 +51,6 @@ ProviderRegistry.register(ProviderType.AMAZON_S3, AwsS3Provider, {
         description: 'S3 bucket to use for storage',
       },
       {
-        id: 'basePath',
-        type: 'string',
-        label: 'Base Path',
-        description: 'Optional folder prefix within the bucket (e.g., drivebase/)',
-      },
-      {
         id: 'endpoint',
         type: 'string',
         label: 'Custom Endpoint',
