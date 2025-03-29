@@ -1,9 +1,9 @@
+import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import 'reflect-metadata';
 
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 
