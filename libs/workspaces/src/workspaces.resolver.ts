@@ -54,9 +54,7 @@ export class WorkspacesResolver {
 
   @UseGuards(WorkspaceGuard)
   @Query(() => Workspace, { nullable: true })
-  async currentWorkspace(
-    @GetWorkspaceFromRequest() workspace: Workspace,
-  ): Promise<Workspace | null> {
+  currentWorkspace(@GetWorkspaceFromRequest() workspace: Workspace): Workspace {
     return workspace;
   }
 

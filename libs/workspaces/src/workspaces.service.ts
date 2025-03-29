@@ -1,7 +1,9 @@
-import { File } from '@drivebase/files/file.entity';
+import { Repository } from 'typeorm';
+
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+
+import { File } from '@drivebase/files/file.entity';
 
 import { CreateWorkspaceDto } from './dtos/create.workspace.dto';
 import { UpdateWorkspaceDto } from './dtos/update.workspace.dto';
@@ -17,10 +19,7 @@ export class WorkspacesService {
     private readonly fileRepository: Repository<File>,
   ) {}
 
-  async create(
-    ownerId: string,
-    createWorkspaceDto: CreateWorkspaceDto,
-  ): Promise<Workspace> {
+  async create(ownerId: string, createWorkspaceDto: CreateWorkspaceDto): Promise<Workspace> {
     const workspace = this.workspaceRepository.create({
       name: createWorkspaceDto.name,
       ownerId,
@@ -44,10 +43,7 @@ export class WorkspacesService {
     });
   }
 
-  async update(
-    id: string,
-    updateWorkspaceDto: UpdateWorkspaceDto,
-  ): Promise<void> {
+  async update(id: string, updateWorkspaceDto: UpdateWorkspaceDto): Promise<void> {
     await this.workspaceRepository.update(id, updateWorkspaceDto);
   }
 
