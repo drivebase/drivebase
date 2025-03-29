@@ -5,6 +5,7 @@ import { GetWorkspaceFromRequest, Workspace, WorkspaceGuard } from '@drivebase/w
 
 import {
   AuthorizeApiKeyInput,
+  ConnectLocalProviderInput,
   GetAuthUrlInput,
   HandleOAuthCallbackInput,
   UpdateProviderInput,
@@ -26,12 +27,12 @@ export class ProvidersResolver {
   }
 
   @Query(() => [ProviderMetadata])
-  async availableProviders(): Promise<ProviderMetadata[]> {
+  availableProviders(): ProviderMetadata[] {
     return this.providersService.findAvailableProviders();
   }
 
   @Mutation(() => AuthUrlResponse)
-  async getAuthUrl(
+  getAuthUrl(
     @GetWorkspaceFromRequest() workspace: Workspace,
     @Args('input') input: GetAuthUrlInput,
   ): Promise<AuthUrlResponse> {
@@ -41,7 +42,7 @@ export class ProvidersResolver {
       input.clientSecret,
       workspace.id,
     );
-    return { url };
+    return Promise.resolve({ url });
   }
 
   @Mutation(() => Provider)
@@ -55,6 +56,14 @@ export class ProvidersResolver {
     @Args('input') input: AuthorizeApiKeyInput,
   ): Promise<Provider> {
     return this.providersService.authorizeApiKey(workspace.id, input.type, input.credentials);
+  }
+
+  @Mutation(() => Provider)
+  async connectLocalProvider(
+    @GetWorkspaceFromRequest() workspace: Workspace,
+    @Args('input') input: ConnectLocalProviderInput,
+  ): Promise<Provider> {
+    return this.providersService.connectLocalProvider(workspace.id, input.basePath);
   }
 
   @Mutation(() => Provider)

@@ -76,9 +76,7 @@ export class LocalProvider extends BaseProvider {
    * List files in a directory
    */
   @ensureInitialized
-  async listFiles(
-    options?: ListOptions,
-  ): Promise<PaginatedResult<FileMetadata>> {
+  async listFiles(options?: ListOptions): Promise<PaginatedResult<FileMetadata>> {
     const result = await this.operations.listFiles(options);
     return result;
   }
@@ -87,11 +85,7 @@ export class LocalProvider extends BaseProvider {
    * Upload a file
    */
   @ensureInitialized
-  async uploadFile(
-    path: string,
-    file: FileUpload,
-    options?: UploadOptions,
-  ): Promise<FileMetadata> {
+  async uploadFile(path: string, file: FileUpload, options?: UploadOptions): Promise<FileMetadata> {
     return this.operations.uploadFile(path, file, options);
   }
 

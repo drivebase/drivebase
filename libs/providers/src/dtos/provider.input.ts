@@ -113,3 +113,16 @@ export class AuthorizeApiKeyInput {
   @IsNotEmpty()
   credentials: Record<string, any>;
 }
+
+@InputType()
+export class ConnectLocalProviderInput {
+  @Field(() => String)
+  @IsString()
+  @IsNotEmpty()
+  label: string;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  basePath: string;
+}

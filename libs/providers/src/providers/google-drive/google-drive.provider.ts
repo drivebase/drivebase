@@ -56,10 +56,7 @@ export class GoogleDriveProvider extends BaseProvider {
   /**
    * Initialize and authenticate the provider
    */
-  async authenticate(
-    credentials: AuthCredentials,
-    context?: AuthContext,
-  ): Promise<void> {
+  async authenticate(credentials: AuthCredentials, context?: AuthContext): Promise<void> {
     const googleCreds = credentials as GoogleDriveCredentials;
 
     // Set up client ID and secret if provided
@@ -122,9 +119,7 @@ export class GoogleDriveProvider extends BaseProvider {
    * List files in a directory
    */
   @ensureInitialized
-  async listFiles(
-    options?: ListOptions,
-  ): Promise<PaginatedResult<FileMetadata>> {
+  async listFiles(options?: ListOptions): Promise<PaginatedResult<FileMetadata>> {
     const result = await this.operations.listFiles(options);
     return result;
   }
@@ -133,11 +128,7 @@ export class GoogleDriveProvider extends BaseProvider {
    * Upload a file
    */
   @ensureInitialized
-  async uploadFile(
-    path: string,
-    file: FileUpload,
-    options?: UploadOptions,
-  ): Promise<FileMetadata> {
+  async uploadFile(path: string, file: FileUpload, options?: UploadOptions): Promise<FileMetadata> {
     return this.operations.uploadFile(path, file, options);
   }
 
@@ -177,9 +168,7 @@ export class GoogleDriveProvider extends BaseProvider {
    * Search for files
    */
   @ensureInitialized
-  async searchFiles(
-    options: SearchOptions,
-  ): Promise<PaginatedResult<FileMetadata>> {
+  async searchFiles(options: SearchOptions): Promise<PaginatedResult<FileMetadata>> {
     return this.operations.searchFiles(options);
   }
 

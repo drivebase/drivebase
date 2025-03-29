@@ -10,6 +10,7 @@ export interface FileMetadata {
   createdAt?: Date;
   modifiedAt?: Date;
   parentId?: string;
+  parentPath?: string;
   thumbnail?: string;
 }
 
