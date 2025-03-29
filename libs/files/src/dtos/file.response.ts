@@ -1,21 +1,8 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
+import { PaginationMeta } from '@drivebase/common';
+
 import { File } from '../file.entity';
-
-@ObjectType()
-export class PaginationMeta {
-  @Field(() => Number)
-  total: number;
-
-  @Field(() => Number)
-  page: number;
-
-  @Field(() => Number)
-  limit: number;
-
-  @Field(() => Number)
-  totalPages: number;
-}
 
 @ObjectType()
 export class PaginatedFilesResponse {

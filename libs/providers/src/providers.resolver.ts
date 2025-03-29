@@ -8,13 +8,14 @@ import {
   ConnectLocalProviderInput,
   GetAuthUrlInput,
   HandleOAuthCallbackInput,
+  ListProviderFilesInput,
   UpdateProviderInput,
   UpdateProviderMetadataInput,
 } from './dtos/provider.input';
 import { AuthUrlResponse } from './dtos/provider.response';
 import { Provider } from './provider.entity';
 import { ProvidersService } from './providers.service';
-import { ProviderMetadata } from './types';
+import { PaginatedFileMetadata, PaginatedFileMetadataType, ProviderMetadata } from './types';
 
 @Resolver(() => Provider)
 @UseGuards(WorkspaceGuard)
@@ -64,6 +65,13 @@ export class ProvidersResolver {
     @Args('input') input: ConnectLocalProviderInput,
   ): Promise<Provider> {
     return this.providersService.connectLocalProvider(workspace.id, input.basePath);
+  }
+
+  @Mutation(() => PaginatedFileMetadata)
+  async listProviderFiles(
+    @Args('input') input: ListProviderFilesInput,
+  ): Promise<PaginatedFileMetadataType> {
+    return this.providersService.listFiles(input.id, input.path);
   }
 
   @Mutation(() => Provider)

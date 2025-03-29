@@ -126,3 +126,16 @@ export class ConnectLocalProviderInput {
   @IsOptional()
   basePath: string;
 }
+
+@InputType()
+export class ListProviderFilesInput {
+  @Field(() => String)
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  path?: string;
+}

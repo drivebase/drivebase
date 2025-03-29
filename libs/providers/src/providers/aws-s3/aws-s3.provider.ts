@@ -11,6 +11,7 @@ import {
   FileMetadata,
   FileUpload,
   ListOptions,
+  PaginatedFileMetadataType,
   PaginatedResult,
   ProviderCapability,
   ProviderType,
@@ -51,10 +52,7 @@ export class AwsS3Provider extends BaseProvider {
   /**
    * Initialize and authenticate the provider
    */
-  async authenticate(
-    credentials: AuthCredentials,
-    context?: AuthContext,
-  ): Promise<void> {
+  async authenticate(credentials: AuthCredentials, context?: AuthContext): Promise<void> {
     const s3Creds = credentials as ApiKeyCredentials;
 
     // Validate credentials
@@ -71,11 +69,7 @@ export class AwsS3Provider extends BaseProvider {
     });
 
     // Initialize operations
-    this.operations = new AwsS3Operations(
-      s3Client,
-      s3Creds.bucket,
-      s3Creds.basePath,
-    );
+    this.operations = new AwsS3Operations(s3Client, s3Creds.bucket, s3Creds.basePath);
 
     this.credentials = s3Creds;
     this.isInitialized = true;
@@ -100,9 +94,7 @@ export class AwsS3Provider extends BaseProvider {
    * List files in a directory
    */
   @ensureInitialized
-  async listFiles(
-    options?: ListOptions,
-  ): Promise<PaginatedResult<FileMetadata>> {
+  async listFiles(options?: ListOptions): Promise<PaginatedFileMetadataType> {
     const result = await this.operations.listFiles(options);
     return result;
   }
@@ -111,11 +103,7 @@ export class AwsS3Provider extends BaseProvider {
    * Upload a file
    */
   @ensureInitialized
-  async uploadFile(
-    path: string,
-    file: FileUpload,
-    options?: UploadOptions,
-  ): Promise<FileMetadata> {
+  async uploadFile(path: string, file: FileUpload, options?: UploadOptions): Promise<FileMetadata> {
     return this.operations.uploadFile(path, file, options);
   }
 
@@ -155,9 +143,7 @@ export class AwsS3Provider extends BaseProvider {
    * Search for files
    */
   @ensureInitialized
-  async searchFiles(
-    options: SearchOptions,
-  ): Promise<PaginatedResult<FileMetadata>> {
+  async searchFiles(options: SearchOptions): Promise<PaginatedResult<FileMetadata>> {
     return this.operations.searchFiles(options);
   }
 
@@ -178,11 +164,6 @@ export class AwsS3Provider extends BaseProvider {
     contentType: string,
     expiresInSeconds = 3600,
   ): Promise<string> {
-    return this.operations.getPresignedUploadUrl(
-      path,
-      filename,
-      contentType,
-      expiresInSeconds,
-    );
+    return this.operations.getPresignedUploadUrl(path, filename, contentType, expiresInSeconds);
   }
 }

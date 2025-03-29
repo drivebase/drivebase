@@ -13,14 +13,6 @@ import { FilesService } from './files.service';
 export class FilesResolver {
   constructor(private readonly filesService: FilesService) {}
 
-  // @Query(() => PaginatedFilesResponse)
-  // async workspaceFiles(
-  //   @GetWorkspaceFromRequest() workspace: Workspace,
-  //   @Args('input', { nullable: true }) input?: WorkspaceFilesInput,
-  // ): Promise<PaginatedFilesResponse> {
-  //   return this.filesService.findWorkspaceFiles(workspace.id, input || {});
-  // }
-
   @Query(() => PaginatedFilesResponse)
   async listFiles(
     @GetWorkspaceFromRequest() workspace: Workspace,

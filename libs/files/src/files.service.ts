@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { IPaginatedResult } from '@drivebase/common';
 import { ProviderFactory } from '@drivebase/providers';
 import { Provider } from '@drivebase/providers/provider.entity';
 import { WorkspacesService } from '@drivebase/workspaces';
@@ -56,7 +57,7 @@ export class FilesService {
   async findAll(
     where: FindOptionsWhere<File>,
     options: { page?: number; limit?: number } = {},
-  ): Promise<PaginatedResult<File>> {
+  ): Promise<IPaginatedResult<File>> {
     const { page = 1, limit = 10 } = options;
     const skip = (page - 1) * limit;
 
@@ -85,7 +86,7 @@ export class FilesService {
       meta: {
         total,
         page,
-        limit,
+        hasMore: total > skip + limit,
         totalPages,
       },
     };
@@ -112,12 +113,10 @@ export class FilesService {
       }
     }
 
-    const files = await this.findAll(whereClause, {
-      page: query.page,
+    return this.findAll(whereClause, {
+      page: query.page || 1,
       limit: query.limit,
     });
-
-    return files;
   }
 
   async findWorkspaceFiles(

@@ -15,10 +15,10 @@ export const GET_FILES = gql(`
         updatedAt
       }
       meta {
+        hasMore
+        nextCursor
+        prevCursor
         total
-        page
-        limit
-        totalPages
       }
     }
   }
