@@ -1,18 +1,15 @@
-import { useFileStore } from '@drivebase/web/lib/contexts/file-store.context';
-import { useAppDispatch } from '@drivebase/web/lib/redux/hooks';
-import {
-  setFileIds,
-  setUploadModalOpen,
-} from '@drivebase/web/lib/redux/reducers/uploader.reducer';
-import { cn } from '@drivebase/web/lib/utils';
-import { motion, Transition } from 'framer-motion';
+import { Transition, motion } from 'framer-motion';
 import { FileIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useFileStore } from '@drivebase/web/lib/contexts/file-store.context';
+import { useUploadStore } from '@drivebase/web/lib/store/upload.store';
+import { cn } from '@drivebase/web/lib/utils';
+
 function SidebarUpload() {
   const ref = useRef<HTMLInputElement>(null);
-  const dispatch = useAppDispatch();
+  const { setFileIds, setUploadModalOpen } = useUploadStore();
   const { storeFiles } = useFileStore();
   const { t } = useTranslation(['common', 'dashboard']);
 
@@ -22,8 +19,8 @@ function SidebarUpload() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const fileIds = storeFiles(e.target.files);
-      dispatch(setFileIds(fileIds));
-      dispatch(setUploadModalOpen(true));
+      setFileIds(fileIds);
+      setUploadModalOpen(true);
     }
   };
 
@@ -51,8 +48,8 @@ function SidebarUpload() {
 
       if (e.dataTransfer?.files.length) {
         const fileIds = storeFiles(e.dataTransfer.files);
-        dispatch(setFileIds(fileIds));
-        dispatch(setUploadModalOpen(true));
+        setFileIds(fileIds);
+        setUploadModalOpen(true);
       }
     };
 
@@ -71,7 +68,7 @@ function SidebarUpload() {
       window.removeEventListener('drop', handleDrop);
       window.removeEventListener('dragover', handleDragOver);
     };
-  }, [dispatch, storeFiles]);
+  }, [setFileIds, setUploadModalOpen, storeFiles]);
 
   return (
     <div
@@ -87,18 +84,10 @@ function SidebarUpload() {
           size={120}
         />
       )}
-      <input
-        ref={ref}
-        type="file"
-        multiple
-        onChange={handleFileChange}
-        className="hidden"
-      />
+      <input ref={ref} type="file" multiple onChange={handleFileChange} className="hidden" />
       <FileIcon size={32} />
       <div className="text-center">
-        <p className="text-sm font-medium">
-          {t('dashboard:drop_files_here_title')}
-        </p>
+        <p className="text-sm font-medium">{t('dashboard:drop_files_here_title')}</p>
         <p className="text-xs">{t('dashboard:drop_files_here_description')}</p>
       </div>
     </div>
