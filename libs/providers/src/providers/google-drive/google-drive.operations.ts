@@ -66,9 +66,7 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
   /**
    * List files in a directory with pagination
    */
-  async listFiles(
-    options?: ListOptions,
-  ): Promise<PaginatedResult<FileMetadata>> {
+  async listFiles(options?: ListOptions): Promise<PaginatedResult<FileMetadata>> {
     try {
       const path = options?.path || '/';
       const query = this.buildFileQuery(path);
@@ -138,11 +136,7 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
   /**
    * Upload a file
    */
-  async uploadFile(
-    path: string,
-    file: FileUpload,
-    options?: UploadOptions,
-  ): Promise<FileMetadata> {
+  async uploadFile(path: string, file: FileUpload, options?: UploadOptions): Promise<FileMetadata> {
     try {
       const parentId = await this.getOrCreateFolder(path);
       const fileStream = this.createReadableStream(file.buffer);
@@ -254,9 +248,7 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
   /**
    * Search for files
    */
-  async searchFiles(
-    options: SearchOptions,
-  ): Promise<PaginatedResult<FileMetadata>> {
+  async searchFiles(options: SearchOptions): Promise<PaginatedResult<FileMetadata>> {
     try {
       let query = `name contains '${options.query.replace(/'/g, "\\'")}'`;
 
@@ -266,16 +258,13 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
       }
 
       if (options.fileTypes && options.fileTypes.length > 0) {
-        const mimeTypes = options.fileTypes
-          .map((type) => `mimeType = '${type}'`)
-          .join(' or ');
+        const mimeTypes = options.fileTypes.map((type) => `mimeType = '${type}'`).join(' or ');
         query += ` and (${mimeTypes})`;
       }
 
       const response = await this.driveClient.files.list({
         q: query,
-        fields:
-          'files(id, name, mimeType, size, parents, createdTime, modifiedTime)',
+        fields: 'files(id, name, mimeType, size, parents, createdTime, modifiedTime)',
         pageSize: options.limit || 100,
       });
 
@@ -339,19 +328,14 @@ export class GoogleDriveOperations extends SdkOperationsAdapter {
   /**
    * Map Google Drive files to FileMetadata objects
    */
-  private mapDriveFilesToFileMetadata(
-    files: drive_v3.Schema$File[],
-  ): FileMetadata[] {
+  private mapDriveFilesToFileMetadata(files: drive_v3.Schema$File[]): FileMetadata[] {
     return files.map((file) => this.transformFileResponse(file));
   }
 
   /**
    * Transform a Google Drive file response to FileMetadata
    */
-  protected transformFileResponse(
-    file: drive_v3.Schema$File,
-    path?: string,
-  ): FileMetadata {
+  protected transformFileResponse(file: drive_v3.Schema$File, path?: string): FileMetadata {
     const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
 
     if (!file.id || !file.name) {

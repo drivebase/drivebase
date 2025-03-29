@@ -72,7 +72,7 @@ export class Provider {
   @Column('json')
   credentials: Record<string, any>;
 
-  @Field(() => GraphQLJSON)
+  @Field(() => GraphQLJSON, { nullable: true })
   @Column('json', { nullable: true })
   metadata?: Record<string, any>;
 

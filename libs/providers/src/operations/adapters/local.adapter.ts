@@ -2,13 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Readable } from 'stream';
 
-import {
-  FileMetadata,
-  FileUpload,
-  ListOptions,
-  PaginatedResult,
-  UploadOptions,
-} from '../../types';
+import { FileMetadata, FileUpload, ListOptions, PaginatedResult, UploadOptions } from '../../types';
 import { getMimeType } from '../../utils/mime.util';
 import { BaseOperations } from '../base-operations';
 
@@ -18,6 +12,7 @@ import { BaseOperations } from '../base-operations';
  */
 export class LocalOperationsAdapter extends BaseOperations {
   private basePath: string;
+  private defaultUploadDir = path.join(process.cwd(), 'uploads');
 
   constructor(basePath: string) {
     super();
@@ -32,9 +27,7 @@ export class LocalOperationsAdapter extends BaseOperations {
   }
 
   private getFullPath(relativePath: string): string {
-    const normalizedPath = relativePath.startsWith('/')
-      ? relativePath.substring(1)
-      : relativePath;
+    const normalizedPath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath;
     return path.join(this.basePath, normalizedPath);
   }
 
@@ -52,6 +45,7 @@ export class LocalOperationsAdapter extends BaseOperations {
       id: relativePath,
       name: path.basename(filePath),
       path: relativePath,
+      parentPath,
       size: isFolder ? 0 : stats.size,
       mimeType: isFolder ? 'folder' : getMimeType(filePath),
       isFolder,
@@ -61,12 +55,8 @@ export class LocalOperationsAdapter extends BaseOperations {
     };
   }
 
-  async listFiles(
-    options?: ListOptions,
-  ): Promise<PaginatedResult<FileMetadata>> {
-    const directory = options?.path
-      ? this.getFullPath(options.path)
-      : this.basePath;
+  async listFiles(options?: ListOptions): Promise<PaginatedResult<FileMetadata>> {
+    const directory = options?.path ? this.getFullPath(options.path) : this.basePath;
 
     try {
       const files = await fs.promises.readdir(directory);
@@ -96,6 +86,10 @@ export class LocalOperationsAdapter extends BaseOperations {
     file: FileUpload,
     options?: UploadOptions,
   ): Promise<FileMetadata> {
+    if (targetPath === '') {
+      targetPath = this.defaultUploadDir;
+    }
+
     const fullPath = this.getFullPath(path.join(targetPath, file.originalname));
     const directory = path.dirname(fullPath);
 

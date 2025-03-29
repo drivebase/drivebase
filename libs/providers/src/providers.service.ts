@@ -237,6 +237,45 @@ export class ProvidersService {
   }
 
   /**
+   * Connect a local provider
+   */
+  async connectLocalProvider(workspaceId: string, basePath: string): Promise<DbProvider> {
+    const metadata = ProviderRegistry.getProviderMetadata(ProviderType.LOCAL);
+
+    const provider = ProviderFactory.createProvider(ProviderType.LOCAL, {
+      basePath,
+    });
+
+    try {
+      await provider.authenticate({
+        basePath,
+      });
+
+      const userInfo = await provider.getUserInfo();
+
+      const dbProvider = this.providerRepository.create({
+        type: ProviderType.LOCAL,
+        name: userInfo.email || userInfo.name || String(ProviderType.LOCAL),
+        authType: metadata?.authType,
+        workspaceId,
+        metadata: {
+          userInfo,
+        },
+        credentials: {
+          basePath,
+        },
+      });
+
+      await this.providerRepository.save(dbProvider);
+
+      return dbProvider;
+    } catch (error) {
+      console.error('Local provider connection error:', error);
+      throw new Error(`Failed to connect provider: ${error.message}`);
+    }
+  }
+
+  /**
    * List files from a provider
    */
   async listFiles(providerId: string, path?: string) {

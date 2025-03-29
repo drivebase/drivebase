@@ -14,9 +14,7 @@ export class LocalAuthStrategy extends ApiKeyStrategy {
   /**
    * Validate that the path exists and is accessible
    */
-  async validateCredentials(
-    credentials: FileSystemCredentials,
-  ): Promise<boolean> {
+  async validateCredentials(credentials: FileSystemCredentials): Promise<boolean> {
     try {
       // Get the storage path from credentials or use a default
       const basePath = this.getBasePath(credentials);
@@ -47,8 +45,7 @@ export class LocalAuthStrategy extends ApiKeyStrategy {
    */
   getBasePath(credentials: FileSystemCredentials): string {
     // Use provided path or create a default in the user's home directory
-    const storagePath =
-      credentials.basePath || path.join(os.homedir(), 'drivebase-storage');
+    const storagePath = path.join(process.cwd(), 'uploads');
 
     // Create the directory if it doesn't exist
     if (!fs.existsSync(storagePath)) {

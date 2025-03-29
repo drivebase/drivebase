@@ -37,10 +37,7 @@ export abstract class BaseProvider {
   /**
    * Initialize and authenticate the provider with credentials
    */
-  abstract authenticate(
-    credentials: AuthCredentials,
-    context?: AuthContext,
-  ): Promise<void>;
+  abstract authenticate(credentials: AuthCredentials, context?: AuthContext): Promise<void>;
 
   /**
    * Check if the provider is authenticated
@@ -55,9 +52,7 @@ export abstract class BaseProvider {
   /**
    * List files in a directory with pagination support
    */
-  abstract listFiles(
-    options?: ListOptions,
-  ): Promise<PaginatedResult<FileMetadata>>;
+  abstract listFiles(options?: ListOptions): Promise<PaginatedResult<FileMetadata>>;
 
   /**
    * Upload a file to the provider
