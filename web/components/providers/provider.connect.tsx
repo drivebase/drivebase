@@ -30,7 +30,10 @@ import {
   CONNECT_LOCAL_PROVIDER,
   GET_AUTH_URL,
 } from '@drivebase/web/gql/mutations/providers';
-import { GET_AVAILABLE_PROVIDERS } from '@drivebase/web/gql/queries/providers';
+import {
+  GET_AVAILABLE_PROVIDERS,
+  GET_CONNECTED_PROVIDERS,
+} from '@drivebase/web/gql/queries/providers';
 
 type ConnectProviderDialogProps = {
   children: React.ReactNode;
@@ -43,9 +46,15 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
 
   const [getAuthUrl, { loading: isGettingAuthUrl }] = useMutation(GET_AUTH_URL);
-  const [authorizeApiKey, { loading: isAuthorizingApiKey }] = useMutation(AUTHORIZE_API_KEY);
-  const [connectLocalProvider, { loading: isConnectingLocalProvider }] =
-    useMutation(CONNECT_LOCAL_PROVIDER);
+  const [authorizeApiKey, { loading: isAuthorizingApiKey }] = useMutation(AUTHORIZE_API_KEY, {
+    refetchQueries: [GET_CONNECTED_PROVIDERS],
+  });
+  const [connectLocalProvider, { loading: isConnectingLocalProvider }] = useMutation(
+    CONNECT_LOCAL_PROVIDER,
+    {
+      refetchQueries: [GET_CONNECTED_PROVIDERS],
+    },
+  );
 
   const { data } = useQuery(GET_AVAILABLE_PROVIDERS);
 
@@ -68,6 +77,7 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
       })
         .then(({ data }) => {
           window.location.href = data?.getAuthUrl.url ?? '';
+          setDialogOpen(false);
         })
         .catch((error) => {
           toast.error(error.data.message);
@@ -84,6 +94,7 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
       })
         .then(() => {
           toast.success('Provider connected successfully');
+          setDialogOpen(false);
         })
         .catch((error) => {
           toast.error(error.data.message);
@@ -99,6 +110,7 @@ function ConnectProviderDialog({ children }: ConnectProviderDialogProps) {
       })
         .then(() => {
           toast.success('Provider connected successfully');
+          setDialogOpen(false);
         })
         .catch((error) => {
           toast.error(error.data.message);
