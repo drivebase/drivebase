@@ -1,5 +1,6 @@
-import { cn } from '@drivebase/web/lib/utils';
 import { useId } from 'react';
+
+import { cn } from '@drivebase/web/lib/utils';
 
 interface DotPatternProps {
   width?: number;

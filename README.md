@@ -21,6 +21,7 @@ Open-source, self-hosted cloud file manager designed to unify file storage acros
 Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
 
 ## Features
+
 - 💪 Free and Open Source
 - 🔗 Multi-Cloud Integration (Google Drive, Dropbox, etc.)
 - 📂 Unified Folder Structure

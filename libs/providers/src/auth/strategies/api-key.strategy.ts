@@ -8,9 +8,7 @@ export abstract class ApiKeyStrategy {
   /**
    * Validate API key credentials
    */
-  abstract validateCredentials(
-    credentials: ApiKeyCredentials,
-  ): Promise<boolean>;
+  abstract validateCredentials(credentials: ApiKeyCredentials): Promise<boolean>;
 
   /**
    * Get information about the authenticated user

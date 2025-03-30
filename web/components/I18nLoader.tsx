@@ -1,6 +1,7 @@
-import { ReactNode, useEffect, useState } from 'react';
-import { i18nPromise } from '../i18n';
 import { Loader } from 'lucide-react';
+import { ReactNode, useEffect, useState } from 'react';
+
+import { i18nPromise } from '../i18n';
 
 interface I18nLoaderProps {
   children: ReactNode;

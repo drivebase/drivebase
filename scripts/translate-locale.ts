@@ -1,10 +1,10 @@
 import { generateText } from 'ai';
 import chalk from 'chalk';
 import { existsSync } from 'fs';
-import { mkdir, readdir, readFile, writeFile } from 'fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'fs/promises';
 import { createOllama } from 'ollama-ai-provider';
 import { dirname, join } from 'path';
-import { createInterface, Interface } from 'readline';
+import { Interface, createInterface } from 'readline';
 import { fileURLToPath } from 'url';
 
 const ollama = createOllama();
@@ -48,11 +48,7 @@ async function createNewLanguage(targetLang: string): Promise<void> {
     await mkdir(targetDir, { recursive: true });
   }
 
-  console.log(
-    chalk.blue(
-      `Creating translations for '${targetLang}' from '${SOURCE_LANG}'...`,
-    ),
-  );
+  console.log(chalk.blue(`Creating translations for '${targetLang}' from '${SOURCE_LANG}'...`));
 
   for (const file of sourceFiles) {
     const sourcePath: string = join(LOCALES_DIR, SOURCE_LANG, file);
@@ -63,11 +59,7 @@ async function createNewLanguage(targetLang: string): Promise<void> {
 
       console.log(chalk.blue(`Translating ${file}...`));
 
-      const translated: string = await translateWithOllama(
-        content,
-        SOURCE_LANG,
-        targetLang,
-      );
+      const translated: string = await translateWithOllama(content, SOURCE_LANG, targetLang);
 
       await writeFile(targetPath, translated, 'utf-8');
 
@@ -77,9 +69,7 @@ async function createNewLanguage(targetLang: string): Promise<void> {
     }
   }
 
-  console.log(
-    chalk.green(`\n✓ Finished creating translations for '${targetLang}'`),
-  );
+  console.log(chalk.green(`\n✓ Finished creating translations for '${targetLang}'`));
 }
 
 async function getLocaleFiles(lang: string): Promise<string[]> {
@@ -153,9 +143,7 @@ async function interactiveMode(): Promise<void> {
 
   const languages: string[] = await getAvailableLanguages();
   console.log(chalk.yellowBright('\nAvailable languages:'));
-  languages.forEach((lang, i) =>
-    console.log(chalk.blue.bold(`${i + 1}. ${lang}`)),
-  );
+  languages.forEach((lang, i) => console.log(chalk.blue.bold(`${i + 1}. ${lang}`)));
 
   console.log(chalk.yellowBright('\nOptions:'));
   console.log(chalk.blueBright('1. Create a new language'));
@@ -164,21 +152,13 @@ async function interactiveMode(): Promise<void> {
   const choice: string = await prompt('\nSelect an option (1-2): ');
 
   if (choice === '1') {
-    const targetLang: string = await prompt(
-      'Enter the target language code (e.g., fr, es, de): ',
-    );
+    const targetLang: string = await prompt('Enter the target language code (e.g., fr, es, de): ');
     await createNewLanguage(targetLang);
   } else if (choice === '2') {
-    const langIndex: string = await prompt(
-      `Select a language to update (1-${languages.length}): `,
-    );
+    const langIndex: string = await prompt(`Select a language to update (1-${languages.length}): `);
     const index: number = parseInt(langIndex, 10) - 1;
 
-    if (
-      index >= 0 &&
-      index < languages.length &&
-      languages[index] !== SOURCE_LANG
-    ) {
+    if (index >= 0 && index < languages.length && languages[index] !== SOURCE_LANG) {
       // await updateLanguage(languages[index]);
     } else {
       console.error('Invalid selection or cannot update source language');

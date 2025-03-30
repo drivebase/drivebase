@@ -16,8 +16,5 @@ export abstract class SdkOperationsAdapter<SDK = any> extends BaseOperations {
   /**
    * Transform a raw SDK response to a FileMetadata object
    */
-  protected abstract transformFileResponse(
-    response: any,
-    path?: string,
-  ): FileMetadata;
+  protected abstract transformFileResponse(response: any, path?: string): FileMetadata;
 }

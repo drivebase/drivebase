@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
 import {
   CallHandler,
   ExecutionContext,
@@ -8,8 +11,6 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 export interface Response<T> {
   statusCode: number;
@@ -17,23 +18,17 @@ export interface Response<T> {
 }
 
 export const SKIP_TRANSFORM_INTERCEPTOR = 'skipTransformInterceptor';
-export const SkipTransformInterceptor = () =>
-  SetMetadata(SKIP_TRANSFORM_INTERCEPTOR, true);
+export const SkipTransformInterceptor = () => SetMetadata(SKIP_TRANSFORM_INTERCEPTOR, true);
 
 @Injectable()
-export class TransformInterceptor<T>
-  implements NestInterceptor<T, Response<T> | T>
-{
+export class TransformInterceptor<T> implements NestInterceptor<T, Response<T> | T> {
   constructor(private reflector: Reflector) {}
 
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<Response<T> | T> {
-    const skipTransform = this.reflector.getAllAndOverride<boolean>(
-      SKIP_TRANSFORM_INTERCEPTOR,
-      [context.getHandler(), context.getClass()],
-    );
+  intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T> | T> {
+    const skipTransform = this.reflector.getAllAndOverride<boolean>(SKIP_TRANSFORM_INTERCEPTOR, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     // Skip transformation if explicitly marked
     if (skipTransform) {

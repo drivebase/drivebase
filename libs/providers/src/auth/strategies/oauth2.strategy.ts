@@ -13,10 +13,7 @@ export abstract class OAuth2Strategy {
   /**
    * Exchange an authorization code for an access token
    */
-  abstract getAccessToken(
-    code: string,
-    redirectUri: string,
-  ): Promise<OAuth2Credentials>;
+  abstract getAccessToken(code: string, redirectUri: string): Promise<OAuth2Credentials>;
 
   /**
    * Refresh an expired access token using a refresh token

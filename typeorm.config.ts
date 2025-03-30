@@ -1,7 +1,6 @@
-import 'reflect-metadata';
-
 import { config } from 'dotenv';
 import { join } from 'path';
+import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 
 // Load environment variables

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 import { exec } from 'child_process';
 import { readdir, writeFile } from 'fs/promises';
 import { join } from 'path';
@@ -31,10 +30,7 @@ async function squashMigrations(name: string) {
     await execAsync(`mkdir -p ${migrationDir}`);
 
     // Write migration file
-    await writeFile(
-      join(migrationDir, 'migration.sql'),
-      `-- Squashed migrations\n\n${sql}`,
-    );
+    await writeFile(join(migrationDir, 'migration.sql'), `-- Squashed migrations\n\n${sql}`);
 
     console.log('✓ Squashed migration created successfully');
     console.log(`\nNext steps:`);
