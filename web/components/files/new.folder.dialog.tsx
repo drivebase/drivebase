@@ -1,4 +1,4 @@
-import { useMutation } from '@apollo/client';
+import { useApolloClient, useMutation } from '@apollo/client';
 import { useSearch } from '@tanstack/react-router';
 import { FolderIcon, PlusIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -15,8 +15,10 @@ import {
 } from '@drivebase/web/components/ui/dialog';
 import { Input } from '@drivebase/web/components/ui/input';
 import { CREATE_FOLDER } from '@drivebase/web/gql/mutations/files';
+import { GET_FILES } from '@drivebase/web/gql/queries/files';
 
 function NewFolderDialog() {
+  const client = useApolloClient();
   const { t } = useTranslation(['common', 'dashboard']);
 
   const search = useSearch({ from: '/_protected/_dashboard/' });
@@ -47,6 +49,10 @@ function NewFolderDialog() {
       .then(() => {
         toast.success('Folder created');
         setIsOpen(false);
+
+        client.refetchQueries({ include: [GET_FILES] }).catch((err) => {
+          console.error(err);
+        });
       })
       .catch((err) => {
         console.error(err);
