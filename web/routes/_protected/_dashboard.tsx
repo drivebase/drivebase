@@ -10,9 +10,9 @@ import { GET_CURRENT_WORKSPACE } from '@drivebase/web/gql/queries/workspaces';
 export const Route = createFileRoute('/_protected/_dashboard')({
   component: RouteComponent,
   loader: () => {
-    const authToken = localStorage.getItem('authToken');
+    const accessToken = localStorage.getItem('accessToken');
 
-    if (!authToken) {
+    if (!accessToken) {
       redirect({ to: '/auth/login', throw: true });
     }
 
