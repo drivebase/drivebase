@@ -6,6 +6,9 @@ nginx -g "daemon off;" &
 # Store nginx's PID
 NGINX_PID=$!
 
+# Run migrations
+npm run migration:run
+
 # Start the application
 node dist/main &
 

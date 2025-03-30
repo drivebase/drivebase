@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Migration1743083251102 implements MigrationInterface {
-  name = 'Migration1743083251102';
+export class Migration1743359366153 implements MigrationInterface {
+  name = 'Migration1743359366153';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -20,7 +20,7 @@ export class Migration1743083251102 implements MigrationInterface {
       `CREATE INDEX "IDX_dcfb7e7c3dea489222af8b0b45" ON "provider" ("workspaceId") `,
     );
     await queryRunner.query(
-      `CREATE TABLE "file" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(255) NOT NULL, "isFolder" boolean NOT NULL DEFAULT false, "parentPath" character varying(1000) NOT NULL, "path" character varying(1000) NOT NULL, "mimeType" character varying(255), "size" double precision, "isStarred" boolean NOT NULL DEFAULT false, "referenceId" character varying(255), "workspaceId" uuid, "providerId" uuid, "parentId" uuid, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_36b46d232307066b3a2c9ea3a1d" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "file" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(255) NOT NULL, "isFolder" boolean NOT NULL DEFAULT false, "parentPath" character varying(1000) NOT NULL, "path" character varying(1000) NOT NULL, "mimeType" character varying(255), "size" double precision, "metadata" json, "isStarred" boolean NOT NULL DEFAULT false, "referenceId" character varying(255), "workspaceId" uuid, "providerId" uuid, "parentId" uuid, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_36b46d232307066b3a2c9ea3a1d" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_a6b3b927fe2ad2bda57fc63f6b" ON "file" ("parentId") `,
