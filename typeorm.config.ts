@@ -1,18 +1,21 @@
-import { config } from 'dotenv';
+import 'dotenv/config';
 import { join } from 'path';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 
-// Load environment variables
-config();
+const DATABASE_URL = process.env.DATABASE_URL;
+const migrations = join(__dirname, 'migrations/*.ts');
+
+console.log('DATABASE_URL', DATABASE_URL);
 
 const AppDataSource = new DataSource({
+  migrations: [migrations],
   type: 'postgres',
-  url: process.env.DATABASE_URL,
+  url: DATABASE_URL,
   entities: ['**/*.entity.ts'],
-  migrations: [join(__dirname, 'src/migrations/*.ts')],
   synchronize: false,
   logging: ['error', 'query', 'schema'],
+  dropSchema: true,
 });
 
 export default AppDataSource;
