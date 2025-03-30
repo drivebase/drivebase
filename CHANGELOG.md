@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.0.0-alpha.9](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.8...v1.0.0-alpha.9) (2025-03-30)
+
+
+### Bug Fixes
+
+* **Dockerfile:** streamline Dockerfile by removing Prisma client generation step and adjusting file copy commands ([f85e083](https://github.com/drivebase/drivebase/commit/f85e0835e1653b282ffb6b1a54b928acbad84a07))
+
 # [1.0.0-alpha.8](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.7...v1.0.0-alpha.8) (2025-03-30)
 
 
