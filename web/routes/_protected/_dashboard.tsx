@@ -29,6 +29,11 @@ function RouteComponent() {
 
   useEffect(() => {
     if (error instanceof ApolloError) {
+      if (error.message === 'Workspace not found') {
+        void router.navigate({ to: '/workspaces' });
+        return;
+      }
+
       toast.error(error.message);
     }
   }, [error, router]);
