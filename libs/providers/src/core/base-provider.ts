@@ -1,6 +1,6 @@
-import { AuthType } from '@prisma/client';
 import { Readable } from 'stream';
 
+import { AuthType } from '../provider.entity';
 import {
   AuthContext,
   AuthCredentials,

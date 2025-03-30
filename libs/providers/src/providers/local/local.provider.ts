@@ -1,5 +1,6 @@
-import { AuthType } from '@prisma/client';
 import { Readable } from 'stream';
+
+import { AuthType } from '@drivebase/providers/provider.entity';
 
 import { BaseProvider } from '../../core/base-provider';
 import { LocalOperationsAdapter } from '../../operations';
