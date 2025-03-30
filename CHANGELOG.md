@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.0.0-alpha.10](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.9...v1.0.0-alpha.10) (2025-03-30)
+
+
+### Features
+
+* **Dockerfile:** add migrations and sdk directories to Dockerfile for improved build context ([4adc26c](https://github.com/drivebase/drivebase/commit/4adc26c5803d7e8ef3e0162b2183116d2461b2a3))
+
 # [1.0.0-alpha.9](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.8...v1.0.0-alpha.9) (2025-03-30)
 
 
