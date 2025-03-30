@@ -3,7 +3,7 @@ import animate from 'tailwindcss-animate';
 
 const config: Config = {
   darkMode: 'class',
-  content: ['./**/*!(*.stories|*.spec).{ts,tsx,html}'],
+  content: ['./components/**/*.{ts,tsx}', './routes/**/*.{ts,tsx}'],
   theme: {
     extend: {
       fontFamily: {
