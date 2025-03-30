@@ -1,3 +1,4 @@
+import { join } from 'path';
 import { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
@@ -260,6 +261,7 @@ export class ProvidersService {
         workspaceId,
         metadata: {
           userInfo,
+          uploadPath: basePath ? basePath : join(process.cwd(), 'uploads'),
         },
         credentials: {
           basePath,
