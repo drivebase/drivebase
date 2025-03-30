@@ -17,8 +17,10 @@ RUN npm i -g pnpm@9 && \
 COPY apps ./apps
 COPY libs ./libs
 COPY web ./web
+COPY migrations ./migrations
+COPY sdk ./sdk
 COPY tsconfig.json tsconfig.build.json ./
-COPY nest-cli.json webpack.config.js ./
+COPY nest-cli.json webpack.config.js typeorm.config.ts ./
 
 ENV NODE_ENV=production
 
