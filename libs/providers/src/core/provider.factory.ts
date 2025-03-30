@@ -10,10 +10,7 @@ export class ProviderFactory {
   /**
    * Create a provider instance based on type and configuration
    */
-  static createProvider(
-    type: ProviderType,
-    config: Record<string, any>,
-  ): BaseProvider {
+  static createProvider(type: ProviderType, config: Record<string, any>): BaseProvider {
     const ProviderClass = ProviderRegistry.getProviderConstructor(type);
 
     if (!ProviderClass) {

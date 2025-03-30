@@ -1,3 +1,10 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { LucideIcon } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Dialog,
@@ -8,12 +15,6 @@ import {
 } from '@drivebase/web/components/ui/dialog';
 import { Input } from '@drivebase/web/components/ui/input';
 import { Label } from '@drivebase/web/components/ui/label';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { LucideIcon } from 'lucide-react';
-import { useCallback, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 
 export type InputField = {
   name: string;
@@ -33,9 +34,7 @@ export type InputDialogOptions = {
 
 type FormData = Record<string, string>;
 
-export async function inputDialog(
-  options: InputDialogOptions,
-): Promise<FormData | null> {
+export async function inputDialog(options: InputDialogOptions): Promise<FormData | null> {
   return new Promise((resolve) => {
     const container = document.createElement('div');
     document.body.appendChild(container);
@@ -55,9 +54,7 @@ export async function inputDialog(
         options.inputFields.reduce<z.ZodRawShape>(
           (acc, field) => ({
             ...acc,
-            [field.name]:
-              field.validation ||
-              z.string().min(1, `${field.label} is required`),
+            [field.name]: field.validation || z.string().min(1, `${field.label} is required`),
           }),
           {},
         ),
@@ -85,24 +82,14 @@ export async function inputDialog(
         <Dialog open={isOpen} onOpenChange={handleClose}>
           <DialogContent className="p-0 w-96">
             <DialogHeader className="px-8 py-10">
-              <DialogTitle
-                asChild
-                className="mx-auto text-2xl select-none text-center"
-              >
+              <DialogTitle asChild className="mx-auto text-2xl select-none text-center">
                 <div>
-                  {Icon && (
-                    <Icon
-                      size={60}
-                      className="mx-auto mb-4 p-4 bg-muted rounded-xl"
-                    />
-                  )}
+                  {Icon && <Icon size={60} className="mx-auto mb-4 p-4 bg-muted rounded-xl" />}
                   <h1 className="text-2xl font-medium">{options.title}</h1>
                 </div>
               </DialogTitle>
               {options.description && (
-                <DialogDescription className="text-center">
-                  {options.description}
-                </DialogDescription>
+                <DialogDescription className="text-center">{options.description}</DialogDescription>
               )}
             </DialogHeader>
             <form

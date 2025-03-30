@@ -61,37 +61,21 @@ export class Migration1743083251102 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "workspace" DROP CONSTRAINT "FK_51f2194e4a415202512807d2f63"`,
     );
-    await queryRunner.query(
-      `ALTER TABLE "file" DROP CONSTRAINT "FK_a6b3b927fe2ad2bda57fc63f6b2"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "file" DROP CONSTRAINT "FK_028390e1dc7af2f3c6cd0e2d2bf"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "file" DROP CONSTRAINT "FK_de468b3d8dcf7e94f7074220929"`,
-    );
+    await queryRunner.query(`ALTER TABLE "file" DROP CONSTRAINT "FK_a6b3b927fe2ad2bda57fc63f6b2"`);
+    await queryRunner.query(`ALTER TABLE "file" DROP CONSTRAINT "FK_028390e1dc7af2f3c6cd0e2d2bf"`);
+    await queryRunner.query(`ALTER TABLE "file" DROP CONSTRAINT "FK_de468b3d8dcf7e94f7074220929"`);
     await queryRunner.query(
       `ALTER TABLE "provider" DROP CONSTRAINT "FK_dcfb7e7c3dea489222af8b0b458"`,
     );
     await queryRunner.query(`DROP TABLE "workspace"`);
     await queryRunner.query(`DROP TABLE "user"`);
     await queryRunner.query(`DROP TYPE "public"."user_role_enum"`);
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_8891cb02f060ba483f8bcedd94"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_9a50a89c70778e24a63a92a40d"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_a6b3b927fe2ad2bda57fc63f6b"`,
-    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_8891cb02f060ba483f8bcedd94"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_9a50a89c70778e24a63a92a40d"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_a6b3b927fe2ad2bda57fc63f6b"`);
     await queryRunner.query(`DROP TABLE "file"`);
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_dcfb7e7c3dea489222af8b0b45"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_faaa24371bbc67cdfc62fc04f1"`,
-    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_dcfb7e7c3dea489222af8b0b45"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_faaa24371bbc67cdfc62fc04f1"`);
     await queryRunner.query(`DROP TABLE "provider"`);
     await queryRunner.query(`DROP TYPE "public"."provider_authtype_enum"`);
     await queryRunner.query(`DROP TYPE "public"."provider_type_enum"`);

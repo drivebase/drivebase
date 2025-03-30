@@ -1,3 +1,9 @@
+import ISO6391 from 'iso-639-1';
+import Cookies from 'js-cookie';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+
 import {
   Select,
   SelectContent,
@@ -9,11 +15,6 @@ import { Skeleton } from '@drivebase/web/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@drivebase/web/components/ui/tabs';
 import { SUPPORTED_LANGUAGES } from '@drivebase/web/i18n';
 import { useTheme } from '@drivebase/web/theme.provider';
-import ISO6391 from 'iso-639-1';
-import Cookies from 'js-cookie';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 
 import SettingItem from './item';
 
@@ -37,10 +38,7 @@ function ApplicationSettings() {
     );
   return (
     <div className="space-y-4">
-      <SettingItem
-        title={t('appearance')}
-        description={t('appearance_description')}
-      >
+      <SettingItem title={t('appearance')} description={t('appearance_description')}>
         <div className="flex items-center gap-2">
           <Tabs
             defaultValue={theme}
@@ -57,10 +55,7 @@ function ApplicationSettings() {
         </div>
       </SettingItem>
 
-      <SettingItem
-        title={t('language')}
-        description={t('language_description')}
-      >
+      <SettingItem title={t('language')} description={t('language_description')}>
         <div className="flex items-center gap-2">
           <Select
             defaultValue={i18n.resolvedLanguage}

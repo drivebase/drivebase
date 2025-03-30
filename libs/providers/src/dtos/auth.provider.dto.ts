@@ -1,5 +1,6 @@
-import { ProviderType } from '@drivebase/providers/provider.entity';
 import { IsNotEmpty, IsObject, IsString } from 'class-validator';
+
+import { ProviderType } from '@drivebase/providers/provider.entity';
 
 export class AuthorizeAPIProviderDto {
   @IsString()

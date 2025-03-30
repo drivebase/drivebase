@@ -17,9 +17,7 @@ export abstract class BaseOperations {
   /**
    * List files in a directory with pagination support
    */
-  abstract listFiles(
-    options?: ListOptions,
-  ): Promise<PaginatedResult<FileMetadata>>;
+  abstract listFiles(options?: ListOptions): Promise<PaginatedResult<FileMetadata>>;
 
   /**
    * Upload a file

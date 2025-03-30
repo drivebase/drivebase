@@ -1,3 +1,8 @@
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import StepOne from '@drivebase/web/components/onboarding/step.01';
 import StepTwo from '@drivebase/web/components/onboarding/step.02';
 import StepThree from '@drivebase/web/components/onboarding/step.03';
@@ -8,10 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@drivebase/web/components/ui/card';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 
 function Page() {
   const router = useRouter();
@@ -107,9 +108,7 @@ function Page() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <CardTitle className={'text-xl font-medium'}>
-              {t('onboarding:title')}
-            </CardTitle>
+            <CardTitle className={'text-xl font-medium'}>{t('onboarding:title')}</CardTitle>
           </motion.div>
 
           <motion.div

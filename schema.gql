@@ -300,7 +300,7 @@ input AuthorizeApiKeyInput {
 }
 
 input ConnectLocalProviderInput {
-  label: String!
+  label: String
   basePath: String
 }
 

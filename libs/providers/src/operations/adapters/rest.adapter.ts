@@ -18,23 +18,15 @@ export abstract class RestOperationsAdapter extends BaseOperations {
   /**
    * Transform a raw API response to a FileMetadata object
    */
-  protected abstract transformFileResponse(
-    response: any,
-    path?: string,
-  ): FileMetadata;
+  protected abstract transformFileResponse(response: any, path?: string): FileMetadata;
 
   /**
    * Build the URL for a file operation
    */
-  protected abstract buildUrl(
-    endpoint: string,
-    options?: Record<string, any>,
-  ): string;
+  protected abstract buildUrl(endpoint: string, options?: Record<string, any>): string;
 
   /**
    * Set authentication headers for requests
    */
-  protected abstract setAuthHeaders(
-    config: AxiosRequestConfig,
-  ): AxiosRequestConfig;
+  protected abstract setAuthHeaders(config: AxiosRequestConfig): AxiosRequestConfig;
 }

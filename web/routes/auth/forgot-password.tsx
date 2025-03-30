@@ -1,8 +1,9 @@
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { useState } from 'react';
+
 import ForgotPasswordResetPassword from '@drivebase/web/components/auth/forgot-password/reset-password';
 import ForgotPasswordSendCode from '@drivebase/web/components/auth/forgot-password/send-code';
 import ForgotPasswordVerifyCode from '@drivebase/web/components/auth/forgot-password/verify-code';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { useState } from 'react';
 
 type Step = 'send-code' | 'verify-code' | 'reset-password';
 

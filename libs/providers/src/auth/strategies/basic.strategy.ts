@@ -8,9 +8,7 @@ export abstract class BasicAuthStrategy {
   /**
    * Validate basic auth credentials
    */
-  abstract validateCredentials(
-    credentials: BasicAuthCredentials,
-  ): Promise<boolean>;
+  abstract validateCredentials(credentials: BasicAuthCredentials): Promise<boolean>;
 
   /**
    * Get information about the authenticated user

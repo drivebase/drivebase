@@ -1,4 +1,5 @@
-import { User, UsersService } from '@drivebase/users';
+import * as bcrypt from 'bcryptjs';
+
 import {
   BadRequestException,
   ConflictException,
@@ -7,7 +8,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
+
+import { User, UsersService } from '@drivebase/users';
 
 import { CreateUserDto } from './dtos/create.user.dto';
 

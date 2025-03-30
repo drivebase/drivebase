@@ -1,8 +1,9 @@
+import { createFileRoute } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
+
 import DashboardStats from '@drivebase/web/components/dashboard/stats';
 import FileList from '@drivebase/web/components/files/file.list';
 import NewFolderDialog from '@drivebase/web/components/files/new.folder.dialog';
-import { createFileRoute } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 
 function Page() {
   const { t } = useTranslation(['common', 'dashboard']);

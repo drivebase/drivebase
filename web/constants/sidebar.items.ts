@@ -1,10 +1,4 @@
-import {
-  LayoutDashboardIcon,
-  SettingsIcon,
-  StarIcon,
-  TrashIcon,
-  CloudIcon,
-} from 'lucide-react';
+import { CloudIcon, LayoutDashboardIcon, SettingsIcon, StarIcon, TrashIcon } from 'lucide-react';
 
 type SidebarItem = {
   label: string;

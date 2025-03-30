@@ -1,5 +1,3 @@
-import { Workspace } from '@drivebase/workspaces/workspace.entity';
-import { Field, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -8,6 +6,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { Field, ObjectType } from '@nestjs/graphql';
+
+import { Workspace } from '@drivebase/workspaces/workspace.entity';
 
 export enum Role {
   SUPER_ADMIN = 'SUPER_ADMIN',

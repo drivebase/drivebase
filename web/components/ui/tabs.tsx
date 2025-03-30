@@ -1,8 +1,9 @@
 'use client';
 
-import { cn } from '@drivebase/web/lib/utils';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import * as React from 'react';
+
+import { cn } from '@drivebase/web/lib/utils';
 
 const Tabs = TabsPrimitive.Root;
 

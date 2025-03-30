@@ -29,9 +29,7 @@ export class ProviderRegistry {
   /**
    * Get a provider constructor by type
    */
-  static getProviderConstructor(
-    type: ProviderType,
-  ): ProviderConstructor | undefined {
+  static getProviderConstructor(type: ProviderType): ProviderConstructor | undefined {
     return this.providers.get(type);
   }
 
