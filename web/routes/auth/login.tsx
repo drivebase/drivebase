@@ -1,4 +1,11 @@
-import { LoginUserDto } from '@drivebase/auth/dtos/login.user.dto';
+import { ApolloError, useMutation } from '@apollo/client';
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
+import { LockIcon } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+
+import { LoginInput } from '@drivebase/sdk';
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Card,
@@ -17,35 +24,43 @@ import {
   FormMessage,
 } from '@drivebase/web/components/ui/form';
 import { Input } from '@drivebase/web/components/ui/input';
-import { useLoginMutation } from '@drivebase/web/lib/redux/endpoints/auth';
-import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
-import { LockIcon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { LOGIN_USER } from '@drivebase/web/gql/mutations/auth';
 
 function Page() {
   const router = useRouter();
-  const [login, { isLoading }] = useLoginMutation();
+  const [login, { loading }] = useMutation(LOGIN_USER);
   const { t } = useTranslation(['errors', 'common', 'auth']);
 
-  const form = useForm<LoginUserDto>({
-    resolver: classValidatorResolver(LoginUserDto),
+  const form = useForm<LoginInput>({
     defaultValues: {
       email: '',
       password: '',
     },
   });
 
-  function onSubmit(data: LoginUserDto) {
-    login({ ...data })
-      .unwrap()
-      .then(() => {
-        router.navigate({ to: '/', reloadDocument: true });
+  function onSubmit(data: LoginInput) {
+    login({
+      variables: {
+        input: data,
+      },
+    })
+      .then(({ data }) => {
+        if (data?.login.accessToken) {
+          localStorage.setItem('accessToken', data.login.accessToken);
+          void router.navigate({
+            to: '/',
+            reloadDocument: true,
+          });
+        } else {
+          toast.error('Invalid credentials');
+        }
       })
       .catch((err) => {
-        toast.error(err.data?.message ?? 'An unknown error occurred');
+        if (err instanceof ApolloError) {
+          toast.error(err.message);
+        } else {
+          toast.error('An unknown error occurred');
+        }
       });
   }
 
@@ -56,9 +71,7 @@ function Page() {
         <Card className="w-full max-w-sm shadow-xl z-10 rounded-2xl relative">
           <CardHeader className="border-b text-center py-12">
             <LockIcon className="w-20 h-20 mx-auto mb-4 p-4 bg-muted rounded-xl" />
-            <CardTitle className="text-xl font-medium">
-              {t('auth:login_title')}
-            </CardTitle>
+            <CardTitle className="text-xl font-medium">{t('auth:login_title')}</CardTitle>
             <CardDescription>{t('auth:login_description')}</CardDescription>
           </CardHeader>
           <CardContent className="pt-8 bg-accent/50">
@@ -69,9 +82,7 @@ function Page() {
                 form
                   .handleSubmit(onSubmit)(e)
                   .catch((err) => {
-                    toast.error(
-                      err.data?.message ?? 'An unknown error occurred',
-                    );
+                    toast.error(err.data?.message ?? 'An unknown error occurred');
                   });
               }}
             >
@@ -83,10 +94,7 @@ function Page() {
                     <FormItem>
                       <FormLabel>{t('auth:email')}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder={t('auth:email_placeholder')}
-                          {...field}
-                        />
+                        <Input placeholder={t('auth:email_placeholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -124,22 +132,19 @@ function Page() {
                 <Link
                   to="/auth/forgot-password"
                   className="text-sm text-muted-foreground"
-                  search={{ step: 'send-code' }}
+                  search={{
+                    step: 'send-code',
+                  }}
                 >
                   {t('auth:forgot_password')}
                 </Link>
               </div>
               <div className="space-y-2">
-                <Button className="w-full" disabled={isLoading}>
+                <Button className="w-full" disabled={loading}>
                   {t('auth:login')}
                 </Button>
 
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  type="button"
-                  asChild
-                >
+                <Button className="w-full" variant="outline" type="button" asChild>
                   <Link to="/auth/register">{t('auth:dont_have_account')}</Link>
                 </Button>
               </div>

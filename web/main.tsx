@@ -1,11 +1,11 @@
-import './i18n';
-
-import { useGetVersionQuery } from '@drivebase/web/lib/redux/endpoints/public';
-import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { useQuery } from '@apollo/client';
+import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { Loader } from 'lucide-react';
 import ReactDOM from 'react-dom/client';
 
 import { I18nLoader } from './components/I18nLoader';
+import { GET_VERSION } from './gql/queries/public';
+import './i18n';
 import { Providers } from './providers';
 import { routeTree } from './routeTree.gen';
 
@@ -25,9 +25,9 @@ declare module '@tanstack/react-router' {
 const rootElement = document.getElementById('root') as HTMLElement;
 
 function InnserApp() {
-  const { data: version, isLoading } = useGetVersionQuery();
+  const { data, loading } = useQuery(GET_VERSION);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader className="w-10 h-10 animate-spin" />
@@ -39,7 +39,7 @@ function InnserApp() {
     <RouterProvider
       router={router}
       context={{
-        version: version?.data || '',
+        version: data?.version || '',
       }}
       defaultPendingMinMs={0}
     />

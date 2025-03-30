@@ -1,3 +1,9 @@
+import { useMutation, useQuery } from '@apollo/client';
+import { useSearch } from '@tanstack/react-router';
+import byteSize from 'byte-size';
+import { FileIcon, XIcon } from 'lucide-react';
+import { useState } from 'react';
+
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Dialog,
@@ -13,53 +19,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@drivebase/web/components/ui/select';
+import { config } from '@drivebase/web/constants/config';
+import { GENERATE_UPLOAD_KEY } from '@drivebase/web/gql/mutations/files';
+import { GET_CONNECTED_PROVIDERS } from '@drivebase/web/gql/queries/providers';
 import { getProviderIcon } from '@drivebase/web/helpers/provider.icon';
 import { useFileStore } from '@drivebase/web/lib/contexts/file-store.context';
-import { useUploadFileMutation } from '@drivebase/web/lib/redux/endpoints/files';
-import { useGetProvidersQuery } from '@drivebase/web/lib/redux/endpoints/providers';
-import { useAppDispatch, useAppSelector } from '@drivebase/web/lib/redux/hooks';
-import {
-  clearFileIds,
-  setUploadModalOpen,
-} from '@drivebase/web/lib/redux/reducers/uploader.reducer';
-import { useSearch } from '@tanstack/react-router';
-import byteSize from 'byte-size';
-import { FileIcon, XIcon } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { useUploadStore } from '@drivebase/web/lib/store/upload.store';
 
 export function UploadModal() {
   const search = useSearch({ strict: false });
 
-  const dispatch = useAppDispatch();
-  const { uploadModalOpen } = useAppSelector((s) => s.uploader);
+  const { uploadModalOpen, setUploadModalOpen, clearFileIds } = useUploadStore();
   const { files, clearFiles, removeFile } = useFileStore();
 
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
 
-  // const { data: providers } = useGetAvailableProvidersQuery();
-  const { data: connectedProviders } = useGetProvidersQuery();
-  const [uploadFile, { isLoading }] = useUploadFileMutation();
+  const { data: connectedProviders } = useQuery(GET_CONNECTED_PROVIDERS);
+  const [createUploadKey, { loading: isCreatingUploadKey }] = useMutation(GENERATE_UPLOAD_KEY);
 
-  function handleUpload() {
+  async function handleUpload() {
     if (!selectedProvider) return;
 
     const path = search.path;
 
-    uploadFile({
-      files: files.map(({ file }) => file),
-      providerId: selectedProvider,
-      path: path ?? '/',
-    })
-      .unwrap()
-      .then(() => {
-        toast.success('Files uploaded successfully');
-        dispatch(setUploadModalOpen(false));
-        clearFiles();
-      })
-      .catch((error) => {
-        toast.error(error.data.message);
+    const formData = new FormData();
+
+    files.forEach((file) => {
+      formData.append('files', file.file);
+    });
+
+    formData.append('providerId', selectedProvider);
+    formData.append('path', path ?? '/');
+
+    const response = await createUploadKey();
+
+    if (response.data?.generateUploadKey) {
+      void fetch(`${config.apiUrl}/files/upload?key=${response.data.generateUploadKey}`, {
+        method: 'POST',
+        body: formData,
       });
+    }
   }
 
   return (
@@ -67,41 +66,31 @@ export function UploadModal() {
       open={uploadModalOpen}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          dispatch(setUploadModalOpen(false));
+          setUploadModalOpen(false);
           clearFiles();
-          dispatch(clearFileIds());
+          clearFileIds();
         }
       }}
     >
       <DialogContent className="p-0 min-w-[40rem]">
         <DialogHeader className="px-8 py-10 select-none">
           <DialogTitle className="text-2xl">Upload Files</DialogTitle>
-          <DialogDescription>
-            Please select where you want to upload your files.
-          </DialogDescription>
+          <DialogDescription>Please select where you want to upload your files.</DialogDescription>
 
           <div className="flex gap-10 justify-between pt-10">
-            <Select
-              value={selectedProvider ?? undefined}
-              onValueChange={setSelectedProvider}
-            >
+            <Select value={selectedProvider ?? undefined} onValueChange={setSelectedProvider}>
               <SelectTrigger className="w-[300px]">
                 <SelectValue placeholder="Select provider" />
               </SelectTrigger>
               <SelectContent>
-                {connectedProviders?.data.map((provider) => {
+                {connectedProviders?.connectedProviders.map((provider) => {
                   const iconUrl = getProviderIcon(provider.type);
 
                   return (
                     <SelectItem key={provider.id} value={provider.id}>
                       <div className="flex items-center gap-2">
-                        <img
-                          src={iconUrl}
-                          alt={provider.label}
-                          width={20}
-                          height={20}
-                        />
-                        {provider.label}
+                        <img src={iconUrl} alt={provider.name} width={20} height={20} />
+                        {provider.name}
                       </div>
                     </SelectItem>
                   );
@@ -133,9 +122,7 @@ export function UploadModal() {
                   />
                 );
               } else {
-                Placeholder = (
-                  <FileIcon className="h-12 w-12 p-2 bg-secondary rounded" />
-                );
+                Placeholder = <FileIcon className="h-12 w-12 p-2 bg-secondary rounded" />;
               }
 
               return (
@@ -162,8 +149,8 @@ export function UploadModal() {
           <Button
             variant={'secondary'}
             className="w-full"
-            onClick={handleUpload}
-            isLoading={isLoading}
+            onClick={() => void handleUpload()}
+            isLoading={isCreatingUploadKey}
           >
             Start Upload
           </Button>

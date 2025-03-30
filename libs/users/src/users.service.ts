@@ -1,44 +1,48 @@
-import { PrismaService } from '@drivebase/database/prisma.service';
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { userProfile } from './users.validator';
+import { User } from './user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
-  async create(user: Prisma.UserCreateInput) {
-    return this.prisma.user.create({
-      data: user,
-    });
+  async create(userData: Partial<User>) {
+    const user = this.userRepository.create(userData);
+    return this.userRepository.save(user);
   }
 
-  async findById(id: string, select?: Prisma.UserSelect) {
-    return this.prisma.user.findUnique({
-      where: { id },
-      select,
-    });
+  async findById(id: string, select?: string[]) {
+    if (select) {
+      return this.userRepository.findOne({
+        where: { id },
+      });
+    }
+    return this.userRepository.findOne({ where: { id } });
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
-      where: { email },
-    });
+    return this.userRepository.findOne({ where: { email } });
   }
 
   async getPublicData(id: string) {
-    return this.prisma.user.findUnique({
+    return this.userRepository.findOne({
       where: { id },
-      select: userProfile.select,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
     });
   }
 
-  async update(id: string, data: Prisma.UserUpdateInput) {
-    const user = await this.prisma.user.update({
-      where: { id },
-      data,
-    });
-    return user;
+  async update(id: string, data: Partial<User>) {
+    await this.userRepository.update(id, data);
+    return this.userRepository.findOne({ where: { id } });
   }
 }
