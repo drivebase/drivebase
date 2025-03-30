@@ -1,7 +1,3 @@
-import { File } from '@drivebase/files/file.entity';
-import { Provider } from '@drivebase/providers/provider.entity';
-import { User } from '@drivebase/users/user.entity';
-import { Field, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -13,6 +9,12 @@ import {
   type Relation,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { Field, ObjectType } from '@nestjs/graphql';
+
+import { File } from '@drivebase/files/file.entity';
+import { Provider } from '@drivebase/providers/provider.entity';
+import { User } from '@drivebase/users/user.entity';
 
 @Entity()
 @ObjectType()

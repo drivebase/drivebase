@@ -1,5 +1,7 @@
-import { ProviderType } from '@prisma/client';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
+import { ProviderType } from '../provider.entity';
+
 export class CallbackProviderDto {
   @IsString()
   @IsNotEmpty()

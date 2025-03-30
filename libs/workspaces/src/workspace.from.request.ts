@@ -1,8 +1,9 @@
-import type { Workspace } from '@prisma/client';
 import type { Request } from 'express';
 
 import { ExecutionContext, UnauthorizedException, createParamDecorator } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
+
+import { Workspace } from './workspace.entity';
 
 export const GetWorkspaceFromRequest = createParamDecorator((_, context: ExecutionContext) => {
   const ctx = GqlExecutionContext.create(context);

@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { S3Client } from '@aws-sdk/client-s3';
-import { AuthType } from '@prisma/client';
 import { Readable } from 'stream';
+
+import { AuthType } from '@drivebase/providers/provider.entity';
 
 import { BaseProvider } from '../../core/base-provider';
 import {

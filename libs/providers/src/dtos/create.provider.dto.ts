@@ -1,5 +1,6 @@
-import { ProviderType } from '@prisma/client';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
+
+import { ProviderType } from '../provider.entity';
 
 export class CreateProviderDto {
   @IsString()
