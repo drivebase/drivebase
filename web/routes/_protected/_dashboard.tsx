@@ -10,6 +10,12 @@ import { GET_CURRENT_WORKSPACE } from '@drivebase/web/gql/queries/workspaces';
 export const Route = createFileRoute('/_protected/_dashboard')({
   component: RouteComponent,
   loader: () => {
+    const authToken = localStorage.getItem('authToken');
+
+    if (!authToken) {
+      redirect({ to: '/auth/login', throw: true });
+    }
+
     const workspaceId = localStorage.getItem('workspaceId');
     if (!workspaceId) {
       redirect({ to: '/workspaces', throw: true });

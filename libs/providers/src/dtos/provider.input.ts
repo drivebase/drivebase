@@ -116,10 +116,10 @@ export class AuthorizeApiKeyInput {
 
 @InputType()
 export class ConnectLocalProviderInput {
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   @IsString()
-  @IsNotEmpty()
-  label: string;
+  @IsOptional()
+  label?: string;
 
   @Field(() => String, { nullable: true })
   @IsString()
