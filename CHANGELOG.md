@@ -1,5 +1,59 @@
 # Changelog
 
+# [1.0.0-alpha.8](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.7...v1.0.0-alpha.8) (2025-03-30)
+
+
+### Bug Fixes
+
+* **auth:** add @Public() decorator to login mutation for public access ([4e55913](https://github.com/drivebase/drivebase/commit/4e55913ee06f795c535db69b588cc5f11f816751))
+* **auth:** add public access decorator to registration mutation ([a40e5ab](https://github.com/drivebase/drivebase/commit/a40e5abbf3a02ca68018dbd7d689fbeda476ac89))
+* **auth:** correct request context retrieval in GqlAuthGuard to access the request object ([01b4408](https://github.com/drivebase/drivebase/commit/01b44084e2cd92a62c53b076daa33c50aca0a27a))
+* **auth:** import useRegisterMutation from SDK to streamline registration process ([29bc52b](https://github.com/drivebase/drivebase/commit/29bc52bda4f4d6fb55eab132263f4b5a5d4e7a9b))
+* **auth:** reorder imports in user.decorator.ts for consistency ([2874096](https://github.com/drivebase/drivebase/commit/28740967d5efb855aa9a746682e2d3067d6ded35))
+* **auth:** update imports to streamline user management ([8a72b66](https://github.com/drivebase/drivebase/commit/8a72b6644cb6df92f06e76030286e336677344fb))
+* **dashboard:** update authentication token retrieval from 'authToken' to 'accessToken' for improved consistency in user authentication flow ([9083a17](https://github.com/drivebase/drivebase/commit/9083a179989c938837e4634ee13071f05c61d13c))
+* **eslint:** disable no-unsafe-member-access rule in ESLint configuration to allow member access without warnings ([2a0ddc2](https://github.com/drivebase/drivebase/commit/2a0ddc217ce4aba725344a0d1918f701de34a70d))
+* **workflows:** update test command to disable color output for better readability ([04f0340](https://github.com/drivebase/drivebase/commit/04f0340001d8b2f75ea5609579e71069c8cd1f5f))
+
+
+### Features
+
+* **app:** integrate GraphQL and update module imports for TypeORM entities ([aa0a4ef](https://github.com/drivebase/drivebase/commit/aa0a4ef41cbc43d083bbd1622f5ceafcf14e14d8))
+* **auth:** enhance authentication guards and resolver for GraphQL support ([c0ad446](https://github.com/drivebase/drivebase/commit/c0ad4460ad325fabc689ff9e32c9f9eca7f2139c))
+* **codegen:** add GraphQL code generation configuration and dependencies ([2c4aaa2](https://github.com/drivebase/drivebase/commit/2c4aaa24db9978d78896e7e15a87e0ee666467f2))
+* **database:** initialize TypeORM configuration and define entity models ([5afdb0c](https://github.com/drivebase/drivebase/commit/5afdb0c8ce02681b9d3545e1fca6e9d34bfee08f))
+* **database:** integrate TypeORM with entity models in db.module.ts ([e261cea](https://github.com/drivebase/drivebase/commit/e261ceaf33ae7116c2922b55b2cd44f818f45146))
+* **files:** enhance File entity with GraphQL support and create FilesModule ([2d16725](https://github.com/drivebase/drivebase/commit/2d167257788aff231970d47266fcd4b5c64c4380))
+* **files:** implement file upload and download functionality with GraphQL integration; add file management operations and DTOs for enhanced file handling ([9f93c6f](https://github.com/drivebase/drivebase/commit/9f93c6f1c3bec44aef4fe4242a7c27011aafd310))
+* **files:** integrate GraphQL for file management operations, including upload key generation, folder creation, and enhanced file queries; refactor file list and icon components for improved functionality and readability ([d2bddbc](https://github.com/drivebase/drivebase/commit/d2bddbc7bf0172dbff9f299711f280e7b3adfd81))
+* **files:** update file upload logic to use dynamic upload path from provider metadata; refactor local adapter to handle root path correctly; enhance provider configuration to manage upload reference ID ([f37c123](https://github.com/drivebase/drivebase/commit/f37c12313153769c4ffcc1133ea17d3228da7cb1))
+* **graphql:** add GraphQL schema definition and configure auto schema generation ([b33c9a3](https://github.com/drivebase/drivebase/commit/b33c9a3cb0803348e2a78ce85738c4dd572ccfaa))
+* **graphql:** add initial GraphQL SDK structure and types from codegen ([1642146](https://github.com/drivebase/drivebase/commit/1642146581994351968a870d334b67dfc5102f18))
+* **graphql:** add JSON scalar type and enhance provider metadata structure in schema; update route handling for OAuth callback ([c88f677](https://github.com/drivebase/drivebase/commit/c88f67726086dad6392d2f8c6655a9e5c2643c83))
+* **graphql:** add listProviderFiles query and associated input types; update schema to include pagination support for provider files and enhance file metadata structure ([f08895f](https://github.com/drivebase/drivebase/commit/f08895f0d890239b35143a601ec7123945ffc255))
+* **graphql:** add PublicModule and integrate JSON resolver in GraphQL setup ([539f766](https://github.com/drivebase/drivebase/commit/539f76630d0a9f76edfb7140b8d8bbab48b576a3))
+* **graphql:** enhance file management with new mutations for file operations, including create, rename, star, and unstar; add pagination support for file listing and update schema definitions accordingly ([26dc77b](https://github.com/drivebase/drivebase/commit/26dc77bc18b0c66373effd0c333726478ddfdaeb))
+* **graphql:** implement PublicResolver with version and ping queries ([36c0fd6](https://github.com/drivebase/drivebase/commit/36c0fd695fa77b4e950432d204de39c899202c5b))
+* **migrations:** add new migration for database schema with provider, file, user, and workspace tables ([6adf425](https://github.com/drivebase/drivebase/commit/6adf425344a478046a373859da3cef03d6a8b0b9))
+* **oauth:** add OAuth callback route to handle provider authentication and error management ([467bbab](https://github.com/drivebase/drivebase/commit/467bbab01aa9bcfbed27c5cb00ae7be44880e21b))
+* **pagination:** introduce common library for pagination metadata and file metadata; update GraphQL schema and resolvers to support new pagination structure; refactor file listing queries and components for improved data handling and UI integration ([8f680cc](https://github.com/drivebase/drivebase/commit/8f680cc98808877726555043ac831f473f4910bd))
+* **provider:** add connectLocalProvider mutation and ConnectLocalProviderInput DTO; enhance provider entity with nullable metadata field ([2d4e2eb](https://github.com/drivebase/drivebase/commit/2d4e2eb36e7c4331609a7c67014739cfff169be1))
+* **provider:** enhance Provider entity with GraphQL support and introduce ProvidersModule ([dd51aa0](https://github.com/drivebase/drivebase/commit/dd51aa04d6014977f6f0f67ab4b43e28d6a993bc))
+* **provider:** integrate Apollo Client for GraphQL support in Providers component ([992826c](https://github.com/drivebase/drivebase/commit/992826c4c4c3b035daf931ebcee322016e00d819))
+* **provider:** refactor provider configuration to use Apollo Client for mutations and queries; update file listing logic to accommodate new GraphQL structure and improve state management ([dbd1083](https://github.com/drivebase/drivebase/commit/dbd1083be4e6fd60d4f9792422cde04f3e335c0e))
+* **provider:** refactor ProvidersService to use TypeORM for database operations ([645c804](https://github.com/drivebase/drivebase/commit/645c804af887972177216b398e69c4ded7fe2204))
+* **providers:** implement ProvidersResolver and enhance provider entity with JSON fields ([1716d48](https://github.com/drivebase/drivebase/commit/1716d48373301ebcf5ed1cdb6b6fea62615f2a1e))
+* **provider:** update ConnectLocalProviderInput to make label optional and nullable; enhance dashboard route with authentication check ([46adb35](https://github.com/drivebase/drivebase/commit/46adb35bfc7248333c7f78f12a681f5ae8aefd50))
+* **provider:** update listProviderFiles query to include referenceId; modify listFiles method to accept referenceId parameter; enhance file listing options for Google Drive integration ([3e23bef](https://github.com/drivebase/drivebase/commit/3e23befbf10abfab42e9c19c3205aabcf088f482))
+* **upload:** implement Zustand for upload state management; replace Redux hooks with Zustand in UploadModal and SidebarUpload components ([b468c9e](https://github.com/drivebase/drivebase/commit/b468c9efef24b90662cfa7ced7951be4b4ed9597))
+* **users:** add UsersResolver for user retrieval via GraphQL ([2c3479a](https://github.com/drivebase/drivebase/commit/2c3479aad6a79c554a5c8ff82fc31806c6f29a87))
+* **users:** enhance User entity with GraphQL support and update exports ([dc846ac](https://github.com/drivebase/drivebase/commit/dc846ace9a4d68c40946fb56386ab6bcc7810f9b))
+* **users:** integrate TypeORM with User entity in UsersService ([034880c](https://github.com/drivebase/drivebase/commit/034880c611e7767b85252be7287523e8ecb63933))
+* **workflows:** add Telegram notification workflow for new GitHub stars ([7995054](https://github.com/drivebase/drivebase/commit/79950540ca7eb451d70d819157e46cfeb5c15ba8))
+* **workspaces:** add GraphQL support for workspace operations and DTOs ([b0b7fcd](https://github.com/drivebase/drivebase/commit/b0b7fcdca591dc94d06c288886047dfc3deca728))
+* **workspaces:** integrate TypeORM with Workspace entity and implement GraphQL support ([5bcaaad](https://github.com/drivebase/drivebase/commit/5bcaaad55fe84c28a9165b77a9288ad01b17b319))
+* **workspaces:** refactor WorkspacesService to use TypeORM for database operations ([16acad0](https://github.com/drivebase/drivebase/commit/16acad0333547aaa9e9cce2e11aa176333b1169f))
+
 # [1.0.0-alpha.7](https://github.com/drivebase/drivebase/compare/vv1.0.0-alpha.6...v1.0.0-alpha.7) (2025-03-26)
 
 ### Bug Fixes
