@@ -1,5 +1,23 @@
 # Changelog
 
+# [1.0.0-alpha.11](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.10...v1.0.0-alpha.11) (2025-03-30)
+
+
+### Bug Fixes
+
+* **_dashboard.tsx:** improve error handling by redirecting to workspaces on 'Workspace not found' error ([8b2fb8f](https://github.com/drivebase/drivebase/commit/8b2fb8fc259059204d765d7ef6b9de7776f91991))
+* **_protected.tsx:** enhance error handling for Apollo queries by distinguishing between fetch and authorization errors ([be267ed](https://github.com/drivebase/drivebase/commit/be267ed4a39f4025edef36360e2583bde3a71105))
+* **eslint.config.mjs:** disable '@typescript-eslint/no-unsafe-call' rule for improved flexibility in TypeScript code ([34b4da2](https://github.com/drivebase/drivebase/commit/34b4da291992fc60a7863b4076f171f24841be4a))
+* **local.provider:** update label for basePath to indicate it is optional ([c758b1b](https://github.com/drivebase/drivebase/commit/c758b1b8597a9a5db361bf8d2a58361322acd207))
+* **providers.service.ts:** add uploadPath to metadata for improved file handling ([1f253f7](https://github.com/drivebase/drivebase/commit/1f253f70c554720cfa8890f30e2184dbe9abffa3))
+
+
+### Features
+
+* **new.folder.dialog.tsx:** integrate Apollo Client for refetching files after folder creation ([6ba22f6](https://github.com/drivebase/drivebase/commit/6ba22f695f76ceae2cbaba987ae3e37d74ab32d1))
+* **provider.connect.tsx:** add GET_CONNECTED_PROVIDERS query and refetch on provider connection actions ([e6663ba](https://github.com/drivebase/drivebase/commit/e6663bab6d5d3fa536921ef5322a5136e25bb31a))
+* **upload.modal.tsx:** enhance upload functionality with Apollo Client integration and improved user feedback ([5cee546](https://github.com/drivebase/drivebase/commit/5cee546a1462502be17978df80c0b431dc2a1dca))
+
 # [1.0.0-alpha.10](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.9...v1.0.0-alpha.10) (2025-03-30)
 
 
