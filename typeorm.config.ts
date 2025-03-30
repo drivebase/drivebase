@@ -6,8 +6,6 @@ import { DataSource } from 'typeorm';
 const DATABASE_URL = process.env.DATABASE_URL;
 const migrations = join(__dirname, 'migrations/*.ts');
 
-console.log('DATABASE_URL', DATABASE_URL);
-
 const AppDataSource = new DataSource({
   migrations: [migrations],
   type: 'postgres',

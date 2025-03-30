@@ -7,22 +7,16 @@ RUN apk add --no-cache python3 make g++
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+RUN mkdir -p /app/web
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY web/package.json ./web
 
 # Install dependencies
 RUN npm i -g pnpm@9 && \
-  pnpm install --frozen-lockfile
+  pnpm install
 
 # Copy the rest of the application
-COPY apps ./apps
-COPY libs ./libs
-COPY web ./web
-COPY migrations ./migrations
-COPY sdk ./sdk
-COPY tsconfig.json tsconfig.build.json ./
-COPY nest-cli.json webpack.config.js typeorm.config.ts ./
-
-ENV NODE_ENV=production
+COPY . .
 
 # Build the application
 RUN pnpm run build && \
@@ -55,7 +49,13 @@ COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/dist/apps/drivebase ./dist
 COPY --from=base /app/web/dist ./web
 
+# Copy tsconfig
+COPY tsconfig.json ./
+COPY typeorm.config.ts ./
+
 RUN chmod +x /app/entrypoint.sh
+
+ENV NODE_ENV=production
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 

@@ -80,3 +80,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .prettierignore
 
 .dockerignore
+Dockerfile
+
+# Uploads
+uploads

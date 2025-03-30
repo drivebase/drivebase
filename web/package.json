@@ -37,7 +37,7 @@
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "lucide-react": "^0.483.0",
-    "react": "^19.0.0",
+    "react": "^19.1.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "react-i18next": "^15.4.1",
