@@ -20,9 +20,10 @@
     "types": ["node", "multer", "vitest/globals"],
     "jsx": "react-jsx",
     "paths": {
-      "@drivebase/web/*": ["web/*"],
       "@drivebase/auth": ["libs/auth/src"],
       "@drivebase/auth/*": ["libs/auth/src/*"],
+      "@drivebase/common": ["libs/common/src"],
+      "@drivebase/common/*": ["libs/common/src/*"],
       "@drivebase/database": ["libs/database/src"],
       "@drivebase/database/*": ["libs/database/src/*"],
       "@drivebase/files": ["libs/files/src"],
@@ -31,8 +32,15 @@
       "@drivebase/providers/*": ["libs/providers/src/*"],
       "@drivebase/users": ["libs/users/src"],
       "@drivebase/users/*": ["libs/users/src/*"],
+      "@drivebase/web/*": ["web/*"],
       "@drivebase/workspaces": ["libs/workspaces/src"],
       "@drivebase/workspaces/*": ["libs/workspaces/src/*"]
-    }
+    },
+    "plugins": [
+      {
+        "name": "@0no-co/graphqlsp",
+        "schema": "./schema.gql"
+      }
+    ]
   }
 }

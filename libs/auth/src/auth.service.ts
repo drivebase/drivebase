@@ -1,4 +1,4 @@
-import { UsersService } from '@drivebase/users';
+import { User, UsersService } from '@drivebase/users';
 import {
   BadRequestException,
   ConflictException,
@@ -7,7 +7,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import type { User } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 import { CreateUserDto } from './dtos/create.user.dto';
@@ -34,9 +33,10 @@ export class AuthService {
   }
 
   login(user: User) {
-    const payload = { sub: user.id, role: user.role };
     return {
-      accessToken: this._jwtService.sign(payload),
+      accessToken: this._jwtService.sign({
+        sub: user.id,
+      }),
     };
   }
 

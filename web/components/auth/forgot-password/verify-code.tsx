@@ -1,4 +1,12 @@
-import { VerifyForgotCodeDto } from '@drivebase/auth/dtos/forgot.password.dto';
+import { useMutation } from '@apollo/client';
+import { useRouter } from '@tanstack/react-router';
+import { LockIcon } from 'lucide-react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+
+import { ForgotPasswordVerifyCodeInput } from '@drivebase/sdk';
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Card,
@@ -9,14 +17,7 @@ import {
 } from '@drivebase/web/components/ui/card';
 import { Form } from '@drivebase/web/components/ui/form';
 import { Input } from '@drivebase/web/components/ui/input';
-import { useForgotPasswordVerifyCodeMutation } from '@drivebase/web/lib/redux/endpoints/auth';
-import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { useRouter } from '@tanstack/react-router';
-import { LockIcon } from 'lucide-react';
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { FORGOT_PASSWORD_VERIFY_CODE } from '@drivebase/web/gql/mutations/auth';
 
 type Props = {
   email: string;
@@ -26,10 +27,9 @@ type Props = {
 const ForgotPasswordVerifyCode = ({ email, onNext }: Props) => {
   const router = useRouter();
   const { t } = useTranslation(['auth', 'common']);
-  const [verifyCode, { isLoading }] = useForgotPasswordVerifyCodeMutation();
+  const [verifyCode, { loading }] = useMutation(FORGOT_PASSWORD_VERIFY_CODE);
 
-  const form = useForm<VerifyForgotCodeDto>({
-    resolver: classValidatorResolver(VerifyForgotCodeDto),
+  const form = useForm<ForgotPasswordVerifyCodeInput>({
     defaultValues: {
       email,
     },
@@ -46,9 +46,8 @@ const ForgotPasswordVerifyCode = ({ email, onNext }: Props) => {
     }
   }, [email, router]);
 
-  const onSubmit = (data: VerifyForgotCodeDto) => {
-    verifyCode({ email, code: data.code })
-      .unwrap()
+  const onSubmit = (data: ForgotPasswordVerifyCodeInput) => {
+    verifyCode({ variables: { input: data } })
       .then(() => {
         onNext(data.code);
       })
@@ -62,12 +61,8 @@ const ForgotPasswordVerifyCode = ({ email, onNext }: Props) => {
       <Card className="w-full max-w-sm shadow-xl z-10 rounded-2xl relative">
         <CardHeader className="border-b text-center py-12">
           <LockIcon className="w-20 h-20 mx-auto mb-4 p-4 bg-muted rounded-xl" />
-          <CardTitle className="text-xl font-medium">
-            {t('auth:verify_code_title')}
-          </CardTitle>
-          <CardDescription>
-            {t('auth:verify_code_description', { email })}
-          </CardDescription>
+          <CardTitle className="text-xl font-medium">{t('auth:verify_code_title')}</CardTitle>
+          <CardDescription>{t('auth:verify_code_description', { email })}</CardDescription>
         </CardHeader>
         <CardContent className="pt-8 bg-accent/50">
           <form
@@ -93,7 +88,7 @@ const ForgotPasswordVerifyCode = ({ email, onNext }: Props) => {
             </div>
 
             <div className="space-y-2">
-              <Button className="w-full" isLoading={isLoading}>
+              <Button className="w-full" isLoading={loading}>
                 {t('common:submit')}
               </Button>
             </div>

@@ -1,4 +1,9 @@
-import { ProviderFile } from '@drivebase/providers/provider.interface';
+import { useMutation, useQuery } from '@apollo/client';
+import { AlertCircle, CheckCircleIcon, EditIcon, FileIcon, FolderIcon } from 'lucide-react';
+import { Fragment, useCallback, useState } from 'react';
+import { toast } from 'sonner';
+
+import { AuthType, ProviderType } from '@drivebase/sdk';
 import { inputDialog } from '@drivebase/web/components/common/input.dialog';
 import {
   Breadcrumb,
@@ -17,84 +22,62 @@ import {
   TableHeader,
   TableRow,
 } from '@drivebase/web/components/ui/table';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@drivebase/web/components/ui/tabs';
-import {
-  useListProviderFilesQuery,
-  useUpdateProviderLabelMutation,
-  useUpdateProviderMetadataMutation,
-} from '@drivebase/web/lib/redux/endpoints/providers';
-import { Provider } from '@prisma/client';
-import {
-  AlertCircle,
-  CheckCircleIcon,
-  EditIcon,
-  FileIcon,
-  FolderIcon,
-} from 'lucide-react';
-import { Fragment, useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@drivebase/web/components/ui/tabs';
+import { UPDATE_PROVIDER, UPDATE_PROVIDER_METADATA } from '@drivebase/web/gql/mutations/providers';
+import { LIST_PROVIDER_FILES } from '@drivebase/web/gql/queries/providers';
 
 import ProviderIcon from './provider.icon';
 
 type ConfigureProviderProps = {
-  provider: Provider;
+  id: string;
+  name: string;
+  type: ProviderType;
+  authType: AuthType;
+  metadata: Record<string, unknown>;
 };
 
-function ConfigureProvider({ provider }: ConfigureProviderProps) {
-  const [providerLabel, setProviderLabel] = useState(provider.label);
-  const defaultPath =
-    ((provider.metadata as Record<string, unknown>)
-      ?.defaultUploadPath as string) || '/';
-  const [currentPath, setCurrentPath] = useState('/');
-  const [defaultUploadPath, setDefaultUploadPath] = useState(defaultPath);
-  const [updateProviderMetadata, { isLoading: isUpdating }] =
-    useUpdateProviderMetadataMutation();
-  const [updateProviderLabel, { isLoading: isUpdatingLabel }] =
-    useUpdateProviderLabelMutation();
+function ConfigureProvider({ id, name, type, metadata: providerMetadata }: ConfigureProviderProps) {
+  const uploadPath = (providerMetadata?.uploadPath as string) || '/';
 
-  const { data: files, isLoading } = useListProviderFilesQuery({
-    providerId: provider.id,
-    path: currentPath,
+  const [providerLabel, setProviderLabel] = useState(name);
+  const [currentPath, setCurrentPath] = useState(uploadPath);
+  const [referenceId, setReferenceId] = useState<string | undefined>(
+    (providerMetadata?.uploadReferenceId as string) || undefined,
+  );
+  const [defaultUploadPath, setDefaultUploadPath] = useState(uploadPath);
+
+  const [updateProviderMetadata, { loading: isUpdating }] = useMutation(UPDATE_PROVIDER_METADATA);
+  const [updateProviderLabel, { loading: isUpdatingLabel }] = useMutation(UPDATE_PROVIDER);
+
+  const { data: files, loading } = useQuery(LIST_PROVIDER_FILES, {
+    variables: {
+      input: {
+        id,
+        path: currentPath,
+        referenceId,
+      },
+    },
   });
-
-  useEffect(() => {
-    if (files?.data) {
-      console.log('Files loaded for path:', currentPath);
-      console.log('Files data:', files.data);
-      console.log(
-        'Folders only:',
-        files.data.filter((f) => f.isFolder),
-      );
-    }
-  }, [files, currentPath]);
 
   const splitPath = currentPath.split('/').filter(Boolean);
 
   const handleFolderClick = (path: string) => {
-    console.log('Folder clicked, raw path:', path);
     // Ensure proper path format based on whether it's already an absolute path
     const isAbsolutePath = path.startsWith('/');
     const newPath = isAbsolutePath
       ? path
       : `${currentPath}${currentPath.endsWith('/') ? '' : '/'}${path}`;
-    console.log('Setting new path:', newPath);
+
     setCurrentPath(newPath);
   };
 
   const getMetadataItems = () => {
-    const metadata = (provider.metadata as Record<string, any>) || {};
+    const metadata = (providerMetadata as Record<string, any>) || {};
     const userInfo = (metadata.userInfo || {}) as Record<string, string>;
 
     return Object.entries(userInfo).map(([key, value]) => (
       <div key={key} className="flex justify-between py-2 border-b">
-        <span className="text-sm capitalize">
-          {key.replace(/([A-Z])/g, ' $1').trim()}
-        </span>
+        <span className="text-sm capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
         <span className="text-muted-foreground">{String(value)}</span>
       </div>
     ));
@@ -102,12 +85,16 @@ function ConfigureProvider({ provider }: ConfigureProviderProps) {
 
   const handleSetDefaultUploadPath = () => {
     updateProviderMetadata({
-      providerId: provider.id,
-      metadata: {
-        defaultUploadPath: currentPath,
+      variables: {
+        input: {
+          id,
+          metadata: {
+            uploadPath: currentPath,
+            uploadReferenceId: referenceId,
+          },
+        },
       },
     })
-      .unwrap()
       .then(() => {
         setDefaultUploadPath(currentPath);
         toast.success('Default upload location updated');
@@ -134,10 +121,13 @@ function ConfigureProvider({ provider }: ConfigureProviderProps) {
 
       if (result && result.label && result.label !== providerLabel) {
         updateProviderLabel({
-          providerId: provider.id,
-          label: result.label,
+          variables: {
+            input: {
+              id,
+              name: result.label,
+            },
+          },
         })
-          .unwrap()
           .then(() => {
             setProviderLabel(result.label);
             toast.success('Provider label updated');
@@ -148,7 +138,7 @@ function ConfigureProvider({ provider }: ConfigureProviderProps) {
           });
       }
     })();
-  }, [provider.id, providerLabel, updateProviderLabel]);
+  }, [id, providerLabel, updateProviderLabel]);
 
   return (
     <Tabs defaultValue="tab-1">
@@ -175,11 +165,11 @@ function ConfigureProvider({ provider }: ConfigureProviderProps) {
       <TabsContent value="information" className="space-y-4 pt-4">
         <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-4">
-            <ProviderIcon provider={provider.type} className="w-6 h-6" />
+            <ProviderIcon provider={type} className="w-6 h-6" />
             <div>
-              <h3 className="font-medium">{providerLabel}</h3>
+              <h3 className="font-medium">{name}</h3>
               <p className="text-sm text-muted-foreground capitalize">
-                {provider.type.replace('_', ' ').toLowerCase()}
+                {type.replace('_', ' ').toLowerCase()}
               </p>
             </div>
           </div>
@@ -202,14 +192,13 @@ function ConfigureProvider({ provider }: ConfigureProviderProps) {
         <div className="border rounded-md p-4 bg-muted/30 mb-4">
           <h3 className="font-medium mb-2">Default Upload Location</h3>
           <p className="text-sm text-muted-foreground mb-3">
-            Navigate to the folder where you want files to be uploaded by
-            default. You can change this at any time.
+            Navigate to the folder where you want files to be uploaded by default. You can change
+            this at any time.
           </p>
 
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              <span className="font-medium">Current default:</span>{' '}
-              {defaultUploadPath}
+              <span className="font-medium">Current default:</span> {defaultUploadPath}
             </div>
             <Button
               size="sm"
@@ -233,26 +222,24 @@ function ConfigureProvider({ provider }: ConfigureProviderProps) {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink onClick={() => setCurrentPath('/')}>
+                <BreadcrumbLink
+                  onClick={() => {
+                    setCurrentPath('/');
+                    setReferenceId('');
+                  }}
+                >
                   root
                 </BreadcrumbLink>
               </BreadcrumbItem>
               {splitPath.length > 0 && <BreadcrumbSeparator />}
               {splitPath.map((path, index) => {
                 // Build path incrementally
-                const updatedPath =
-                  '/' + splitPath.slice(0, index + 1).join('/');
-                console.log(`Breadcrumb ${index}:`, {
-                  segment: path,
-                  fullPath: updatedPath,
-                });
+                const updatedPath = '/' + splitPath.slice(0, index + 1).join('/');
 
                 return (
                   <Fragment key={path}>
                     <BreadcrumbItem>
-                      <BreadcrumbLink
-                        onClick={() => setCurrentPath(updatedPath)}
-                      >
+                      <BreadcrumbLink onClick={() => setCurrentPath(updatedPath)}>
                         {path}
                       </BreadcrumbLink>
                     </BreadcrumbItem>
@@ -264,7 +251,7 @@ function ConfigureProvider({ provider }: ConfigureProviderProps) {
           </Breadcrumb>
         </div>
 
-        {isLoading ? (
+        {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, index) => (
               <Skeleton key={index} className="h-10 w-full" />
@@ -280,40 +267,34 @@ function ConfigureProvider({ provider }: ConfigureProviderProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {!files?.data?.length ? (
+              {!files?.listProviderFiles.data?.length ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-center py-4">
                     No files found in this directory
                   </TableCell>
                 </TableRow>
               ) : (
-                files.data.map((file: ProviderFile) => (
+                files.listProviderFiles.data.map((file) => (
                   <TableRow
                     key={file.id}
-                    className={
-                      file.isFolder ? 'cursor-pointer hover:bg-accent' : ''
-                    }
+                    className={file.isFolder ? 'cursor-pointer hover:bg-accent' : ''}
                   >
                     <TableCell>
-                      {file.isFolder ? (
-                        <FolderIcon size={20} />
-                      ) : (
-                        <FileIcon size={20} />
-                      )}
+                      {file.isFolder ? <FolderIcon size={20} /> : <FileIcon size={20} />}
                     </TableCell>
                     <TableCell
                       onDoubleClick={() => {
                         if (file.isFolder) {
-                          console.log('Navigating to path:', file.name);
                           handleFolderClick(file.name);
+                          if (file.id && file.id !== file.path) {
+                            setReferenceId(file.id);
+                          }
                         }
                       }}
                     >
                       {file.name}
                     </TableCell>
-                    <TableCell>
-                      {file.isFolder ? 'Folder' : file.type}
-                    </TableCell>
+                    <TableCell>{file.isFolder ? 'Folder' : 'File'}</TableCell>
                   </TableRow>
                 ))
               )}
@@ -329,8 +310,8 @@ function ConfigureProvider({ provider }: ConfigureProviderProps) {
             <h3 className="font-semibold">Danger Zone</h3>
           </div>
           <p className="text-sm mb-4">
-            Disconnecting this provider will remove all access to its files.
-            This action cannot be undone.
+            Disconnecting this provider will remove all access to its files. This action cannot be
+            undone.
           </p>
           <Button variant="destructive">Disconnect Provider</Button>
         </div>

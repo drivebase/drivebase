@@ -1,3 +1,10 @@
+import { useMutation } from '@apollo/client';
+import { useSearch } from '@tanstack/react-router';
+import { FolderIcon, PlusIcon } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+
 import { Button } from '@drivebase/web/components/ui/button';
 import {
   Dialog,
@@ -7,12 +14,7 @@ import {
   DialogTrigger,
 } from '@drivebase/web/components/ui/dialog';
 import { Input } from '@drivebase/web/components/ui/input';
-import { useCreateFolderMutation } from '@drivebase/web/lib/redux/endpoints/files';
-import { useSearch } from '@tanstack/react-router';
-import { FolderIcon, PlusIcon } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { CREATE_FOLDER } from '@drivebase/web/gql/mutations/files';
 
 function NewFolderDialog() {
   const { t } = useTranslation(['common', 'dashboard']);
@@ -23,7 +25,7 @@ function NewFolderDialog() {
 
   const parentPath = search.path;
 
-  const [createFolder, { isLoading }] = useCreateFolderMutation();
+  const [createFolder, { loading }] = useMutation(CREATE_FOLDER);
 
   const handleCreate = () => {
     const name = ref.current?.value;
@@ -35,10 +37,13 @@ function NewFolderDialog() {
     }
 
     createFolder({
-      name,
-      parentPath: parentPath ?? '/',
+      variables: {
+        input: {
+          name,
+          parentPath: parentPath ?? '/',
+        },
+      },
     })
-      .unwrap()
       .then(() => {
         toast.success('Folder created');
         setIsOpen(false);
@@ -59,18 +64,10 @@ function NewFolderDialog() {
       </DialogTrigger>
       <DialogContent className="p-0 w-96 gap-0">
         <DialogHeader className="px-8 py-10">
-          <DialogTitle
-            asChild
-            className="mx-auto text-2xl select-none text-center"
-          >
+          <DialogTitle asChild className="mx-auto text-2xl select-none text-center">
             <div>
-              <FolderIcon
-                size={75}
-                className="mx-auto mb-4 p-4 bg-muted rounded-xl"
-              />
-              <h1 className="text-2xl font-medium">
-                {t('dashboard:new_folder')}
-              </h1>
+              <FolderIcon size={75} className="mx-auto mb-4 p-4 bg-muted rounded-xl" />
+              <h1 className="text-2xl font-medium">{t('dashboard:new_folder')}</h1>
             </div>
           </DialogTitle>
         </DialogHeader>
@@ -89,7 +86,7 @@ function NewFolderDialog() {
             variant={'outline'}
             className="w-full mt-4"
             onClick={handleCreate}
-            isLoading={isLoading}
+            isLoading={loading}
           >
             {t('common:create')}
           </Button>

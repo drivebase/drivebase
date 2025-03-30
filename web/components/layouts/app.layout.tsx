@@ -1,11 +1,13 @@
+import { useQuery } from '@apollo/client';
+import { useRouter } from '@tanstack/react-router';
+import { Loader } from 'lucide-react';
+
 import AppSidebar from '@drivebase/web/components/layouts/app.sidebar';
 import { UploadModal } from '@drivebase/web/components/layouts/upload.modal';
 import { SidebarProvider } from '@drivebase/web/components/ui/sidebar';
+import { GET_CURRENT_WORKSPACE } from '@drivebase/web/gql/queries/workspaces';
 import { FileStoreProvider } from '@drivebase/web/lib/contexts/file-store.context';
-import { useGetCurrentWorkspaceQuery } from '@drivebase/web/lib/redux/endpoints/workspaces';
 import { cn } from '@drivebase/web/lib/utils';
-import { useRouter } from '@tanstack/react-router';
-import { Loader } from 'lucide-react';
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -13,9 +15,9 @@ type AppLayoutProps = {
 
 function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
-  const { data: workspace, isLoading, error } = useGetCurrentWorkspaceQuery();
+  const { data: workspace, loading, error } = useQuery(GET_CURRENT_WORKSPACE);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <Loader className="w-10 h-10 animate-spin" />

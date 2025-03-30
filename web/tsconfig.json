@@ -20,7 +20,14 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@drivebase/web/*": ["*"],
+      "@drivebase/sdk": ["../sdk/index.ts"],
+      "@drivebase/sdk/*": ["../sdk/*"]
+    }
   },
   "extends": "../tsconfig.json"
 }

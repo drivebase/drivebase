@@ -1,0 +1,327 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Provider {
+  id: String!
+  name: String!
+  type: ProviderType!
+  authType: AuthType!
+  credentials: JSON!
+  metadata: JSON
+  isActive: Boolean!
+  workspaceId: String!
+  workspace: Workspace!
+  files: [File!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum ProviderType {
+  LOCAL
+  GOOGLE_DRIVE
+  AMAZON_S3
+  DROPBOX
+  ONEDRIVE
+  TELEGRAM
+}
+
+enum AuthType {
+  NONE
+  OAUTH2
+  API_KEY
+  BASIC
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type File {
+  id: String!
+  name: String!
+  isFolder: Boolean!
+  parentPath: String!
+  path: String!
+  mimeType: String
+  size: Float
+  metadata: JSON
+  isStarred: Boolean!
+  referenceId: String
+  workspaceId: String
+  workspace: Workspace
+  providerId: String
+  provider: Provider
+  parentId: String
+  parent: File
+  children: [File!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Workspace {
+  id: String!
+  name: String!
+  ownerId: String!
+  owner: User!
+  providers: [Provider!]!
+  files: [File!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type User {
+  id: String!
+  name: String!
+  email: String!
+  password: String!
+  role: String!
+  workspaces: [Workspace!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type LoginResponse {
+  accessToken: String!
+}
+
+type RegisterResponse {
+  ok: Boolean!
+}
+
+type ForgotPasswordResponse {
+  ok: Boolean!
+}
+
+type VerifyCodeResponse {
+  ok: Boolean!
+}
+
+type WorkspaceResponse {
+  ok: Boolean!
+}
+
+type WorkspaceStat {
+  title: String!
+  count: Float!
+  size: Float!
+}
+
+type PaginationMeta {
+  total: Float
+  totalPages: Float
+  page: Float
+  nextCursor: String
+  prevCursor: String
+  hasMore: Boolean!
+}
+
+type FileMetadata {
+  id: String!
+  name: String!
+  path: String!
+  size: Float
+  mimeType: String
+  isFolder: Boolean!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  parentId: String
+  parentPath: String
+  thumbnail: String
+}
+
+type ConfigurationSchema {
+  fields: [ConfigField!]!
+  required: [String!]!
+}
+
+type ProviderMetadata {
+  id: String!
+  type: ProviderType!
+  displayName: String!
+  description: String!
+  authType: AuthType!
+  capabilities: [ProviderCapability!]!
+  configSchema: ConfigurationSchema!
+}
+
+enum ProviderCapability {
+  READ
+  WRITE
+  DELETE
+  LIST
+  SEARCH
+  SHARE
+  VERSIONS
+}
+
+type ConfigField {
+  id: String!
+  type: String!
+  label: String!
+  description: String
+  default: String
+}
+
+type AuthUrlResponse {
+  url: String!
+}
+
+type PaginatedFilesResponse {
+  data: [File!]!
+  meta: PaginationMeta!
+}
+
+type OkResponse {
+  ok: Boolean!
+}
+
+type PingResponse {
+  time: DateTime!
+  startedAt: DateTime!
+}
+
+type Query {
+  me: User!
+  user(id: String!): User!
+  workspaces: [Workspace!]!
+  workspace(id: String!): Workspace
+  currentWorkspace: Workspace
+  workspaceStats: [WorkspaceStat!]!
+  connectedProviders: [Provider!]!
+  availableProviders: [ProviderMetadata!]!
+  listProviderFiles(input: ListProviderFilesInput!): PaginatedType!
+  listFiles(input: ListFilesInput): PaginatedFilesResponse!
+  folderContents(parentPath: String!): [File!]!
+  file(id: String!): File
+  version: String!
+  ping: PingResponse!
+}
+
+type PaginatedType {
+  meta: PaginationMeta!
+  data: [FileMetadata!]!
+}
+
+input ListProviderFilesInput {
+  id: String!
+  path: String
+  referenceId: String
+}
+
+input ListFilesInput {
+  parentPath: String!
+  isStarred: Boolean
+  search: String
+  page: Float
+  limit: Float
+}
+
+type Mutation {
+  login(input: LoginInput!): LoginResponse!
+  register(input: RegisterInput!): RegisterResponse!
+  forgotPasswordSendCode(input: ForgotPasswordSendCodeInput!): ForgotPasswordResponse!
+  forgotPasswordVerifyCode(input: ForgotPasswordVerifyCodeInput!): VerifyCodeResponse!
+  forgotPasswordReset(input: ForgotPasswordResetInput!): ForgotPasswordResponse!
+  createWorkspace(input: CreateWorkspaceInput!): Workspace!
+  updateWorkspace(input: UpdateWorkspaceInput!): WorkspaceResponse!
+  deleteWorkspace: WorkspaceResponse!
+  getAuthUrl(input: GetAuthUrlInput!): AuthUrlResponse!
+  handleOAuthCallback(input: HandleOAuthCallbackInput!): Provider!
+  authorizeApiKey(input: AuthorizeApiKeyInput!): Provider!
+  connectLocalProvider(input: ConnectLocalProviderInput!): Provider!
+  updateProvider(input: UpdateProviderInput!): Provider!
+  updateProviderMetadata(input: UpdateProviderMetadataInput!): Provider!
+  createFolder(input: CreateFolderInput!): File!
+  renameFile(id: String!, name: String!): OkResponse!
+  updateFile(input: UpdateFileInput!): OkResponse!
+  deleteFile(id: String!): OkResponse!
+  deleteFolder(id: String!): OkResponse!
+  generateUploadKey: String!
+  starFile(id: String!): OkResponse!
+  unstarFile(id: String!): OkResponse!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input RegisterInput {
+  name: String!
+  email: String!
+  password: String!
+}
+
+input ForgotPasswordSendCodeInput {
+  email: String!
+}
+
+input ForgotPasswordVerifyCodeInput {
+  email: String!
+  code: Float!
+}
+
+input ForgotPasswordResetInput {
+  email: String!
+  code: Float!
+  password: String!
+}
+
+input CreateWorkspaceInput {
+  name: String!
+}
+
+input UpdateWorkspaceInput {
+  name: String
+}
+
+input GetAuthUrlInput {
+  type: ProviderType!
+  clientId: String!
+  clientSecret: String!
+}
+
+input HandleOAuthCallbackInput {
+  state: String!
+  code: String!
+}
+
+input AuthorizeApiKeyInput {
+  label: String!
+  type: ProviderType!
+  credentials: JSON!
+}
+
+input ConnectLocalProviderInput {
+  label: String!
+  basePath: String
+}
+
+input UpdateProviderInput {
+  id: String!
+  name: String
+  isActive: Boolean
+}
+
+input UpdateProviderMetadataInput {
+  id: String!
+  metadata: JSON!
+}
+
+input CreateFolderInput {
+  name: String!
+  parentPath: String
+}
+
+input UpdateFileInput {
+  id: String!
+  name: String
+  isStarred: Boolean
+}

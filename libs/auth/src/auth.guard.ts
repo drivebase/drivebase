@@ -1,4 +1,5 @@
-import { UsersService } from '@drivebase/users';
+import { Request } from 'express';
+
 import {
   CanActivate,
   ExecutionContext,
@@ -7,8 +8,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+
+import { UsersService } from '@drivebase/users';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -31,7 +34,8 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
+    const ctx = GqlExecutionContext.create(context);
+    const request = ctx.getContext().req as Request;
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
@@ -39,12 +43,9 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync<{ sub: string }>(
-        token,
-        {
-          secret: process.env.AUTH_SECRET ?? '',
-        },
-      );
+      const payload = await this.jwtService.verifyAsync<{ sub: string }>(token, {
+        secret: process.env.AUTH_SECRET ?? '',
+      });
       const user = await this.usersService.findById(payload.sub);
 
       if (!user) {
