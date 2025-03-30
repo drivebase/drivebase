@@ -18,10 +18,7 @@ COPY apps ./apps
 COPY libs ./libs
 COPY web ./web
 COPY tsconfig.json tsconfig.build.json ./
-COPY nest-cli.json schema.prisma webpack.config.js ./
-
-# Generate Prisma client
-RUN pnpm db:generate
+COPY nest-cli.json webpack.config.js ./
 
 ENV NODE_ENV=production
 
