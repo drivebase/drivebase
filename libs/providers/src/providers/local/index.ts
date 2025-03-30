@@ -26,7 +26,7 @@ ProviderRegistry.register(ProviderType.LOCAL, LocalProvider, {
       {
         id: 'basePath',
         type: 'string',
-        label: 'Storage Path',
+        label: 'Storage Path (optional)',
         description: 'Directory path for file storage (optional)',
       },
     ],
