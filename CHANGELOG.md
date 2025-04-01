@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.0.0-alpha.12](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.11...v1.0.0-alpha.12) (2025-04-01)
+
+
+### Bug Fixes
+
+* **typeorm.config.ts:** update migration path to include subdirectories for better migration management ([db27e22](https://github.com/drivebase/drivebase/commit/db27e22a76e2e137be23cea0ec8b3a2b9b96cd61))
+
 # [1.0.0-alpha.11](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.10...v1.0.0-alpha.11) (2025-03-30)
 
 
