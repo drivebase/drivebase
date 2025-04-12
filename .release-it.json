@@ -11,6 +11,9 @@
     "@release-it/conventional-changelog": {
       "preset": "angular",
       "infile": "CHANGELOG.md"
+    },
+    "@release-it/bumper": {
+      "out": ["docker-compose.yaml"]
     }
   }
 }
