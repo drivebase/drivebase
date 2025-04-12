@@ -1,6 +1,8 @@
+version: '3'
+
 services:
   drivebase:
-    image: ghcr.io/drivebase/drivebase:v1.0.0-alpha.13
+    image: ghcr.io/drivebase/drivebase:latest
     container_name: drivebase
     restart: always
     ports:
