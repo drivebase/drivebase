@@ -1,11 +1,19 @@
 import cookieParser from 'cookie-parser';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
 import 'reflect-metadata';
 
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
+
+const envFile = process.env.ENV_FILE || '.env';
+
+dotenv.config({
+  path: path.resolve(process.cwd(), envFile),
+  override: false,
+});
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

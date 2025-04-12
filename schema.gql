@@ -24,6 +24,7 @@ enum ProviderType {
   DROPBOX
   ONEDRIVE
   TELEGRAM
+  DARKIBOX
 }
 
 enum AuthType {

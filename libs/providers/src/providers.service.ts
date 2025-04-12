@@ -225,6 +225,7 @@ export class ProvidersService {
         metadata: {
           userInfo,
         },
+        createdAt: new Date(),
       });
 
       // Save to database

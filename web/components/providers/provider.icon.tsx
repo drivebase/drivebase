@@ -1,5 +1,4 @@
-import { ProviderType } from '@prisma/client';
-
+import { ProviderType } from '@drivebase/sdk';
 import { getProviderIcon } from '@drivebase/web/helpers/provider.icon';
 import { cn } from '@drivebase/web/lib/utils';
 
