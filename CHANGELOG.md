@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.0.0-alpha.13](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.12...v1.0.0-alpha.13) (2025-04-12)
+
+
+### Features
+
+* add DARKIBOX provider and integrate form-data package for enhanced file handling ([f535b71](https://github.com/drivebase/drivebase/commit/f535b71f4cd8075d6138ced33ff9d38d4a13d8c5))
+
 # [1.0.0-alpha.12](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.11...v1.0.0-alpha.12) (2025-04-01)
 
 
