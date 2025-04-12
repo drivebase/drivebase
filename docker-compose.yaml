@@ -1,12 +1,27 @@
 services:
-  drivebase-postgres:
+  drivebase:
+    image: ghcr.io/drivebase/drivebase:v1.0.0-alpha.13
+    container_name: drivebase
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - drivebase-network
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
+      - NODE_ENV=production
+      - PORT=3000
+
+  postgres:
     image: postgres:17-alpine
     container_name: drivebase-postgres
     restart: always
     environment:
-      POSTGRES_PASSWORD: drivebase-local-pwd
-      POSTGRES_USER: drivebase-local
-      POSTGRES_DB: drivebase-db-local
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
     volumes:
       - postgres-volume:/var/lib/postgresql/data
     ports:
