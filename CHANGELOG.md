@@ -1,5 +1,7 @@
 # Changelog
 
+# [1.0.0-alpha.14](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.13...v1.0.0-alpha.14) (2025-04-12)
+
 # [1.0.0-alpha.13](https://github.com/drivebase/drivebase/compare/v1.0.0-alpha.12...v1.0.0-alpha.13) (2025-04-12)
 
 
