@@ -48,6 +48,7 @@
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
+    "form-data": "^4.0.2",
     "google-auth-library": "^9.15.1",
     "googleapis": "^148.0.0",
     "graphql-type-json": "^0.3.2",
