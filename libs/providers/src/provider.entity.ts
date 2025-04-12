@@ -24,6 +24,7 @@ export enum ProviderType {
   DROPBOX = 'DROPBOX',
   ONEDRIVE = 'ONEDRIVE',
   TELEGRAM = 'TELEGRAM',
+  DARKIBOX = 'DARKIBOX',
 }
 
 export enum AuthType {
