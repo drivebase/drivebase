@@ -14,7 +14,7 @@ Open-source, self-hosted cloud file manager designed to unify file storage acros
 <p align="center"><a href="https://github.com/drivebase/drivebase/discussions">Discussions</a> · <a href="https://drivebase.github.io/docs">Documentation</a> · <a href="https://discord.gg/3kUSy2d">Discord</a></p>
 
 > [!WARNING]
-> This project is currently in early development, expect breaking changes with each commit.
+> This project is currently being migrated to Golang and getting a dashboard redesign with many other changes.
 
 ![drivebase-banner-1](https://github.com/user-attachments/assets/fbac28ab-02ae-4077-af79-06ee938ce08b)
 
