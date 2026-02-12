@@ -20,7 +20,7 @@ async function testPassword() {
 		id: admin.id,
 		email: admin.email,
 		role: admin.role,
-		passwordHash: admin.passwordHash.substring(0, 20) + "...",
+		passwordHash: `${admin.passwordHash.substring(0, 20)}...`,
 	});
 
 	// Test password verification
@@ -34,8 +34,8 @@ async function testPassword() {
 		console.log("\n❌ Password doesn't match!");
 		console.log("Let's hash the password and compare:");
 		const newHash = await hashPassword(password);
-		console.log("New hash:", newHash.substring(0, 20) + "...");
-		console.log("DB hash:", admin.passwordHash.substring(0, 20) + "...");
+		console.log("New hash:", `${newHash.substring(0, 20)}...`);
+		console.log("DB hash:", `${admin.passwordHash.substring(0, 20)}...`);
 
 		// Update with correct hash
 		console.log("\nUpdating password hash in database...");

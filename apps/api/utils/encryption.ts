@@ -1,10 +1,10 @@
-import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
+import { randomBytes, createCipheriv, createDecipheriv } from "node:crypto";
 import { env } from "../config/env";
 import { EncryptionError } from "@drivebase/core";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
-const AUTH_TAG_LENGTH = 16;
+const _AUTH_TAG_LENGTH = 16;
 const KEY_LENGTH = 32;
 
 /**

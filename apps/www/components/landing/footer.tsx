@@ -76,7 +76,7 @@ export function Footer() {
                 <h3 className="text-sm font-semibold leading-6 text-white">
                   Project
                 </h3>
-                <ul role="list" className="mt-6 space-y-4">
+                <ul className="mt-6 space-y-4">
                   {navigation.main.map((item) => (
                     <li key={item.name}>
                       <Link

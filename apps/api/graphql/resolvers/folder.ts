@@ -1,5 +1,4 @@
 import type { MutationResolvers, QueryResolvers } from "../generated/types";
-import type { GraphQLContext } from "../context";
 import { requireAuth } from "./auth-helpers";
 import { FolderService } from "../../services/folder";
 

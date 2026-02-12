@@ -93,7 +93,7 @@ function FilesPage() {
 		const parts = currentPath.split("/").filter(Boolean);
 		return parts.map((part, index) => ({
 			name: part,
-			path: "/" + parts.slice(0, index + 1).join("/"),
+			path: `/${parts.slice(0, index + 1).join("/")}`,
 		}));
 	}, [currentPath]);
 

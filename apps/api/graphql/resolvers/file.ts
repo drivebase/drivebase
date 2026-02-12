@@ -3,7 +3,6 @@ import type {
 	QueryResolvers,
 	FileResolvers,
 } from "../generated/types";
-import type { GraphQLContext } from "../context";
 import { requireAuth } from "./auth-helpers";
 import { NotFoundError } from "@drivebase/core";
 import { FileService } from "../../services/file";

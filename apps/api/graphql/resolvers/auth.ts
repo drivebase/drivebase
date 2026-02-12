@@ -3,7 +3,6 @@ import type {
 	QueryResolvers,
 	AuthResponseResolvers,
 } from "../generated/types";
-import type { GraphQLContext } from "../context";
 import { requireAuth } from "./auth-helpers";
 import { AuthService } from "../../services/auth";
 
