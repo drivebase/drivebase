@@ -38,6 +38,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json bun.lock turbo.json ./
 COPY apps/api ./apps/api
 COPY packages ./packages
+RUN bun run --cwd /app/apps/api codegen
 
 # Static frontend served by Caddy.
 COPY --from=web-build /app/apps/web/dist /srv/www
