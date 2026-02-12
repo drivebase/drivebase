@@ -1,30 +1,24 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, mock } from "bun:test";
 
-const { providerServiceMock, getAvailableProvidersMock } = vi.hoisted(() => ({
-  providerServiceMock: {
-    getProviders: vi.fn(),
-    getProvider: vi.fn(),
-    connectProvider: vi.fn(),
-    disconnectProvider: vi.fn(),
-    syncProvider: vi.fn(),
-    updateProviderQuota: vi.fn(),
-    initiateOAuth: vi.fn(),
-    getProviderConfigPreview: vi.fn(),
-  },
-  getAvailableProvidersMock: vi.fn(),
+const providerServiceMock = {
+  getProviders: mock(),
+  getProvider: mock(),
+  connectProvider: mock(),
+  disconnectProvider: mock(),
+  syncProvider: mock(),
+  updateProviderQuota: mock(),
+  initiateOAuth: mock(),
+  getProviderConfigPreview: mock(),
+};
+
+mock.module("../../services/provider", () => ({
+  ProviderService: mock(() => providerServiceMock),
 }));
 
-vi.mock("../../services/provider", () => ({
-  ProviderService: vi.fn(() => providerServiceMock),
+const getAvailableProvidersMock = mock();
+mock.module("../../config/providers", () => ({
+  getAvailableProviders: getAvailableProvidersMock,
 }));
-
-vi.mock("../../config/providers", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...mod,
-    getAvailableProviders: getAvailableProvidersMock,
-  };
-});
 
 import {
   availableProviderResolvers,
@@ -35,7 +29,7 @@ import {
 
 describe("provider resolvers", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mock.restore();
   });
 
   it("availableProviders query returns provider catalog", async () => {

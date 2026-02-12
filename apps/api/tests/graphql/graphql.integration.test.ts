@@ -5,7 +5,7 @@ import { loadSchemaSync } from "@graphql-tools/load";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { GraphQLError } from "graphql";
 import { createYoga } from "graphql-yoga";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import { DrivebaseError } from "@drivebase/core";
 import { resolvers } from "../../graphql/resolvers";
 

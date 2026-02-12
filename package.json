@@ -10,6 +10,8 @@
 		"build": "bun --env-file=.env turbo run build --filter=@drivebase/api --filter=web",
 		"dev": "bun --env-file=.env.local turbo run dev --parallel --filter=@drivebase/api --filter=web",
 		"dev:local": "bun --env-file=.env.local turbo run dev --parallel --filter=@drivebase/api --filter=web",
+		"test": "bun test --env-file=.env.test",
+		"test:watch": "bun test --env-file=.env.test --watch",
 		"release": "release-it"
 	},
 	"overrides": {
