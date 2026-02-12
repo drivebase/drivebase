@@ -4,19 +4,19 @@
  * Google Drive storage provider for Drivebase
  */
 
+export { handleGoogleOAuthCallback, initiateGoogleOAuth } from "./oauth";
 export { GoogleDriveProvider } from "./provider";
+export type { GoogleDriveConfig } from "./schema";
 export {
+	GoogleDriveConfigFields,
 	GoogleDriveConfigSchema,
 	GoogleDriveSensitiveFields,
-	GoogleDriveConfigFields,
 } from "./schema";
-export type { GoogleDriveConfig } from "./schema";
-export { initiateGoogleOAuth, handleGoogleOAuthCallback } from "./oauth";
 
 import type { ProviderRegistration } from "@drivebase/core";
+import { handleGoogleOAuthCallback, initiateGoogleOAuth } from "./oauth";
 import { GoogleDriveProvider } from "./provider";
-import { GoogleDriveConfigSchema, GoogleDriveConfigFields } from "./schema";
-import { initiateGoogleOAuth, handleGoogleOAuthCallback } from "./oauth";
+import { GoogleDriveConfigFields, GoogleDriveConfigSchema } from "./schema";
 
 /**
  * Google Drive provider registration

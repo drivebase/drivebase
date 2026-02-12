@@ -1,11 +1,11 @@
+import { AuthenticationError, type UserRole } from "@drivebase/core";
+import { AuthService } from "../../services/auth";
+import type { GraphQLContext } from "../context";
 import type {
+	AuthResponseResolvers,
 	MutationResolvers,
 	QueryResolvers,
-	AuthResponseResolvers,
 } from "../generated/types";
-import type { GraphQLContext } from "../context";
-import { AuthenticationError } from "@drivebase/core";
-import { AuthService } from "../../services/auth";
 
 /**
  * Require authentication
@@ -35,7 +35,7 @@ export const authMutations: MutationResolvers = {
 		});
 		try {
 			const authService = new AuthService(context.db);
-			const role = args.input.role.toLowerCase();
+			const role = args.input.role.toLowerCase() as UserRole;
 			console.log("[RESOLVER] Calling authService.register with role:", role);
 			const result = await authService.register(
 				args.input.email,

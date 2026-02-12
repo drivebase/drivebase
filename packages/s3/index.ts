@@ -5,16 +5,16 @@
  */
 
 export { S3Provider } from "./provider";
+export type { S3Config } from "./schema";
 export {
+	S3ConfigFields,
 	S3ConfigSchema,
 	S3SensitiveFields,
-	S3ConfigFields,
 } from "./schema";
-export type { S3Config } from "./schema";
 
 import type { ProviderRegistration } from "@drivebase/core";
 import { S3Provider } from "./provider";
-import { S3ConfigSchema, S3ConfigFields } from "./schema";
+import { S3ConfigFields, S3ConfigSchema } from "./schema";
 
 export const s3Registration: ProviderRegistration = {
 	factory: () => new S3Provider(),

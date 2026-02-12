@@ -1,13 +1,13 @@
 import {
+	bigint,
+	boolean,
+	pgEnum,
 	pgTable,
 	text,
 	timestamp,
-	boolean,
-	bigint,
-	pgEnum,
 } from "drizzle-orm/pg-core";
-import { users } from "./users";
 import { createId } from "../utils";
+import { users } from "./users";
 
 /**
  * Provider type enum

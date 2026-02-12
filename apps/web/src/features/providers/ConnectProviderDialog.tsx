@@ -17,7 +17,7 @@ interface ConnectProviderDialogProps {
 	provider: AvailableProvider;
 	isOpen: boolean;
 	onClose: () => void;
-	onConnect: (data: any) => Promise<void>;
+	onConnect: (data: Record<string, unknown>) => Promise<void>;
 	isConnecting: boolean;
 }
 

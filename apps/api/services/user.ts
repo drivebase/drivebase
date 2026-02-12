@@ -1,7 +1,12 @@
+import {
+	ConflictError,
+	NotFoundError,
+	type UserRole,
+	ValidationError,
+} from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
 import { eq } from "drizzle-orm";
-import { NotFoundError, ConflictError, ValidationError } from "@drivebase/core";
 import { hashPassword, validatePassword } from "../utils/password";
 
 export class UserService {
@@ -59,13 +64,13 @@ export class UserService {
 	async create(data: {
 		email: string;
 		password: string;
-		role: any;
+		role: UserRole;
 		name?: string;
 	}) {
 		// Validate password
 		const validation = validatePassword(data.password);
 		if (!validation.valid) {
-			throw new ValidationError(validation.message!);
+			throw new ValidationError(validation.message || "Invalid password");
 		}
 
 		// Check if email already exists
@@ -91,7 +96,7 @@ export class UserService {
 				name: defaultName,
 				email: data.email,
 				passwordHash,
-				role: data.role as any,
+				role: data.role,
 				isActive: true,
 			})
 			.returning();
@@ -106,7 +111,7 @@ export class UserService {
 	/**
 	 * Update user
 	 */
-	async update(id: string, data: { role?: any; isActive?: boolean }) {
+	async update(id: string, data: { role?: UserRole; isActive?: boolean }) {
 		const [user] = await this.db
 			.update(users)
 			.set({

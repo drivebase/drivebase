@@ -1,5 +1,5 @@
-import { getDb } from "@drivebase/db";
-import { users } from "@drivebase/db";
+import { UserRole } from "@drivebase/core";
+import { getDb, users } from "@drivebase/db";
 import { UserService } from "../services/user";
 import { logger } from "./logger";
 
@@ -12,7 +12,7 @@ export async function initializeApp() {
 	const db = getDb();
 
 	// Check if any users exist
-	let existingUsers;
+	let existingUsers: unknown[] = [];
 	try {
 		existingUsers = await db.select().from(users).limit(1);
 	} catch (error) {
@@ -38,7 +38,7 @@ export async function initializeApp() {
 			const owner = await userService.create({
 				email: defaultEmail,
 				password: defaultPassword,
-				role: "owner",
+				role: UserRole.OWNER,
 			});
 
 			logger.info({

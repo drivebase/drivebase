@@ -177,7 +177,10 @@ function FilesPage() {
 				throw new Error("Upload URL was not returned.");
 			}
 
-			const onUploadProgress = (progressEvent: any) => {
+			const onUploadProgress = (progressEvent: {
+				loaded: number;
+				total?: number;
+			}) => {
 				const total = progressEvent.total || file.size;
 				const percent = Math.max(
 					1,
@@ -211,7 +214,7 @@ function FilesPage() {
 
 			updateQueueItem(queueId, { status: "success", progress: 100 });
 			return true;
-		} catch (error: any) {
+		} catch (error: unknown) {
 			if (createdFileId) {
 				try {
 					await deleteFile({ id: createdFileId });
@@ -223,7 +226,12 @@ function FilesPage() {
 				}
 			}
 
-			const message = error.response?.data || error.message || "Upload failed";
+			const axiosError = error as {
+				response?: { data?: string };
+				message?: string;
+			};
+			const message =
+				axiosError.response?.data || axiosError.message || "Upload failed";
 			updateQueueItem(queueId, {
 				status: "error",
 				error: String(message),
@@ -469,6 +477,7 @@ function FilesPage() {
 	};
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: this is a drag-and-drop container
 		<div
 			className="p-8 flex flex-col gap-6 h-full relative"
 			onDragEnter={handleDragEnter}

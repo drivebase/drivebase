@@ -1,9 +1,9 @@
 import type {
-	ProviderQuota,
+	DownloadResponse,
 	FileMetadata,
 	FolderMetadata,
+	ProviderQuota,
 	UploadResponse,
-	DownloadResponse,
 } from "./types";
 
 /**

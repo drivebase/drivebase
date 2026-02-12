@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import {
 	FileArchive,
 	FileCode2,
@@ -9,6 +8,7 @@ import {
 	Video,
 } from "lucide-react";
 import { getFileKind } from "@/features/files/utils";
+import { cn } from "@/lib/utils";
 
 interface FileMimeIconProps {
 	mimeType?: string | null;

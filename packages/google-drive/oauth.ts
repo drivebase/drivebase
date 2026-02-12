@@ -1,6 +1,6 @@
-import { google } from "googleapis";
 import type { OAuthInitResult, ProviderConfig } from "@drivebase/core";
 import { ProviderError } from "@drivebase/core";
+import { google } from "googleapis";
 import type { GoogleDriveConfig } from "./schema";
 import { GoogleDriveConfigSchema } from "./schema";
 

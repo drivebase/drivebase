@@ -1,10 +1,11 @@
+import type { UserRole } from "@drivebase/core";
+import { AuthService } from "../../services/auth";
 import type {
+	AuthResponseResolvers,
 	MutationResolvers,
 	QueryResolvers,
-	AuthResponseResolvers,
 } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
-import { AuthService } from "../../services/auth";
 
 export const authQueries: QueryResolvers = {
 	me: async (_parent, _args, context) => {
@@ -17,7 +18,7 @@ export const authQueries: QueryResolvers = {
 export const authMutations: MutationResolvers = {
 	register: async (_parent, args, context) => {
 		const authService = new AuthService(context.db);
-		const role = args.input.role.toLowerCase();
+		const role = args.input.role.toLowerCase() as UserRole;
 		const result = await authService.register(
 			args.input.email,
 			args.input.password,

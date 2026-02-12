@@ -1,5 +1,5 @@
-import { getRedis } from "./client";
 import { RateLimitError } from "@drivebase/core";
+import { getRedis } from "./client";
 
 const RATE_LIMIT_PREFIX = "rate:";
 

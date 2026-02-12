@@ -1,14 +1,14 @@
-import type { Database } from "@drivebase/db";
-import { folders, } from "@drivebase/db";
-import { eq, and, isNull } from "drizzle-orm";
 import {
-	NotFoundError,
-	ValidationError,
 	ConflictError,
-	normalizePath,
-	joinPath,
 	getParentPath,
+	joinPath,
+	NotFoundError,
+	normalizePath,
+	ValidationError,
 } from "@drivebase/core";
+import type { Database } from "@drivebase/db";
+import { folders } from "@drivebase/db";
+import { and, eq, isNull } from "drizzle-orm";
 import { ProviderService } from "./provider";
 
 export class FolderService {
@@ -95,7 +95,7 @@ export class FolderService {
 		}
 
 		// Create folder in database
-		const [folder] = await this.db
+		const [folder] = (await this.db
 			.insert(folders)
 			.values({
 				virtualPath,
@@ -106,7 +106,7 @@ export class FolderService {
 				createdBy: userId,
 				isDeleted: false,
 			})
-			.returning();
+			.returning()) as unknown[];
 
 		if (!folder) {
 			throw new Error("Failed to create folder");

@@ -1,7 +1,7 @@
 "use client";
 
+import { Box, Cloud, Globe, Server, Shield, Zap } from "lucide-react";
 import { motion } from "motion/react";
-import { Cloud, Server, Box, Globe, Shield, Zap } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const features = [

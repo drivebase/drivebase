@@ -1,13 +1,13 @@
+import { NotFoundError } from "@drivebase/core";
+import { folders, storageProviders, users } from "@drivebase/db";
+import { eq } from "drizzle-orm";
+import { FileService } from "../../services/file";
 import type {
+	FileResolvers,
 	MutationResolvers,
 	QueryResolvers,
-	FileResolvers,
 } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
-import { NotFoundError } from "@drivebase/core";
-import { FileService } from "../../services/file";
-import { storageProviders, folders, users } from "@drivebase/db";
-import { eq } from "drizzle-orm";
 
 /**
  * Require authentication

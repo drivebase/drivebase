@@ -1,15 +1,15 @@
+import { getAvailableProviders } from "../../config/providers";
+import { ProviderService } from "../../services/provider";
+import { logger } from "../../utils/logger";
 import type {
-	MutationResolvers,
-	QueryResolvers,
-	StorageProviderResolvers,
 	AvailableProvider,
 	AuthType as GQLAuthType,
 	ProviderType as GQLProviderType,
+	MutationResolvers,
+	QueryResolvers,
+	StorageProviderResolvers,
 } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
-import { ProviderService } from "../../services/provider";
-import { getAvailableProviders } from "../../config/providers";
-import { logger } from "../../utils/logger";
 
 /**
  * Require authentication

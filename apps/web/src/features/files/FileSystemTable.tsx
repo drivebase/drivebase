@@ -91,7 +91,10 @@ function LoadingTable({ showSharedColumn }: { showSharedColumn: boolean }) {
 			</TableHeader>
 			<TableBody>
 				{Array.from({ length: 6 }).map((_, i) => (
-					<TableRow key={i}>
+					<TableRow
+						// biome-ignore lint/suspicious/noArrayIndexKey: skeleton loading
+						key={i}
+					>
 						<TableCell>
 							<Skeleton className="h-4 w-4" />
 						</TableCell>

@@ -1,6 +1,6 @@
+import { FolderService } from "../../services/folder";
 import type { MutationResolvers, QueryResolvers } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
-import { FolderService } from "../../services/folder";
 
 /**
  * Require authentication
