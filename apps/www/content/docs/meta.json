@@ -14,7 +14,7 @@
     "contributing/index",
     "faq/index",
     "---Storage Providers---",
-    "storage-providers/index",
+    "storage-providers/overview",
     "storage-providers/local",
     "storage-providers/s3",
     "storage-providers/google-drive"
