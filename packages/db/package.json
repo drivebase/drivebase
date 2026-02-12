@@ -1,0 +1,31 @@
+{
+  "name": "@drivebase/db",
+  "version": "0.1.0",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "description": "Database schema and migrations for Drivebase",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate",
+    "migrate": "bun run migrations/migrate.ts",
+    "studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@drivebase/core": "workspace:*",
+    "dotenv": "^17.2.4",
+    "drizzle-orm": "^0.45.1",
+    "nanoid": "^5.0.9",
+    "pg": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.31.9"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

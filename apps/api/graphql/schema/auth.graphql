@@ -1,0 +1,79 @@
+"""
+Authentication and authorization
+"""
+
+type Query {
+  """Get current authenticated user"""
+  me: User
+}
+
+type Mutation {
+  """
+  Register a new user (only owner can register new users)
+  """
+  register(input: RegisterInput!): AuthResponse!
+
+  """
+  Login with email and password
+  """
+  login(input: LoginInput!): AuthResponse!
+
+  """
+  Logout current user
+  """
+  logout: Boolean!
+
+  """
+  Request password reset OTP
+  """
+  requestPasswordReset(email: String!): Boolean!
+
+  """
+  Reset password with OTP
+  """
+  resetPassword(input: ResetPasswordInput!): Boolean!
+
+  """
+  Change password (requires authentication)
+  """
+  changePassword(input: ChangePasswordInput!): Boolean!
+
+  """
+  Update current user's profile
+  """
+  updateMyProfile(input: UpdateMyProfileInput!): User!
+}
+
+input RegisterInput {
+  email: String!
+  password: String!
+  role: UserRole!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input ResetPasswordInput {
+  email: String!
+  otp: String!
+  newPassword: String!
+}
+
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+
+input UpdateMyProfileInput {
+  name: String!
+}
+
+type AuthResponse {
+  """JWT access token"""
+  token: String!
+
+  """Authenticated user"""
+  user: User!
+}

@@ -1,6 +1,0 @@
-{
-  "title": "Drivebase",
-  "description": "Su almacenamiento de archivos unificado gestionado en múltiples proveedores de nube.",
-  "workspace_placeholder": "Ingrese el nombre de su espacio de trabajo",
-  "connect_provider_to_workspace": "Seleccione un proveedor para conectar a su espacio de trabajo."
-}

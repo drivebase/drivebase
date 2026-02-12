@@ -1,61 +1,59 @@
-FROM node:22-alpine AS base
-
-# Install build dependencies
-RUN apk add --no-cache python3 make g++
-
-# Set working directory
-WORKDIR /app
-
-# Copy package files
-RUN mkdir -p /app/web
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY web/package.json ./web
-
-# Install dependencies
-RUN npm i -g pnpm@9 && \
-  pnpm install
-
-# Copy the rest of the application
-COPY . .
-
-# Build the application
-RUN pnpm run build && \
-  pnpm prune --production && \
-  pnpm store prune
-
-FROM node:22-alpine AS runner
-
-# Install nginx
-RUN apk add --no-cache nginx
-
-# Create nginx config directory
-RUN mkdir -p /etc/nginx/conf.d
-
-# Copy docker configs
-COPY var/docker/nginx.conf /etc/nginx/nginx.conf
-COPY var/docker/default.conf /etc/nginx/conf.d/default.conf
-COPY var/docker/entrypoint.sh /app/entrypoint.sh
+FROM oven/bun:1.2-alpine AS deps
 
 WORKDIR /app
 
-# Copy the package files
-COPY --from=base /app/package.json ./package.json
-COPY --from=base /app/pnpm-lock.yaml ./pnpm-lock.yaml
+# Install dependencies first for better layer caching.
+COPY package.json bun.lock turbo.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/core/package.json ./packages/core/package.json
+COPY packages/db/package.json ./packages/db/package.json
+COPY packages/google-drive/package.json ./packages/google-drive/package.json
+COPY packages/local/package.json ./packages/local/package.json
+COPY packages/s3/package.json ./packages/s3/package.json
+COPY packages/utils/package.json ./packages/utils/package.json
+RUN bun install --frozen-lockfile
 
-# Copy the node_modules
-COPY --from=base /app/node_modules ./node_modules
+FROM deps AS web-build
 
-# Copy the dist
-COPY --from=base /app/dist/apps/drivebase ./dist
-COPY --from=base /app/web/dist ./web
+WORKDIR /app
 
-# Copy tsconfig
-COPY tsconfig.json ./
-COPY typeorm.config.ts ./
+COPY apps ./apps
+COPY packages ./packages
+COPY biome.json ./
+COPY README.md ./
 
-RUN chmod +x /app/entrypoint.sh
+# Build-time frontend API URL (defaults to same-origin proxy).
+ARG VITE_PUBLIC_API_URL=/graphql
+ENV VITE_PUBLIC_API_URL=${VITE_PUBLIC_API_URL}
+RUN bun run --cwd /app/apps/web build
 
+FROM oven/bun:1.2-alpine AS runtime
+
+WORKDIR /app
+
+RUN apk add --no-cache caddy supervisor
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json bun.lock turbo.json ./
+COPY apps/api ./apps/api
+COPY packages ./packages
+
+# Static frontend served by Caddy.
+COPY --from=web-build /app/apps/web/dist /srv/www
+
+COPY docker/Caddyfile /etc/caddy/Caddyfile
+COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/supervisor.d /etc/supervisor.d
+COPY docker/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
+ENV PORT=4000
 ENV NODE_ENV=production
+ENV CORS_ORIGIN=http://localhost:3000
+ENV API_BASE_URL=http://localhost:3000
+ENV API_UPSTREAM=http://127.0.0.1:4000
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+EXPOSE 3000
 
+CMD ["/usr/local/bin/start.sh"]

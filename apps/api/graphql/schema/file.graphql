@@ -1,0 +1,106 @@
+"""
+File management
+"""
+
+type File {
+  id: ID!
+  virtualPath: String!
+  name: String!
+  mimeType: String!
+  size: Float!
+  hash: String
+  remoteId: String!
+  providerId: ID!
+  folderId: ID
+  uploadedBy: ID!
+  isDeleted: Boolean!
+  starred: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  """Storage provider"""
+  provider: StorageProvider!
+
+  """Parent folder"""
+  folder: Folder
+
+  """User who uploaded"""
+  user: User!
+}
+
+type FileConnection {
+  files: [File!]!
+  total: Int!
+  hasMore: Boolean!
+}
+
+"""Files and folders at a given virtual path"""
+type PathContents {
+  files: [File!]!
+  folders: [Folder!]!
+  folder: Folder
+}
+
+extend type Query {
+  """Get file by ID"""
+  file(id: ID!): File!
+
+  """Get files in a folder (by folderId)"""
+  files(folderId: ID, limit: Int, offset: Int): FileConnection!
+
+  """
+  Get files and folders at a virtual path.
+  Use path "/" for root. Example: "/documents" for a subfolder.
+  """
+  contents(path: String!): PathContents!
+
+  """Search files by name"""
+  searchFiles(query: String!, limit: Int): [File!]!
+
+  """Get starred files"""
+  starredFiles: [File!]!
+}
+
+extend type Mutation {
+  """Request file upload (returns upload URL)"""
+  requestUpload(input: RequestUploadInput!): UploadResponse!
+
+  """Request file download (returns direct URL or API proxy URL)"""
+  requestDownload(id: ID!): DownloadResponse!
+
+  """Rename a file"""
+  renameFile(id: ID!, name: String!): File!
+
+  """Move file to different folder"""
+  moveFile(id: ID!, folderId: ID): File!
+
+  """Delete file (soft delete)"""
+  deleteFile(id: ID!): Boolean!
+
+  """Star a file"""
+  starFile(id: ID!): File!
+
+  """Unstar a file"""
+  unstarFile(id: ID!): File!
+}
+
+input RequestUploadInput {
+  name: String!
+  mimeType: String!
+  size: Float!
+  folderId: ID
+  providerId: ID!
+}
+
+type UploadResponse {
+  fileId: ID!
+  uploadUrl: String
+  uploadFields: JSON
+  useDirectUpload: Boolean!
+}
+
+type DownloadResponse {
+  fileId: ID!
+  downloadUrl: String
+  useDirectDownload: Boolean!
+}
