@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.14",
+    "@release-it/bumper": "^7.0.5",
     "@release-it/conventional-changelog": "^10.0.5",
     "release-it": "^19.2.4",
     "turbo": "^2.8.3",
