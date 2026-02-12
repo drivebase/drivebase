@@ -13,25 +13,19 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'pnpm'
+          bun-version: latest
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Run tests
         id: test-run
         run: |
           echo "::group::Test Results"
-          TEST_OUTPUT=$(pnpm test -- --no-color)
+          TEST_OUTPUT=$(NO_COLOR=1 bun test)
           echo "$TEST_OUTPUT"
           echo "::endgroup::"
 
