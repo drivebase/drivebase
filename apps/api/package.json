@@ -8,9 +8,8 @@
   "scripts": {
     "dev": "bun --hot index.ts",
     "start": "bun index.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
     "codegen": "graphql-codegen --config codegen.yml",
     "codegen:watch": "graphql-codegen --config codegen.yml --watch",
     "db:generate": "cd ../../packages/db && bun run generate",
@@ -42,8 +41,7 @@
     "@graphql-codegen/typescript-resolvers": "^5.1.5",
     "@types/bcryptjs": "^3.0.0",
     "@types/bun": "latest",
-    "@types/ioredis": "^5.0.0",
-    "vitest": "^3.0.5"
+    "@types/ioredis": "^5.0.0"
   },
 	"peerDependencies": {
 		"typescript": "^5"

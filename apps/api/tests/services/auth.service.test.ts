@@ -1,68 +1,68 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, mock, beforeEach } from "bun:test";
 import { AuthService } from "../../services/auth";
 
 // Mock dependencies
-vi.mock("@drivebase/db", () => ({
+mock.module("@drivebase/db", () => ({
   users: {},
 }));
 
-vi.mock("../../redis/otp", () => ({
-  storeOTP: vi.fn(),
-  verifyOTP: vi.fn(),
+mock.module("../../redis/otp", () => ({
+  storeOTP: mock(),
+  verifyOTP: mock(),
 }));
 
-vi.mock("../../redis/rate-limit", () => ({
-  checkRateLimit: vi.fn(),
+mock.module("../../redis/rate-limit", () => ({
+  checkRateLimit: mock(),
   RateLimits: { AUTH: "auth" },
 }));
 
-vi.mock("../../redis/session", () => ({
-  createSession: vi.fn(),
-  deleteUserSessions: vi.fn(),
+mock.module("../../redis/session", () => ({
+  createSession: mock(),
+  deleteUserSessions: mock(),
 }));
 
-vi.mock("../../utils/jwt", () => ({
-  createToken: vi.fn(),
+mock.module("../../utils/jwt", () => ({
+  createToken: mock(),
 }));
 
-vi.mock("../../utils/otp", () => ({
-  generateOTP: vi.fn(),
-  sendOTP: vi.fn(),
+mock.module("../../utils/otp", () => ({
+  generateOTP: mock(),
+  sendOTP: mock(),
 }));
 
-vi.mock("../../utils/password", () => ({
-  hashPassword: vi.fn(),
-  validatePassword: vi.fn().mockReturnValue({ valid: true }),
-  verifyPassword: vi.fn(),
+mock.module("../../utils/password", () => ({
+  hashPassword: mock(),
+  validatePassword: mock().mockReturnValue({ valid: true }),
+  verifyPassword: mock(),
 }));
 
-vi.mock("../../utils/logger", () => ({
+mock.module("../../utils/logger", () => ({
   logger: {
-    info: vi.fn(),
-    debug: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
+    info: mock(),
+    debug: mock(),
+    warn: mock(),
+    error: mock(),
   },
 }));
 
 describe("AuthService", () => {
   let authService: AuthService;
-  const mockDb = {
-    select: vi.fn().mockReturnThis(),
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockReturnThis(),
-    values: vi.fn().mockReturnThis(),
-    returning: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    set: vi.fn().mockReturnThis(),
-    delete: vi.fn().mockReturnThis(),
+  const mockDb: any = {
+    select: mock(() => mockDb),
+    from: mock(() => mockDb),
+    where: mock(() => mockDb),
+    limit: mock(() => mockDb),
+    insert: mock(() => mockDb),
+    values: mock(() => mockDb),
+    returning: mock(() => mockDb),
+    update: mock(() => mockDb),
+    set: mock(() => mockDb),
+    delete: mock(() => mockDb),
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    authService = new AuthService(mockDb as any);
+    mock.restore();
+    authService = new AuthService(mockDb);
   });
 
   it("should be defined", () => {

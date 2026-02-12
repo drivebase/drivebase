@@ -24,6 +24,13 @@
 		"dev": {
 			"persistent": true,
 			"cache": false
+		},
+		"test": {
+			"dependsOn": ["^test"]
+		},
+		"test:watch": {
+			"persistent": true,
+			"cache": false
 		}
 	}
 }

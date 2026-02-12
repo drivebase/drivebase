@@ -1,24 +1,22 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, mock } from "bun:test";
 
-const { userServiceMock } = vi.hoisted(() => ({
-  userServiceMock: {
-    findAll: vi.fn(),
-    findById: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
+const userServiceMock = {
+  findAll: mock(),
+  findById: mock(),
+  create: mock(),
+  update: mock(),
+  delete: mock(),
+};
 
-vi.mock("../../services/user", () => ({
-  UserService: vi.fn(() => userServiceMock),
+mock.module("../../services/user", () => ({
+  UserService: mock(() => userServiceMock),
 }));
 
 import { userMutations, userQueries, userResolvers } from "../../graphql/resolvers/user";
 
 describe("user resolvers", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mock.restore();
   });
 
   it("users query calls service for admin", async () => {
