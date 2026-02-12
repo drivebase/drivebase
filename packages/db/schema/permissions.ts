@@ -1,7 +1,7 @@
-import { pgTable, text, timestamp, pgEnum, unique } from "drizzle-orm/pg-core";
-import { users } from "./users";
-import { folders } from "./folders";
+import { pgEnum, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
+import { folders } from "./folders";
+import { users } from "./users";
 
 /**
  * Permission role enum

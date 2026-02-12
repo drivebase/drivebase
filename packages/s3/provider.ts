@@ -29,7 +29,7 @@ import type {
 	UploadResponse,
 } from "@drivebase/core";
 import { ProviderError } from "@drivebase/core";
-import { S3ConfigSchema, type S3Config } from "./schema";
+import { type S3Config, S3ConfigSchema } from "./schema";
 
 const FOLDER_MIME_TYPE = "application/x-directory";
 const DEFAULT_PAGE_SIZE = 100;
@@ -92,7 +92,7 @@ function toNodeReadable(value: unknown): Readable {
 
 	if (isWebReadableStream(value)) {
 		return Readable.fromWeb(
-			value as unknown as import("node:stream/web").ReadableStream<any>,
+			value as unknown as import("node:stream/web").ReadableStream,
 		);
 	}
 
@@ -207,7 +207,7 @@ export class S3Provider implements IStorageProvider {
 				new PutObjectCommand({
 					Bucket: bucket,
 					Key: remoteId,
-					Body: data as unknown as any,
+					Body: data as unknown as ReadableStream,
 				}),
 			);
 		} catch (error) {

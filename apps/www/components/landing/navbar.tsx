@@ -1,4 +1,5 @@
 import { Github } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export function Navbar() {
@@ -8,10 +9,12 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2">
-              <img
+              <Image
                 className="h-8 w-auto"
                 src="https://raw.githubusercontent.com/drivebase/drivebase/main/drivebase.svg"
                 alt="Drivebase"
+                width={32}
+                height={32}
               />
             </Link>
             <div className="hidden md:flex items-center gap-6">

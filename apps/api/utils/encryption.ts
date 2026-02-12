@@ -1,6 +1,6 @@
-import { randomBytes, createCipheriv, createDecipheriv } from "node:crypto";
-import { env } from "../config/env";
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { EncryptionError } from "@drivebase/core";
+import { env } from "../config/env";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
@@ -56,9 +56,13 @@ export function decrypt(ciphertext: string): string {
 			throw new Error("Invalid ciphertext format");
 		}
 
-		const iv = Buffer.from(parts[0]!, "hex");
-		const authTag = Buffer.from(parts[1]!, "hex");
-		const encrypted = parts[2]!;
+		const [ivHex, authTagHex, encrypted] = parts;
+		if (!ivHex || !authTagHex || !encrypted) {
+			throw new Error("Invalid ciphertext components");
+		}
+
+		const iv = Buffer.from(ivHex, "hex");
+		const authTag = Buffer.from(authTagHex, "hex");
 
 		const decipher = createDecipheriv(ALGORITHM, key, iv);
 		decipher.setAuthTag(authTag);

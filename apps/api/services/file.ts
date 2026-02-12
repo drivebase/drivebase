@@ -1,18 +1,18 @@
-import { env } from "../config/env";
+import {
+	ConflictError,
+	getParentPath,
+	joinPath,
+	NotFoundError,
+	sanitizeFilename,
+	ValidationError,
+} from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { files, folders } from "@drivebase/db";
-import { eq, and, like, desc, isNull } from "drizzle-orm";
-import {
-	NotFoundError,
-	ValidationError,
-	ConflictError,
-	sanitizeFilename,
-	joinPath,
-	getParentPath,
-} from "@drivebase/core";
+import { and, desc, eq, isNull, like } from "drizzle-orm";
+import { env } from "../config/env";
 import { logger } from "../utils/logger";
-import { ProviderService } from "./provider";
 import { FolderService } from "./folder";
+import { ProviderService } from "./provider";
 
 export class FileService {
 	constructor(private db: Database) {}
@@ -184,27 +184,25 @@ export class FileService {
 		offset: number = 0,
 	) {
 		logger.debug({ msg: "Listing files", userId, folderId, limit, offset });
-		let fileList;
 
 		try {
-			if (folderId) {
-				fileList = await this.db
-					.select()
-					.from(files)
-					.where(and(eq(files.folderId, folderId), eq(files.isDeleted, false)))
-					.limit(limit)
-					.offset(offset)
-					.orderBy(desc(files.createdAt));
-			} else {
-				// No folderId = root level only (folderId IS NULL)
-				fileList = await this.db
-					.select()
-					.from(files)
-					.where(and(isNull(files.folderId), eq(files.isDeleted, false)))
-					.limit(limit)
-					.offset(offset)
-					.orderBy(desc(files.createdAt));
-			}
+			const fileList = folderId
+				? await this.db
+						.select()
+						.from(files)
+						.where(
+							and(eq(files.folderId, folderId), eq(files.isDeleted, false)),
+						)
+						.limit(limit)
+						.offset(offset)
+						.orderBy(desc(files.createdAt))
+				: await this.db
+						.select()
+						.from(files)
+						.where(and(isNull(files.folderId), eq(files.isDeleted, false)))
+						.limit(limit)
+						.offset(offset)
+						.orderBy(desc(files.createdAt));
 
 			// Count total
 			// TODO: Implement proper count query

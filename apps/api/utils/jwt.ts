@@ -1,6 +1,6 @@
-import { SignJWT, jwtVerify } from "jose";
-import { env } from "../config/env";
 import { AuthenticationError } from "@drivebase/core";
+import { jwtVerify, SignJWT } from "jose";
+import { env } from "../config/env";
 
 const SECRET = new TextEncoder().encode(env.JWT_SECRET);
 const ISSUER = "drivebase";

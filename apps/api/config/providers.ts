@@ -4,8 +4,8 @@ import {
 	GoogleDriveSensitiveFields,
 	googleDriveRegistration,
 } from "@drivebase/google-drive";
-import { S3SensitiveFields, s3Registration } from "@drivebase/s3";
 import { LocalSensitiveFields, localRegistration } from "@drivebase/local";
+import { S3SensitiveFields, s3Registration } from "@drivebase/s3";
 
 /**
  * Storage provider registry

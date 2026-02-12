@@ -1,16 +1,16 @@
-import { useQuery, useMutation } from "urql";
+import { useCallback, useEffect } from "react";
+import { useMutation, useQuery } from "urql";
 import {
-	ME_QUERY,
 	LOGIN_MUTATION,
-	REGISTER_MUTATION,
 	LOGOUT_MUTATION,
+	ME_QUERY,
+	REGISTER_MUTATION,
 	UPDATE_MY_PROFILE_MUTATION,
 } from "@/api/auth";
-import { useAuthStore } from "@/store/authStore";
-import { useCallback, useEffect } from "react";
-import type { LoginInput, RegisterInput } from "@/gql/graphql";
-import { useFragment as getFragmentData } from "@/gql/fragment-masking";
 import { UserFragment } from "@/api/fragments";
+import { useFragment as getFragmentData } from "@/gql/fragment-masking";
+import type { LoginInput, RegisterInput } from "@/gql/graphql";
+import { useAuthStore } from "@/store/authStore";
 
 export function useMe() {
 	const [result, reexecuteQuery] = useQuery({

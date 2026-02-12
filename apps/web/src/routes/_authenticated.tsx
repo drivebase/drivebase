@@ -4,10 +4,10 @@ import {
 	redirect,
 	useNavigate,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { Button } from "@/components/ui/button";
 import { useMe } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
 

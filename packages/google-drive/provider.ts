@@ -1,4 +1,3 @@
-
 import type {
 	CopyOptions,
 	CreateFolderOptions,
@@ -17,6 +16,7 @@ import type {
 	UploadResponse,
 } from "@drivebase/core";
 import { ProviderError } from "@drivebase/core";
+import type { Auth } from "googleapis";
 import { type drive_v3, google } from "googleapis";
 import type { GoogleDriveConfig } from "./schema";
 import { GoogleDriveConfigSchema } from "./schema";
@@ -27,7 +27,7 @@ import { GoogleDriveConfigSchema } from "./schema";
 export class GoogleDriveProvider implements IStorageProvider {
 	private drive: drive_v3.Drive | null = null;
 	private config: GoogleDriveConfig | null = null;
-	private authClient: any = null;
+	private authClient: Auth.OAuth2Client | null = null;
 
 	/**
 	 * Initialize the provider with OAuth credentials.
@@ -199,7 +199,7 @@ export class GoogleDriveProvider implements IStorageProvider {
 		}
 
 		try {
-			const auth = drive.context._options.auth as any;
+			const auth = drive.context._options.auth as Auth.OAuth2Client;
 			const token = await auth.getAccessToken();
 
 			if (!token || !token.token) {

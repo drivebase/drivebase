@@ -1,7 +1,13 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
-import { users } from "./users";
-import { storageProviders } from "./providers";
+import {
+	type AnyPgColumn,
+	boolean,
+	pgTable,
+	text,
+	timestamp,
+} from "drizzle-orm/pg-core";
 import { createId } from "../utils";
+import { storageProviders } from "./providers";
+import { users } from "./users";
 
 /**
  * Folders table
@@ -16,7 +22,7 @@ export const folders = pgTable("folders", {
 	providerId: text("provider_id").references(() => storageProviders.id, {
 		onDelete: "set null",
 	}),
-	parentId: text("parent_id").references((): any => folders.id, {
+	parentId: text("parent_id").references((): AnyPgColumn => folders.id, {
 		onDelete: "cascade",
 	}),
 	createdBy: text("created_by")

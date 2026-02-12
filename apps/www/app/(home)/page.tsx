@@ -1,5 +1,5 @@
-import { CTA } from "@/components/landing/cta";
 import { BentoGrid } from "@/components/landing/bento-grid";
+import { CTA } from "@/components/landing/cta";
 import { Hero } from "@/components/landing/hero";
 
 export default function HomePage() {

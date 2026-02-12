@@ -1,5 +1,5 @@
-import { z } from "zod";
 import type { ProviderConfigField } from "@drivebase/core";
+import { z } from "zod";
 
 /**
  * Google Drive provider configuration schema.

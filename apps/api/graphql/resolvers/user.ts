@@ -1,10 +1,12 @@
+import type { UserRole } from "@drivebase/core";
+import { UserService } from "../../services/user";
 import type {
+	UserRole as GQLUserRole,
 	MutationResolvers,
 	QueryResolvers,
 	UserResolvers,
 } from "../generated/types";
 import { requireRole } from "./auth-helpers";
-import { UserService } from "../../services/user";
 
 export const userQueries: QueryResolvers = {
 	users: async (_parent, args, context) => {
@@ -31,7 +33,7 @@ export const userMutations: MutationResolvers = {
 		return userService.create({
 			email: args.input.email,
 			password: args.input.password,
-			role: args.input.role.toLowerCase(),
+			role: args.input.role.toLowerCase() as UserRole,
 		});
 	},
 
@@ -39,9 +41,9 @@ export const userMutations: MutationResolvers = {
 		requireRole(context, ["admin", "owner"]);
 		const userService = new UserService(context.db);
 
-		const updateData: { role?: any; isActive?: boolean } = {};
+		const updateData: { role?: UserRole; isActive?: boolean } = {};
 		if (args.input.role !== null && args.input.role !== undefined) {
-			updateData.role = args.input.role.toLowerCase();
+			updateData.role = args.input.role.toLowerCase() as UserRole;
 		}
 		if (args.input.isActive !== null && args.input.isActive !== undefined) {
 			updateData.isActive = args.input.isActive;
@@ -65,7 +67,7 @@ export const userResolvers: UserResolvers = {
 	id: (parent) => parent.id,
 	name: (parent) => parent.name,
 	email: (parent) => parent.email,
-	role: (parent) => parent.role.toUpperCase() as any,
+	role: (parent) => parent.role.toUpperCase() as GQLUserRole,
 	isActive: (parent) => parent.isActive,
 	lastLoginAt: (parent) => parent.lastLoginAt ?? null,
 	createdAt: (parent) => parent.createdAt,

@@ -1,20 +1,20 @@
 import { join } from "node:path";
+import { DrivebaseError } from "@drivebase/core";
+import { files, getDb } from "@drivebase/db";
 import { GraphQLFileLoader } from "@graphql-tools/graphql-file-loader";
 import { loadSchemaSync } from "@graphql-tools/load";
 import { makeExecutableSchema } from "@graphql-tools/schema";
+import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { createYoga } from "graphql-yoga";
-import { DrivebaseError } from "@drivebase/core";
 import { env } from "./config/env";
 import { createContext } from "./graphql/context";
 import { resolvers } from "./graphql/resolvers";
-import { initializeApp } from "./utils/init";
-import { logger } from "./utils/logger";
-import { ProviderService } from "./services/provider";
 import { FileService } from "./services/file";
+import { ProviderService } from "./services/provider";
+import { initializeApp } from "./utils/init";
 import { verifyToken } from "./utils/jwt";
-import { getDb, files } from "@drivebase/db";
-import { eq } from "drizzle-orm";
+import { logger } from "./utils/logger";
 
 /**
  * Initialize application (create default user if needed)
@@ -42,17 +42,17 @@ const schema = makeExecutableSchema({
 /**
  * Mask sensitive data in logs
  */
-function _maskSensitive(data: any): any {
+function _maskSensitive(data: unknown): unknown {
 	if (!data) return data;
 	if (typeof data !== "object") return data;
 
 	const sensitiveKeys = ["password", "token", "otp", "secret", "authorization"];
-	const masked = { ...data };
+	const masked = { ...(data as Record<string, unknown>) };
 
 	for (const key in masked) {
 		if (sensitiveKeys.some((k) => key.toLowerCase().includes(k))) {
 			masked[key] = "***MASKED***";
-		} else if (typeof masked[key] === "object") {
+		} else if (typeof masked[key] === "object" && masked[key] !== null) {
 			masked[key] = _maskSensitive(masked[key]);
 		}
 	}
@@ -69,8 +69,13 @@ function getProxyCorsHeaders() {
 
 function isExpectedAppErrorFromGraphQLLog(payload: unknown): boolean {
 	const record =
-		typeof payload === "object" && payload !== null ? (payload as any) : null;
-	const err = record?.err ?? record?.error ?? payload;
+		typeof payload === "object" && payload !== null
+			? (payload as Record<string, unknown>)
+			: null;
+	const err = (record?.err ?? record?.error ?? payload) as Record<
+		string,
+		unknown
+	>;
 	const stack = typeof err?.stack === "string" ? err.stack : "";
 
 	return /(AuthenticationError|AuthorizationError|ValidationError|NotFoundError|ConflictError|RateLimitError|QuotaExceededError)/.test(
@@ -79,15 +84,18 @@ function isExpectedAppErrorFromGraphQLLog(payload: unknown): boolean {
 }
 
 const graphQLLogger = {
-	debug: (...args: any[]) => (logger.debug as any).apply(logger, args),
-	info: (...args: any[]) => (logger.info as any).apply(logger, args),
-	warn: (...args: any[]) => (logger.warn as any).apply(logger, args),
-	error: (...args: any[]) => {
+	debug: (...args: unknown[]) =>
+		(logger.debug as (...args: unknown[]) => void).apply(logger, args),
+	info: (...args: unknown[]) =>
+		(logger.info as (...args: unknown[]) => void).apply(logger, args),
+	warn: (...args: unknown[]) =>
+		(logger.warn as (...args: unknown[]) => void).apply(logger, args),
+	error: (...args: unknown[]) => {
 		if (isExpectedAppErrorFromGraphQLLog(args[0])) {
-			(logger.warn as any).apply(logger, args);
+			(logger.warn as (...args: unknown[]) => void).apply(logger, args);
 			return;
 		}
-		(logger.error as any).apply(logger, args);
+		(logger.error as (...args: unknown[]) => void).apply(logger, args);
 	},
 };
 
@@ -121,8 +129,8 @@ const yoga = createYoga({
 		};
 	},
 	maskedErrors: {
-		maskError: (error: any) => {
-			const original = error.originalError;
+		maskError: (error: unknown) => {
+			const original = (error as { originalError?: unknown }).originalError;
 
 			if (original instanceof DrivebaseError) {
 				return new GraphQLError(original.message, {

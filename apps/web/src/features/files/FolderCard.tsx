@@ -1,13 +1,13 @@
 import {
+	FileText,
 	FolderIcon,
+	Image as ImageIcon,
 	Music,
 	Video,
-	FileText,
-	Image as ImageIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import type { FolderItemFragment } from "@/gql/graphql";
+import { cn } from "@/lib/utils";
 
 // TODO: Map folder types based on content or metadata if available
 const iconMap = {

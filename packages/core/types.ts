@@ -1,8 +1,8 @@
 import type {
-	UserRole,
+	ActivityType,
 	PermissionRole,
 	ProviderType,
-	ActivityType,
+	UserRole,
 } from "./enums";
 
 /**

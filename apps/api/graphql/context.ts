@@ -1,9 +1,9 @@
-import type { YogaInitialContext } from "graphql-yoga";
 import type { Database } from "@drivebase/db";
-import type { JWTPayload } from "../utils/jwt";
 import { getDb } from "@drivebase/db";
-import { extractToken, verifyToken } from "../utils/jwt";
+import type { YogaInitialContext } from "graphql-yoga";
 import { getSession } from "../redis/session";
+import type { JWTPayload } from "../utils/jwt";
+import { extractToken, verifyToken } from "../utils/jwt";
 
 export interface GraphQLContext {
 	/** Database client */

@@ -1,14 +1,14 @@
 import type { Resolvers } from "../generated/types";
 import { authMutations, authQueries, authResponseResolvers } from "./auth";
+import { fileMutations, fileQueries, fileResolvers } from "./file";
+import { folderMutations, folderQueries } from "./folder";
+import { metadataQueries } from "./metadata";
 import {
+	availableProviderResolvers,
 	providerMutations,
 	providerQueries,
 	storageProviderResolvers,
-	availableProviderResolvers,
 } from "./provider";
-import { folderMutations, folderQueries } from "./folder";
-import { fileMutations, fileQueries, fileResolvers } from "./file";
-import { metadataQueries } from "./metadata";
 import { scalarResolvers } from "./scalars";
 import { userMutations, userQueries, userResolvers } from "./user";
 

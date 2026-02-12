@@ -146,10 +146,9 @@ export function parseBytes(str: string): number {
  * Sanitize filename
  */
 export function sanitizeFilename(filename: string): string {
-	return filename
-		.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
-		.replace(/^\.+/, "")
-		.slice(0, 255);
+	// biome-ignore lint/suspicious/noControlCharactersInRegex: needed for filename validation
+	const controlChars = /[<>:"/\\|?*\x00-\x1F]/g;
+	return filename.replace(controlChars, "_").replace(/^\.+/, "").slice(0, 255);
 }
 
 /**
@@ -165,6 +164,7 @@ export function getFileExtension(filename: string): string {
  * Check if path is valid
  */
 export function isValidPath(path: string): boolean {
+	// biome-ignore lint/suspicious/noControlCharactersInRegex: needed for path validation
 	return /^\/(?:[^/\x00]+\/)*[^/\x00]*$/.test(path);
 }
 

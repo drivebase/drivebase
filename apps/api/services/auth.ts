@@ -1,6 +1,7 @@
 import {
 	AuthenticationError,
 	NotFoundError,
+	type UserRole,
 	ValidationError,
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
@@ -10,13 +11,13 @@ import { storeOTP, verifyOTP } from "../redis/otp";
 import { checkRateLimit, RateLimits } from "../redis/rate-limit";
 import { createSession, deleteUserSessions } from "../redis/session";
 import { createToken } from "../utils/jwt";
+import { logger } from "../utils/logger";
 import { generateOTP, sendOTP } from "../utils/otp";
 import {
 	hashPassword,
 	validatePassword,
 	verifyPassword,
 } from "../utils/password";
-import { logger } from "../utils/logger";
 
 export class AuthService {
 	constructor(private db: Database) {}
@@ -44,7 +45,7 @@ export class AuthService {
 	async register(
 		email: string,
 		password: string,
-		role: string,
+		role: UserRole,
 		ipAddress: string,
 	) {
 		logger.info({ msg: "Register attempt", email, role, ipAddress });
@@ -60,7 +61,7 @@ export class AuthService {
 				msg: "Password validation failed",
 				message: validation.message,
 			});
-			throw new ValidationError(validation.message!);
+			throw new ValidationError(validation.message || "Invalid password");
 		}
 		logger.debug("Password validation passed");
 
@@ -90,7 +91,7 @@ export class AuthService {
 				name: defaultName,
 				email,
 				passwordHash,
-				role: role as any,
+				role: role,
 				isActive: true,
 			})
 			.returning();
@@ -241,7 +242,7 @@ export class AuthService {
 		// Validate new password
 		const validation = validatePassword(newPassword);
 		if (!validation.valid) {
-			throw new ValidationError(validation.message!);
+			throw new ValidationError(validation.message || "Invalid password");
 		}
 
 		// Get user
@@ -309,7 +310,7 @@ export class AuthService {
 		// Validate new password
 		const validation = validatePassword(newPassword);
 		if (!validation.valid) {
-			throw new ValidationError(validation.message!);
+			throw new ValidationError(validation.message || "Invalid password");
 		}
 
 		// Verify OTP

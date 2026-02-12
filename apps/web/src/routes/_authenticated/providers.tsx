@@ -84,7 +84,7 @@ function ProvidersPage() {
 		}
 	}, [connected, refreshConnected]);
 
-	const handleConnect = async (formData: Record<string, any>) => {
+	const handleConnect = async (formData: Record<string, unknown>) => {
 		if (!selectedProvider) return;
 		setIsConnecting(true);
 		setError(null);
@@ -94,7 +94,7 @@ function ProvidersPage() {
 
 			const result = await connectProvider({
 				input: {
-					name: _displayName || selectedProvider.name,
+					name: (_displayName as string) || selectedProvider.name,
 					type: selectedProvider.id.toUpperCase() as ProviderType,
 					config: config,
 				},

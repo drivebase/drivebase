@@ -5,7 +5,7 @@
  */
 
 // Export database client
-export { getDb, createDb, closeDb, type Database } from "./client";
+export { closeDb, createDb, type Database, getDb } from "./client";
 
 // Export all schema tables and types
 export * from "./schema";

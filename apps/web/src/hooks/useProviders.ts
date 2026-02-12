@@ -2,11 +2,11 @@ import { useMutation, useQuery } from "urql";
 import {
 	CONNECT_PROVIDER_MUTATION,
 	DISCONNECT_PROVIDER_MUTATION,
+	INITIATE_PROVIDER_OAUTH_MUTATION,
 	PROVIDER_QUERY,
 	PROVIDERS_QUERY,
 	SYNC_PROVIDER_MUTATION,
 	UPDATE_PROVIDER_QUOTA_MUTATION,
-	INITIATE_PROVIDER_OAUTH_MUTATION,
 } from "@/api/provider";
 
 export function useProviders() {
@@ -18,7 +18,7 @@ export function useProviders() {
 
 export function useProvider(id: string) {
 	const [result] = useQuery({
-		query: PROVIDER_QUERY as any,
+		query: PROVIDER_QUERY,
 		variables: { id },
 	});
 	return result;

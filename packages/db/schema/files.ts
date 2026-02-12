@@ -1,8 +1,8 @@
-import { pgTable, text, timestamp, boolean, bigint } from "drizzle-orm/pg-core";
-import { users } from "./users";
-import { storageProviders } from "./providers";
-import { folders } from "./folders";
+import { bigint, boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
+import { folders } from "./folders";
+import { storageProviders } from "./providers";
+import { users } from "./users";
 
 /**
  * Files table
