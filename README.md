@@ -45,13 +45,13 @@ Drivebase supports the following cloud providers:
 - [License](#license)
 
 
-# Prerequisites
+## Prerequisites
 
 - Bun - https://bun.sh/
 - Docker + Docker Compose (for container workflows)
 - Postgres + Redis (if running app locally without full Docker app container)
 
-# Getting Started
+## Getting Started
 
 You can get started with Drivebase in two ways:
 
@@ -95,7 +95,6 @@ docker run --rm -p 3000:3000 --env-file .env.local ghcr.io/drivebase/drivebase:v
 - App: `http://localhost:3000`
 - GraphQL: `http://localhost:3000/graphql`
 
-
 ## Manual Installation
 
 1. Copy the example file:
@@ -115,115 +114,22 @@ cp .env.example .env.local
 > [!NOTE]
 > To generate a JWT secret or encryption key, run `openssl rand -base64 32`.
 
-## Local Development
-
-Install dependencies:
+3. Install dependencies:
 
 ```bash
 bun install
 ```
 
-Run both API and web from root `.env.local`:
+4. Start the server:
 
 ```bash
 bun run dev
 ```
 
-Run both API and web from root `.env.local`:
-
-```bash
-bun run dev:local
-```
-
-## Docker Image (Production-style Runtime)
-
-The Docker image:
-
-- builds frontend assets
-- serves web via **Caddy** on port `3000`
-- runs API via Bun internally on port `4000`
-- proxies `/graphql`, `/api/*`, `/webhook/*` from Caddy to API
-- runs DB migrations by default on startup
-
-Build using Make:
-
-```bash
-make build
-```
-
-Or directly:
-
-```bash
-docker build -t drivebase-app:latest .
-```
-
-Run image with one exposed port:
-
-```bash
-docker run --rm -p 3000:3000 --env-file .env.local drivebase-app:latest
-```
-
-Open:
-
-- App: `http://localhost:3000`
-- GraphQL (through proxy): `http://localhost:3000/graphql`
-
-## Migration Control
-
-Migrations run on container start by default. To skip:
-
-```bash
--e SKIP_DB_MIGRATIONS=true
-```
-
-## External API Upstream (Optional)
-
-If API is hosted elsewhere, point Caddy proxy to external API:
-
-```bash
--e API_UPSTREAM=https://api.example.com
-```
-
-## Docker Compose Workflows
-
-### 1) Full Stack (App + Postgres + Redis)
-
-Use:
-
-```bash
-docker compose up --build
-```
-
-Config file: `compose.yaml`
-
-Exposes:
-
-- app on `3000`
-- postgres on `5432`
-- redis on `6379`
-
-### 2) Dev Infra Only (Postgres + Redis)
-
-Use:
-
-```bash
-docker compose -f compose.dev.yaml up -d
-```
-
-Config file: `compose.dev.yaml`
-
-This is useful when running API/Web directly via `bun run dev`.
-
-## Build Frontend/API with Turbo
-
-```bash
-bun run build
-```
-
-# Contributing
+## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
-# License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
