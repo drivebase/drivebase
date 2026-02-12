@@ -41,7 +41,10 @@ const iconMap = {
 export function FolderCard({
 	folder,
 	onClick,
-}: { folder: FolderItemFragment; onClick?: () => void }) {
+}: {
+	folder: FolderItemFragment;
+	onClick?: () => void;
+}) {
 	// Fallback to 'other' until we have folder type logic
 	const { icon: Icon, color, bg } = iconMap.other;
 

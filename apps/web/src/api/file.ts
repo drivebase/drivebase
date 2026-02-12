@@ -1,4 +1,4 @@
-import { graphql } from '@/gql';
+import { graphql } from "@/gql";
 
 export const FILES_QUERY = graphql(`
   query GetFiles($folderId: ID, $limit: Int, $offset: Int) {

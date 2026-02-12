@@ -1,10 +1,10 @@
 import type {
-  MutationResolvers,
-  QueryResolvers,
-  StorageProviderResolvers,
-  AvailableProvider,
-  AuthType as GQLAuthType,
-  ProviderType as GQLProviderType,
+	MutationResolvers,
+	QueryResolvers,
+	StorageProviderResolvers,
+	AvailableProvider,
+	AuthType as GQLAuthType,
+	ProviderType as GQLProviderType,
 } from "../generated/types";
 import type { GraphQLContext } from "../context";
 import { requireAuth } from "./auth-helpers";
@@ -17,79 +17,79 @@ import { logger } from "../../utils/logger";
  */
 
 export const providerQueries: QueryResolvers = {
-  storageProviders: async (_parent, _args, context) => {
-    const user = requireAuth(context);
-    const providerService = new ProviderService(context.db);
-    return providerService.getProviders(user.userId);
-  },
+	storageProviders: async (_parent, _args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
+		return providerService.getProviders(user.userId);
+	},
 
-  storageProvider: async (_parent, args, context) => {
-    const user = requireAuth(context);
-    const providerService = new ProviderService(context.db);
-    return providerService.getProvider(args.id, user.userId);
-  },
+	storageProvider: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
+		return providerService.getProvider(args.id, user.userId);
+	},
 
-  availableProviders: async (_parent, _args, context) => {
-    requireAuth(context);
-    logger.info("Loading available providers...");
-    const providers = getAvailableProviders();
-    logger.info({ msg: "Available providers loaded", count: providers.length });
-    // Cast needed: getAvailableProviders returns core AuthType strings ('oauth')
-    // while the GQL schema uses enum values ('OAUTH').
-    // The field resolver below handles the actual serialization.
-    return providers as unknown as AvailableProvider[];
-  },
+	availableProviders: async (_parent, _args, context) => {
+		requireAuth(context);
+		logger.info("Loading available providers...");
+		const providers = getAvailableProviders();
+		logger.info({ msg: "Available providers loaded", count: providers.length });
+		// Cast needed: getAvailableProviders returns core AuthType strings ('oauth')
+		// while the GQL schema uses enum values ('OAUTH').
+		// The field resolver below handles the actual serialization.
+		return providers as unknown as AvailableProvider[];
+	},
 };
 
 export const providerMutations: MutationResolvers = {
-  connectStorage: async (_parent, args, context) => {
-    const user = requireAuth(context);
-    const providerService = new ProviderService(context.db);
+	connectStorage: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
 
-    // Map GraphQL enum (GOOGLE_DRIVE) to core ProviderType (google_drive)
-    const type = args.input.type.toLowerCase();
+		// Map GraphQL enum (GOOGLE_DRIVE) to core ProviderType (google_drive)
+		const type = args.input.type.toLowerCase();
 
-    return providerService.connectProvider(
-      user.userId,
-      args.input.name,
-      type,
-      args.input.config as Record<string, unknown>
-    );
-  },
+		return providerService.connectProvider(
+			user.userId,
+			args.input.name,
+			type,
+			args.input.config as Record<string, unknown>,
+		);
+	},
 
-  disconnectProvider: async (_parent, args, context) => {
-    const user = requireAuth(context);
-    const providerService = new ProviderService(context.db);
+	disconnectProvider: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
 
-    await providerService.disconnectProvider(args.id, user.userId);
-    return true;
-  },
+		await providerService.disconnectProvider(args.id, user.userId);
+		return true;
+	},
 
-  syncProvider: async (_parent, args, context) => {
-    const user = requireAuth(context);
-    const providerService = new ProviderService(context.db);
+	syncProvider: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
 
-    return providerService.syncProvider(args.id, user.userId);
-  },
+		return providerService.syncProvider(args.id, user.userId);
+	},
 
-  updateProviderQuota: async (_parent, args, context) => {
-    const user = requireAuth(context);
-    const providerService = new ProviderService(context.db);
+	updateProviderQuota: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
 
-    return providerService.updateProviderQuota(
-      args.input.id,
-      user.userId,
-      args.input.quotaTotal ?? null,
-      args.input.quotaUsed
-    );
-  },
+		return providerService.updateProviderQuota(
+			args.input.id,
+			user.userId,
+			args.input.quotaTotal ?? null,
+			args.input.quotaUsed,
+		);
+	},
 
-  initiateProviderOAuth: async (_parent, args, context) => {
-    const user = requireAuth(context);
-    const providerService = new ProviderService(context.db);
+	initiateProviderOAuth: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
 
-    return providerService.initiateOAuth(args.id, user.userId);
-  },
+		return providerService.initiateOAuth(args.id, user.userId);
+	},
 };
 
 /**
@@ -100,14 +100,13 @@ export const providerMutations: MutationResolvers = {
  * so we uppercase here to match the schema's enum value names.
  */
 export const storageProviderResolvers: StorageProviderResolvers = {
-  type: (parent) =>
-    (parent.type as string).toUpperCase() as GQLProviderType,
-  authType: (parent) =>
-    (parent.authType as string).toUpperCase() as GQLAuthType,
-  configPreview: (parent, _args, context) => {
-    const providerService = new ProviderService(context.db);
-    return providerService.getProviderConfigPreview(parent);
-  },
+	type: (parent) => (parent.type as string).toUpperCase() as GQLProviderType,
+	authType: (parent) =>
+		(parent.authType as string).toUpperCase() as GQLAuthType,
+	configPreview: (parent, _args, context) => {
+		const providerService = new ProviderService(context.db);
+		return providerService.getProviderConfigPreview(parent);
+	},
 };
 
 /**
@@ -115,6 +114,6 @@ export const storageProviderResolvers: StorageProviderResolvers = {
  * Maps authType from core AuthType ('oauth') to GraphQL AuthType ('OAUTH').
  */
 export const availableProviderResolvers = {
-  authType: (parent: { authType: string }) =>
-    parent.authType.toUpperCase() as GQLAuthType,
+	authType: (parent: { authType: string }) =>
+		parent.authType.toUpperCase() as GQLAuthType,
 };

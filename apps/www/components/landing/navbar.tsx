@@ -1,5 +1,5 @@
-import { Github } from 'lucide-react';
-import Link from 'next/link';
+import { Github } from "lucide-react";
+import Link from "next/link";
 
 export function Navbar() {
   return (
@@ -15,13 +15,22 @@ export function Navbar() {
               />
             </Link>
             <div className="hidden md:flex items-center gap-6">
-              <Link href="/docs" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
+              <Link
+                href="/docs"
+                className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+              >
                 Documentation
               </Link>
-              <Link href="/docs/api-reference" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
+              <Link
+                href="/docs/api-reference"
+                className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+              >
                 API Reference
               </Link>
-              <Link href="/docs/storage-providers" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
+              <Link
+                href="/docs/storage-providers"
+                className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+              >
                 Providers
               </Link>
             </div>

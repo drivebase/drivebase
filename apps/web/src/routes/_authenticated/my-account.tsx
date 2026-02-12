@@ -11,101 +11,102 @@ import { useUpdateMyProfile } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
 
 export const Route = createFileRoute("/_authenticated/my-account")({
-  component: MyAccountPage,
+	component: MyAccountPage,
 });
 
 function MyAccountPage() {
-  const user = useAuthStore((state) => state.user);
-  const [, updateMyProfile] = useUpdateMyProfile();
-  const [name, setName] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+	const user = useAuthStore((state) => state.user);
+	const [, updateMyProfile] = useUpdateMyProfile();
+	const [name, setName] = useState("");
+	const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      setName(user.name ?? "");
-    }
-  }, [user]);
+	useEffect(() => {
+		if (user) {
+			setName(user.name ?? "");
+		}
+	}, [user]);
 
-  if (!user) return null;
+	if (!user) return null;
 
-  const userName = user.name?.trim() || user.email.split("@")[0];
-  const userInitial = userName.charAt(0).toUpperCase();
+	const userName = user.name?.trim() || user.email.split("@")[0];
+	const userInitial = userName.charAt(0).toUpperCase();
 
-  const handleSaveProfile = async () => {
-    const trimmed = name.trim();
-    if (!trimmed) {
-      toast.error("Name is required");
-      return;
-    }
+	const handleSaveProfile = async () => {
+		const trimmed = name.trim();
+		if (!trimmed) {
+			toast.error("Name is required");
+			return;
+		}
 
-    setIsSaving(true);
-    try {
-      const result = await updateMyProfile({
-        input: {
-          name: trimmed,
-        },
-      });
+		setIsSaving(true);
+		try {
+			const result = await updateMyProfile({
+				input: {
+					name: trimmed,
+				},
+			});
 
-      if (result.error) {
-        throw new Error(result.error.message);
-      }
+			if (result.error) {
+				throw new Error(result.error.message);
+			}
 
-      toast.success("Profile updated");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to update profile";
-      toast.error(message);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+			toast.success("Profile updated");
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Failed to update profile";
+			toast.error(message);
+		} finally {
+			setIsSaving(false);
+		}
+	};
 
-  return (
-    <div className="p-8 max-w-2xl space-y-8">
-      <div className="flex items-center gap-4">
-        <Avatar className="h-16 w-16">
-          <AvatarImage src={`https://ui-avatars.com/api/?name=${userName}`} />
-          <AvatarFallback>{userInitial}</AvatarFallback>
-        </Avatar>
-        <div>
-          <h2 className="text-xl font-semibold">{userName}</h2>
-          <p className="text-sm text-muted-foreground">{user.email}</p>
-        </div>
-      </div>
+	return (
+		<div className="p-8 max-w-2xl space-y-8">
+			<div className="flex items-center gap-4">
+				<Avatar className="h-16 w-16">
+					<AvatarImage src={`https://ui-avatars.com/api/?name=${userName}`} />
+					<AvatarFallback>{userInitial}</AvatarFallback>
+				</Avatar>
+				<div>
+					<h2 className="text-xl font-semibold">{userName}</h2>
+					<p className="text-sm text-muted-foreground">{user.email}</p>
+				</div>
+			</div>
 
-      <Separator />
+			<Separator />
 
-      <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
-        <div className="flex items-center gap-3">
-          <Input
-            id="name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Enter your name"
-            className="h-10 text-sm"
-          />
-          <Button onClick={handleSaveProfile} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save"}
-          </Button>
-        </div>
-      </div>
+			<div className="space-y-2">
+				<Label htmlFor="name">Name</Label>
+				<div className="flex items-center gap-3">
+					<Input
+						id="name"
+						value={name}
+						onChange={(event) => setName(event.target.value)}
+						placeholder="Enter your name"
+						className="h-10 text-sm"
+					/>
+					<Button onClick={handleSaveProfile} disabled={isSaving}>
+						{isSaving ? "Saving..." : "Save"}
+					</Button>
+				</div>
+			</div>
 
-      <div className="space-y-4 text-sm">
-        <div className="flex items-center justify-between">
-          <span className="text-muted-foreground flex items-center gap-2">
-            <Mail size={16} />
-            Email
-          </span>
-          <span>{user.email}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-muted-foreground flex items-center gap-2">
-            <Shield size={16} />
-            Role
-          </span>
-          <span>{user.role}</span>
-        </div>
-      </div>
-    </div>
-  );
+			<div className="space-y-4 text-sm">
+				<div className="flex items-center justify-between">
+					<span className="text-muted-foreground flex items-center gap-2">
+						<Mail size={16} />
+						Email
+					</span>
+					<span>{user.email}</span>
+				</div>
+				<div className="flex items-center justify-between">
+					<span className="text-muted-foreground flex items-center gap-2">
+						<Shield size={16} />
+						Role
+					</span>
+					<span>{user.role}</span>
+				</div>
+			</div>
+		</div>
+	);
 }

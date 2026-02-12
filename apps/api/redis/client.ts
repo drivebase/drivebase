@@ -11,31 +11,31 @@ let redisInstance: Redis | null = null;
  * Get or create Redis client
  */
 export function getRedis(): Redis {
-  if (!redisInstance) {
-    redisInstance = new Redis(env.REDIS_URL, {
-      maxRetriesPerRequest: 3,
-      enableReadyCheck: true,
-      lazyConnect: false,
-    });
+	if (!redisInstance) {
+		redisInstance = new Redis(env.REDIS_URL, {
+			maxRetriesPerRequest: 3,
+			enableReadyCheck: true,
+			lazyConnect: false,
+		});
 
-    redisInstance.on("error", (error) => {
-      logger.error({ msg: "Redis connection error", error });
-    });
+		redisInstance.on("error", (error) => {
+			logger.error({ msg: "Redis connection error", error });
+		});
 
-    redisInstance.on("connect", () => {
-      logger.info("Redis connected");
-    });
-  }
+		redisInstance.on("connect", () => {
+			logger.info("Redis connected");
+		});
+	}
 
-  return redisInstance;
+	return redisInstance;
 }
 
 /**
  * Close Redis connection
  */
 export async function closeRedis(): Promise<void> {
-  if (redisInstance) {
-    await redisInstance.quit();
-    redisInstance = null;
-  }
+	if (redisInstance) {
+		await redisInstance.quit();
+		redisInstance = null;
+	}
 }

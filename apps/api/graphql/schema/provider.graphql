@@ -1,109 +1,124 @@
 """
 Storage provider management
 """
-
 enum ProviderType {
-  GOOGLE_DRIVE
-  S3
-  LOCAL
+	GOOGLE_DRIVE
+	S3
+	LOCAL
 }
 
 """
 Authentication mechanism used by a storage provider
 """
 enum AuthType {
-  OAUTH
-  API_KEY
-  EMAIL_PASS
-  NO_AUTH
+	OAUTH
+	API_KEY
+	EMAIL_PASS
+	NO_AUTH
 }
 
 type StorageProvider {
-  id: ID!
-  name: String!
-  type: ProviderType!
-  authType: AuthType!
-  userId: ID!
-  isActive: Boolean!
-  accountEmail: String
-  accountName: String
-  configPreview: [ProviderConfigPreviewEntry!]!
-  quotaTotal: Float
-  quotaUsed: Float!
-  lastSyncAt: DateTime
-  createdAt: DateTime!
-  updatedAt: DateTime!
+	id: ID!
+	name: String!
+	type: ProviderType!
+	authType: AuthType!
+	userId: ID!
+	isActive: Boolean!
+	accountEmail: String
+	accountName: String
+	configPreview: [ProviderConfigPreviewEntry!]!
+	quotaTotal: Float
+	quotaUsed: Float!
+	lastSyncAt: DateTime
+	createdAt: DateTime!
+	updatedAt: DateTime!
 }
 
 type ProviderConfigPreviewEntry {
-  key: String!
-  value: String!
-  isSensitive: Boolean!
+	key: String!
+	value: String!
+	isSensitive: Boolean!
 }
 
 type ProviderConfigField {
-  name: String!
-  label: String!
-  type: String!
-  required: Boolean!
-  description: String
-  placeholder: String
+	name: String!
+	label: String!
+	type: String!
+	required: Boolean!
+	description: String
+	placeholder: String
 }
 
 type AvailableProvider {
-  id: String!
-  name: String!
-  description: String!
-  authType: AuthType!
-  configFields: [ProviderConfigField!]!
+	id: String!
+	name: String!
+	description: String!
+	authType: AuthType!
+	configFields: [ProviderConfigField!]!
 }
 
-"""Result of initiating an OAuth flow"""
+"""
+Result of initiating an OAuth flow
+"""
 type OAuthInitResult {
-  authorizationUrl: String!
-  state: String!
+	authorizationUrl: String!
+	state: String!
 }
 
 extend type Query {
-  """Get all storage providers for current user"""
-  storageProviders: [StorageProvider!]!
+	"""
+	Get all storage providers for current user
+	"""
+	storageProviders: [StorageProvider!]!
 
-  """Get storage provider by ID"""
-  storageProvider(id: ID!): StorageProvider
+	"""
+	Get storage provider by ID
+	"""
+	storageProvider(id: ID!): StorageProvider
 
-  """Get list of available storage provider types"""
-  availableProviders: [AvailableProvider!]!
+	"""
+	Get list of available storage provider types
+	"""
+	availableProviders: [AvailableProvider!]!
 }
 
 extend type Mutation {
-  """Connect a new storage provider"""
-  connectStorage(input: ConnectStorageInput!): StorageProvider!
+	"""
+	Connect a new storage provider
+	"""
+	connectStorage(input: ConnectStorageInput!): StorageProvider!
 
-  """Disconnect and remove storage provider"""
-  disconnectProvider(id: ID!): Boolean!
+	"""
+	Disconnect and remove storage provider
+	"""
+	disconnectProvider(id: ID!): Boolean!
 
-  """Sync provider quota and metadata"""
-  syncProvider(id: ID!): StorageProvider!
+	"""
+	Sync provider quota and metadata
+	"""
+	syncProvider(id: ID!): StorageProvider!
 
-  """Update provider quota settings manually"""
-  updateProviderQuota(input: UpdateProviderQuotaInput!): StorageProvider!
+	"""
+	Update provider quota settings manually
+	"""
+	updateProviderQuota(input: UpdateProviderQuotaInput!): StorageProvider!
 
-  """
-  Initiate the OAuth flow for an OAuth-type provider.
-  Returns the authorization URL to redirect the user to.
-  The OAuth callback is handled via GET /webhook/callback/:id
-  """
-  initiateProviderOAuth(id: ID!): OAuthInitResult!
+	"""
+	Initiate the OAuth flow for an OAuth-type provider.
+	Returns the authorization URL to redirect the user to.
+	The OAuth callback is handled via GET /webhook/callback/:id
+	"""
+	initiateProviderOAuth(id: ID!): OAuthInitResult!
 }
 
 input UpdateProviderQuotaInput {
-  id: ID!
-  quotaTotal: Float
-  quotaUsed: Float!
+	id: ID!
+	quotaTotal: Float
+	quotaUsed: Float!
 }
 
 input ConnectStorageInput {
-  name: String!
-  type: ProviderType!
-  config: JSON!
+	name: String!
+	type: ProviderType!
+	config: JSON!
 }

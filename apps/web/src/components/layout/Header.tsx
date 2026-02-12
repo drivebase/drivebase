@@ -58,7 +58,9 @@ export function Header() {
 						items={searchResults}
 						onValueChange={(value) => {
 							if (value) {
-								const selectedFile = searchResults.find((file) => file.id === value);
+								const selectedFile = searchResults.find(
+									(file) => file.id === value,
+								);
 								if (!selectedFile) return;
 
 								const parentPath = getParentPath(selectedFile.virtualPath);

@@ -1,4 +1,9 @@
-import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Outlet,
+	redirect,
+	useNavigate,
+} from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +29,11 @@ export const Route = createFileRoute("/_authenticated")({
 function FullScreenBrandLoader() {
 	return (
 		<div className="min-h-screen w-full flex flex-col items-center justify-center gap-5">
-			<img src="/drivebase.svg" alt="Drivebase" className="h-16 w-16 animate-pulse" />
+			<img
+				src="/drivebase.svg"
+				alt="Drivebase"
+				className="h-16 w-16 animate-pulse"
+			/>
 			<div className="flex items-center gap-2 text-sm text-muted-foreground">
 				<Loader2 className="h-4 w-4 animate-spin" />
 				<span>Loading your account...</span>
@@ -33,19 +42,20 @@ function FullScreenBrandLoader() {
 	);
 }
 
-function ServerUnavailable({
-	onRetry,
-}: {
-	onRetry: () => void;
-}) {
+function ServerUnavailable({ onRetry }: { onRetry: () => void }) {
 	return (
 		<div className="min-h-screen w-full flex items-center justify-center p-8">
 			<div className="max-w-md w-full rounded-2xl border bg-card p-6 text-center space-y-4">
-				<img src="/drivebase.svg" alt="Drivebase" className="h-12 w-12 mx-auto" />
+				<img
+					src="/drivebase.svg"
+					alt="Drivebase"
+					className="h-12 w-12 mx-auto"
+				/>
 				<div className="space-y-2">
 					<h2 className="text-xl font-semibold">Server Unreachable</h2>
 					<p className="text-sm text-muted-foreground">
-						Unable to connect to the API right now. Check the server and try again.
+						Unable to connect to the API right now. Check the server and try
+						again.
 					</p>
 				</div>
 				<div className="flex items-center justify-center gap-2 text-destructive text-sm">
@@ -80,14 +90,25 @@ function AuthenticatedLayout() {
 				replace: true,
 			});
 		}
-	}, [isAuthenticated, meResult.fetching, meResult.error, meResult.data, logout, navigate]);
+	}, [
+		isAuthenticated,
+		meResult.fetching,
+		meResult.error,
+		meResult.data,
+		logout,
+		navigate,
+	]);
 
 	if (token && !user && meResult.fetching) {
 		return <FullScreenBrandLoader />;
 	}
 
 	if (token && !user && meResult.error && hasNetworkError) {
-		return <ServerUnavailable onRetry={() => reexecuteMe({ requestPolicy: "network-only" })} />;
+		return (
+			<ServerUnavailable
+				onRetry={() => reexecuteMe({ requestPolicy: "network-only" })}
+			/>
+		);
 	}
 
 	return (

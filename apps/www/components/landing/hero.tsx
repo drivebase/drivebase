@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { ArrowRight } from 'lucide-react';
-import { motion } from 'motion/react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { ArrowRight } from "lucide-react";
+import { motion } from "motion/react";
+import Image from "next/image";
+import Link from "next/link";
 
 export function Hero() {
   return (
@@ -20,9 +20,14 @@ export function Hero() {
             className="mb-8 flex justify-center"
           >
             <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-gray-400 transition-all duration-300 backdrop-blur-sm bg-white/5 hover:bg-white/10">
-              <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent font-medium">v1.0.3 Released</span>
+              <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent font-medium">
+                v1.0.3 Released
+              </span>
               <span className="mx-2 text-gray-600">|</span>
-              <Link href="/docs/changelog" className="font-semibold text-indigo-400 hover:text-indigo-300">
+              <Link
+                href="/docs/changelog"
+                className="font-semibold text-indigo-400 hover:text-indigo-300"
+              >
                 Read Changelog <span aria-hidden="true">&rarr;</span>
               </Link>
             </div>
@@ -45,8 +50,8 @@ export function Hero() {
             className="mt-6 text-lg leading-8 text-gray-400 max-w-2xl mx-auto"
           >
             Unify your file storage across S3, Google Drive, and Local Storage.
-            Secure, open-source, and designed for modern applications.
-            Stop worrying about vendor lock-in.
+            Secure, open-source, and designed for modern applications. Stop
+            worrying about vendor lock-in.
           </motion.p>
 
           <motion.div
@@ -61,8 +66,13 @@ export function Hero() {
             >
               Get Started
             </Link>
-            <Link href="https://github.com/monawwar/drivebase" target="_blank" className="text-sm font-semibold leading-6 text-white hover:text-gray-300 flex items-center gap-2 group">
-              View on GitHub <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+            <Link
+              href="https://github.com/monawwar/drivebase"
+              target="_blank"
+              className="text-sm font-semibold leading-6 text-white hover:text-gray-300 flex items-center gap-2 group"
+            >
+              View on GitHub{" "}
+              <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
         </div>

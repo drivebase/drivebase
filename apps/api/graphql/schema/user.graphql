@@ -1,51 +1,60 @@
 """
 User management
 """
-
 enum UserRole {
-  VIEWER
-  EDITOR
-  ADMIN
-  OWNER
+	VIEWER
+	EDITOR
+	ADMIN
+	OWNER
 }
 
 type User {
-  id: ID!
-  name: String!
-  email: String!
-  role: UserRole!
-  isActive: Boolean!
-  lastLoginAt: DateTime
-  createdAt: DateTime!
-  updatedAt: DateTime!
+	id: ID!
+	name: String!
+	email: String!
+	role: UserRole!
+	isActive: Boolean!
+	lastLoginAt: DateTime
+	createdAt: DateTime!
+	updatedAt: DateTime!
 }
 
 extend type Query {
-  """Get all users (admin/owner only)"""
-  users(limit: Int, offset: Int): [User!]!
+	"""
+	Get all users (admin/owner only)
+	"""
+	users(limit: Int, offset: Int): [User!]!
 
-  """Get user by ID (admin/owner only)"""
-  user(id: ID!): User
+	"""
+	Get user by ID (admin/owner only)
+	"""
+	user(id: ID!): User
 }
 
 extend type Mutation {
-  """Create a new user (admin/owner only)"""
-  createUser(input: CreateUserInput!): User!
+	"""
+	Create a new user (admin/owner only)
+	"""
+	createUser(input: CreateUserInput!): User!
 
-  """Update user role or status (admin/owner only)"""
-  updateUser(id: ID!, input: UpdateUserInput!): User!
+	"""
+	Update user role or status (admin/owner only)
+	"""
+	updateUser(id: ID!, input: UpdateUserInput!): User!
 
-  """Delete user (owner only)"""
-  deleteUser(id: ID!): Boolean!
+	"""
+	Delete user (owner only)
+	"""
+	deleteUser(id: ID!): Boolean!
 }
 
 input CreateUserInput {
-  email: String!
-  password: String!
-  role: UserRole!
+	email: String!
+	password: String!
+	role: UserRole!
 }
 
 input UpdateUserInput {
-  role: UserRole
-  isActive: Boolean
+	role: UserRole
+	isActive: Boolean
 }
