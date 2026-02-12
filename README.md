@@ -21,15 +21,6 @@ Drivebase is a next-generation cloud-agnostic file management application that e
 
 ---
 
-## Table of Contents
-
-- [Table of Contents](#table-of-contents)
-- [Supported Providers](#supported-providers)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## Supported Providers
 
 Drivebase supports the following cloud providers:
@@ -44,6 +35,15 @@ Drivebase supports the following cloud providers:
 - [ ] Box
 - [ ] OneDrive
 - [ ] Telegram
+
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+- [Contributing](#contributing)
+- [License](#license)
+
 
 ## Prerequisites
 
