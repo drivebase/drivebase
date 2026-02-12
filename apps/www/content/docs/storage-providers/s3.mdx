@@ -1,0 +1,46 @@
+---
+title: S3 Compatible Storage
+description: Connect AWS S3, MinIO, Cloudflare R2, and more
+---
+
+Drivebase supports any storage service that implements the S3 API. This includes major cloud providers and self-hosted solutions.
+
+## Configuration Fields
+
+To connect an S3 provider, you will need:
+
+| Field | Description |
+| :--- | :--- |
+| **Access Key ID** | Your S3 access key. |
+| **Secret Access Key** | Your S3 secret key. |
+| **Bucket Name** | The name of the bucket to use. |
+| **Region** | The AWS region (e.g., `us-east-1`). |
+| **Endpoint** | (Optional) Custom API URL for non-AWS providers. |
+| **Force Path Style** | (Optional) Enable for providers like MinIO. |
+
+## Common Provider Setups
+
+### Amazon S3
+- **Region**: Your bucket's region (e.g., `us-west-2`).
+- **Endpoint**: Leave empty.
+- **Force Path Style**: Off.
+
+### MinIO (Self-Hosted)
+- **Region**: `us-east-1` (default).
+- **Endpoint**: Your MinIO API URL (e.g., `https://minio.example.com`).
+- **Force Path Style**: **On** (Required).
+
+### Cloudflare R2
+- **Region**: `auto`.
+- **Endpoint**: `https://<account-id>.r2.cloudflarestorage.com`.
+- **Force Path Style**: Off.
+
+### DigitalOcean Spaces
+- **Region**: The datacenter region (e.g., `nyc3`).
+- **Endpoint**: `https://nyc3.digitaloceanspaces.com`.
+- **Force Path Style**: Off.
+
+## Security Best Practices
+
+- **IAM Policies**: Use a restricted IAM user or access key that only has permissions for the specific bucket used by Drivebase.
+- **CORS**: If you plan to use direct uploads (browser to S3), ensure your bucket's CORS policy allows requests from your Drivebase frontend domain.

@@ -1,0 +1,43 @@
+---
+title: Local Storage
+description: Configure local filesystem storage for Drivebase
+---
+
+Local storage allows you to use your server's disk space for file storage. This is the simplest way to get started and is ideal for single-server setups.
+
+## Setup
+
+When connecting a local storage provider, you need to provide the following configuration:
+
+- **Root Path**: The absolute path on the server where Drivebase will store files (e.g., `/var/lib/drivebase/storage`).
+
+### Permissions
+
+The user running the Drivebase API process must have read and write permissions for the specified directory. If Drivebase cannot write to the path, uploads will fail.
+
+```bash
+# Example: Giving the current user ownership of the storage directory
+sudo chown -R $USER:$USER /var/lib/drivebase/storage
+```
+
+## Docker Configuration
+
+If you are running Drivebase in Docker, the **Root Path** refers to the path **inside the container**. You must mount a host directory to that path using a volume to ensure your files persist when the container is restarted or updated.
+
+### Example `compose.yaml`
+
+```yaml
+services:
+  api:
+    image: ghcr.io/drivebase/drivebase:latest
+    volumes:
+      - /home/user/drivebase-data:/data/storage
+    environment:
+      - DATABASE_URL=...
+```
+
+In the Drivebase UI, you would then set the **Root Path** to `/data/storage`.
+
+## Performance Considerations
+
+Local storage performance depends on the underlying disk (HDD vs. SSD). For high-concurrency environments, ensure your disk I/O can handle the expected load.

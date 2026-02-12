@@ -1,12 +1,42 @@
 ---
 title: Using Drivebase
-description: Core usage workflows in the web app
+description: Learn how to manage your files and folders in Drivebase
 ---
 
-This section will document day-to-day usage:
+Drivebase provides a familiar, intuitive interface for managing your files across multiple storage backends.
 
-- Upload and download files
-- Navigate folders
-- Search files
-- Favorites
-- Bulk actions and file details
+## File Management
+
+### Uploading Files
+You can upload files by clicking the **Upload** button in any folder. When uploading, you may be asked to choose which storage provider to use if multiple are connected.
+
+### Downloading Files
+To download a file, click the download icon next to the file name or select **Download** from the file's context menu.
+
+### Moving and Renaming
+- **Rename**: Right-click a file or folder and select **Rename**.
+- **Move**: Use the **Move** action to transfer files between folders. Note that moving a file between different storage providers is currently handled by Drivebase internally.
+
+### Deleting Files
+Deleting a file in Drivebase performs a **soft delete**. The file will be marked as deleted and will not appear in regular listings, but it may still exist on the remote provider until permanently purged.
+
+## Folder Navigation
+
+Drivebase uses a **Virtual Folder Structure**. This means you can create folders to organize your files regardless of which storage provider they are actually stored on.
+
+- **Breadcrumbs**: Use the breadcrumbs at the top of the file list to navigate back up the folder hierarchy.
+- **Sidebar**: The sidebar provides quick access to the root folder, favorites, and recent files.
+
+## Search and Favorites
+
+### Searching
+Use the search bar at the top of the interface to find files by name. Search results will include files from all connected providers.
+
+### Favorites (Starred Items)
+You can "Star" important files and folders for quick access. Starred items appear in the **Favorites** section in the sidebar.
+
+## Managing Storage
+In the **Providers** section, you can:
+- See the total and used storage for each provider.
+- Sync providers to ensure metadata is up to date.
+- Manage individual provider settings.

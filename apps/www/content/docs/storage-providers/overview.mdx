@@ -1,0 +1,27 @@
+---
+title: Overview
+description: Overview of supported storage backends in Drivebase
+---
+
+Drivebase is designed to be cloud-agnostic, allowing you to unify multiple storage services under a single virtual file system.
+
+## Supported Providers
+
+Click on a provider below to view specific setup and configuration instructions:
+
+- **[Local Storage](/docs/storage-providers/local)**: Use your server's disk space.
+- **[S3 Compatible Storage](/docs/storage-providers/s3)**: Connect AWS S3, MinIO, R2, and more.
+- **[Google Drive](/docs/storage-providers/google-drive)**: Manage your Google Drive files.
+
+## Common Features
+
+All storage providers in Drivebase support the following core features:
+
+### Automatic Syncing
+Drivebase periodically syncs with your connected providers to ensure that metadata (file names, sizes, etc.) is up to date. You can also trigger a manual sync at any time from the provider settings.
+
+### Quota Management
+Monitor how much storage you are using across different platforms from a single dashboard.
+
+### Provider Security
+Your provider credentials (API keys, secrets, tokens) are always encrypted at rest in the Drivebase database using the `ENCRYPTION_KEY` defined in your environment variables.

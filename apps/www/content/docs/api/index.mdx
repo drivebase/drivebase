@@ -1,13 +1,45 @@
 ---
-title: API
-description: GraphQL API overview and integration basics
+title: API Overview
+description: Introduction to Drivebase GraphQL API
 ---
 
-Drivebase exposes a GraphQL API.
+Drivebase exposes a comprehensive GraphQL API for managing files, folders, users, and storage providers.
 
-This section will include:
+## Base URL
 
-- Endpoint basics
-- Authentication pattern
-- Core queries and mutations
-- Integration notes
+The API is served at the `/graphql` endpoint.
+
+```
+POST http://localhost:4000/graphql
+```
+
+## Authentication
+
+Most API operations require authentication. You must include the JWT token in the `Authorization` header.
+
+```
+Authorization: Bearer <your-token>
+```
+
+You can obtain a token via the `login` or `register` mutations.
+
+## Global Errors
+
+The API returns standard GraphQL errors. Common error codes include:
+
+- `UNAUTHENTICATED`: Missing or invalid token.
+- `FORBIDDEN`: User does not have permission.
+- `NOT_FOUND`: Resource not found.
+- `BAD_USER_INPUT`: Invalid arguments.
+
+## schema
+
+You can inspect the full schema by sending an introspection query to the GraphQL endpoint.
+
+## Other Endpoints
+
+Besides GraphQL, a few REST endpoints are available for specific use cases:
+
+- **OAuth Callback**: `GET /webhook/callback` - Used internally for storage provider OAuth flows.
+- **Proxy Upload**: `POST /api/upload/proxy` - Direct file upload to storage providers via the API server.
+- **Proxy Download**: `GET /api/download/proxy` - Direct file download from storage providers via the API server.

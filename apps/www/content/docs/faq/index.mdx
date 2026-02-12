@@ -1,11 +1,37 @@
 ---
 title: FAQ
-description: Frequently asked questions
+description: Frequently Asked Questions about Drivebase
 ---
 
-This section will answer common questions around:
+## General Questions
 
-- Setup and configuration
-- Provider behavior
-- File handling and limits
-- Deployment and operations
+### Is Drivebase free?
+Yes! Drivebase is open-source and free to use. You can host it yourself on your own infrastructure.
+
+### Does Drivebase store my files?
+Drivebase is a **manager**, not a storage provider. It connects to your existing storage (like S3, Google Drive, or your local disk) and provides a unified interface to manage them. Your files remain on the providers you connect.
+
+### Is Drivebase secure?
+Drivebase takes security seriously. All provider credentials (like API keys and secrets) are encrypted at rest in your database using an `ENCRYPTION_KEY` that you provide. We recommend always running Drivebase over HTTPS.
+
+## Technical Questions
+
+### What are the file size limits?
+Drivebase itself does not impose strict file size limits. However, you may encounter limits imposed by:
+- Your storage provider (e.g., S3's 5TB per object limit).
+- Your reverse proxy (e.g., Nginx's `client_max_body_size`).
+- Your server's available memory or temporary disk space if using proxy modes.
+
+### Can I move files between different providers?
+Yes! Drivebase allows you to move files between different providers. Under the hood, Drivebase handles downloading the file from the source provider and uploading it to the destination provider.
+
+### How do I back up my Drivebase instance?
+You should regularly back up your PostgreSQL database. This contains all your folder structures, file metadata, and provider configurations. Since Drivebase doesn't store the actual files (unless using the local provider), you only need to back up the database and the files on your local disk.
+
+## Features
+
+### Will more storage providers be added?
+Yes! We plan to support more providers like Dropbox, OneDrive, and others in the future. Check our [GitHub Roadmap](https://github.com/drivebase/drivebase) for updates.
+
+### Can I share files with others?
+Drivebase currently supports basic multi-user access with roles (Owner, Admin, Editor, Viewer). More granular sharing features are planned for future releases.

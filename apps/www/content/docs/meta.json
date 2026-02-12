@@ -2,15 +2,21 @@
   "title": "Documentation",
   "pages": [
     "index",
-    "getting-started",
+    "quick-start",
     "installation",
     "configuration",
-    "storage-providers",
-    "using-drivebase",
-    "troubleshooting",
-    "deployment",
-    "api",
-    "contributing",
-    "faq"
+    "---Usage---",
+    "using-drivebase/index",
+    "troubleshooting/index",
+    "---Advanced---",
+    "deployment/index",
+    "api/index",
+    "contributing/index",
+    "faq/index",
+    "---Storage Providers---",
+    "storage-providers/index",
+    "storage-providers/local",
+    "storage-providers/s3",
+    "storage-providers/google-drive"
   ]
 }

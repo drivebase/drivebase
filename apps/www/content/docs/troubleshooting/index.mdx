@@ -1,11 +1,56 @@
 ---
 title: Troubleshooting
-description: Common errors and how to resolve them
+description: Solutions for common issues and errors in Drivebase
 ---
 
-This section will contain targeted fixes for common issues, including:
+If you encounter issues while using Drivebase, this guide covers the most common problems and how to solve them.
 
-- Auth failures and invalid credentials
-- Upload/CORS errors
-- Proxy and API connectivity issues
-- Build and codegen failures in CI
+## Connection Issues
+
+### API Not Reachable
+- **Symptom**: The web app shows "Unable to connect to API" or stays on a loading screen.
+- **Fix**: 
+    - Ensure the API server is running (`docker compose ps` or `bun run dev`).
+    - Check that `VITE_PUBLIC_API_URL` in your frontend configuration matches the actual API URL.
+    - Check for CORS errors in the browser console. Ensure `CORS_ORIGIN` in the API configuration allows your frontend domain.
+
+### Database or Redis Connection
+- **Symptom**: Logs show `Connection refused` or `Authentication failed` for PostgreSQL or Redis.
+- **Fix**:
+    - Verify that `DATABASE_URL` and `REDIS_URL` are correct.
+    - Ensure the database and Redis services are healthy and accessible from the API container.
+
+## Authentication Issues
+
+### Login Fails
+- **Symptom**: "Invalid credentials" error even with correct email/password.
+- **Fix**:
+    - Ensure you have registered an account. If using the default owner bootstrap, verify the `DEFAULT_OWNER_EMAIL` and `DEFAULT_OWNER_PASSWORD` environment variables.
+    - Check that `JWT_SECRET` is consistent across restarts. Changing it will invalidate all existing sessions.
+
+### Session Expired
+- **Symptom**: Suddenly logged out or receiving `UNAUTHENTICATED` errors.
+- **Fix**: Refresh the page to re-authenticate. If the issue persists, check if the server time is synchronized.
+
+## File Operations
+
+### Upload Fails
+- **Symptom**: Uploads get stuck at 0% or return a `500 Internal Server Error`.
+- **Fix**:
+    - Check the API logs for specific provider errors.
+    - For S3: Verify bucket permissions and region settings.
+    - For Local: Ensure the API has write permissions to the specified `rootPath`.
+    - Check if the file size exceeds any limits set by your reverse proxy (e.g., Nginx `client_max_body_size`).
+
+### CORS Errors on Direct Upload
+- **Symptom**: Browser console shows CORS errors when uploading directly to S3 or Google Drive.
+- **Fix**: Ensure your storage provider is configured to allow CORS from your Drivebase frontend URL.
+
+## Logs
+
+To get more detailed information about what's happening, check the application logs:
+
+- **Docker**: `docker compose logs -f api`
+- **Manual**: Check the console where `bun run dev` is running.
+
+In development, logs are formatted with `pino-pretty` for readability. In production, they are standard JSON for easier parsing by log management tools.

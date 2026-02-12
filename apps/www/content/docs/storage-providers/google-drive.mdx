@@ -1,0 +1,49 @@
+---
+title: Google Drive
+description: Connect Google Drive accounts using OAuth 2.0
+---
+
+Drivebase integrates with Google Drive, allowing you to manage your cloud files alongside other storage providers.
+
+## Prerequisites
+
+Before connecting, you must create a project in the Google Cloud Console and obtain OAuth 2.0 credentials.
+
+### 1. Create a Google Cloud Project
+- Go to the [Google Cloud Console](https://console.cloud.google.com/).
+- Create a new project named "Drivebase".
+
+### 2. Enable the Google Drive API
+- Navigate to **APIs & Services > Library**.
+- Search for "Google Drive API" and click **Enable**.
+
+### 3. Configure OAuth Consent Screen
+- Go to **APIs & Services > OAuth consent screen**.
+- Choose **External** (unless you are using a Google Workspace account and want to limit access to your organization).
+- Provide the required app information.
+- In **Scopes**, add the following:
+  - `https://www.googleapis.com/auth/drive.file` (To manage files created by Drivebase)
+  - `https://www.googleapis.com/auth/drive.metadata.readonly` (To read file metadata)
+
+<Callout type="info">
+**Privacy Note**: By using the `drive.file` scope, Drivebase **cannot** access all your existing Google Drive files. It only has permission to manage files it creates or that you specifically open using the app. This ensures your other personal data remains private.
+</Callout>
+
+### 4. Create OAuth Credentials
+- Go to **APIs & Services > Credentials**.
+- Click **Create Credentials > OAuth client ID**.
+- Select **Web application** as the application type.
+- **Authorized redirect URIs**: Add your Drivebase callback URL.
+  - Development: `http://localhost:4000/webhook/callback`
+  - Production: `https://api.yourdomain.com/webhook/callback`
+- Note down your **Client ID** and **Client Secret**.
+
+## Connecting in Drivebase
+
+1. Navigate to the **Providers** page in Drivebase.
+2. Click **Connect Provider** and select **Google Drive**.
+3. Enter your **Client ID** and **Client Secret**.
+4. Click **Connect**. You will be redirected to a Google sign-in page.
+5. Review the permissions and click **Allow**.
+
+Once authorized, you will be redirected back to Drivebase, and your Google Drive will be ready for use.
