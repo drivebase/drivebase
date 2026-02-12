@@ -9,7 +9,10 @@
     "types:check": "fumadocs-mdx && next typegen && tsc --noEmit",
     "postinstall": "fumadocs-mdx",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "fumadocs-core": "16.6.0",
@@ -24,6 +27,8 @@
     "zod": "4"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.14",
+    "@opennextjs/cloudflare": "^1.16.4",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/mdx": "^2.0.13",
     "@types/node": "^25.2.1",
@@ -32,6 +37,6 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
-    "@biomejs/biome": "^2.3.14"
+    "wrangler": "^4.65.0"
   }
 }
