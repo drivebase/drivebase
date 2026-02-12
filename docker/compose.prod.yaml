@@ -1,0 +1,53 @@
+services:
+  app:
+    image: ghcr.io/drivebase/drivebase:latest
+    container_name: drivebase_app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/drivebase
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-minimum-32-characters-long-change-this-in-production}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-your-encryption-key-minimum-32-characters-long-change-this-in-production}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
+      SKIP_DB_MIGRATIONS: ${SKIP_DB_MIGRATIONS:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  db:
+    image: postgres:17-alpine
+    container_name: drivebase_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: drivebase
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d drivebase"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
