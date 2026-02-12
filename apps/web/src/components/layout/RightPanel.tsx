@@ -1,36 +1,21 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Bell, LogOut, Power, PowerCircle, PowerOff, Settings2, X } from "lucide-react";
-import { toast } from "sonner";
+import { Bell, Settings2, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAppUpdate } from "@/hooks/useAppUpdate";
-import { useLogout } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
 import { useRightPanelStore } from "@/store/rightPanelStore";
 
 function DefaultAccountView() {
   const user = useAuthStore((state) => state.user);
-  const clearAuth = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
-  const [, logout] = useLogout();
   const { currentVersion } = useAppUpdate();
 
   if (!user) return null;
 
   const userName = user.name?.trim() || user.email.split("@")[0];
   const userInitial = userName.charAt(0).toUpperCase();
-
-  const handleSignOut = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      toast.error("Unable to sign out from server. Signing out locally.");
-    } finally {
-      clearAuth();
-      navigate({ to: "/login", replace: true });
-    }
-  };
 
   return (
     <>
