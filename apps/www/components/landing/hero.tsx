@@ -2,6 +2,7 @@
 
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export function Hero() {
@@ -87,11 +88,13 @@ export function Hero() {
                 </div>
               </div>
 
-              <div className="relative aspect-[19/10] overflow-hidden">
-                <img
+              <div className="relative aspect-19/10 overflow-hidden">
+                <Image
                   src="/app/all-files.png"
                   alt="Drivebase Dashboard"
                   className="w-full h-full object-cover object-top"
+                  width={768}
+                  height={405}
                 />
               </div>
             </div>
