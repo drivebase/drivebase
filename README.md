@@ -58,10 +58,10 @@ To get started with Drivebase, follow these steps:
 1. Copy the example file:
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-2. Update required values in `.env`, especially:
+2. Update required values in `.env.local`, especially:
 
 - `DATABASE_URL`
 - `REDIS_URL`
@@ -80,7 +80,7 @@ Install dependencies:
 bun install
 ```
 
-Run both API and web from root `.env`:
+Run both API and web from root `.env.local`:
 
 ```bash
 bun run dev
