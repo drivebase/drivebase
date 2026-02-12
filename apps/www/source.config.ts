@@ -18,6 +18,9 @@ export const docs = defineDocs({
 
 export default defineConfig({
   mdxOptions: {
-    // MDX options
+    rehypeCodeOptions: {
+      theme: 'github-dark',
+      langs: ['dotenv']
+    }
   },
 });

@@ -42,7 +42,6 @@
         "@types/bcryptjs": "^3.0.0",
         "@types/bun": "latest",
         "@types/ioredis": "^5.0.0",
-        "vitest": "^3.0.5",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -111,6 +110,7 @@
       "name": "www",
       "version": "0.0.0",
       "dependencies": {
+        "@next/third-parties": "^16.1.6",
         "fumadocs-core": "16.6.0",
         "fumadocs-mdx": "14.2.7",
         "fumadocs-ui": "16.6.0",

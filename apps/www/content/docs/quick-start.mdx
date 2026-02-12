@@ -1,0 +1,79 @@
+---
+title: Quick Start
+description: Get Drivebase running in minutes
+icon: Zap
+---
+
+This guide will help you get a basic instance of Drivebase up and running as quickly as possible using Docker.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+- [Docker](https://www.docker.com/get-started)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+## Fast Docker Run
+
+The fastest way to get started is with our automated installer:
+
+```bash
+wget -qO- https://drivebase.one/install | bash
+```
+
+This will create a `drivebase` folder, set up your configuration, and generate secure keys automatically.
+
+Alternatively, you can follow the manual steps below:
+
+1. **Download the Production Compose file**:
+   ```bash
+   wget -O compose.yaml https://drivebase.one/compose
+   # OR: curl -o compose.yaml https://drivebase.one/compose
+   ```
+
+2. **Create an environment file**:
+   ```bash
+   touch .env.local
+   ```
+
+3. **Add basic configuration**:
+   Open `.env.local` and add the following (replace with your own secrets):
+   ```dotenv
+   DATABASE_URL=postgres://postgres:postgres@db:5432/drivebase
+   REDIS_URL=redis://redis:6379
+   JWT_SECRET=super-secret-jwt-key
+   ENCRYPTION_KEY=32-character-long-encryption-key-!!
+   CORS_ORIGIN=http://localhost:3000
+   API_BASE_URL=http://localhost:3000
+   ```
+   *Note: For production, use `openssl rand -base64 32` to generate secure keys.*
+
+4. **Start the services**:
+   Run the following command to start Drivebase and its dependencies:
+   ```bash
+   docker compose --env-file .env.local up -d
+   ```
+
+5. **Access the application**:
+   - Web App: [http://localhost:3000](http://localhost:3000)
+   - GraphQL Playground: [http://localhost:3000/graphql](http://localhost:3000/graphql)
+
+## First Login
+
+When you first access Drivebase, you will need to create an owner account.
+
+1. Navigate to `http://localhost:3000/register`.
+2. Enter your email and a strong password.
+3. Once registered, you will be logged in as the system owner.
+
+## Connect Your First Provider
+
+To start managing files, you need to connect a storage provider.
+
+1. Go to the **Providers** section in the sidebar.
+2. Click **Connect Provider**.
+3. Choose **Local Storage** for a quick test.
+4. Give it a name (e.g., "My Local Disk") and specify a path inside the container (e.g., `/data/storage`).
+5. Click **Connect**.
+
+Now you can go to the **Files** section and start uploading!

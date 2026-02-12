@@ -1,0 +1,55 @@
+---
+title: Configuration
+description: comprehensive guide to environment variables and runtime settings
+icon: "Settings"
+---
+
+Drivebase uses environment variables for configuration. You can set these in a `.env` or `.env.local` file in the project root, or pass them directly to your Docker container.
+
+## Environment Variables
+
+### Application
+- `NODE_ENV`: Set to `production` for production deployments, `development` for local work.
+
+### API Server
+- `PORT`: The port the API server listens on (default: `4000`).
+- `API_BASE_URL`: The full URL where the API is accessible (e.g., `http://localhost:4000`).
+- `CORS_ORIGIN`: The URL of your frontend application to allow cross-origin requests.
+
+### Database & Redis
+- `DATABASE_URL`: PostgreSQL connection string (e.g., `postgres://user:pass@host:5432/db`).
+- `REDIS_URL`: Redis connection string (e.g., `redis://localhost:6379`).
+
+### Security
+- `JWT_SECRET`: A long, random string used to sign JSON Web Tokens.
+- `ENCRYPTION_KEY`: A 32-character string used to encrypt sensitive provider credentials in the database.
+- `DEFAULT_OWNER_EMAIL`: (Optional) Automatically create an owner account with this email on first boot.
+- `DEFAULT_OWNER_PASSWORD`: (Optional) Password for the default owner account.
+
+### Web Client
+- `VITE_PUBLIC_API_URL`: The public GraphQL endpoint URL used by the browser (e.g., `http://localhost:4000/graphql`).
+
+## Generating Secure Keys
+
+For `JWT_SECRET` and `ENCRYPTION_KEY`, you should generate strong random strings. You can use the following command:
+
+```bash
+openssl rand -base64 32
+```
+
+## Example Configuration
+
+```dotenv
+NODE_ENV=production
+PORT=4000
+API_BASE_URL=https://api.drivebase.io
+CORS_ORIGIN=https://app.drivebase.io
+
+DATABASE_URL=postgres://drivebase:securepassword@db.example.com:5432/drivebase
+REDIS_URL=redis://redis.example.com:6379
+
+JWT_SECRET=xY7z... (at least 32 characters)
+ENCRYPTION_KEY=aB1c... (exactly 32 characters recommended)
+
+VITE_PUBLIC_API_URL=https://api.drivebase.io/graphql
+```

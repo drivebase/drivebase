@@ -1,11 +1,64 @@
 ---
 title: Deployment
-description: Production deployment guidance for Drivebase
+description: Production deployment guidance and best practices for Drivebase
 ---
 
-This section will cover production deployment topics:
+Deploying Drivebase to production requires careful consideration of security, performance, and reliability. This guide provides a checklist and best practices for a successful deployment.
 
-- Deployment checklist
-- Reverse proxy and domain setup
-- Database and storage backup strategy
-- Upgrade path between versions
+## Production Checklist
+
+Before going live, ensure you have addressed the following:
+
+- **Secure Keys**: Change `JWT_SECRET` and `ENCRYPTION_KEY` to strong, random values.
+- **Database Backups**: Implement a regular backup strategy for your PostgreSQL database.
+- **SSL/TLS**: Always serve Drivebase over HTTPS.
+- **CORS Settings**: Restrict `CORS_ORIGIN` to your actual frontend domain.
+- **Logs**: Set `NODE_ENV=production` to ensure structured JSON logging.
+
+## Docker Deployment (GHCR)
+
+The recommended way to deploy is using our pre-built Docker image. It includes both the API and the web frontend served by Caddy.
+
+```bash
+docker pull ghcr.io/drivebase/drivebase:latest
+```
+
+When running the container, ensure you pass all required production environment variables.
+
+## Reverse Proxy Setup
+
+Drivebase's Docker image includes an internal Caddy server, but you might want to run it behind another reverse proxy like Nginx or a global Caddy instance for SSL management.
+
+### Example Nginx Configuration
+
+```nginx
+server {
+    listen 80;
+    server_name drivebase.example.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Increase max body size for large file uploads
+        client_max_body_size 10G;
+    }
+}
+```
+
+## Storage Considerations
+
+- **Local Storage**: If using the local provider, ensure the storage volume is backed up and has sufficient IOPS.
+- **S3/Object Storage**: Use IAM roles or restricted access keys with the minimum necessary permissions (limited to specific buckets).
+
+## Upgrading Drivebase
+
+To upgrade to a newer version:
+
+1. Pull the latest Docker image: `docker pull ghcr.io/drivebase/drivebase:latest`.
+2. Stop the current container.
+3. Start the new container with the same environment variables and volumes.
+4. Drivebase automatically handles database migrations on startup.

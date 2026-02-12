@@ -1,0 +1,14 @@
+{
+  "title": "API Reference",
+  "pages": [
+    "index",
+    "authentication",
+    "files",
+    "folders",
+    "storage-providers",
+    "permissions",
+    "activity-logs",
+    "users",
+    "metadata"
+  ]
+}

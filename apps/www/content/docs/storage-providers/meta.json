@@ -1,0 +1,9 @@
+{
+  "title": "Storage Providers",
+  "pages": [
+    "overview",
+    "local",
+    "s3",
+    "google-drive"
+  ]
+}

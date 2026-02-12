@@ -1,0 +1,107 @@
+---
+title: Installation
+description: Detailed guide for installing Drivebase in different environments
+icon: "Download"
+---
+
+Drivebase can be installed in several ways depending on your needs. For most users, we recommend using Docker Compose with our pre-built image.
+
+## Prerequisites
+
+Regardless of the installation method, you will need:
+
+- **PostgreSQL**: Version 14 or higher.
+- **Redis**: For caching and session management.
+
+## Docker Compose (Recommended)
+
+Using Docker Compose is the easiest way to manage Drivebase. You can start it instantly with our automated installer:
+
+```bash
+wget -qO- https://drivebase.one/install | bash
+```
+
+### Manual Compose Setup
+
+If you prefer to manage the file locally:
+
+1. **Download the Production Compose file**:
+   ```bash
+   # Using wget
+   wget -O compose.yaml https://drivebase.one/compose
+
+   # OR using curl
+   curl -o compose.yaml https://drivebase.one/compose
+   ```
+
+2. **Configure your environment**:
+   Create a `.env.local` file in the same directory:
+   ```bash
+   touch .env.local
+   ```
+   Add your specific settings (see [Configuration](/docs/configuration)).
+
+    <Callout>
+      You can generate strong secrets for `JWT_SECRET` and `ENCRYPTION_KEY` using
+
+      `openssl rand -base64 32`
+    </Callout>
+
+3. **Start the stack**:
+   ```bash
+   docker compose --env-file .env.local up -d
+   ```
+
+## From Source Code
+
+If you want to run the latest code from the repository using Docker:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/drivebase/drivebase.git
+   cd drivebase
+   ```
+
+2. **Configure your environment**:
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your specific settings
+   ```
+
+3. **Build and start**:
+   ```bash
+   # This will build the image locally using the default compose.yaml
+   docker compose --env-file .env.local up -d --build
+   ```
+
+## Local Development (with Bun)
+
+If you want to contribute to Drivebase or run it manually for development:
+
+1. **Install Bun**:
+   Follow instructions at [bun.sh](https://bun.sh).
+
+2. **Install dependencies**:
+   ```bash
+   bun install
+   ```
+
+3. **Run database migrations**:
+   Make sure your PostgreSQL instance is running and configured in `.env.local`, then:
+   ```bash
+   bun run db:migrate
+   ```
+
+4. **Start the development server**:
+   ```bash
+   bun run dev
+   ```
+   This will start the API server and the frontend in development mode with hot-reloading.
+
+## Troubleshooting Installation
+
+If you encounter issues during installation:
+
+- Ensure ports `3000` (App) and `4000` (API, if running separately) are not in use.
+- Verify that PostgreSQL and Redis are accessible using the credentials provided in your `.env.local` file.
+- Check the container logs: `docker compose logs -f`.
