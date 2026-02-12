@@ -45,15 +45,58 @@ Drivebase supports the following cloud providers:
 - [License](#license)
 
 
-## Prerequisites
+# Prerequisites
 
 - Bun - https://bun.sh/
 - Docker + Docker Compose (for container workflows)
 - Postgres + Redis (if running app locally without full Docker app container)
 
-## Getting Started
+# Getting Started
 
-To get started with Drivebase, follow these steps:
+You can get started with Drivebase in two ways:
+
+## Docker (recommended)
+
+1. Create env file:
+
+```bash
+cp .env.example .env.local
+```
+
+2. Update `.env.local` with required values:
+
+- `DATABASE_URL`
+- `REDIS_URL`
+- `JWT_SECRET`
+- `ENCRYPTION_KEY`
+- `CORS_ORIGIN`
+- `API_BASE_URL`
+
+3. Start Postgres + Redis (if not already running):
+
+```bash
+docker compose -f compose.dev.yaml up -d
+```
+
+4. Pull the deployed image:
+
+```bash
+docker pull ghcr.io/drivebase/drivebase:v1.0.3
+```
+
+5. Run Drivebase:
+
+```bash
+docker run --rm -p 3000:3000 --env-file .env.local ghcr.io/drivebase/drivebase:v1.0.3
+```
+
+6. Open:
+
+- App: `http://localhost:3000`
+- GraphQL: `http://localhost:3000/graphql`
+
+
+## Manual Installation
 
 1. Copy the example file:
 
@@ -72,7 +115,7 @@ cp .env.example .env.local
 > [!NOTE]
 > To generate a JWT secret or encryption key, run `openssl rand -base64 32`.
 
-### Local Development
+## Local Development
 
 Install dependencies:
 
@@ -92,7 +135,7 @@ Run both API and web from root `.env.local`:
 bun run dev:local
 ```
 
-### Docker Image (Production-style Runtime)
+## Docker Image (Production-style Runtime)
 
 The Docker image:
 
@@ -125,7 +168,7 @@ Open:
 - App: `http://localhost:3000`
 - GraphQL (through proxy): `http://localhost:3000/graphql`
 
-### Migration Control
+## Migration Control
 
 Migrations run on container start by default. To skip:
 
@@ -133,7 +176,7 @@ Migrations run on container start by default. To skip:
 -e SKIP_DB_MIGRATIONS=true
 ```
 
-### External API Upstream (Optional)
+## External API Upstream (Optional)
 
 If API is hosted elsewhere, point Caddy proxy to external API:
 
@@ -177,10 +220,10 @@ This is useful when running API/Web directly via `bun run dev`.
 bun run build
 ```
 
-## Contributing
+# Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
-## License
+# License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
