@@ -7,12 +7,12 @@ const navigation = {
     { name: "Documentation", href: "/docs" },
     { name: "API Reference", href: "/docs/api-reference" },
     { name: "Changelog", href: "/docs/changelog" },
-    { name: "GitHub", href: "https://github.com/monawwar/drivebase" },
+    { name: "GitHub", href: "https://github.com/drivebase/drivebase" },
   ],
   social: [
     {
       name: "GitHub",
-      href: "https://github.com/monawwar/drivebase",
+      href: "https://github.com/drivebase/drivebase",
       icon: (props: React.SVGProps<SVGSVGElement>) => (
         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
           <title>GitHub</title>
