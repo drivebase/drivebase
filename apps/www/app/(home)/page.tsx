@@ -1,16 +1,13 @@
-import Link from 'next/link';
+import { CTA } from '@/components/landing/cta';
+import { BentoGrid } from '@/components/landing/bento-grid';
+import { Hero } from '@/components/landing/hero';
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col justify-center text-center flex-1">
-      <h1 className="text-2xl font-bold mb-4">Hello World</h1>
-      <p>
-        You can open{' '}
-        <Link href="/docs" className="font-medium underline">
-          /docs
-        </Link>{' '}
-        and see the documentation.
-      </p>
-    </div>
+    <main className="flex flex-col flex-1 selection:bg-indigo-500/30">
+      <Hero />
+      <BentoGrid />
+      <CTA />
+    </main>
   );
 }

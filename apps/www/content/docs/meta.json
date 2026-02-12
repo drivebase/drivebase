@@ -1,0 +1,16 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "getting-started",
+    "installation",
+    "configuration",
+    "storage-providers",
+    "using-drivebase",
+    "troubleshooting",
+    "deployment",
+    "api",
+    "contributing",
+    "faq"
+  ]
+}
