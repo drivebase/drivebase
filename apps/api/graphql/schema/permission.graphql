@@ -1,43 +1,52 @@
 """
 Folder permissions
 """
-
 enum PermissionRole {
-  VIEWER
-  EDITOR
-  ADMIN
-  OWNER
+	VIEWER
+	EDITOR
+	ADMIN
+	OWNER
 }
 
 type Permission {
-  id: ID!
-  folderId: ID!
-  userId: ID!
-  role: PermissionRole!
-  grantedBy: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+	id: ID!
+	folderId: ID!
+	userId: ID!
+	role: PermissionRole!
+	grantedBy: ID!
+	createdAt: DateTime!
+	updatedAt: DateTime!
 
-  """Folder this permission applies to"""
-  folder: Folder!
+	"""
+	Folder this permission applies to
+	"""
+	folder: Folder!
 
-  """User with this permission"""
-  user: User!
+	"""
+	User with this permission
+	"""
+	user: User!
 
-  """User who granted this permission"""
-  grantedByUser: User!
+	"""
+	User who granted this permission
+	"""
+	grantedByUser: User!
 }
 
 extend type Mutation {
-  """Grant folder access to a user"""
-  grantFolderAccess(input: GrantAccessInput!): Permission!
+	"""
+	Grant folder access to a user
+	"""
+	grantFolderAccess(input: GrantAccessInput!): Permission!
 
-  """Revoke folder access from a user"""
-  revokeFolderAccess(folderId: ID!, userId: ID!): Boolean!
+	"""
+	Revoke folder access from a user
+	"""
+	revokeFolderAccess(folderId: ID!, userId: ID!): Boolean!
 }
 
 input GrantAccessInput {
-  folderId: ID!
-  userId: ID!
-  role: PermissionRole!
+	folderId: ID!
+	userId: ID!
+	role: PermissionRole!
 }

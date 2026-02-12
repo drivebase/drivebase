@@ -10,69 +10,75 @@ const AUDIENCE = "drivebase-api";
  * JWT payload structure
  */
 export interface JWTPayload {
-  userId: string;
-  email: string;
-  role: string;
+	userId: string;
+	email: string;
+	role: string;
 }
 
 /**
  * Create a JWT token
  */
-export async function createToken(payload: JWTPayload, expiresIn: string = "7d"): Promise<string> {
-  const jwt = await new SignJWT({ ...payload })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setIssuer(ISSUER)
-    .setAudience(AUDIENCE)
-    .setExpirationTime(expiresIn)
-    .sign(SECRET);
+export async function createToken(
+	payload: JWTPayload,
+	expiresIn: string = "7d",
+): Promise<string> {
+	const jwt = await new SignJWT({ ...payload })
+		.setProtectedHeader({ alg: "HS256" })
+		.setIssuedAt()
+		.setIssuer(ISSUER)
+		.setAudience(AUDIENCE)
+		.setExpirationTime(expiresIn)
+		.sign(SECRET);
 
-  return jwt;
+	return jwt;
 }
 
 /**
  * Verify and decode a JWT token
  */
 export async function verifyToken(token: string): Promise<JWTPayload> {
-  try {
-    const { payload } = await jwtVerify(token, SECRET, {
-      issuer: ISSUER,
-      audience: AUDIENCE,
-    });
+	try {
+		const { payload } = await jwtVerify(token, SECRET, {
+			issuer: ISSUER,
+			audience: AUDIENCE,
+		});
 
-    // Validate payload structure
-    if (
-      typeof payload.userId !== "string" ||
-      typeof payload.email !== "string" ||
-      typeof payload.role !== "string"
-    ) {
-      throw new Error("Invalid token payload structure");
-    }
+		// Validate payload structure
+		if (
+			typeof payload.userId !== "string" ||
+			typeof payload.email !== "string" ||
+			typeof payload.role !== "string"
+		) {
+			throw new Error("Invalid token payload structure");
+		}
 
-    return payload as unknown as JWTPayload;
-  } catch (error) {
-    throw new AuthenticationError("Invalid or expired token", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
+		return payload as unknown as JWTPayload;
+	} catch (error) {
+		throw new AuthenticationError("Invalid or expired token", {
+			error: error instanceof Error ? error.message : String(error),
+		});
+	}
 }
 
 /**
  * Extract token from Authorization header or cookie
  */
-export function extractToken(authHeader?: string | null, cookie?: string | null): string | null {
-  // Try Authorization header first (Bearer token)
-  if (authHeader?.startsWith("Bearer ")) {
-    return authHeader.slice(7);
-  }
+export function extractToken(
+	authHeader?: string | null,
+	cookie?: string | null,
+): string | null {
+	// Try Authorization header first (Bearer token)
+	if (authHeader?.startsWith("Bearer ")) {
+		return authHeader.slice(7);
+	}
 
-  // Try cookie (format: token=xxx)
-  if (cookie) {
-    const match = cookie.match(/token=([^;]+)/);
-    if (match && match[1]) {
-      return match[1];
-    }
-  }
+	// Try cookie (format: token=xxx)
+	if (cookie) {
+		const match = cookie.match(/token=([^;]+)/);
+		if (match && match[1]) {
+			return match[1];
+		}
+	}
 
-  return null;
+	return null;
 }

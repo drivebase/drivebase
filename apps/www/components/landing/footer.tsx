@@ -1,16 +1,16 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 const navigation = {
   main: [
-    { name: 'Documentation', href: '/docs' },
-    { name: 'API Reference', href: '/docs/api-reference' },
-    { name: 'Changelog', href: '/docs/changelog' },
-    { name: 'GitHub', href: 'https://github.com/monawwar/drivebase' },
+    { name: "Documentation", href: "/docs" },
+    { name: "API Reference", href: "/docs/api-reference" },
+    { name: "Changelog", href: "/docs/changelog" },
+    { name: "GitHub", href: "https://github.com/monawwar/drivebase" },
   ],
   social: [
     {
-      name: 'GitHub',
-      href: 'https://github.com/monawwar/drivebase',
+      name: "GitHub",
+      href: "https://github.com/monawwar/drivebase",
       icon: (props: any) => (
         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
           <path
@@ -22,11 +22,11 @@ const navigation = {
       ),
     },
     {
-      name: 'Discord',
-      href: 'https://discord.gg/3kUSy2d',
+      name: "Discord",
+      href: "https://discord.gg/3kUSy2d",
       icon: (props: any) => (
         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
-            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037 14.156 14.156 0 0 0-.64 1.313 18.28 18.28 0 0 0-5.426 0 14.398 14.398 0 0 0-.642-1.313.078.078 0 0 0-.079-.037 19.53 19.53 0 0 0-4.885 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037 14.156 14.156 0 0 0-.64 1.313 18.28 18.28 0 0 0-5.426 0 14.398 14.398 0 0 0-.642-1.313.078.078 0 0 0-.079-.037 19.53 19.53 0 0 0-4.885 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
         </svg>
       ),
     },
@@ -46,17 +46,24 @@ export function Footer() {
               <span className="sr-only">Drivebase</span>
               <img
                 className="h-8 w-auto"
-                src="https://raw.githubusercontent.com/drivebase/drivebase/main/drivebase.svg" 
+                src="https://raw.githubusercontent.com/drivebase/drivebase/main/drivebase.svg"
                 alt="Drivebase"
               />
-              <span className="text-xl font-bold text-white tracking-tight">Drivebase</span>
+              <span className="text-xl font-bold text-white tracking-tight">
+                Drivebase
+              </span>
             </Link>
             <p className="text-sm leading-6 text-gray-400 max-w-xs">
-              The unified file storage API for modern applications. Secure, scalable, and open-source.
+              The unified file storage API for modern applications. Secure,
+              scalable, and open-source.
             </p>
             <div className="flex space-x-6">
               {navigation.social.map((item) => (
-                <Link key={item.name} href={item.href} className="text-gray-500 hover:text-gray-400 transition-colors">
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="text-gray-500 hover:text-gray-400 transition-colors"
+                >
                   <span className="sr-only">{item.name}</span>
                   <item.icon className="h-6 w-6" aria-hidden="true" />
                 </Link>
@@ -66,11 +73,16 @@ export function Footer() {
           <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
-                <h3 className="text-sm font-semibold leading-6 text-white">Project</h3>
+                <h3 className="text-sm font-semibold leading-6 text-white">
+                  Project
+                </h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {navigation.main.map((item) => (
                     <li key={item.name}>
-                      <Link href={item.href} className="text-sm leading-6 text-gray-400 hover:text-white transition-colors">
+                      <Link
+                        href={item.href}
+                        className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
+                      >
                         {item.name}
                       </Link>
                     </li>

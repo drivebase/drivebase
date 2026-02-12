@@ -1,17 +1,17 @@
 {
-  "name": "@drivebase/utils",
-  "version": "0.1.0",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "description": "Shared utility helpers for Drivebase",
-  "exports": {
-    ".": "./index.ts"
-  },
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  }
+	"name": "@drivebase/utils",
+	"version": "0.1.0",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"description": "Shared utility helpers for Drivebase",
+	"exports": {
+		".": "./index.ts"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	}
 }

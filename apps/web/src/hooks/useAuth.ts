@@ -101,7 +101,10 @@ export function useUpdateMyProfile() {
 		async (variables: { input: { name: string } }) => {
 			const response = await mutate(variables);
 			if (response.data?.updateMyProfile) {
-				const user = getFragmentData(UserFragment, response.data.updateMyProfile);
+				const user = getFragmentData(
+					UserFragment,
+					response.data.updateMyProfile,
+				);
 				setUser(user);
 			}
 			return response;

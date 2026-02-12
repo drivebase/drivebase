@@ -6,21 +6,21 @@ import { useMe } from "@/hooks/useAuth";
 import { ConfirmDialogHost } from "@/lib/confirmDialog";
 
 export const Route = createRootRoute({
-  component: RootComponent,
-  errorComponent: RootErrorComponent,
+	component: RootComponent,
+	errorComponent: RootErrorComponent,
 });
 
 function RootComponent() {
-  // This will fetch the user profile if a token exists in localStorage
-  useMe();
+	// This will fetch the user profile if a token exists in localStorage
+	useMe();
 
-  return (
-    <>
-      <Outlet />
-      <ConfirmDialogHost />
-      <Toaster position="bottom-right" richColors />
-    </>
-  );
+	return (
+		<>
+			<Outlet />
+			<ConfirmDialogHost />
+			<Toaster position="bottom-right" richColors />
+		</>
+	);
 }
 
 function RootErrorComponent({
@@ -31,12 +31,18 @@ function RootErrorComponent({
 	reset: () => void;
 }) {
 	const message =
-		error instanceof Error ? error.message : "Something went wrong while loading the app.";
+		error instanceof Error
+			? error.message
+			: "Something went wrong while loading the app.";
 
 	return (
 		<div className="min-h-screen w-full flex items-center justify-center p-8">
 			<div className="max-w-md w-full rounded-2xl border bg-card p-6 text-center space-y-4">
-				<img src="/drivebase.svg" alt="Drivebase" className="h-12 w-12 mx-auto" />
+				<img
+					src="/drivebase.svg"
+					alt="Drivebase"
+					className="h-12 w-12 mx-auto"
+				/>
 				<div className="space-y-2">
 					<h1 className="text-xl font-semibold">Unable to load Drivebase</h1>
 					<p className="text-sm text-muted-foreground">{message}</p>

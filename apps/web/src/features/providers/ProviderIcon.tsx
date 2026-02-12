@@ -19,10 +19,10 @@ export function ProviderIcon({ type, className }: ProviderIconProps) {
 
 	if (logoPath) {
 		return (
-			<img 
-				src={logoPath} 
-				alt={type} 
-				className={cn("object-contain", className)} 
+			<img
+				src={logoPath}
+				alt={type}
+				className={cn("object-contain", className)}
 			/>
 		);
 	}

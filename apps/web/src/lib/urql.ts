@@ -1,6 +1,7 @@
 import { Client, cacheExchange, fetchExchange } from "urql";
 
-const API_URL = import.meta.env.VITE_PUBLIC_API_URL || "http://localhost:4000/graphql";
+const API_URL =
+	import.meta.env.VITE_PUBLIC_API_URL || "http://localhost:4000/graphql";
 
 export const client = new Client({
 	url: API_URL,

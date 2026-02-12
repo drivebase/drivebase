@@ -1,4 +1,4 @@
-import { graphql } from '@/gql';
+import { graphql } from "@/gql";
 
 export const FOLDER_QUERY = graphql(`
   query GetFolder($id: ID!) {

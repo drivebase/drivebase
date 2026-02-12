@@ -1,5 +1,6 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+  "root": false,
+  "$schema": "https://biomejs.dev/schemas/2.3.14/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,14 +8,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": [
-      "**",
-      "!node_modules",
-      "!.next",
-      "!dist",
-      "!build",
-      "!.source"
-    ]
+    "includes": ["**", "!node_modules", "!.next", "!dist", "!build", "!.source"]
   },
   "formatter": {
     "enabled": true,
@@ -36,6 +30,11 @@
       "source": {
         "organizeImports": "on"
       }
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   }
 }

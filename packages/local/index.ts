@@ -6,9 +6,9 @@
 
 export { LocalProvider } from "./provider";
 export {
-  LocalConfigSchema,
-  LocalSensitiveFields,
-  LocalConfigFields,
+	LocalConfigSchema,
+	LocalSensitiveFields,
+	LocalConfigFields,
 } from "./schema";
 export type { LocalConfig } from "./schema";
 
@@ -17,10 +17,10 @@ import { LocalProvider } from "./provider";
 import { LocalConfigSchema, LocalConfigFields } from "./schema";
 
 export const localRegistration: ProviderRegistration = {
-  factory: () => new LocalProvider(),
-  configSchema: LocalConfigSchema,
-  configFields: LocalConfigFields,
-  description: "Local filesystem storage",
-  supportsPresignedUrls: false,
-  authType: "no_auth",
+	factory: () => new LocalProvider(),
+	configSchema: LocalConfigSchema,
+	configFields: LocalConfigFields,
+	description: "Local filesystem storage",
+	supportsPresignedUrls: false,
+	authType: "no_auth",
 };
