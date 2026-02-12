@@ -4,16 +4,12 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "build:cf": "opennextjs-cloudflare build",
     "dev": "next dev",
     "start": "next start",
     "types:check": "fumadocs-mdx && next typegen && tsc --noEmit",
     "postinstall": "fumadocs-mdx",
     "lint": "biome check",
-    "format": "biome format --write",
-    "preview": "opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "format": "biome format --write"
   },
   "dependencies": {
     "@next/third-parties": "^16.1.6",
@@ -30,7 +26,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.14",
-    "@opennextjs/cloudflare": "^1.16.4",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/mdx": "^2.0.13",
     "@types/node": "^25.2.1",
@@ -38,7 +33,6 @@
     "@types/react-dom": "^19.2.3",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3",
-    "wrangler": "^4.65.0"
+    "typescript": "^5.9.3"
   }
 }
