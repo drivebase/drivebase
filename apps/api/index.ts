@@ -42,7 +42,7 @@ const schema = makeExecutableSchema({
 /**
  * Mask sensitive data in logs
  */
-function maskSensitive(data: any): any {
+function _maskSensitive(data: any): any {
 	if (!data) return data;
 	if (typeof data !== "object") return data;
 
@@ -53,7 +53,7 @@ function maskSensitive(data: any): any {
 		if (sensitiveKeys.some((k) => key.toLowerCase().includes(k))) {
 			masked[key] = "***MASKED***";
 		} else if (typeof masked[key] === "object") {
-			masked[key] = maskSensitive(masked[key]);
+			masked[key] = _maskSensitive(masked[key]);
 		}
 	}
 
@@ -209,7 +209,7 @@ async function handleUploadProxy(request: Request): Promise<Response> {
 	try {
 		const payload = await verifyToken(token);
 		userId = payload.userId;
-	} catch (error) {
+	} catch (_error) {
 		return new Response("Invalid token", { status: 401, headers: corsHeaders });
 	}
 

@@ -75,7 +75,7 @@ export function extractToken(
 	// Try cookie (format: token=xxx)
 	if (cookie) {
 		const match = cookie.match(/token=([^;]+)/);
-		if (match && match[1]) {
+		if (match?.[1]) {
 			return match[1];
 		}
 	}

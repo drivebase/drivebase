@@ -2,7 +2,6 @@ import type { GraphQLContext } from "./context";
 import {
 	AuthenticationError,
 	AuthorizationError,
-	ValidationError,
 } from "@drivebase/core";
 import { AuthService } from "../services/auth";
 import { UserService } from "../services/user";
@@ -69,7 +68,7 @@ export const resolvers = {
 
 		folders: async (
 			_: unknown,
-			args: { parentPath?: string },
+			_args: { parentPath?: string },
 			context: GraphQLContext,
 		) => {
 			requireAuth(context);
@@ -79,7 +78,7 @@ export const resolvers = {
 
 		files: async (
 			_: unknown,
-			args: { folderPath: string; limit?: number; offset?: number },
+			_args: { folderPath: string; limit?: number; offset?: number },
 			context: GraphQLContext,
 		) => {
 			requireAuth(context);
@@ -89,7 +88,7 @@ export const resolvers = {
 
 		activities: async (
 			_: unknown,
-			args: { limit?: number; offset?: number; userId?: string },
+			_args: { limit?: number; offset?: number; userId?: string },
 			context: GraphQLContext,
 		) => {
 			requireRole(context, ["admin", "owner"]);
@@ -183,7 +182,7 @@ export const resolvers = {
 
 		connectStorage: async (
 			_: unknown,
-			args: {
+			_args: {
 				input: { name: string; type: string; config: Record<string, unknown> };
 			},
 			context: GraphQLContext,
@@ -195,7 +194,7 @@ export const resolvers = {
 
 		createFolder: async (
 			_: unknown,
-			args: { input: { name: string; parentPath: string } },
+			_args: { input: { name: string; parentPath: string } },
 			context: GraphQLContext,
 		) => {
 			requireAuth(context);
@@ -205,7 +204,7 @@ export const resolvers = {
 
 		renameFile: async (
 			_: unknown,
-			args: { id: string; name: string },
+			_args: { id: string; name: string },
 			context: GraphQLContext,
 		) => {
 			requireAuth(context);
@@ -215,7 +214,7 @@ export const resolvers = {
 
 		grantFolderAccess: async (
 			_: unknown,
-			args: { folderId: string; userId: string; role: string },
+			_args: { folderId: string; userId: string; role: string },
 			context: GraphQLContext,
 		) => {
 			requireAuth(context);

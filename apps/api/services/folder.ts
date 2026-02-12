@@ -1,15 +1,13 @@
 import type { Database } from "@drivebase/db";
-import { folders, storageProviders } from "@drivebase/db";
-import { eq, and, or, isNull } from "drizzle-orm";
+import { folders, } from "@drivebase/db";
+import { eq, and, isNull } from "drizzle-orm";
 import {
 	NotFoundError,
 	ValidationError,
-	AuthorizationError,
 	ConflictError,
 	normalizePath,
 	joinPath,
 	getParentPath,
-	getBasename,
 } from "@drivebase/core";
 import { ProviderService } from "./provider";
 
@@ -120,7 +118,7 @@ export class FolderService {
 	/**
 	 * Get folder by ID
 	 */
-	async getFolder(folderId: string, userId: string) {
+	async getFolder(folderId: string, _userId: string) {
 		const [folder] = await this.db
 			.select()
 			.from(folders)
@@ -139,7 +137,7 @@ export class FolderService {
 	/**
 	 * List folders in a path or parent
 	 */
-	async listFolders(userId: string, path?: string, parentId?: string) {
+	async listFolders(_userId: string, path?: string, parentId?: string) {
 		if (parentId) {
 			// List by parent ID
 			return this.db
@@ -403,7 +401,7 @@ export class FolderService {
 	/**
 	 * Get starred folders
 	 */
-	async getStarredFolders(userId: string) {
+	async getStarredFolders(_userId: string) {
 		return this.db
 			.select()
 			.from(folders)

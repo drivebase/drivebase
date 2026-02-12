@@ -51,7 +51,7 @@ export function QuotaSettingsDialog({
 		setTotalGb(toGb(totalBytes));
 		setLeftGb(toGb(leftBytes));
 		setError(null);
-	}, [provider, isOpen]);
+	}, [provider]);
 
 	const handleSave = async () => {
 		if (!provider) return;

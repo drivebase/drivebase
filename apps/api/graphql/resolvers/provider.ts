@@ -6,7 +6,6 @@ import type {
 	AuthType as GQLAuthType,
 	ProviderType as GQLProviderType,
 } from "../generated/types";
-import type { GraphQLContext } from "../context";
 import { requireAuth } from "./auth-helpers";
 import { ProviderService } from "../../services/provider";
 import { getAvailableProviders } from "../../config/providers";

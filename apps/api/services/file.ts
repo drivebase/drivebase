@@ -7,7 +7,6 @@ import {
 	ValidationError,
 	ConflictError,
 	sanitizeFilename,
-	normalizePath,
 	joinPath,
 	getParentPath,
 } from "@drivebase/core";
@@ -157,7 +156,7 @@ export class FileService {
 	/**
 	 * Get file by ID
 	 */
-	async getFile(fileId: string, userId: string) {
+	async getFile(fileId: string, _userId: string) {
 		// logger.debug({ msg: "Getting file", fileId, userId }); // Too verbose for frequent op?
 		const [file] = await this.db
 			.select()
@@ -717,7 +716,7 @@ export class FileService {
 	/**
 	 * Get starred files
 	 */
-	async getStarredFiles(userId: string) {
+	async getStarredFiles(_userId: string) {
 		return this.db
 			.select()
 			.from(files)
