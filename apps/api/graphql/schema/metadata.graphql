@@ -1,0 +1,11 @@
+"""
+Application metadata
+"""
+type AppMetadata {
+  version: String!
+}
+
+extend type Query {
+  """Metadata about the running application"""
+  appMetadata: AppMetadata!
+}

@@ -1,86 +1,19 @@
-# Environment and secrets
-.env
-.env.*
-
-# Version control
 .git
 .gitignore
-
-# Dependencies
-node_modules
-**/*/node_modules
-.pnpm-store
-
-# Build outputs
-dist
-build
-**/*/dist
-**/*/build
-
-# Documentation
-*.md
-docs
-README.md
-
-# Development and IDE files
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# Testing and coverage
-coverage
-.nyc_output
-__tests__
-*.test.*
-*.spec.*
-
-# Logs and debugging
-logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# OS generated files
 .DS_Store
-Thumbs.db
 
-# Temporary files
-.temp
-.tmp
-*.tmp
-*.temp
+node_modules
+**/node_modules
+**/dist
+**/.turbo
+**/.cache
+**/.vite
+**/*.log
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+.env
+**/.env
+**/.env.*
 
-# Diagnostic reports
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-# Development config files
-.eslintrc*
-.prettierrc
-.editorconfig
-.stylelintrc*
-.eslintignore
-.prettierignore
-
-.dockerignore
-Dockerfile
-
-# Uploads
-uploads
+.claude
+.zed
+docs

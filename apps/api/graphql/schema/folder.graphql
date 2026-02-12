@@ -1,0 +1,66 @@
+"""
+Folder management
+"""
+
+type Folder {
+  id: ID!
+  virtualPath: String!
+  name: String!
+  remoteId: String
+  providerId: ID
+  parentId: ID
+  createdBy: ID!
+  isDeleted: Boolean!
+  starred: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  """Parent folder (if any)"""
+  parent: Folder
+
+  """Child folders"""
+  children: [Folder!]!
+
+  """Files in this folder"""
+  files: [File!]!
+
+  """Permissions for this folder"""
+  permissions: [Permission!]!
+}
+
+extend type Query {
+  """Get folder by ID"""
+  folder(id: ID!): Folder
+
+  """Get folders in a path"""
+  folders(path: String, parentId: ID): [Folder!]!
+
+  """Get starred folders"""
+  starredFolders: [Folder!]!
+}
+
+extend type Mutation {
+  """Create a new folder"""
+  createFolder(input: CreateFolderInput!): Folder!
+
+  """Rename a folder"""
+  renameFolder(id: ID!, name: String!): Folder!
+
+  """Move folder to different parent"""
+  moveFolder(id: ID!, parentId: ID): Folder!
+
+  """Delete folder (soft delete)"""
+  deleteFolder(id: ID!): Boolean!
+
+  """Star a folder"""
+  starFolder(id: ID!): Folder!
+
+  """Unstar a folder"""
+  unstarFolder(id: ID!): Folder!
+}
+
+input CreateFolderInput {
+  name: String!
+  parentId: ID
+  providerId: ID
+}

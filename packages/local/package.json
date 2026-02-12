@@ -1,0 +1,21 @@
+{
+	"name": "@drivebase/local",
+	"version": "0.1.0",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"description": "Local storage provider package for Drivebase",
+	"exports": {
+		".": "./index.ts"
+	},
+	"dependencies": {
+		"@drivebase/core": "workspace:*",
+		"zod": "^3.22.4"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	}
+}

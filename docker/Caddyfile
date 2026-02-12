@@ -1,0 +1,17 @@
+:3000 {
+  encode gzip zstd
+
+  @api_routes {
+    path /graphql* /api/* /webhook/*
+  }
+
+  handle @api_routes {
+    reverse_proxy {$API_UPSTREAM}
+  }
+
+  handle {
+    root * /srv/www
+    try_files {path} /index.html
+    file_server
+  }
+}

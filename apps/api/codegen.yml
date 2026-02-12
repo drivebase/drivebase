@@ -1,0 +1,30 @@
+schema: ./graphql/schema/**/*.graphql
+generates:
+  ./graphql/generated/types.ts:
+    plugins:
+      - typescript
+      - typescript-resolvers
+    config:
+      # Use custom context type
+      contextType: ../context#GraphQLContext
+      # Use Date for DateTime scalar
+      scalars:
+        DateTime: Date
+        JSON: Record<string, any>
+      # Make resolvers return promises
+      makeResolverTypeCallable: true
+      # Show optional fields as optional
+      avoidOptionals:
+        field: false
+        inputValue: false
+        object: false
+      # Use types from database as mappers
+      mappers:
+        User: "@drivebase/db#User as DbUser"
+        File: "@drivebase/db#File as DbFile"
+        Folder: "@drivebase/db#Folder as DbFolder"
+        StorageProvider: "@drivebase/db#StorageProvider as DbStorageProvider"
+        Permission: "@drivebase/db#Permission as DbPermission"
+        Activity: "@drivebase/db#Activity as DbActivity"
+      # Use type imports
+      useTypeImports: true

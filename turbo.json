@@ -1,0 +1,29 @@
+{
+	"$schema": "https://turborepo.dev/schema.json",
+	"globalEnv": [
+		"PORT",
+		"NODE_ENV",
+		"DATABASE_URL",
+		"REDIS_URL",
+		"JWT_SECRET",
+		"ENCRYPTION_KEY",
+		"CORS_ORIGIN",
+		"API_BASE_URL",
+		"DEFAULT_OWNER_EMAIL",
+		"DEFAULT_OWNER_PASSWORD",
+		"VITE_PUBLIC_API_URL"
+	],
+	"tasks": {
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": ["dist"]
+		},
+		"check-types": {
+			"dependsOn": ["^check-types"]
+		},
+		"dev": {
+			"persistent": true,
+			"cache": false
+		}
+	}
+}
