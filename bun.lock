@@ -42,6 +42,7 @@
         "@types/bcryptjs": "^3.0.0",
         "@types/bun": "latest",
         "@types/ioredis": "^5.0.0",
+        "vitest": "^3.0.5",
       },
       "peerDependencies": {
         "typescript": "^5",
