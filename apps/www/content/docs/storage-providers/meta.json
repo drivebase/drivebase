@@ -1,4 +1,4 @@
 {
   "title": "Storage Providers",
-  "pages": ["overview", "local", "s3", "google-drive", "dropbox", "ftp"]
+  "pages": ["overview", "local", "s3", "google-drive", "dropbox", "ftp", "webdav"]
 }

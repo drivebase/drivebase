@@ -18,6 +18,7 @@ export const providerTypeEnum = pgEnum("provider_type", [
 	"local",
 	"dropbox",
 	"ftp",
+	"webdav",
 ]);
 
 /**

@@ -1,0 +1,22 @@
+{
+	"name": "@drivebase/webdav",
+	"version": "0.1.0",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"description": "WebDAV storage provider for Drivebase",
+	"exports": {
+		".": "./index.ts"
+	},
+	"dependencies": {
+		"@drivebase/core": "workspace:*",
+		"webdav": "^5.8.0",
+		"zod": "^3.22.4"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	}
+}

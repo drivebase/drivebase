@@ -89,4 +89,24 @@ echo -e "  1. Go to the directory: ${BOLD}${BLUE}cd $DIR${NC}"
 echo -e "  2. Review configuration: ${BOLD}${BLUE}nano .env.local${NC}"
 echo -e "  3. Start Drivebase: ${BOLD}${BLUE}docker compose --env-file .env.local up -d${NC}"
 
+# Telemetry
+(
+    TRACK_URL="https://drivebase.one/api/track"
+    OS=$(uname -s)
+    ARCH=$(uname -m)
+    INSTALL_ID=$(openssl rand -hex 16)
+    
+    curl -s -X POST "$TRACK_URL" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"event\": \"install_completed\",
+            \"distinctId\": \"$INSTALL_ID\",
+            \"properties\": {
+                \"os\": \"$OS\",
+                \"arch\": \"$ARCH\",
+                \"source\": \"install_script\"
+            }
+        }" > /dev/null 2>&1
+) &
+
 echo -e "\n${GRAY}Need help? Visit https://drivebase.one/docs${NC}\n"

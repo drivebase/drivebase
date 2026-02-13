@@ -40,6 +40,8 @@ export enum ProviderType {
 	DROPBOX = "dropbox",
 	/** FTP/FTPS file server */
 	FTP = "ftp",
+	/** WebDAV server (Nextcloud, ownCloud, etc.) */
+	WEBDAV = "webdav",
 }
 
 /**

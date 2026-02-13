@@ -5,6 +5,7 @@ import {
 	dropboxRegistration,
 } from "@drivebase/dropbox";
 import { FTPSensitiveFields, ftpRegistration } from "@drivebase/ftp";
+import { WebDAVSensitiveFields, webdavRegistration } from "@drivebase/webdav";
 import {
 	GoogleDriveSensitiveFields,
 	googleDriveRegistration,
@@ -22,6 +23,7 @@ export const providerRegistry: Record<string, ProviderRegistration> = {
 	[ProviderType.LOCAL]: localRegistration,
 	[ProviderType.DROPBOX]: dropboxRegistration,
 	[ProviderType.FTP]: ftpRegistration,
+	[ProviderType.WEBDAV]: webdavRegistration,
 };
 
 /**
@@ -33,6 +35,7 @@ export const providerSensitiveFields: Record<string, readonly string[]> = {
 	[ProviderType.LOCAL]: LocalSensitiveFields,
 	[ProviderType.DROPBOX]: DropboxSensitiveFields,
 	[ProviderType.FTP]: FTPSensitiveFields,
+	[ProviderType.WEBDAV]: WebDAVSensitiveFields,
 };
 
 /**
@@ -78,6 +81,8 @@ function getProviderName(type: string): string {
 			return "Dropbox";
 		case ProviderType.FTP:
 			return "FTP";
+		case ProviderType.WEBDAV:
+			return "WebDAV";
 		default:
 			return type;
 	}
