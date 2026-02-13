@@ -5,7 +5,99 @@ Drivebase is a next-generation cloud-agnostic file management application that e
 
 ---
 
+## Table of Contents
 
+- [Table of Contents](#table-of-contents)
+- [Getting Started](#getting-started)
+- [Quickstart (Recommended)](#quickstart-recommended)
+- [Docker Compose](#docker-compose)
+- [Manual Installation](#manual-installation)
+  - [Prerequisites](#prerequisites)
+  - [Steps](#steps)
+- [Supported Providers](#supported-providers)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Getting Started
+
+You can get started with Drivebase in multiple ways:
+
+## Quickstart (Recommended)
+
+
+Run the following command to install Drivebase using our automated installer. It uses Docker Compose to set up your environment and generate secure keys automatically.
+
+```bash
+curl -fsSL https://drivebase.one/install | bash
+```
+
+<img width="600" alt="Group" src="https://github.com/user-attachments/assets/19e11300-83e1-4e8b-a31e-17be9e2f81c9" />
+
+You will need to update the `.env.local` file with your own values for PostgreSQL, Redis, and other required values.
+
+
+## Docker Compose
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/drivebase/drivebase.git
+cd drivebase
+```
+
+2. Update `.env.local` with required values:
+
+3. Start Postgres + Redis (if not already running):
+
+```bash
+docker compose -f docker/compose.dev.yaml up -d
+```
+
+4. Open:
+
+- App: `http://localhost:3000`
+- GraphQL: `http://localhost:3000/graphql`
+
+## Manual Installation
+
+If you prefer to run the application manually without Docker Compose, you can follow the steps below.
+
+### Prerequisites
+
+- Bun - https://bun.sh/
+- Postgres + Redis (if running app locally without full Docker app container)
+
+### Steps
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/drivebase/drivebase.git
+cd drivebase
+```
+
+2. Install dependencies:
+
+```bash
+bun install
+```
+
+3. Update `.env.local` with required values:
+
+```bash
+cp .env.example .env.local
+```
+
+4. Start the application:
+
+```bash
+bun run dev
+```
+
+5. Open:
+
+- App: `http://localhost:3000`
+- GraphQL: `http://localhost:3000/graphql`
 
 ## Supported Providers
 
@@ -22,95 +114,6 @@ Drivebase supports the following cloud providers:
 - [ ] OneDrive
 - [ ] Telegram
 
-
-## Table of Contents
-
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [Contributing](#contributing)
-- [License](#license)
-
-
-## Prerequisites
-
-- Bun - https://bun.sh/
-- Docker + Docker Compose (for container workflows)
-- Postgres + Redis (if running app locally without full Docker app container)
-
-## Getting Started
-
-You can get started with Drivebase in two ways:
-
-## Docker (recommended)
-
-1. Create env file:
-
-```bash
-cp .env.example .env.local
-```
-
-2. Update `.env.local` with required values:
-
-- `DATABASE_URL`
-- `REDIS_URL`
-- `JWT_SECRET`
-- `ENCRYPTION_KEY`
-- `CORS_ORIGIN`
-- `API_BASE_URL`
-
-3. Start Postgres + Redis (if not already running):
-
-```bash
-docker compose -f compose.dev.yaml up -d
-```
-
-4. Pull the deployed image:
-
-```bash
-docker pull ghcr.io/drivebase/drivebase:v1.1.0
-```
-
-5. Run Drivebase:
-
-```bash
-docker run --rm -p 3000:3000 --env-file .env.local ghcr.io/drivebase/drivebase:v1.1.0
-```
-
-6. Open:
-
-- App: `http://localhost:3000`
-- GraphQL: `http://localhost:3000/graphql`
-
-## Manual Installation
-
-1. Copy the example file:
-
-```bash
-cp .env.example .env.local
-```
-
-2. Update required values in `.env.local`, especially:
-
-- `DATABASE_URL`
-- `REDIS_URL`
-- `JWT_SECRET`
-- `ENCRYPTION_KEY`
-- `VITE_PUBLIC_API_URL`
-
-> [!NOTE]
-> To generate a JWT secret or encryption key, run `openssl rand -base64 32`.
-
-3. Install dependencies:
-
-```bash
-bun install
-```
-
-4. Start the server:
-
-```bash
-bun run dev
-```
 
 ## Contributing
 
