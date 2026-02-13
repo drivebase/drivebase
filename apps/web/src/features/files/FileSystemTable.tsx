@@ -338,9 +338,9 @@ export function FileSystemTable({
 			{
 				id: "actions",
 				enableHiding: false,
-				size: 56,
-				minSize: 56,
-				maxSize: 56,
+				size: 44,
+				minSize: 44,
+				maxSize: 44,
 				header: () => <div className="text-right" />,
 				cell: ({ row }) => {
 					const original = row.original;
