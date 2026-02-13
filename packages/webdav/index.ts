@@ -20,7 +20,7 @@ export const webdavRegistration: ProviderRegistration = {
 	factory: () => new WebDAVProvider(),
 	configSchema: WebDAVConfigSchema,
 	configFields: WebDAVConfigFields,
-	description: "WebDAV server storage (Nextcloud, ownCloud, etc.)",
+	description: "WebDAV server storage",
 	supportsPresignedUrls: false,
 	authType: "api_key",
 };
