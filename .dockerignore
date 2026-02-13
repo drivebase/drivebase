@@ -11,9 +11,15 @@ node_modules
 **/*.log
 
 .env
+.env.*
 **/.env
 **/.env.*
 
+.github
 .claude
 .zed
+.turbo
+.tanstack
 docs
+dist
+**/gql
