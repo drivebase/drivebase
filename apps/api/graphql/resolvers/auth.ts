@@ -77,6 +77,12 @@ export const authMutations: MutationResolvers = {
 		const authService = new AuthService(context.db);
 		return authService.updateMyProfile(user.userId, args.input.name);
 	},
+
+	completeOnboarding: async (_parent, _args, context) => {
+		const user = requireAuth(context);
+		const authService = new AuthService(context.db);
+		return authService.completeOnboarding(user.userId);
+	},
 };
 
 export const authResponseResolvers: AuthResponseResolvers = {

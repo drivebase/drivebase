@@ -43,6 +43,11 @@ type Mutation {
 	Update current user's profile
 	"""
 	updateMyProfile(input: UpdateMyProfileInput!): User!
+
+	"""
+	Complete user onboarding
+	"""
+	completeOnboarding: Boolean!
 }
 
 input RegisterInput {
