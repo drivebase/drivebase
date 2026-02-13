@@ -5,16 +5,16 @@
 	"type": "module",
 	"private": true,
 	"description": "GraphQL API server for Drivebase",
-  "scripts": {
-    "dev": "bun --hot index.ts",
-    "start": "bun index.ts",
-    "test": "bun test",
-    "test:watch": "bun test --watch",
-    "codegen": "graphql-codegen --config codegen.yml",
-    "codegen:watch": "graphql-codegen --config codegen.yml --watch",
-    "db:generate": "cd ../../packages/db && bun run generate",
-    "db:migrate": "cd ../../packages/db && bun run migrate",
-    "db:studio": "cd ../../packages/db && bun run studio"
+	"scripts": {
+		"dev": "bun --hot index.ts",
+		"start": "bun index.ts",
+		"test": "bun test",
+		"test:watch": "bun test --watch",
+		"codegen": "graphql-codegen --config codegen.yml",
+		"codegen:watch": "graphql-codegen --config codegen.yml --watch",
+		"db:generate": "cd ../../packages/db && bun run generate",
+		"db:migrate": "cd ../../packages/db && bun run migrate",
+		"db:studio": "cd ../../packages/db && bun run studio"
 	},
 	"dependencies": {
 		"@drivebase/core": "workspace:*",
@@ -37,12 +37,12 @@
 	},
 	"devDependencies": {
 		"@graphql-codegen/cli": "^6.1.1",
-    "@graphql-codegen/typescript": "^5.0.7",
-    "@graphql-codegen/typescript-resolvers": "^5.1.5",
-    "@types/bcryptjs": "^3.0.0",
-    "@types/bun": "latest",
-    "@types/ioredis": "^5.0.0"
-  },
+		"@graphql-codegen/typescript": "^5.0.7",
+		"@graphql-codegen/typescript-resolvers": "^5.1.5",
+		"@types/bcryptjs": "^3.0.0",
+		"@types/bun": "latest",
+		"@types/ioredis": "^5.0.0"
+	},
 	"peerDependencies": {
 		"typescript": "^5"
 	}
