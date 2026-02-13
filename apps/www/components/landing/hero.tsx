@@ -1,11 +1,21 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 export function Hero() {
+  const [copied, setCopied] = useState(false);
+  const installCommand = "curl -fsSL https://drivebase.one/install | bash";
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(installCommand);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <section className="relative overflow-hidden pt-14 pb-16 sm:pb-24 lg:pb-32 bg-[#050505]">
       <div className="absolute inset-0 z-0 h-full w-full bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
@@ -25,7 +35,8 @@ export function Hero() {
               </span>
               <span className="mx-2 text-gray-600">|</span>
               <Link
-                href="/docs/changelog"
+                href="https://github.com/drivebase/drivebase/releases/tag/v1.1.0"
+                target="_blank"
                 className="font-semibold text-indigo-400 hover:text-indigo-300"
               >
                 Read Changelog <span aria-hidden="true">&rarr;</span>
@@ -75,12 +86,39 @@ export function Hero() {
               <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-8 flex justify-center"
+          >
+            <div className="group relative flex items-center gap-3 rounded-xl bg-white/5 px-5 py-3 ring-1 ring-inset ring-white/10 transition-all hover:bg-white/10 hover:ring-white/20">
+              <div className="flex select-none items-center gap-1 font-mono text-sm text-gray-500">
+                <span className="text-indigo-400">❯</span>
+              </div>
+              <code className="font-mono text-sm text-gray-300">
+                {installCommand}
+              </code>
+              <button
+                onClick={copyToClipboard}
+                className="ml-2 p-1 rounded-md hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+                title="Copy to clipboard"
+              >
+                {copied ? (
+                  <Check className="size-4 text-green-500" />
+                ) : (
+                  <Copy className="size-4" />
+                )}
+              </button>
+            </div>
+          </motion.div>
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
           className="mt-16 flow-root sm:mt-24 relative"
         >
           <div className="relative rounded-2xl shadow-2xl backdrop-blur-sm overflow-hidden">

@@ -5,7 +5,7 @@ import type React from "react";
 const navigation = {
   main: [
     { name: "Documentation", href: "/docs" },
-    { name: "API Reference", href: "/docs/api-reference" },
+    { name: "API Reference", href: "/docs/api" },
     { name: "Changelog", href: "/docs/changelog" },
     { name: "GitHub", href: "https://github.com/drivebase/drivebase" },
   ],

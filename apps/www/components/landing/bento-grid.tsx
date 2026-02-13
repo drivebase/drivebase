@@ -1,42 +1,21 @@
 "use client";
 
-import { Box, Cloud, Globe, Server, Shield, Zap } from "lucide-react";
+import {
+  Box,
+  Code,
+  Database,
+  Layers,
+  RefreshCw,
+  Search,
+  Shield,
+  Unlock,
+  Users,
+  Zap,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/cn";
 
 const features = [
-  {
-    title: "S3 Compatible",
-    description:
-      "Use any S3-compatible storage provider like AWS, MinIO, or DigitalOcean Spaces.",
-    icon: Cloud,
-    className: "col-span-1 md:col-span-2 lg:col-span-1",
-    color: "bg-orange-500/10 text-orange-500",
-  },
-  {
-    title: "Google Drive Integration",
-    description:
-      "Connect your Google Drive account and manage files seamlessly alongside other providers.",
-    icon: Globe,
-    className: "col-span-1",
-    color: "bg-blue-500/10 text-blue-500",
-  },
-  {
-    title: "Local Storage",
-    description:
-      "Keep your files on your own server. Perfect for sensitive data or low-latency access.",
-    icon: Server,
-    className: "col-span-1",
-    color: "bg-green-500/10 text-green-500",
-  },
-  {
-    title: "End-to-End Encryption",
-    description:
-      "Your files are encrypted at rest using AES-256. Only you have the keys.",
-    icon: Shield,
-    className: "col-span-1 md:col-span-2",
-    color: "bg-indigo-500/10 text-indigo-500",
-  },
   {
     title: "High Performance",
     description:
@@ -46,12 +25,76 @@ const features = [
     color: "bg-yellow-500/10 text-yellow-500",
   },
   {
+    title: "End-to-End Encryption",
+    description:
+      "Your files are encrypted at rest using AES-256. Only you have the keys.",
+    icon: Shield,
+    className: "col-span-1",
+    color: "bg-indigo-500/10 text-indigo-500",
+  },
+  {
     title: "Docker Ready",
     description:
       "Deploy anywhere with a single Docker command. Kubernetes friendly.",
     icon: Box,
     className: "col-span-1",
     color: "bg-purple-500/10 text-purple-500",
+  },
+  {
+    title: "Multi-Cloud Support",
+    description:
+      "Unify S3, Google Drive, Local Storage, and more under a single interface.",
+    icon: Layers,
+    className: "col-span-1 md:col-span-2",
+    color: "bg-blue-500/10 text-blue-500",
+  },
+  {
+    title: "API First",
+    description:
+      "Full GraphQL API for all operations. Integrate Drivebase into your own apps.",
+    icon: Code,
+    className: "col-span-1",
+    color: "bg-cyan-500/10 text-cyan-500",
+  },
+  {
+    title: "Team Collaboration",
+    description:
+      "Share folders and files with your team. Granular permissions and access control.",
+    icon: Users,
+    className: "col-span-1",
+    color: "bg-red-500/10 text-red-500",
+  },
+  {
+    title: "Smart Search",
+    description:
+      "Instant, powerful search across all your storage providers simultaneously.",
+    icon: Search,
+    className: "col-span-1",
+    color: "bg-orange-500/10 text-orange-500",
+  },
+  {
+    title: "Auto-Sync",
+    description:
+      "Keep your files in sync across all devices and cloud providers automatically.",
+    icon: RefreshCw,
+    className: "col-span-1",
+    color: "bg-emerald-500/10 text-emerald-500",
+  },
+  {
+    title: "Metadata Support",
+    description:
+      "Attach custom tags and metadata to your files for advanced organization.",
+    icon: Database,
+    className: "col-span-1",
+    color: "bg-gray-500/10 text-gray-500",
+  },
+  {
+    title: "No Vendor Lock-in",
+    description:
+      "Switch providers at any time. Move your data freely between any storage backend.",
+    icon: Unlock,
+    className: "col-span-1 md:col-span-2",
+    color: "bg-pink-500/10 text-pink-500",
   },
 ];
 

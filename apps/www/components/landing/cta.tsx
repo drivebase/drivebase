@@ -21,7 +21,7 @@ export function CTA() {
               Get started <ArrowRight className="size-4" />
             </Link>
             <Link
-              href="/docs/api-reference"
+              href="/docs/api"
               className="text-sm font-semibold leading-6 text-white hover:text-gray-300 transition-colors"
             >
               Learn more <span aria-hidden="true">→</span>

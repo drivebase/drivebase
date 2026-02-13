@@ -25,7 +25,7 @@ export function Navbar() {
                 Documentation
               </Link>
               <Link
-                href="/docs/api-reference"
+                href="/docs/api"
                 className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
               >
                 API Reference
