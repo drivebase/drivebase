@@ -3,5 +3,5 @@
  * @type {import('lint-staged').Configuration}
  */
 export default {
-	"*": "biome format --write",
+	"*.ts": "biome format --write",
 };
