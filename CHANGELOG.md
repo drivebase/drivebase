@@ -1,5 +1,26 @@
 # Changelog
 
+# [1.2.0](https://github.com/drivebase/drivebase/compare/v1.1.0...v1.2.0) (2026-02-13)
+
+
+### Bug Fixes
+
+* update API and CORS URLs to reflect new domain ([b604775](https://github.com/drivebase/drivebase/commit/b60477539041559db679dff979eea81e4962c6af))
+
+
+### Features
+
+* add onboardingCompleted field to users schema ([00ee3a9](https://github.com/drivebase/drivebase/commit/00ee3a990a0aed477ac67b38956d8a68128d87ce))
+* add routes for downloading YAML and shell script files ([58c9e74](https://github.com/drivebase/drivebase/commit/58c9e74ec5750d946b1dd952863f12a6e8007e3a))
+* add suggestion section for new storage providers on ProvidersPage ([91cffe5](https://github.com/drivebase/drivebase/commit/91cffe502d44d1195f12804f4aa4fcdbe07dcce2))
+* **docs:** add create-provider skill documentation for storage integration ([7073741](https://github.com/drivebase/drivebase/commit/7073741d80be7b403776e51f04d7a14bfc806518))
+* **docs:** add Dropbox integration documentation and update README ([36fcd1a](https://github.com/drivebase/drivebase/commit/36fcd1adf253694beccff86c440ef17d8b0f3cee))
+* **dropbox:** add Dropbox storage provider integration with OAuth support ([2f9c092](https://github.com/drivebase/drivebase/commit/2f9c092c5f8436a58da32e7954a458b572a71a1c))
+* **ftp:** add FTP storage provider integration and update documentation ([b5d04ca](https://github.com/drivebase/drivebase/commit/b5d04ca2ca27d626a02f733ed568e3330df9f07e))
+* implement onboarding ([a5990e2](https://github.com/drivebase/drivebase/commit/a5990e2b2250acd743cd1964724fd9cbe33f02ad))
+* implement provider synchronization with progress tracking and options ([60350bd](https://github.com/drivebase/drivebase/commit/60350bd330650f21a6e5925c5c56147bcc6dbc3e))
+* update landing page components with new features and improved API links ([8d96d9f](https://github.com/drivebase/drivebase/commit/8d96d9f0ddf4770c518c2ef6704657f60cba4d1b))
+
 # [1.1.0](https://github.com/drivebase/drivebase/compare/v1.0.3...v1.1.0) (2026-02-13)
 
 
