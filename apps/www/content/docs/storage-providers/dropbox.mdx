@@ -1,0 +1,62 @@
+---
+title: Dropbox
+description: Connect Dropbox accounts using OAuth 2.0
+---
+
+Drivebase integrates with Dropbox, allowing you to manage your Dropbox files alongside other storage providers.
+
+## Prerequisites
+
+Before connecting, you must create a Dropbox app in the Dropbox App Console to obtain OAuth 2.0 credentials.
+
+### 1. Create a Dropbox App
+
+- Go to the [Dropbox App Console](https://www.dropbox.com/developers/apps).
+- Click **Create app**.
+- Choose **Scoped access** as the API.
+- Choose **Full Dropbox** for the access type (or **App folder** if you want to restrict Drivebase to a dedicated folder).
+- Give your app a name (e.g. "Drivebase") and click **Create app**.
+
+### 2. Configure Permissions
+
+- Go to the **Permissions** tab of your app.
+- Enable the following scopes:
+  - `files.content.read` — Read files and folders.
+  - `files.content.write` — Create, update, and delete files and folders.
+  - `account_info.read` — Read account display name and email (used for the provider label in Drivebase).
+- Click **Submit** to save the permissions.
+
+### 3. Set the Redirect URI
+
+- Go to the **Settings** tab.
+- Under **OAuth 2 / Redirect URIs**, add your Drivebase callback URL:
+  - Development: `http://localhost:4000/webhook/callback`
+  - Production: `https://api.yourdomain.com/webhook/callback`
+- Click **Add**.
+
+### 4. Note Your Credentials
+
+On the **Settings** tab, find your:
+- **App key** — used as the Client ID.
+- **App secret** — used as the Client Secret (click **Show** to reveal it).
+
+## Connecting in Drivebase
+
+1. Navigate to the **Providers** page in Drivebase.
+2. Click **Connect Provider** and select **Dropbox**.
+3. Enter your **App Key** and **App Secret**.
+4. Click **Connect**. You will be redirected to a Dropbox authorization page.
+5. Review the permissions and click **Allow**.
+
+Once authorized, you will be redirected back to Drivebase and your Dropbox will be ready for use.
+
+<Callout type="info">
+Drivebase requests **offline access** during the OAuth flow so it can operate without requiring you to re-authorize. A refresh token is stored (encrypted) in the database and used to mint new access tokens automatically.
+</Callout>
+
+## Notes
+
+- **File paths as identifiers**: Drivebase uses Dropbox path strings (e.g. `/drivebase/folder/file.txt`) as remote identifiers. All file operations go through Drivebase to keep paths consistent.
+- **Upload method**: Uploads are streamed through the Drivebase API proxy (Dropbox does not support client-side presigned upload URLs).
+- **Download method**: Downloads use Dropbox's temporary link API, providing a short-lived direct download URL.
+- **Storage quota**: Drivebase reads your Dropbox space usage and displays it on the provider card.
