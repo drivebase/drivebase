@@ -1,0 +1,55 @@
+---
+title: WebDAV
+description: Connect Nextcloud, ownCloud, or any WebDAV-compatible server using username and password credentials
+---
+
+Connect any WebDAV-compatible server to Drivebase using username and password authentication. This includes self-hosted solutions like Nextcloud and ownCloud, as well as cloud services that expose a WebDAV interface.
+
+## Prerequisites
+
+You need access to a WebDAV server with a valid account. No developer console setup is required — WebDAV uses plain credentials and a server URL.
+
+### 1. Locate Your WebDAV URL
+
+The WebDAV URL depends on the software running your server:
+
+- **Nextcloud**: `https://your-nextcloud.example.com/remote.php/dav/files/<username>/`
+- **ownCloud**: `https://your-owncloud.example.com/remote.php/dav/files/<username>/`
+- **Generic WebDAV**: consult your server or hosting provider documentation.
+
+### 2. Gather Your Credentials
+
+You will need:
+
+- **Server URL** — the full WebDAV endpoint URL
+- **Username** — your account username (leave blank for anonymous access)
+- **Password** — your account password
+
+### 3. Optional — Set a Root Path
+
+If you want to restrict Drivebase to a specific subdirectory on the server (e.g. `/Documents`), set the **Root Path** field. All operations will be scoped to that directory.
+
+## Connecting in Drivebase
+
+1. Navigate to the **Providers** page.
+2. Click **Connect Provider** and select **WebDAV**.
+3. Enter your server details:
+   - Server URL, Username, Password
+   - Optionally set a **Root Path**
+4. Click **Connect**.
+
+Drivebase will verify the connection and save your credentials encrypted at rest.
+
+Your password is treated as a sensitive field and is encrypted using AES-256-GCM before being stored in the database.
+
+<Callout type="info">
+If your WebDAV server does not require authentication (anonymous access), you can leave the Username and Password fields blank.
+</Callout>
+
+## Notes
+
+- **remoteId strategy**: Files and folders are identified by their full absolute path on the WebDAV server (e.g. `/Documents/report.pdf`). If a root path is configured, it is prepended to all paths internally.
+- **Uploads and downloads** always go through the Drivebase server proxy. WebDAV does not support presigned URLs.
+- **Copy operations** use the native WebDAV `COPY` method, making them efficient even for large files.
+- **Move and rename** operations use the native WebDAV `MOVE` method.
+- **Quota**: If your server supports RFC 4331 (`quota-available-bytes` / `quota-used-bytes` properties), Drivebase will display your storage usage. If not, quota will show as unknown.

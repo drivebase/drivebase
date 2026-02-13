@@ -21,6 +21,7 @@
 		"@drivebase/google-drive": "workspace:*",
 		"@drivebase/local": "workspace:*",
 		"@drivebase/s3": "workspace:*",
+		"@drivebase/webdav": "workspace:*",
 		"@graphql-tools/graphql-file-loader": "^8.0.5",
 		"@graphql-tools/load": "^8.0.5",
 		"@graphql-tools/schema": "^10.0.31",
