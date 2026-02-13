@@ -89,4 +89,4 @@ echo -e "  1. Go to the directory: ${BOLD}${BLUE}cd $DIR${NC}"
 echo -e "  2. Review configuration: ${BOLD}${BLUE}nano .env.local${NC}"
 echo -e "  3. Start Drivebase: ${BOLD}${BLUE}docker compose --env-file .env.local up -d${NC}"
 
-echo -e "\n${GRAY}Need help? Visit https://drivebase.io/docs${NC}\n"
+echo -e "\n${GRAY}Need help? Visit https://drivebase.one/docs${NC}\n"
