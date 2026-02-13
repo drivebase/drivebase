@@ -1,5 +1,18 @@
 # Changelog
 
+# [1.3.0](https://github.com/drivebase/drivebase/compare/v1.2.0...v1.3.0) (2026-02-13)
+
+
+### Bug Fixes
+
+* **navbar:** update link for storage providers to point to overview and rename link text ([9f9e4e1](https://github.com/drivebase/drivebase/commit/9f9e4e1d359b71e2be1af81ae76e95add320dad3))
+
+
+### Features
+
+* **provider:** add WebDAV storage provider integration and update related documentation ([37470a8](https://github.com/drivebase/drivebase/commit/37470a823650f8259375dbac86aa1db13b49af0a))
+* **tracking:** implement POST endpoint for event tracking with PostHog integration ([16ca893](https://github.com/drivebase/drivebase/commit/16ca8936ef63270b477425f892b7379a30bce7d3))
+
 # [1.2.0](https://github.com/drivebase/drivebase/compare/v1.1.0...v1.2.0) (2026-02-13)
 
 
