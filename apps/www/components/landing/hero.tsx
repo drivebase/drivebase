@@ -125,6 +125,7 @@ export function Hero() {
                 onClick={copyToClipboard}
                 className="ml-2 p-1 rounded-md hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
                 title="Copy to clipboard"
+                type="button"
               >
                 {copied ? (
                   <Check className="size-4 text-green-500" />
