@@ -22,7 +22,7 @@ import {
 	Star,
 	Trash,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -128,6 +128,8 @@ function LoadingTable({ showSharedColumn }: { showSharedColumn: boolean }) {
 	);
 }
 
+const STORAGE_KEY = "drivebase:file-table-columns";
+
 export function FileSystemTable({
 	files,
 	folders = [],
@@ -142,11 +144,31 @@ export function FileSystemTable({
 	emptyStateMessage = "This folder is empty",
 }: FileSystemTableProps) {
 	const [rowSelection, setRowSelection] = useState({});
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-		shared: showSharedColumn,
-	});
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+		() => {
+			if (typeof window !== "undefined") {
+				try {
+					const stored = localStorage.getItem(STORAGE_KEY);
+					if (stored) {
+						return JSON.parse(stored);
+					}
+				} catch (e) {
+					console.error("Failed to load column visibility", e);
+				}
+			}
+			return { shared: showSharedColumn };
+		},
+	);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [isDeletingSelection, setIsDeletingSelection] = useState(false);
+
+	useEffect(() => {
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(columnVisibility));
+		} catch (e) {
+			console.error("Failed to save column visibility", e);
+		}
+	}, [columnVisibility]);
 
 	const data = useMemo<RowItem[]>(
 		() => [
@@ -273,7 +295,7 @@ export function FileSystemTable({
 			{
 				id: "type",
 				size: 60,
-				minSize: 60,
+				minSize: 80,
 				header: "Type",
 				accessorFn: (row) =>
 					row.kind === "file" ? row.file.mimeType : "folder",
@@ -284,8 +306,8 @@ export function FileSystemTable({
 			},
 			{
 				id: "shared",
-				size: 120,
-				minSize: 100,
+				size: 20,
+				minSize: 20,
 				header: "Shared",
 				enableHiding: true,
 				cell: () => (
@@ -556,17 +578,23 @@ export function FileSystemTable({
 								{headerGroup.headers.map((header) => (
 									<TableHead
 										key={header.id}
-										style={{
-											width: header.getSize(),
-											minWidth: header.column.columnDef.minSize,
-											maxWidth: header.column.columnDef.maxSize,
-										}}
+										style={
+											header.column.id === "name"
+												? { minWidth: header.column.columnDef.minSize }
+												: {
+														width: header.getSize(),
+														minWidth: header.column.columnDef.minSize,
+														maxWidth: header.column.columnDef.maxSize,
+													}
+										}
 										className={
 											header.column.id === "select"
 												? "w-11 min-w-11 max-w-11 px-2"
 												: header.column.id === "actions"
-													? "w-14 min-w-14 max-w-14 text-right pr-2"
-													: undefined
+													? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-20 bg-background border-l shadow-sm"
+													: header.column.id === "name"
+														? "w-full min-w-[200px]"
+														: undefined
 										}
 									>
 										{header.isPlaceholder
@@ -586,21 +614,28 @@ export function FileSystemTable({
 								<TableRow
 									key={row.id}
 									data-state={row.getIsSelected() && "selected"}
+									className="group"
 								>
 									{row.getVisibleCells().map((cell) => (
 										<TableCell
 											key={cell.id}
-											style={{
-												width: cell.column.getSize(),
-												minWidth: cell.column.columnDef.minSize,
-												maxWidth: cell.column.columnDef.maxSize,
-											}}
+											style={
+												cell.column.id === "name"
+													? { minWidth: cell.column.columnDef.minSize }
+													: {
+															width: cell.column.getSize(),
+															minWidth: cell.column.columnDef.minSize,
+															maxWidth: cell.column.columnDef.maxSize,
+														}
+											}
 											className={
 												cell.column.id === "select"
 													? "w-11 min-w-11 max-w-11 px-2"
 													: cell.column.id === "actions"
-														? "w-14 min-w-14 max-w-14 text-right pr-2"
-														: undefined
+														? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-10 bg-background border-l shadow-sm relative after:absolute after:inset-0 after:pointer-events-none group-hover:after:bg-muted/50 group-data-[state=selected]:bg-muted group-data-[state=selected]:after:hidden"
+														: cell.column.id === "name"
+															? "w-full min-w-[200px]"
+															: undefined
 											}
 										>
 											{flexRender(
