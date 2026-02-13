@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800px" height="744px" viewBox="0 0 800 744" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>dropbox</title>
+    <g id="dropbox" stroke="none" fill="none" fill-rule="nonzero">
+        <polygon id="Path" fill="color(display-p3 0.157 0.376 0.960)" points="0.125 414.3125 235.4375 567.75 400.125 430.5625 162.9375 284"></polygon>
+        <polygon id="Path" fill="color(display-p3 0.157 0.376 0.960)" points="235.4375 0.25 0.125 153.6875 162.9375 284 400.125 137.4375"></polygon>
+        <polygon id="Path" fill="color(display-p3 0.157 0.376 0.960)" points="800.125 153.6875 564.8125 0.25 400.125 137.4375 637.3125 284"></polygon>
+        <polygon id="Path" fill="color(display-p3 0.157 0.376 0.960)" points="400.125 430.5625 564.8125 567.75 800.125 414.3125 637.3125 284"></polygon>
+        <polygon id="Path" fill="color(display-p3 0.157 0.376 0.960)" points="400.75 459.9375 235.4375 597.125 164.8125 550.875 164.8125 602.75 400.75 744 636.375 602.75 636.375 550.875 565.75 597.125"></polygon>
+    </g>
+</svg>
