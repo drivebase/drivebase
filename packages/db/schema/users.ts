@@ -23,6 +23,7 @@ export const users = pgTable("users", {
 	passwordHash: text("password_hash").notNull(),
 	role: userRoleEnum("role").notNull().default("viewer"),
 	isActive: boolean("is_active").notNull().default(true),
+	onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
 	lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.notNull()

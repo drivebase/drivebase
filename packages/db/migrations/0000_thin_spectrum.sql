@@ -85,6 +85,7 @@ CREATE TABLE "users" (
 	"password_hash" text NOT NULL,
 	"role" "user_role" DEFAULT 'viewer' NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
+	"onboarding_completed" boolean DEFAULT false NOT NULL,
 	"last_login_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
