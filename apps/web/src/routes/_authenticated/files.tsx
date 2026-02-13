@@ -552,7 +552,7 @@ function FilesPage() {
 			</div>
 
 			{/* Content Area - Single Table */}
-			<div className="flex-1 overflow-y-auto rounded-xl">
+			<div className="flex-1 overflow-y-auto">
 				<FileSystemTable
 					files={files}
 					folders={folders}
