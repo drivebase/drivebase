@@ -107,10 +107,10 @@ Drivebase supports the following cloud providers:
 - [x] S3
 - [x] Local Storage
 - [x] Google Drive
+- [x] Dropbox
 - [ ] FTP
 - [ ] sFTP
 - [ ] WebDAV
-- [ ] Dropbox
 - [ ] Box
 - [ ] OneDrive
 - [ ] Telegram
