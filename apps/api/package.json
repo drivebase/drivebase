@@ -17,6 +17,7 @@
 		"@drivebase/core": "workspace:*",
 		"@drivebase/db": "workspace:*",
 		"@drivebase/dropbox": "workspace:*",
+		"@drivebase/ftp": "workspace:*",
 		"@drivebase/google-drive": "workspace:*",
 		"@drivebase/local": "workspace:*",
 		"@drivebase/s3": "workspace:*",
