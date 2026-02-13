@@ -1,5 +1,12 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
-import { AlertTriangle, Cloud, Loader2, Plus } from "lucide-react";
+import {
+	AlertTriangle,
+	Cloud,
+	ExternalLink,
+	Github,
+	Loader2,
+	Plus,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "urql";
 import {
@@ -299,7 +306,7 @@ function ProvidersPage() {
 				)}
 			</div>
 
-			<div className="space-y-6 pt-6 border-t">
+			<div className="space-y-6 pt-6 border-t pb-12">
 				<div className="flex items-center justify-between">
 					<h2 className="text-lg font-semibold flex items-center gap-2">
 						<Plus className="h-5 w-5 text-primary" />
@@ -324,6 +331,30 @@ function ProvidersPage() {
 						))}
 					</div>
 				)}
+
+				<div className="flex flex-col items-center justify-center py-12 text-center space-y-4 mt-8">
+					<div className="space-y-1">
+						<h3 className="font-medium text-lg">
+							Couldn't find what you were looking for?
+						</h3>
+						<p className="text-muted-foreground text-sm max-w-sm mx-auto">
+							Suggest a new storage provider or report an issue on our GitHub
+							repository.
+						</p>
+					</div>
+					<Button variant="outline" asChild>
+						<a
+							href="https://github.com/drivebase/drivebase/issues/new?template=provider_request.md"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="flex items-center gap-2"
+						>
+							<Github className="h-4 w-4" />
+							Request a Provider
+							<ExternalLink className="h-3 w-3 opacity-50" />
+						</a>
+					</Button>
+				</div>
 			</div>
 
 			{/* Connect Dialog */}

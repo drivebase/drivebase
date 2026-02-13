@@ -48,36 +48,32 @@ export function DashboardPage() {
 
 	return (
 		<div className="p-8 flex flex-col gap-10 h-full overflow-y-auto">
-			{(starredFetching || starredFolders.length > 0) && (
-				<section>
-					<div className="flex justify-between items-center mb-6">
-						<h3 className="text-xl font-bold text-foreground">
-							Starred Folders
-						</h3>
-						<button
-							type="button"
-							className="text-muted-foreground hover:text-foreground transition-colors"
-						>
-							<ArrowRight size={20} />
-						</button>
+			<section>
+				<div className="flex justify-between items-center mb-6">
+					<h3 className="text-xl font-bold text-foreground">Starred Folders</h3>
+				</div>
+				{starredFetching ? (
+					<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+						{Array.from({ length: 5 }).map((_, idx) => (
+							<div
+								// biome-ignore lint/suspicious/noArrayIndexKey: skeleton loading
+								key={idx}
+								className="rounded-2xl bg-muted/50 p-4 space-y-4"
+							>
+								<Skeleton className="h-10 w-10 rounded-xl" />
+								<Skeleton className="h-4 w-28" />
+								<Skeleton className="h-3 w-16" />
+							</div>
+						))}
 					</div>
-					{starredFetching ? (
-						<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
-							{Array.from({ length: 5 }).map((_, idx) => (
-								<div
-									// biome-ignore lint/suspicious/noArrayIndexKey: skeleton loading
-									key={idx}
-									className="rounded-2xl bg-muted/50 p-4 space-y-4"
-								>
-									<Skeleton className="h-10 w-10 rounded-xl" />
-									<Skeleton className="h-4 w-28" />
-									<Skeleton className="h-3 w-16" />
-								</div>
-							))}
-						</div>
-					) : (
-						<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
-							{starredFolders.map((folder) => (
+				) : (
+					<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+						{starredFolders.length === 0 ? (
+							<div className="col-span-full text-center text-muted-foreground h-60 flex items-center justify-center border border-dashed rounded-xl">
+								You haven't starred any folders yet.
+							</div>
+						) : (
+							starredFolders.map((folder) => (
 								<FolderCard
 									key={folder.id}
 									folder={folder}
@@ -88,11 +84,11 @@ export function DashboardPage() {
 										})
 									}
 								/>
-							))}
-						</div>
-					)}
-				</section>
-			)}
+							))
+						)}
+					</div>
+				)}
+			</section>
 
 			<section>
 				<div className="flex justify-between items-center mb-6">
