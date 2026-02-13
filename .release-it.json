@@ -1,19 +1,22 @@
 {
-	"git": {
-		"tagName": "v${version}",
-		"commitMessage": "Release ${version}"
-	},
-	"github": {
-		"release": true,
-		"tokenRef": "GITHUB_TOKEN"
-	},
-	"plugins": {
-		"@release-it/conventional-changelog": {
-			"preset": "angular",
-			"infile": "CHANGELOG.md"
-		},
-		"@release-it/bumper": {
-			"out": ["README.md", "apps/www/components/landing/hero.tsx"]
-		}
-	}
+  "git": {
+    "tagName": "v${version}",
+    "commitMessage": "chore: release v${version}"
+  },
+  "github": {
+    "release": true,
+    "tokenRef": "GITHUB_TOKEN"
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular",
+      "infile": "CHANGELOG.md"
+    },
+    "@release-it/bumper": {
+      "out": [
+        "README.md",
+        "apps/www/components/landing/hero.tsx"
+      ]
+    }
+  }
 }
