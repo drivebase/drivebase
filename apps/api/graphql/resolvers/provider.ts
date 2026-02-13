@@ -1,6 +1,7 @@
 import { getAvailableProviders } from "../../config/providers";
 import { ProviderService } from "../../services/provider";
 import { logger } from "../../utils/logger";
+import { pubSub } from "../pubsub";
 import type {
 	AvailableProvider,
 	AuthType as GQLAuthType,
@@ -8,6 +9,7 @@ import type {
 	MutationResolvers,
 	QueryResolvers,
 	StorageProviderResolvers,
+	SubscriptionResolvers,
 } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
 
@@ -68,7 +70,7 @@ export const providerMutations: MutationResolvers = {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
 
-		return providerService.syncProvider(args.id, user.userId);
+		return providerService.syncProvider(args.id, user.userId, args.options);
 	},
 
 	updateProviderQuota: async (_parent, args, context) => {
@@ -88,6 +90,14 @@ export const providerMutations: MutationResolvers = {
 		const providerService = new ProviderService(context.db);
 
 		return providerService.initiateOAuth(args.id, user.userId);
+	},
+};
+
+export const providerSubscriptions: SubscriptionResolvers = {
+	providerSyncProgress: {
+		subscribe: (_parent, args, _context) =>
+			pubSub.subscribe("providerSyncProgress", args.providerId),
+		resolve: (payload) => payload,
 	},
 };
 

@@ -5,9 +5,9 @@ import type { GoogleDriveConfig } from "./schema";
 import { GoogleDriveConfigSchema } from "./schema";
 
 const SCOPES = [
-	// Access only files created or opened by this app — not the user's full Drive
-	"https://www.googleapis.com/auth/drive.file",
-	// Read Drive metadata (including storage quota) without full file-content access
+	// Access the user's full Drive to sync existing files
+	"https://www.googleapis.com/auth/drive",
+	// Read Drive metadata (including storage quota)
 	"https://www.googleapis.com/auth/drive.metadata.readonly",
 ];
 

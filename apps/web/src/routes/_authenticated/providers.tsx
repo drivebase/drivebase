@@ -8,13 +8,15 @@ import {
 	Plus,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useMutation, useQuery } from "urql";
+import { toast } from "sonner";
+import { useMutation, useQuery, useSubscription } from "urql";
 import {
 	AVAILABLE_PROVIDERS_QUERY,
 	CONNECT_PROVIDER_MUTATION,
 	DISCONNECT_PROVIDER_MUTATION,
 	INITIATE_PROVIDER_OAUTH_MUTATION,
 	PROVIDERS_QUERY,
+	PROVIDER_SYNC_PROGRESS_SUBSCRIPTION,
 	SYNC_PROVIDER_MUTATION,
 	UPDATE_PROVIDER_QUOTA_MUTATION,
 } from "@/api/provider";
@@ -33,11 +35,13 @@ import { ConnectedProviderCard } from "@/features/providers/ConnectedProviderCar
 import { ConnectProviderDialog } from "@/features/providers/ConnectProviderDialog";
 import { ProviderInfoPanel } from "@/features/providers/ProviderInfoPanel";
 import { QuotaSettingsDialog } from "@/features/providers/QuotaSettingsDialog";
+import { SyncProviderDialog } from "@/features/providers/SyncProviderDialog";
 import {
 	AuthType,
 	type AvailableProvider,
 	type ProviderType,
 	type StorageProvider,
+	type SyncOptionsInput,
 } from "@/gql/graphql";
 import { useRightPanelStore } from "@/store/rightPanelStore";
 
@@ -81,7 +85,15 @@ function ProvidersPage() {
 	const [syncingProviderId, setSyncingProviderId] = useState<string | null>(
 		null,
 	);
+	const [syncDialogProvider, setSyncDialogProvider] =
+		useState<StorageProvider | null>(null);
 	const [error, setError] = useState<string | null>(null);
+
+	const [{ data: syncProgress }] = useSubscription({
+		query: PROVIDER_SYNC_PROGRESS_SUBSCRIPTION,
+		variables: { providerId: syncingProviderId || "" },
+		pause: !syncingProviderId,
+	});
 
 	useEffect(() => {
 		if (connected) {
@@ -91,7 +103,28 @@ function ProvidersPage() {
 		}
 	}, [connected, refreshConnected]);
 
+	useEffect(() => {
+		if (!syncProgress?.providerSyncProgress || !syncingProviderId) return;
+		const { status, message, processed } = syncProgress.providerSyncProgress;
+		const toastId = `sync-${syncingProviderId}`;
+
+		if (status === "running") {
+			toast.loading(message || `Syncing... processed ${processed} items`, {
+				id: toastId,
+			});
+		} else if (status === "completed") {
+			toast.success(message || "Sync completed successfully!", {
+				id: toastId,
+			});
+		} else if (status === "error") {
+			toast.error(message || "Sync failed", {
+				id: toastId,
+			});
+		}
+	}, [syncProgress, syncingProviderId]);
+
 	const handleConnect = async (formData: Record<string, unknown>) => {
+
 		if (!selectedProvider) return;
 		setIsConnecting(true);
 		setError(null);
@@ -138,7 +171,7 @@ function ProvidersPage() {
 			if (oauthResult.error) {
 				setError(`Failed to initiate OAuth: ${oauthResult.error.message}`);
 			} else if (oauthResult.data?.initiateProviderOAuth) {
-				const { authorizationUrl, state } =
+				const { authorizationUrl, state } = 
 					oauthResult.data.initiateProviderOAuth;
 				localStorage.setItem(`oauth_state_${id}`, state);
 				window.location.href = authorizationUrl;
@@ -159,26 +192,23 @@ function ProvidersPage() {
 		setRightPanelContent(<ProviderInfoPanel providerId={provider.id} />);
 	};
 
-	const handleSyncProvider = async (id: string) => {
+	const handleSyncProvider = async (id: string, options: SyncOptionsInput) => {
 		setSyncingProviderId(id);
 		try {
-			const result = await syncProvider({ id });
+			const result = await syncProvider({ id, options });
 			if (result.error) {
 				setError(`Failed to sync provider: ${result.error.message}`);
-				return null;
+				return;
 			}
 
 			await refreshConnected({ requestPolicy: "network-only" });
-			return (result.data?.syncProvider as StorageProvider | undefined) ?? null;
 		} catch (e) {
 			console.error(e);
 			setError("An unexpected error occurred while syncing provider.");
-			return null;
 		} finally {
 			setSyncingProviderId(null);
 		}
 	};
-
 	const handleSaveProviderQuota = async (input: {
 		id: string;
 		quotaTotal: number;
@@ -285,132 +315,140 @@ function ProvidersPage() {
 						</p>
 					</div>
 				) : (
-					<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-						{connectedProviders.map((provider) => (
-							<ConnectedProviderCard
-								key={provider.id}
-								provider={provider}
-								onDisconnect={handleDisconnectClick}
-								onQuota={setSettingsProvider}
-								onInfo={handleOpenProviderInfo}
-								onSync={handleSyncProvider}
-								isDisconnecting={
-									isDisconnecting && disconnectId === provider.id
-								}
-								isSyncing={syncingProviderId === provider.id}
-								onReconnect={handleInitiateOAuth}
-								isReconnecting={isInitiatingOAuth === provider.id}
-							/>
-						))}
-					</div>
-				)}
-			</div>
-
-			<div className="space-y-6 pt-6 border-t pb-12">
-				<div className="flex items-center justify-between">
-					<h2 className="text-lg font-semibold flex items-center gap-2">
-						<Plus className="h-5 w-5 text-primary" />
-						Available Providers
-					</h2>
-				</div>
-
-				{isLoading && availableProviders.length === 0 ? (
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-						{[1, 2, 3].map((i) => (
-							<Skeleton key={i} className="h-48 w-full rounded-xl" />
-						))}
-					</div>
-				) : (
-					<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-						{availableProviders.map((provider) => (
-							<AvailableProviderCard
-								key={provider.id}
-								provider={provider}
-								onConnect={setSelectedProvider}
-							/>
-						))}
-					</div>
-				)}
-
-				<div className="flex flex-col items-center justify-center py-12 text-center space-y-4 mt-8">
-					<div className="space-y-1">
-						<h3 className="font-medium text-lg">
-							Couldn't find what you were looking for?
-						</h3>
-						<p className="text-muted-foreground text-sm max-w-sm mx-auto">
-							Suggest a new storage provider or report an issue on our GitHub
-							repository.
-						</p>
-					</div>
-					<Button variant="outline" asChild>
-						<a
-							href="https://github.com/drivebase/drivebase/issues/new?template=provider_request.md"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="flex items-center gap-2"
-						>
-							<Github className="h-4 w-4" />
-							Request a Provider
-							<ExternalLink className="h-3 w-3 opacity-50" />
-						</a>
-					</Button>
-				</div>
-			</div>
-
-			{/* Connect Dialog */}
-			{selectedProvider && (
-				<ConnectProviderDialog
-					provider={selectedProvider}
-					isOpen={!!selectedProvider}
-					onClose={() => setSelectedProvider(null)}
-					onConnect={handleConnect}
-					isConnecting={isConnecting}
-				/>
-			)}
-
-			{/* Disconnect Confirmation Dialog */}
-			<Dialog
-				open={!!disconnectId}
-				onOpenChange={(open) => !open && setDisconnectId(null)}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Disconnect Provider?</DialogTitle>
-						<DialogDescription>
-							Are you sure you want to disconnect this storage provider? Your
-							files will strictly remain in the remote storage, but you won't be
-							able to access them here until you reconnect.
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setDisconnectId(null)}
-							disabled={isDisconnecting}
-						>
-							Cancel
-						</Button>
-						<Button
-							variant="destructive"
-							onClick={confirmDisconnect}
-							disabled={isDisconnecting}
-						>
-							{isDisconnecting ? (
-								<Loader2 className="animate-spin h-4 w-4 mr-2" />
-							) : null}
-							Disconnect
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-
-			<QuotaSettingsDialog
-				isOpen={!!settingsProvider}
-				onClose={() => setSettingsProvider(null)}
-				provider={settingsProvider}
-				isSaving={isSavingSettings}
-				onSave={handleSaveProviderQuota}
-			/>
-		</div>
-	);
-}
+					                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+											{connectedProviders.map((provider) => (
+												<ConnectedProviderCard
+													key={provider.id}
+													provider={provider}
+													onDisconnect={handleDisconnectClick}
+													onQuota={setSettingsProvider}
+													onInfo={handleOpenProviderInfo}
+													onSync={setSyncDialogProvider}
+													isDisconnecting={
+														isDisconnecting && disconnectId === provider.id
+													}
+													isSyncing={syncingProviderId === provider.id}
+													onReconnect={handleInitiateOAuth}
+													isReconnecting={isInitiatingOAuth === provider.id}
+												/>
+											))}
+										</div>
+									)}
+								</div>
+					
+								<div className="space-y-6 pt-6 border-t pb-12">
+									<div className="flex items-center justify-between">
+										<h2 className="text-lg font-semibold flex items-center gap-2">
+											<Plus className="h-5 w-5 text-primary" />
+											Available Providers
+										</h2>
+									</div>
+					
+									{isLoading && availableProviders.length === 0 ? (
+										<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+											{[1, 2, 3].map((i) => (
+												<Skeleton key={i} className="h-48 w-full rounded-xl" />
+											))}
+										</div>
+									) : (
+										<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+											{availableProviders.map((provider) => (
+												<AvailableProviderCard
+													key={provider.id}
+													provider={provider}
+													onConnect={setSelectedProvider}
+												/>
+											))}
+										</div>
+									)}
+					
+									<div className="flex flex-col items-center justify-center py-12 text-center space-y-4 mt-8">
+										<div className="space-y-1">
+											<h3 className="font-medium text-lg">
+												Couldn't find what you were looking for?
+											</h3>
+											<p className="text-muted-foreground text-sm max-w-sm mx-auto">
+												Suggest a new storage provider or report an issue on our GitHub
+												repository.
+											</p>
+										</div>
+										<Button variant="outline" asChild>
+											<a
+												href="https://github.com/drivebase/drivebase/issues/new?template=provider_request.md"
+												target="_blank"
+												rel="noopener noreferrer"
+												className="flex items-center gap-2"
+											>
+												<Github className="h-4 w-4" />
+												Request a Provider
+												<ExternalLink className="h-3 w-3 opacity-50" />
+											</a>
+										</Button>
+									</div>
+								</div>
+					
+								{/* Connect Dialog */}
+								{selectedProvider && (
+									<ConnectProviderDialog
+										provider={selectedProvider}
+										isOpen={!!selectedProvider}
+										onClose={() => setSelectedProvider(null)}
+										onConnect={handleConnect}
+										isConnecting={isConnecting}
+									/>
+								)}
+					
+								{/* Disconnect Confirmation Dialog */}
+								<Dialog
+									open={!!disconnectId}
+									onOpenChange={(open) => !open && setDisconnectId(null)}
+								>
+									<DialogContent>
+										<DialogHeader>
+											<DialogTitle>Disconnect Provider?</DialogTitle>
+											<DialogDescription>
+												Are you sure you want to disconnect this storage provider? Your
+												files will strictly remain in the remote storage, but you won't be
+												able to access them here until you reconnect.
+											</DialogDescription>
+										</DialogHeader>
+										<DialogFooter>
+											<Button
+												variant="outline"
+												onClick={() => setDisconnectId(null)}
+												disabled={isDisconnecting}
+											>
+												Cancel
+											</Button>
+											<Button
+												variant="destructive"
+												onClick={confirmDisconnect}
+												disabled={isDisconnecting}
+											>
+												{isDisconnecting ? (
+													<Loader2 className="animate-spin h-4 w-4 mr-2" />
+												) : null}
+												Disconnect
+											</Button>
+										</DialogFooter>
+									</DialogContent>
+								</Dialog>
+					
+								<SyncProviderDialog
+									isOpen={!!syncDialogProvider}
+									onClose={() => setSyncDialogProvider(null)}
+									provider={syncDialogProvider}
+									isSyncing={!!syncingProviderId}
+									onSync={handleSyncProvider}
+								/>
+					
+								<QuotaSettingsDialog
+									isOpen={!!settingsProvider}
+									onClose={() => setSettingsProvider(null)}
+									provider={settingsProvider}
+									isSaving={isSavingSettings}
+									onSave={handleSaveProviderQuota}
+								/>
+							</div>
+						);
+					}

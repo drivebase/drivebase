@@ -82,6 +82,11 @@ extend type Query {
 	availableProviders: [AvailableProvider!]!
 }
 
+input SyncOptionsInput {
+	recursive: Boolean
+	pruneDeleted: Boolean
+}
+
 extend type Mutation {
 	"""
 	Connect a new storage provider
@@ -96,7 +101,7 @@ extend type Mutation {
 	"""
 	Sync provider quota and metadata
 	"""
-	syncProvider(id: ID!): StorageProvider!
+	syncProvider(id: ID!, options: SyncOptionsInput): StorageProvider!
 
 	"""
 	Update provider quota settings manually
@@ -121,4 +126,16 @@ input ConnectStorageInput {
 	name: String!
 	type: ProviderType!
 	config: JSON!
+}
+
+type SyncProgress {
+	providerId: ID!
+	processed: Int!
+	total: Int
+	message: String
+	status: String! # "running" | "completed" | "error"
+}
+
+type Subscription {
+	providerSyncProgress(providerId: ID!): SyncProgress!
 }

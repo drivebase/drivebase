@@ -60,8 +60,8 @@ export const DISCONNECT_PROVIDER_MUTATION = graphql(`
 `);
 
 export const SYNC_PROVIDER_MUTATION = graphql(`
-  mutation SyncProvider($id: ID!) {
-    syncProvider(id: $id) {
+  mutation SyncProvider($id: ID!, $options: SyncOptionsInput) {
+    syncProvider(id: $id, options: $options) {
       id
       quotaTotal
       quotaUsed
@@ -105,6 +105,18 @@ export const AVAILABLE_PROVIDERS_QUERY = graphql(`
         description
         placeholder
       }
+    }
+  }
+`);
+
+export const PROVIDER_SYNC_PROGRESS_SUBSCRIPTION = graphql(`
+  subscription OnProviderSyncProgress($providerId: ID!) {
+    providerSyncProgress(providerId: $providerId) {
+      providerId
+      processed
+      total
+      message
+      status
     }
   }
 `);
