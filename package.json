@@ -12,6 +12,9 @@
 		"dev:local": "bun --env-file=.env.local turbo run dev --parallel --filter=@drivebase/api --filter=web",
 		"test": "bun test --env-file=.env.test",
 		"test:watch": "bun test --env-file=.env.test --watch",
+		"db:generate": "bun run --filter=@drivebase/db generate",
+		"db:migrate": "bun run --filter=@drivebase/db migrate",
+		"db:studio": "bun run --filter=@drivebase/db studio",
 		"release": "release-it",
 		"prepare": "husky"
 	},

@@ -23,6 +23,7 @@
       "dependencies": {
         "@drivebase/core": "workspace:*",
         "@drivebase/db": "workspace:*",
+        "@drivebase/dropbox": "workspace:*",
         "@drivebase/google-drive": "workspace:*",
         "@drivebase/local": "workspace:*",
         "@drivebase/s3": "workspace:*",
@@ -163,6 +164,20 @@
         "@types/bun": "latest",
         "@types/pg": "^8.11.10",
         "drizzle-kit": "^0.31.9",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/dropbox": {
+      "name": "@drivebase/dropbox",
+      "version": "0.1.0",
+      "dependencies": {
+        "@drivebase/core": "workspace:*",
+        "zod": "^3.22.4",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -457,6 +472,8 @@
     "@drivebase/core": ["@drivebase/core@workspace:packages/core"],
 
     "@drivebase/db": ["@drivebase/db@workspace:packages/db"],
+
+    "@drivebase/dropbox": ["@drivebase/dropbox@workspace:packages/dropbox"],
 
     "@drivebase/google-drive": ["@drivebase/google-drive@workspace:packages/google-drive"],
 

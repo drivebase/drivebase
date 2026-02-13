@@ -16,6 +16,7 @@ export const providerTypeEnum = pgEnum("provider_type", [
 	"google_drive",
 	"s3",
 	"local",
+	"dropbox",
 ]);
 
 /**

@@ -11,14 +11,12 @@
 		"test": "bun test",
 		"test:watch": "bun test --watch",
 		"codegen": "graphql-codegen --config codegen.yml",
-		"codegen:watch": "graphql-codegen --config codegen.yml --watch",
-		"db:generate": "cd ../../packages/db && bun run generate",
-		"db:migrate": "cd ../../packages/db && bun run migrate",
-		"db:studio": "cd ../../packages/db && bun run studio"
+		"codegen:watch": "graphql-codegen --config codegen.yml --watch"
 	},
 	"dependencies": {
 		"@drivebase/core": "workspace:*",
 		"@drivebase/db": "workspace:*",
+		"@drivebase/dropbox": "workspace:*",
 		"@drivebase/google-drive": "workspace:*",
 		"@drivebase/local": "workspace:*",
 		"@drivebase/s3": "workspace:*",
