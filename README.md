@@ -1,14 +1,5 @@
-<h3 align="center">
-  Self-Hosted Cloud File Manager
-</h3>
-<p align="center">
-Open-source, self-hosted cloud file manager designed to unify file storage across multiple cloud providers into one seamless interface.
-</p>
-
-<p align="center"><a href="https://github.com/drivebase/drivebase/discussions">Discussions</a> · <a href="https://drivebase.github.io/docs">Documentation</a> · <a href="https://discord.gg/3kUSy2d">Discord</a></p>
-
-
 <img width="2401" height="1080" alt="banner" src="https://github.com/user-attachments/assets/b0e625e5-e2e5-4303-98dd-a73a2a1a0d1b" />
+<p align="center"><a href="https://github.com/drivebase/drivebase/discussions">Discussions</a> · <a href="https://drivebase.github.io/docs">Documentation</a> · <a href="https://discord.gg/3kUSy2d">Discord</a></p>
 
 Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
 
