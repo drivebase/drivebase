@@ -69,6 +69,7 @@ export const userResolvers: UserResolvers = {
 	email: (parent) => parent.email,
 	role: (parent) => parent.role.toUpperCase() as GQLUserRole,
 	isActive: (parent) => parent.isActive,
+	onboardingCompleted: (parent) => parent.onboardingCompleted,
 	lastLoginAt: (parent) => parent.lastLoginAt ?? null,
 	createdAt: (parent) => parent.createdAt,
 	updatedAt: (parent) => parent.updatedAt,

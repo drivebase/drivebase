@@ -99,6 +99,16 @@ function AuthenticatedLayout() {
 		navigate,
 	]);
 
+	useEffect(() => {
+		// Redirect to onboarding if not completed
+		if (user && !user.onboardingCompleted) {
+			navigate({
+				to: "/onboarding",
+				replace: true,
+			});
+		}
+	}, [user, navigate]);
+
 	if (token && !user && meResult.fetching) {
 		return <FullScreenBrandLoader />;
 	}
@@ -109,6 +119,12 @@ function AuthenticatedLayout() {
 				onRetry={() => reexecuteMe({ requestPolicy: "network-only" })}
 			/>
 		);
+	}
+
+	// If we have a user but onboarding is not completed, we are redirecting.
+	// Render loader to prevent flashing dashboard content.
+	if (user && !user.onboardingCompleted) {
+		return <FullScreenBrandLoader />;
 	}
 
 	return (

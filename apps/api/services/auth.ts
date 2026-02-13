@@ -368,4 +368,24 @@ export class AuthService {
 
 		return updated;
 	}
+
+	/**
+	 * Complete user onboarding
+	 */
+	async completeOnboarding(userId: string) {
+		const [updated] = await this.db
+			.update(users)
+			.set({
+				onboardingCompleted: true,
+				updatedAt: new Date(),
+			})
+			.where(eq(users.id, userId))
+			.returning();
+
+		if (!updated) {
+			throw new NotFoundError("User");
+		}
+
+		return true;
+	}
 }
