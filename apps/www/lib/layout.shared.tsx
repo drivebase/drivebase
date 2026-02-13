@@ -11,7 +11,14 @@ export const gitConfig = {
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
-      title: <Image src="https://raw.githubusercontent.com/drivebase/drivebase/main/drivebase.svg" alt="Drivebase Logo" width={32} height={32} />,
+      title: (
+        <Image
+          src="https://raw.githubusercontent.com/drivebase/drivebase/main/drivebase.svg"
+          alt="Drivebase Logo"
+          width={32}
+          height={32}
+        />
+      ),
     },
     githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`,
   };
