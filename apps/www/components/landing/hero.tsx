@@ -90,6 +90,27 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="mt-10 flex justify-center"
+          >
+            <a
+              href="https://www.producthunt.com/products/drivebase?utm_source=badge-follow&utm_medium=badge&utm_source=badge-drivebase"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img
+                src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1164088&theme=dark"
+                alt="Drivebase - Unified file manager for all your cloud storage | Product Hunt"
+                style={{ width: "250px", height: "54px" }}
+                width="250"
+                height="54"
+              />
+            </a>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
             className="mt-8 flex justify-center"
           >
@@ -118,7 +139,7 @@ export function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
           className="mt-16 flow-root sm:mt-24 relative"
         >
           <div className="relative rounded-2xl shadow-2xl backdrop-blur-sm overflow-hidden">
