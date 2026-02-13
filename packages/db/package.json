@@ -10,7 +10,7 @@
 	},
 	"scripts": {
 		"generate": "drizzle-kit generate",
-		"migrate": "bun run migrations/migrate.ts",
+		"migrate": "drizzle-kit migrate",
 		"studio": "drizzle-kit studio"
 	},
 	"dependencies": {
