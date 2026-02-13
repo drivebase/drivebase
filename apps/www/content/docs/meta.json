@@ -17,6 +17,9 @@
     "storage-providers/overview",
     "storage-providers/local",
     "storage-providers/s3",
-    "storage-providers/google-drive"
+    "storage-providers/google-drive",
+    "storage-providers/dropbox",
+    "storage-providers/ftp",
+    "storage-providers/webdav"
   ]
 }
