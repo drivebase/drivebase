@@ -15,7 +15,7 @@ Open-source, self-hosted cloud file manager designed to unify file storage acros
 
 ---
 
-![drivebase-banner-1](https://github.com/user-attachments/assets/fbac28ab-02ae-4077-af79-06ee938ce08b)
+<img width="2401" height="1080" alt="banner" src="https://github.com/user-attachments/assets/e50c76ef-1b8f-417d-901b-e1b391472204" />
 
 Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
 
@@ -41,6 +41,9 @@ Drivebase supports the following cloud providers:
 
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
+  - [Quick Start](#quick-start-automated)
+  - [Docker](#docker)
+  - [Manual Installation](#manual-installation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -53,9 +56,23 @@ Drivebase supports the following cloud providers:
 
 ## Getting Started
 
-You can get started with Drivebase in two ways:
+Choose the installation method that suits your needs:
 
-## Docker (recommended)
+- [**Quick Start**](#quick-start) - Recommended for most users.
+- [**Docker**](#docker) - For custom Docker setups.
+- [**Manual Installation**](#manual-installation) - For development or custom environments.
+
+### Quick Start
+
+The fastest way to get Drivebase running is using our automated installer script. This will set up the necessary files and configuration for you.
+
+```bash
+wget -qO- https://drivebase.one/install | bash
+```
+
+### Docker
+
+If you prefer to set up Docker manuallyg:
 
 1. Create env file:
 
@@ -63,39 +80,19 @@ You can get started with Drivebase in two ways:
 cp .env.example .env.local
 ```
 
-2. Update `.env.local` with required values:
+2. Update `.env.local` with required values (Database, Redis, Secrets).
 
-- `DATABASE_URL`
-- `REDIS_URL`
-- `JWT_SECRET`
-- `ENCRYPTION_KEY`
-- `CORS_ORIGIN`
-- `API_BASE_URL`
-
-3. Start Postgres + Redis (if not already running):
+3. Start services:
 
 ```bash
-docker compose -f compose.dev.yaml up -d
+# Using the production compose file
+wget -O compose.yaml https://drivebase.one/compose
+docker compose --env-file .env.local up -d
 ```
 
-4. Pull the deployed image:
+### Manual Installation
 
-```bash
-docker pull ghcr.io/drivebase/drivebase:v1.1.0
-```
-
-5. Run Drivebase:
-
-```bash
-docker run --rm -p 3000:3000 --env-file .env.local ghcr.io/drivebase/drivebase:v1.1.0
-```
-
-6. Open:
-
-- App: `http://localhost:3000`
-- GraphQL: `http://localhost:3000/graphql`
-
-## Manual Installation
+For local development or running from source:
 
 1. Copy the example file:
 
@@ -103,13 +100,7 @@ docker run --rm -p 3000:3000 --env-file .env.local ghcr.io/drivebase/drivebase:v
 cp .env.example .env.local
 ```
 
-2. Update required values in `.env.local`, especially:
-
-- `DATABASE_URL`
-- `REDIS_URL`
-- `JWT_SECRET`
-- `ENCRYPTION_KEY`
-- `VITE_PUBLIC_API_URL`
+2. Update required values in `.env.local`.
 
 > [!NOTE]
 > To generate a JWT secret or encryption key, run `openssl rand -base64 32`.
