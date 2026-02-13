@@ -1,4 +1,4 @@
-![Uploading banner.png…]()
+<img width="2401" height="1080" alt="banner" src="https://github.com/user-attachments/assets/da988617-3fd1-4dbe-9bb2-35f5c7495ca0" />
 
 <p align="center"><a href="https://github.com/drivebase/drivebase/discussions">Discussions</a> · <a href="https://drivebase.github.io/docs">Documentation</a> · <a href="https://discord.gg/3kUSy2d">Discord</a></p>
 
