@@ -1,4 +1,5 @@
 import { Cloud } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface ProviderIconProps {
@@ -6,23 +7,20 @@ interface ProviderIconProps {
 	className?: string;
 }
 
-const PROVIDER_LOGOS: Record<string, string> = {
-	googledrive: "/assets/providers/google-drive.svg",
-	s3: "/assets/providers/s3.svg",
-	local: "/assets/providers/local.svg",
-};
-
 export function ProviderIcon({ type, className }: ProviderIconProps) {
-	// Normalize: "GOOGLE_DRIVE" or "google-drive" both become "googledrive"
-	const normalizedType = type.toLowerCase().replace(/[-_]/g, "");
-	const logoPath = PROVIDER_LOGOS[normalizedType];
+	const [error, setError] = useState(false);
+	
+	// Construct path based on ID (e.g., "google_drive" -> "/assets/providers/google_drive.svg")
+	const normalizedId = type.toLowerCase();
+	const logoPath = `/assets/providers/${normalizedId}.svg`;
 
-	if (logoPath) {
+	if (!error) {
 		return (
 			<img
 				src={logoPath}
 				alt={type}
 				className={cn("object-contain", className)}
+				onError={() => setError(true)}
 			/>
 		);
 	}
