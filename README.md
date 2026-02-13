@@ -81,13 +81,13 @@ docker compose -f compose.dev.yaml up -d
 4. Pull the deployed image:
 
 ```bash
-docker pull ghcr.io/drivebase/drivebase:v1.0.3
+docker pull ghcr.io/drivebase/drivebase:v1.1.0
 ```
 
 5. Run Drivebase:
 
 ```bash
-docker run --rm -p 3000:3000 --env-file .env.local ghcr.io/drivebase/drivebase:v1.0.3
+docker run --rm -p 3000:3000 --env-file .env.local ghcr.io/drivebase/drivebase:v1.1.0
 ```
 
 6. Open:
