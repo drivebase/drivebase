@@ -1,2 +1,0 @@
-CREATE TYPE "public"."auth_type" AS ENUM('oauth', 'api_key', 'email_pass', 'no_auth');--> statement-breakpoint
-ALTER TABLE "storage_providers" ADD COLUMN "auth_type" "auth_type" DEFAULT 'no_auth' NOT NULL;
