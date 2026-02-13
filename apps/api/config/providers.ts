@@ -1,6 +1,10 @@
 import type { ProviderRegistration } from "@drivebase/core";
 import { ProviderType } from "@drivebase/core";
 import {
+	DropboxSensitiveFields,
+	dropboxRegistration,
+} from "@drivebase/dropbox";
+import {
 	GoogleDriveSensitiveFields,
 	googleDriveRegistration,
 } from "@drivebase/google-drive";
@@ -15,6 +19,7 @@ export const providerRegistry: Record<string, ProviderRegistration> = {
 	[ProviderType.GOOGLE_DRIVE]: googleDriveRegistration,
 	[ProviderType.S3]: s3Registration,
 	[ProviderType.LOCAL]: localRegistration,
+	[ProviderType.DROPBOX]: dropboxRegistration,
 };
 
 /**
@@ -24,6 +29,7 @@ export const providerSensitiveFields: Record<string, readonly string[]> = {
 	[ProviderType.GOOGLE_DRIVE]: GoogleDriveSensitiveFields,
 	[ProviderType.S3]: S3SensitiveFields,
 	[ProviderType.LOCAL]: LocalSensitiveFields,
+	[ProviderType.DROPBOX]: DropboxSensitiveFields,
 };
 
 /**
@@ -65,6 +71,8 @@ function getProviderName(type: string): string {
 			return "S3 Compatible";
 		case ProviderType.LOCAL:
 			return "Local Storage";
+		case ProviderType.DROPBOX:
+			return "Dropbox";
 		default:
 			return type;
 	}

@@ -36,6 +36,8 @@ export enum ProviderType {
 	S3 = "s3",
 	/** Local filesystem paths */
 	LOCAL = "local",
+	/** Dropbox cloud storage */
+	DROPBOX = "dropbox",
 }
 
 /**
