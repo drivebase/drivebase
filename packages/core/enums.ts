@@ -38,6 +38,8 @@ export enum ProviderType {
 	LOCAL = "local",
 	/** Dropbox cloud storage */
 	DROPBOX = "dropbox",
+	/** FTP/FTPS file server */
+	FTP = "ftp",
 }
 
 /**

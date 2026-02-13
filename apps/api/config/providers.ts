@@ -4,6 +4,7 @@ import {
 	DropboxSensitiveFields,
 	dropboxRegistration,
 } from "@drivebase/dropbox";
+import { FTPSensitiveFields, ftpRegistration } from "@drivebase/ftp";
 import {
 	GoogleDriveSensitiveFields,
 	googleDriveRegistration,
@@ -20,6 +21,7 @@ export const providerRegistry: Record<string, ProviderRegistration> = {
 	[ProviderType.S3]: s3Registration,
 	[ProviderType.LOCAL]: localRegistration,
 	[ProviderType.DROPBOX]: dropboxRegistration,
+	[ProviderType.FTP]: ftpRegistration,
 };
 
 /**
@@ -30,6 +32,7 @@ export const providerSensitiveFields: Record<string, readonly string[]> = {
 	[ProviderType.S3]: S3SensitiveFields,
 	[ProviderType.LOCAL]: LocalSensitiveFields,
 	[ProviderType.DROPBOX]: DropboxSensitiveFields,
+	[ProviderType.FTP]: FTPSensitiveFields,
 };
 
 /**
@@ -73,6 +76,8 @@ function getProviderName(type: string): string {
 			return "Local Storage";
 		case ProviderType.DROPBOX:
 			return "Dropbox";
+		case ProviderType.FTP:
+			return "FTP";
 		default:
 			return type;
 	}

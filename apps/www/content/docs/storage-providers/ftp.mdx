@@ -1,0 +1,51 @@
+---
+title: FTP
+description: Connect FTP and FTPS file servers using username/password credentials
+---
+
+Connect any standard FTP or FTPS (FTP over TLS) server to Drivebase using username and password authentication.
+
+## Prerequisites
+
+You need access to an FTP server with a valid account. No developer console setup is required — FTP uses plain credentials.
+
+### 1. Gather Your FTP Credentials
+
+You will need the following from your FTP server administrator or hosting provider:
+
+- **Host** — the FTP server hostname or IP address (e.g. `ftp.example.com`)
+- **Port** — typically `21` for plain FTP or explicit FTPS
+- **Username** — your FTP account username
+- **Password** — your FTP account password
+
+### 2. Determine If FTPS Is Required
+
+If your server supports or requires encrypted connections, enable the **Use FTPS (TLS)** option. This uses explicit FTPS (STARTTLS on port 21), which is the most common secure FTP variant.
+
+### 3. Optional — Set a Root Path
+
+If you want to restrict Drivebase to a specific directory on the server (e.g. `/files` or `/home/user/storage`), set the **Root Path** field. All operations will be scoped to that directory.
+
+## Connecting in Drivebase
+
+1. Navigate to the **Providers** page.
+2. Click **Connect Provider** and select **FTP**.
+3. Enter your server credentials:
+   - Host, Port, Username, Password
+   - Enable **Use FTPS (TLS)** if required
+   - Optionally set a **Root Path**
+4. Click **Connect**.
+
+Drivebase will verify the connection and save your credentials encrypted at rest.
+
+<Callout type="info">
+Your FTP password is treated as a sensitive field and is encrypted using AES-256-GCM before being stored in the database.
+</Callout>
+
+## Notes
+
+- **remoteId strategy**: Files and folders are identified by their full absolute path on the FTP server (e.g. `/files/docs/report.pdf`). If a root path is configured, it is prepended to all paths internally.
+- **Uploads and downloads** always go through the Drivebase server proxy. FTP does not support presigned URLs.
+- **Copy operations** are performed by downloading the source file into memory and re-uploading it to the destination, since FTP has no native copy command. Avoid copying very large files over this provider.
+- **Quota**: FTP does not expose quota information. The storage usage shown in Drivebase will reflect `0 used / unknown total` for this provider.
+- **FTPS vs SFTP**: This provider supports FTPS (FTP over TLS). SFTP (SSH File Transfer Protocol) is a separate protocol and is not supported by this provider.
