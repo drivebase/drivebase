@@ -1,9 +1,3 @@
-<p align="center">
-  <a href="https://github.com/drivebase/drivebase">
-    <img src="./drivebase.svg" width="80px" alt="Drivebase Logo" />
-  </a>
-</p>
-
 <h3 align="center">
   Self-Hosted Cloud File Manager
 </h3>
@@ -13,13 +7,14 @@ Open-source, self-hosted cloud file manager designed to unify file storage acros
 
 <p align="center"><a href="https://github.com/drivebase/drivebase/discussions">Discussions</a> · <a href="https://drivebase.github.io/docs">Documentation</a> · <a href="https://discord.gg/3kUSy2d">Discord</a></p>
 
----
 
-<img width="2401" height="1080" alt="banner" src="https://github.com/user-attachments/assets/e50c76ef-1b8f-417d-901b-e1b391472204" />
+<img width="2401" height="1080" alt="banner" src="https://github.com/user-attachments/assets/b0e625e5-e2e5-4303-98dd-a73a2a1a0d1b" />
 
 Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
 
 ---
+
+
 
 ## Supported Providers
 
@@ -41,9 +36,6 @@ Drivebase supports the following cloud providers:
 
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
-  - [Quick Start](#quick-start-automated)
-  - [Docker](#docker)
-  - [Manual Installation](#manual-installation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -56,23 +48,9 @@ Drivebase supports the following cloud providers:
 
 ## Getting Started
 
-Choose the installation method that suits your needs:
+You can get started with Drivebase in two ways:
 
-- [**Quick Start**](#quick-start) - Recommended for most users.
-- [**Docker**](#docker) - For custom Docker setups.
-- [**Manual Installation**](#manual-installation) - For development or custom environments.
-
-### Quick Start
-
-The fastest way to get Drivebase running is using our automated installer script. This will set up the necessary files and configuration for you.
-
-```bash
-wget -qO- https://drivebase.one/install | bash
-```
-
-### Docker
-
-If you prefer to set up Docker manuallyg:
+## Docker (recommended)
 
 1. Create env file:
 
@@ -80,19 +58,39 @@ If you prefer to set up Docker manuallyg:
 cp .env.example .env.local
 ```
 
-2. Update `.env.local` with required values (Database, Redis, Secrets).
+2. Update `.env.local` with required values:
 
-3. Start services:
+- `DATABASE_URL`
+- `REDIS_URL`
+- `JWT_SECRET`
+- `ENCRYPTION_KEY`
+- `CORS_ORIGIN`
+- `API_BASE_URL`
+
+3. Start Postgres + Redis (if not already running):
 
 ```bash
-# Using the production compose file
-wget -O compose.yaml https://drivebase.one/compose
-docker compose --env-file .env.local up -d
+docker compose -f compose.dev.yaml up -d
 ```
 
-### Manual Installation
+4. Pull the deployed image:
 
-For local development or running from source:
+```bash
+docker pull ghcr.io/drivebase/drivebase:v1.1.0
+```
+
+5. Run Drivebase:
+
+```bash
+docker run --rm -p 3000:3000 --env-file .env.local ghcr.io/drivebase/drivebase:v1.1.0
+```
+
+6. Open:
+
+- App: `http://localhost:3000`
+- GraphQL: `http://localhost:3000/graphql`
+
+## Manual Installation
 
 1. Copy the example file:
 
@@ -100,7 +98,13 @@ For local development or running from source:
 cp .env.example .env.local
 ```
 
-2. Update required values in `.env.local`.
+2. Update required values in `.env.local`, especially:
+
+- `DATABASE_URL`
+- `REDIS_URL`
+- `JWT_SECRET`
+- `ENCRYPTION_KEY`
+- `VITE_PUBLIC_API_URL`
 
 > [!NOTE]
 > To generate a JWT secret or encryption key, run `openssl rand -base64 32`.
