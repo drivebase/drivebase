@@ -7,6 +7,7 @@ import {
 	availableProviderResolvers,
 	providerMutations,
 	providerQueries,
+	providerSubscriptions,
 	storageProviderResolvers,
 } from "./provider";
 import { scalarResolvers } from "./scalars";
@@ -44,6 +45,10 @@ export const resolvers: Resolvers = {
 		revokeFolderAccess: async () => {
 			throw new Error("Not implemented");
 		},
+	},
+
+	Subscription: {
+		...providerSubscriptions,
 	},
 
 	AuthResponse: authResponseResolvers,

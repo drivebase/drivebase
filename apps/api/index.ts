@@ -84,8 +84,7 @@ function isExpectedAppErrorFromGraphQLLog(payload: unknown): boolean {
 }
 
 const graphQLLogger = {
-	debug: (...args: unknown[]) =>
-		(logger.debug as (...args: unknown[]) => void).apply(logger, args),
+	debug: () => {},
 	info: (...args: unknown[]) =>
 		(logger.info as (...args: unknown[]) => void).apply(logger, args),
 	warn: (...args: unknown[]) =>

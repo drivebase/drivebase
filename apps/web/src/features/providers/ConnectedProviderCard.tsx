@@ -30,7 +30,7 @@ interface ConnectedProviderCardProps {
 	onDisconnect: (id: string) => void;
 	onQuota: (provider: StorageProvider) => void;
 	onInfo: (provider: StorageProvider) => void;
-	onSync: (id: string) => void;
+	onSync: (provider: StorageProvider) => void;
 	isDisconnecting: boolean;
 	isSyncing?: boolean;
 	onReconnect?: (id: string) => void;
@@ -103,10 +103,10 @@ export function ConnectedProviderCard({
 								<Info className="mr-2 h-4 w-4" /> View
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onClick={() => onSync(provider.id)}
+								onClick={() => onSync(provider)}
 								disabled={isSyncing}
 							>
-								<RefreshCw className="mr-2 h-4 w-4" /> Sync Usage
+								<RefreshCw className="mr-2 h-4 w-4" /> Sync
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => onQuota(provider)}>
 								<Settings className="mr-2 h-4 w-4" /> Quota

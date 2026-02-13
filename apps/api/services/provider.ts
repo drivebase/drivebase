@@ -1,17 +1,297 @@
 import type { IStorageProvider } from "@drivebase/core";
 import { NotFoundError, ProviderError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { storageProviders } from "@drivebase/db";
-import { and, eq } from "drizzle-orm";
+import { files, folders, storageProviders } from "@drivebase/db";
+import { and, eq, notInArray } from "drizzle-orm";
 import { env } from "../config/env";
 import {
 	getProviderRegistration,
 	getSensitiveFields,
 } from "../config/providers";
+import { pubSub } from "../graphql/pubsub";
 import { decryptConfig, encryptConfig } from "../utils/encryption";
 
 export class ProviderService {
 	constructor(private db: Database) {}
+	// ... (maskSensitiveValue and getProviderConfigPreview remain same) ...
+	/**
+	 * Sync provider quota and files
+	 */
+	async syncProvider(
+		providerId: string,
+		userId: string,
+		options?: { recursive?: boolean; pruneDeleted?: boolean },
+	) {
+		const { recursive = true, pruneDeleted = false } = options || {};
+
+		const [providerRecord] = await this.db
+			.select()
+			.from(storageProviders)
+			.where(
+				and(
+					eq(storageProviders.id, providerId),
+					eq(storageProviders.userId, userId),
+				),
+			)
+			.limit(1);
+
+		if (!providerRecord) {
+			throw new NotFoundError("Provider");
+		}
+
+		// Notify start
+		pubSub.publish("providerSyncProgress", {
+			providerId,
+			processed: 0,
+			status: "running",
+			message: "Starting sync...",
+		});
+
+		const provider = await this.getProviderInstance(providerRecord);
+
+		const seenFileRemoteIds: string[] = [];
+		const seenFolderRemoteIds: string[] = [];
+		let processedCount = 0;
+
+		// Helper to sync a folder recursively
+		const syncFolder = async (
+			remoteFolderId: string | undefined,
+			parentDbId: string | null,
+			parentPath: string,
+		) => {
+			let pageToken: string | undefined = undefined;
+
+			do {
+				const listResult = await provider.list({
+					folderId: remoteFolderId,
+					pageToken,
+					limit: 100,
+				});
+
+				// Process Folders
+				for (const folder of listResult.folders) {
+					// Clean name to avoid path issues
+					const cleanName = folder.name.replace(/\//g, "-");
+					const virtualPath = `${parentPath}${cleanName}/`;
+
+					seenFolderRemoteIds.push(folder.remoteId);
+
+					// Check if folder exists by remoteId
+					let [dbFolder] = await this.db
+						.select()
+						.from(folders)
+						.where(
+							and(
+								eq(folders.remoteId, folder.remoteId),
+								eq(folders.providerId, providerId),
+							),
+						)
+						.limit(1);
+
+					if (!dbFolder) {
+						// Create new folder
+						try {
+							[dbFolder] = await this.db
+								.insert(folders)
+								.values({
+									name: cleanName,
+									virtualPath,
+									remoteId: folder.remoteId,
+									providerId,
+									parentId: parentDbId,
+									createdBy: userId,
+									updatedAt: folder.modifiedAt,
+									createdAt: folder.modifiedAt,
+								})
+								.returning();
+						} catch (error) {
+							// Handle unique constraint violation on virtualPath
+							// Likely duplicate folder name in same parent
+							console.warn(`Failed to insert folder ${virtualPath}: ${error}`);
+							continue;
+						}
+					} else {
+						// Update existing folder
+						try {
+							[dbFolder] = await this.db
+								.update(folders)
+								.set({
+									name: cleanName,
+									virtualPath,
+									parentId: parentDbId,
+									updatedAt: folder.modifiedAt,
+									isDeleted: false, // Restore if was deleted
+								})
+								.where(eq(folders.id, dbFolder.id))
+								.returning();
+						} catch (error) {
+							console.warn(`Failed to update folder ${virtualPath}: ${error}`);
+						}
+					}
+
+					processedCount++;
+					if (processedCount % 10 === 0) {
+						pubSub.publish("providerSyncProgress", {
+							providerId,
+							processed: processedCount,
+							status: "running",
+							message: `Syncing... (${processedCount} items)`,
+						});
+					}
+
+					if (recursive && dbFolder) {
+						await syncFolder(folder.remoteId, dbFolder.id, virtualPath);
+					}
+				}
+
+				// Process Files
+				for (const file of listResult.files) {
+					const cleanName = file.name.replace(/\//g, "-");
+					const virtualPath = `${parentPath}${cleanName}`;
+
+					seenFileRemoteIds.push(file.remoteId);
+
+					// Upsert file
+					try {
+						// Check if file exists by remoteId
+						const [existingFile] = await this.db
+							.select()
+							.from(files)
+							.where(
+								and(
+									eq(files.remoteId, file.remoteId),
+									eq(files.providerId, providerId),
+								),
+							)
+							.limit(1);
+
+						if (existingFile) {
+							await this.db
+								.update(files)
+								.set({
+									name: cleanName,
+									virtualPath,
+									mimeType: file.mimeType,
+									size: file.size,
+									hash: file.hash,
+									folderId: parentDbId,
+									updatedAt: file.modifiedAt,
+									isDeleted: false,
+								})
+								.where(eq(files.id, existingFile.id));
+						} else {
+							await this.db.insert(files).values({
+								name: cleanName,
+								virtualPath,
+								mimeType: file.mimeType,
+								size: file.size,
+								hash: file.hash,
+								remoteId: file.remoteId,
+								providerId,
+								folderId: parentDbId,
+								uploadedBy: userId,
+								updatedAt: file.modifiedAt,
+								createdAt: file.modifiedAt,
+							});
+						}
+					} catch (error) {
+						console.warn(`Failed to sync file ${virtualPath}: ${error}`);
+					}
+
+					processedCount++;
+					if (processedCount % 10 === 0) {
+						pubSub.publish("providerSyncProgress", {
+							providerId,
+							processed: processedCount,
+							status: "running",
+							message: `Syncing... (${processedCount} items)`,
+						});
+					}
+				}
+
+				pageToken = listResult.nextPageToken;
+			} while (pageToken);
+		};
+
+		try {
+			// Start sync
+			// Use rootFolderId if available, otherwise root
+			await syncFolder(providerRecord.rootFolderId || undefined, null, "/");
+
+			// Prune deleted files/folders if requested
+			if (pruneDeleted) {
+				pubSub.publish("providerSyncProgress", {
+					providerId,
+					processed: processedCount,
+					status: "running",
+					message: "Pruning deleted items...",
+				});
+
+				// Mark files as deleted if not seen
+				if (seenFileRemoteIds.length > 0) {
+					await this.db
+						.update(files)
+						.set({ isDeleted: true })
+						.where(
+							and(
+								eq(files.providerId, providerId),
+								notInArray(files.remoteId, seenFileRemoteIds),
+							),
+						);
+				}
+
+				// Mark folders as deleted if not seen
+				if (seenFolderRemoteIds.length > 0) {
+					await this.db
+						.update(folders)
+						.set({ isDeleted: true })
+						.where(
+							and(
+								eq(folders.providerId, providerId),
+								notInArray(folders.remoteId, seenFolderRemoteIds),
+							),
+						);
+				}
+			}
+
+			const quota = await provider.getQuota();
+
+			const [updated] = await this.db
+				.update(storageProviders)
+				.set({
+					quotaTotal: quota.total ?? null,
+					quotaUsed: quota.used,
+					lastSyncAt: new Date(),
+					updatedAt: new Date(),
+				})
+				.where(eq(storageProviders.id, providerId))
+				.returning();
+
+			if (!updated) {
+				throw new Error("Failed to update provider");
+			}
+
+			pubSub.publish("providerSyncProgress", {
+				providerId,
+				processed: processedCount,
+				status: "completed",
+				message: "Sync completed successfully",
+			});
+
+			await provider.cleanup();
+
+			return updated;
+		} catch (error) {
+			const msg = error instanceof Error ? error.message : String(error);
+			pubSub.publish("providerSyncProgress", {
+				providerId,
+				processed: processedCount,
+				status: "error",
+				message: `Sync failed: ${msg}`,
+			});
+			throw error;
+		}
+	}
 
 	private maskSensitiveValue(value: unknown): string {
 		const raw = String(value ?? "");
@@ -298,9 +578,15 @@ export class ProviderService {
 	}
 
 	/**
-	 * Sync provider quota
+	 * Sync provider quota and files
 	 */
-	async syncProvider(providerId: string, userId: string) {
+	async syncProvider(
+		providerId: string,
+		userId: string,
+		options?: { recursive?: boolean; pruneDeleted?: boolean },
+	) {
+		const { recursive = true, pruneDeleted = false } = options || {};
+
 		const [providerRecord] = await this.db
 			.select()
 			.from(storageProviders)
@@ -317,6 +603,182 @@ export class ProviderService {
 		}
 
 		const provider = await this.getProviderInstance(providerRecord);
+
+		const seenFileRemoteIds: string[] = [];
+		const seenFolderRemoteIds: string[] = [];
+
+		// Helper to sync a folder recursively
+		const syncFolder = async (
+			remoteFolderId: string | undefined,
+			parentDbId: string | null,
+			parentPath: string,
+		) => {
+			let pageToken: string | undefined = undefined;
+
+			do {
+				const listResult = await provider.list({
+					folderId: remoteFolderId,
+					pageToken,
+					limit: 100,
+				});
+
+				// Process Folders
+				for (const folder of listResult.folders) {
+					// Clean name to avoid path issues
+					const cleanName = folder.name.replace(/\//g, "-");
+					const virtualPath = `${parentPath}${cleanName}/`;
+
+					seenFolderRemoteIds.push(folder.remoteId);
+
+					// Check if folder exists by remoteId
+					let [dbFolder] = await this.db
+						.select()
+						.from(folders)
+						.where(
+							and(
+								eq(folders.remoteId, folder.remoteId),
+								eq(folders.providerId, providerId),
+							),
+						)
+						.limit(1);
+
+					if (!dbFolder) {
+						// Create new folder
+						try {
+							[dbFolder] = await this.db
+								.insert(folders)
+								.values({
+									name: cleanName,
+									virtualPath,
+									remoteId: folder.remoteId,
+									providerId,
+									parentId: parentDbId,
+									createdBy: userId,
+									updatedAt: folder.modifiedAt,
+									createdAt: folder.modifiedAt,
+								})
+								.returning();
+						} catch (error) {
+							// Handle unique constraint violation on virtualPath
+							// Likely duplicate folder name in same parent
+							console.warn(`Failed to insert folder ${virtualPath}: ${error}`);
+							continue;
+						}
+					} else {
+						// Update existing folder
+						try {
+							[dbFolder] = await this.db
+								.update(folders)
+								.set({
+									name: cleanName,
+									virtualPath,
+									parentId: parentDbId,
+									updatedAt: folder.modifiedAt,
+									isDeleted: false, // Restore if was deleted
+								})
+								.where(eq(folders.id, dbFolder.id))
+								.returning();
+						} catch (error) {
+							console.warn(`Failed to update folder ${virtualPath}: ${error}`);
+						}
+					}
+
+					if (recursive && dbFolder) {
+						await syncFolder(folder.remoteId, dbFolder.id, virtualPath);
+					}
+				}
+
+				// Process Files
+				for (const file of listResult.files) {
+					const cleanName = file.name.replace(/\//g, "-");
+					const virtualPath = `${parentPath}${cleanName}`;
+
+					seenFileRemoteIds.push(file.remoteId);
+
+					// Upsert file
+					try {
+						// Check if file exists by remoteId
+						const [existingFile] = await this.db
+							.select()
+							.from(files)
+							.where(
+								and(
+									eq(files.remoteId, file.remoteId),
+									eq(files.providerId, providerId),
+								),
+							)
+							.limit(1);
+
+						if (existingFile) {
+							await this.db
+								.update(files)
+								.set({
+									name: cleanName,
+									virtualPath,
+									mimeType: file.mimeType,
+									size: file.size,
+									hash: file.hash,
+									folderId: parentDbId,
+									updatedAt: file.modifiedAt,
+									isDeleted: false,
+								})
+								.where(eq(files.id, existingFile.id));
+						} else {
+							await this.db.insert(files).values({
+								name: cleanName,
+								virtualPath,
+								mimeType: file.mimeType,
+								size: file.size,
+								hash: file.hash,
+								remoteId: file.remoteId,
+								providerId,
+								folderId: parentDbId,
+								uploadedBy: userId,
+								updatedAt: file.modifiedAt,
+								createdAt: file.modifiedAt,
+							});
+						}
+					} catch (error) {
+						console.warn(`Failed to sync file ${virtualPath}: ${error}`);
+					}
+				}
+
+				pageToken = listResult.nextPageToken;
+			} while (pageToken);
+		};
+
+		// Start sync
+		// Use rootFolderId if available, otherwise root
+		await syncFolder(providerRecord.rootFolderId || undefined, null, "/");
+
+		// Prune deleted files/folders if requested
+		if (pruneDeleted) {
+			// Mark files as deleted if not seen
+			if (seenFileRemoteIds.length > 0) {
+				await this.db
+					.update(files)
+					.set({ isDeleted: true })
+					.where(
+						and(
+							eq(files.providerId, providerId),
+							notInArray(files.remoteId, seenFileRemoteIds),
+						),
+					);
+			}
+
+			// Mark folders as deleted if not seen
+			if (seenFolderRemoteIds.length > 0) {
+				await this.db
+					.update(folders)
+					.set({ isDeleted: true })
+					.where(
+						and(
+							eq(folders.providerId, providerId),
+							notInArray(folders.remoteId, seenFolderRemoteIds),
+						),
+					);
+			}
+		}
 
 		const quota = await provider.getQuota();
 
