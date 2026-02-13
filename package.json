@@ -12,7 +12,8 @@
 		"dev:local": "bun --env-file=.env.local turbo run dev --parallel --filter=@drivebase/api --filter=web",
 		"test": "bun test --env-file=.env.test",
 		"test:watch": "bun test --env-file=.env.test --watch",
-		"release": "release-it"
+		"release": "release-it",
+		"prepare": "husky"
 	},
 	"overrides": {
 		"yaml": "2.7.0"
@@ -22,8 +23,11 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.14",
+		"@commitlint/cli": "^20.4.1",
+		"@commitlint/config-conventional": "^20.4.1",
 		"@release-it/bumper": "^7.0.5",
 		"@release-it/conventional-changelog": "^10.0.5",
+		"husky": "^9.1.7",
 		"release-it": "^19.2.4",
 		"turbo": "^2.8.3",
 		"yaml": "2.7.0"
