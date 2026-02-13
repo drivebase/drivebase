@@ -40,7 +40,7 @@ export function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              href="https://github.com/monawwar/drivebase"
+              href="https://github.com/drivebase/drivebase"
               target="_blank"
               className="text-gray-400 hover:text-white transition-colors"
             >
