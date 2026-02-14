@@ -203,22 +203,6 @@ export async function moveFolder(
 		throw new ConflictError(`Folder already exists at path: ${newVirtualPath}`);
 	}
 
-	if (folder.providerId && folder.remoteId) {
-		const providerService = new ProviderService(db);
-		const providerRecord = await providerService.getProvider(
-			folder.providerId,
-			userId,
-		);
-		const provider = await providerService.getProviderInstance(providerRecord);
-
-		await provider.move({
-			remoteId: folder.remoteId,
-			newParentId: newParent?.remoteId ?? undefined,
-		});
-
-		await provider.cleanup();
-	}
-
 	const [updated] = await db
 		.update(folders)
 		.set({

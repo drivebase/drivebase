@@ -133,20 +133,6 @@ export async function moveFile(
 			throw new ConflictError(`File already exists at path: ${newVirtualPath}`);
 		}
 
-		const providerService = new ProviderService(db);
-		const providerRecord = await providerService.getProvider(
-			file.providerId,
-			userId,
-		);
-		const provider = await providerService.getProviderInstance(providerRecord);
-
-		await provider.move({
-			remoteId: file.remoteId,
-			newParentId: newFolder?.remoteId ?? undefined,
-		});
-
-		await provider.cleanup();
-
 		const [updated] = await db
 			.update(files)
 			.set({
