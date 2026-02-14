@@ -10,6 +10,7 @@
 		"format": "biome format",
 		"lint": "biome lint",
 		"check": "biome check",
+		"check-types": "tsc --noEmit",
 		"codegen": "bunx graphql-codegen"
 	},
 	"dependencies": {

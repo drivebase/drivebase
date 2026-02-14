@@ -49,11 +49,12 @@ function TelegramConnectPage() {
 			setStep(2);
 			toast.success("Verification code sent to your Telegram app");
 		}
+		return success;
 	};
 
 	const handleVerifyCodeSubmit = async (code: string) => {
 		const result = await verifyCode(code);
-		if (result && "sessionString" in result) {
+		if (result && "sessionString" in result && typeof result.sessionString === "string") {
 			await handleCompleteAuth(result.sessionString);
 		} else if (result && "requires2FA" in result) {
 			toast.info("Two-factor authentication required");
@@ -73,7 +74,7 @@ function TelegramConnectPage() {
 			setStep(3);
 			toast.success("Telegram connected successfully!");
 			setTimeout(() => {
-				navigate({ to: "/providers", search: { connected: "true" } });
+				navigate({ to: "/providers", search: { connected: true } });
 			}, 1500);
 		} else {
 			toast.error("Failed to complete connection");

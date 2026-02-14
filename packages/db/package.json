@@ -11,7 +11,8 @@
 	"scripts": {
 		"generate": "drizzle-kit generate",
 		"migrate": "bun migrate.ts",
-		"studio": "drizzle-kit studio"
+		"studio": "drizzle-kit studio",
+		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@drivebase/core": "workspace:*",

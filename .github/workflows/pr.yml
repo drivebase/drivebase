@@ -4,13 +4,17 @@ on:
   pull_request:
     paths:
       - '**/*.ts'
+      - '**/*.tsx'
       - '**/*.js'
+      - '**/*.jsx'
+      - '**/*.json'
+      - 'bun.lock'
+      - '.github/workflows/pr.yml'
 
 jobs:
-  checks:
+  install:
+    name: Install
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -19,105 +23,91 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+
       - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
         run: bun install --frozen-lockfile
 
-      - name: Lint
-        id: lint
-        run: |
-          if bunx biome check . 2>&1 | tee /tmp/lint-output.txt; then
-            echo "status=passed" >> $GITHUB_OUTPUT
-          else
-            echo "status=failed" >> $GITHUB_OUTPUT
-          fi
-          echo "result<<EOF" >> $GITHUB_OUTPUT
-          cat /tmp/lint-output.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        continue-on-error: true
+  test:
+    name: Test
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Type check
-        id: typecheck
-        run: |
-          if bunx tsc --noEmit 2>&1 | tee /tmp/typecheck-output.txt; then
-            echo "status=passed" >> $GITHUB_OUTPUT
-          else
-            echo "status=failed" >> $GITHUB_OUTPUT
-          fi
-          echo "result<<EOF" >> $GITHUB_OUTPUT
-          cat /tmp/typecheck-output.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        continue-on-error: true
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
 
       - name: Run tests
-        id: test
-        run: |
-          if NO_COLOR=1 bun test 2>&1 | tee /tmp/test-output.txt; then
-            echo "status=passed" >> $GITHUB_OUTPUT
-          else
-            echo "status=failed" >> $GITHUB_OUTPUT
-          fi
-          echo "result<<EOF" >> $GITHUB_OUTPUT
-          cat /tmp/test-output.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        continue-on-error: true
+        run: bun test
 
-      - name: Post results as PR comment
-        uses: actions/github-script@v7
+  lint:
+    name: Lint & Typecheck
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const icon = (status) => status === 'passed' ? '✅' : '❌';
+          bun-version: latest
 
-            const lint     = '${{ steps.lint.outputs.status }}';
-            const tc       = '${{ steps.typecheck.outputs.status }}';
-            const test     = '${{ steps.test.outputs.status }}';
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
 
-            const lintOut  = `${{ steps.lint.outputs.result }}`.trim();
-            const tcOut    = `${{ steps.typecheck.outputs.result }}`.trim();
-            const testOut  = `${{ steps.test.outputs.result }}`.trim();
+      - name: Biome check
+        run: bunx biome check .
 
-            const body = [
-              `## PR Checks`,
-              `| Check | Status |`,
-              `|-------|--------|`,
-              `| Lint | ${icon(lint)} ${lint} |`,
-              `| Type check | ${icon(tc)} ${tc} |`,
-              `| Tests | ${icon(test)} ${test} |`,
-              ``,
-              lintOut     ? `<details><summary>Lint output</summary>\n\n\`\`\`\n${lintOut}\n\`\`\`\n</details>` : '',
-              tcOut       ? `<details><summary>Type check output</summary>\n\n\`\`\`\n${tcOut}\n\`\`\`\n</details>` : '',
-              testOut     ? `<details><summary>Test output</summary>\n\n\`\`\`\n${testOut}\n\`\`\`\n</details>` : '',
-            ].filter(Boolean).join('\n');
+      - name: Type check
+        run: bunx turbo run check-types
 
-            const { data: comments } = await github.rest.issues.listComments({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
+  build:
+    name: Build
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-            const existing = comments.find(c =>
-              c.user.login === 'github-actions[bot]' && c.body.startsWith('## PR Checks')
-            );
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-            if (existing) {
-              await github.rest.issues.updateComment({
-                comment_id: existing.id,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body,
-              });
-            }
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
 
-      - name: Fail if any check failed
-        if: |
-          steps.lint.outputs.status == 'failed' ||
-          steps.typecheck.outputs.status == 'failed' ||
-          steps.test.outputs.status == 'failed'
-        run: exit 1
+      - name: Build
+        run: bun run build
