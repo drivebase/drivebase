@@ -94,16 +94,15 @@ export function Hero() {
             className="mt-10 flex justify-center"
           >
             <a
-              href="https://www.producthunt.com/products/drivebase?utm_source=badge-follow&utm_medium=badge&utm_source=badge-drivebase"
+              href="https://www.producthunt.com/products/drivebase?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-drivebase"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
               <img
-                src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1164088&theme=dark"
                 alt="Drivebase - Unified file manager for all your cloud storage | Product Hunt"
-                style={{ width: "250px", height: "54px" }}
                 width="250"
                 height="54"
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1078989&amp;theme=dark&amp;t=1771054735120"
               />
             </a>
           </motion.div>
