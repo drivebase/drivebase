@@ -31,11 +31,11 @@ export function Hero() {
           >
             <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-gray-400 transition-all duration-300 backdrop-blur-sm bg-white/5 hover:bg-white/10">
               <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent font-medium">
-                v1.3.0 Released
+                v1.3.1 Released
               </span>
               <span className="mx-2 text-gray-600">|</span>
               <Link
-                href="https://github.com/drivebase/drivebase/releases/tag/v1.3.0"
+                href="https://github.com/drivebase/drivebase/releases/tag/v1.3.1"
                 target="_blank"
                 className="font-semibold text-indigo-400 hover:text-indigo-300"
               >
