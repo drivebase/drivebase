@@ -448,16 +448,20 @@ export function FileSystemTable({
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end" className="min-w-48">
-									<DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
-									<DropdownMenuItem
-										onClick={() => file && onDownloadFile?.(file)}
-									>
-										<Download size={14} className="mr-2" /> Download
-									</DropdownMenuItem>
-									<DropdownMenuItem>
-										<Eye size={14} className="mr-2" /> Preview
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
+									{file ? (
+										<>
+											<DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+											<DropdownMenuItem
+												onClick={() => onDownloadFile?.(file)}
+											>
+												<Download size={14} className="mr-2" /> Download
+											</DropdownMenuItem>
+											<DropdownMenuItem>
+												<Eye size={14} className="mr-2" /> Preview
+											</DropdownMenuItem>
+											<DropdownMenuSeparator />
+										</>
+									) : null}
 									<DropdownMenuLabel>Organize</DropdownMenuLabel>
 									<DropdownMenuItem>
 										<Pencil size={14} className="mr-2" /> Rename
