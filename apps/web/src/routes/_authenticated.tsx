@@ -104,6 +104,7 @@ function AuthenticatedLayout() {
 		if (user && !user.onboardingCompleted) {
 			navigate({
 				to: "/onboarding",
+				search: { connected: undefined },
 				replace: true,
 			});
 		}

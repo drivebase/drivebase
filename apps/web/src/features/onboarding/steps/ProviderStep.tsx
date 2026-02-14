@@ -106,12 +106,10 @@ export function ProviderStep({ onNext }: ProviderStepProps) {
 				// Initiate OAuth flow
 				const oauthResult = await initiateOAuth({ id: provider.id });
 				if (oauthResult.data?.initiateProviderOAuth.authorizationUrl) {
+					// Persist current step so the wizard can restore it if navigation is interrupted.
+					localStorage.setItem("onboarding_step", "2");
 					window.location.href =
 						oauthResult.data.initiateProviderOAuth.authorizationUrl;
-					// The app will redirect back to callback, handled elsewhere.
-					// For onboarding, we might want to handle this differently, but let's stick to standard flow.
-					// Ideally, we'd pause onboarding state, but standard redirect works too if we persist state.
-					// Or just let them come back and finish.
 				}
 			} else {
 				toast.success("Storage connected successfully!");
