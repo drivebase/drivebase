@@ -14,7 +14,10 @@
     },
     "@release-it/bumper": {
       "out": [
-        "docker/compose.prod.yaml",
+        {
+          "file": "docker/compose.prod.yaml",
+          "type": "text/plain"
+        },
         "apps/www/components/landing/hero.tsx"
       ]
     }
