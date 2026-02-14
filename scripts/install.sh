@@ -41,7 +41,7 @@ cd "$DIR" || exit
 
 # 2. Download compose.yaml
 echo -e "${CYAN}• Downloading Docker Compose configuration...${NC}"
-if curl -s -o compose.yaml https://drivebase.one/compose; then
+if curl -s -o compose.yaml https://raw.githubusercontent.com/drivebase/drivebase/main/docker/compose.prod.yaml; then
     echo -e "${GREEN}  ✓ compose.yaml downloaded${NC}"
 else
     echo -e "${RED}  ✗ Failed to download compose.yaml${NC}"
