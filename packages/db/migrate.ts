@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 const databaseUrl =
 	process.env.DATABASE_URL ||
-	"postgres://postgres:postgres@localhost:5432/postgres";
+	"postgres://postgres:postgres@localhost:5432/drivebase";
 
 const pool = new Pool({ connectionString: databaseUrl });
 const db = drizzle(pool);

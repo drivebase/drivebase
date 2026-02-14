@@ -12,6 +12,7 @@ import { createContext } from "./graphql/context";
 import { resolvers } from "./graphql/resolvers";
 import { FileService } from "./services/file";
 import { ProviderService } from "./services/provider";
+import * as telegramAuth from "./services/telegram-auth";
 import { initializeApp } from "./utils/init";
 import { verifyToken } from "./utils/jwt";
 import { logger } from "./utils/logger";
@@ -346,6 +347,151 @@ async function handleDownloadProxy(request: Request): Promise<Response> {
 }
 
 /**
+ * Telegram auth endpoints — multi-step phone/OTP/2FA flow.
+ * These are authenticated via Bearer token.
+ */
+async function authenticateRequest(
+	request: Request,
+): Promise<{ userId: string } | Response> {
+	const corsHeaders = getProxyCorsHeaders();
+	const authHeader = request.headers.get("Authorization");
+	if (!authHeader || !authHeader.startsWith("Bearer ")) {
+		return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+	}
+	const token = authHeader.split(" ")[1];
+	if (!token) {
+		return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+	}
+	try {
+		const payload = await verifyToken(token);
+		return { userId: payload.userId };
+	} catch (_error) {
+		return new Response("Invalid token", { status: 401, headers: corsHeaders });
+	}
+}
+
+/**
+ * POST /api/telegram/send-code
+ * Body: { providerId, apiId, apiHash, phone }
+ */
+async function handleTelegramSendCode(request: Request): Promise<Response> {
+	const corsHeaders = getProxyCorsHeaders();
+	const auth = await authenticateRequest(request);
+	if (auth instanceof Response) return auth;
+
+	try {
+		const body = (await request.json()) as Record<string, unknown>;
+		const providerId = body.providerId as string | undefined;
+		const apiId = Number(body.apiId);
+		const apiHash = body.apiHash as string | undefined;
+		const phone = body.phone as string | undefined;
+
+		if (!providerId || !apiId || !apiHash || !phone) {
+			return new Response(
+				JSON.stringify({ error: "Missing required fields" }),
+				{
+					status: 400,
+					headers: { "Content-Type": "application/json", ...corsHeaders },
+				},
+			);
+		}
+
+		const result = await telegramAuth.sendCode(
+			providerId,
+			apiId,
+			apiHash,
+			phone,
+		);
+		return new Response(JSON.stringify(result), {
+			headers: { "Content-Type": "application/json", ...corsHeaders },
+		});
+	} catch (error) {
+		logger.error({ msg: "Telegram send-code failed", error });
+		const message = error instanceof Error ? error.message : String(error);
+		return new Response(JSON.stringify({ error: message }), {
+			status: 500,
+			headers: { "Content-Type": "application/json", ...corsHeaders },
+		});
+	}
+}
+
+/**
+ * POST /api/telegram/verify
+ * Body: { providerId, code }
+ */
+async function handleTelegramVerify(request: Request): Promise<Response> {
+	const corsHeaders = getProxyCorsHeaders();
+	const auth = await authenticateRequest(request);
+	if (auth instanceof Response) return auth;
+
+	try {
+		const body = (await request.json()) as Record<string, unknown>;
+		const providerId = body.providerId as string | undefined;
+		const code = body.code as string | undefined;
+
+		if (!providerId || !code) {
+			return new Response(
+				JSON.stringify({ error: "Missing required fields" }),
+				{
+					status: 400,
+					headers: { "Content-Type": "application/json", ...corsHeaders },
+				},
+			);
+		}
+
+		const result = await telegramAuth.verifyCode(providerId, code);
+		return new Response(JSON.stringify(result), {
+			headers: { "Content-Type": "application/json", ...corsHeaders },
+		});
+	} catch (error) {
+		logger.error({ msg: "Telegram verify failed", error });
+		const message = error instanceof Error ? error.message : String(error);
+		return new Response(JSON.stringify({ error: message }), {
+			status: 500,
+			headers: { "Content-Type": "application/json", ...corsHeaders },
+		});
+	}
+}
+
+/**
+ * POST /api/telegram/verify-2fa
+ * Body: { providerId, password }
+ */
+async function handleTelegramVerify2FA(request: Request): Promise<Response> {
+	const corsHeaders = getProxyCorsHeaders();
+	const auth = await authenticateRequest(request);
+	if (auth instanceof Response) return auth;
+
+	try {
+		const body = (await request.json()) as Record<string, unknown>;
+		const providerId = body.providerId as string | undefined;
+		const password = body.password as string | undefined;
+
+		if (!providerId || !password) {
+			return new Response(
+				JSON.stringify({ error: "Missing required fields" }),
+				{
+					status: 400,
+					headers: { "Content-Type": "application/json", ...corsHeaders },
+				},
+			);
+		}
+
+		const result = await telegramAuth.verify2FA(providerId, password);
+		return new Response(JSON.stringify(result), {
+			headers: { "Content-Type": "application/json", ...corsHeaders },
+		});
+	} catch (error) {
+		logger.error({ msg: "Telegram verify-2fa failed", error });
+		const message = error instanceof Error ? error.message : String(error);
+		return new Response(JSON.stringify({ error: message }), {
+			status: 500,
+			headers: { "Content-Type": "application/json", ...corsHeaders },
+		});
+	}
+}
+
+/**
  * Start Bun server
  */
 const server = Bun.serve({
@@ -385,6 +531,36 @@ const server = Bun.serve({
 					"Access-Control-Allow-Origin": env.CORS_ORIGIN,
 					"Access-Control-Allow-Methods": "GET, OPTIONS",
 					"Access-Control-Allow-Headers": "Authorization",
+					"Access-Control-Allow-Credentials": "true",
+				},
+			});
+		}
+
+		// Telegram auth routes
+		if (
+			request.method === "POST" &&
+			url.pathname === "/api/telegram/send-code"
+		) {
+			return handleTelegramSendCode(request);
+		}
+		if (request.method === "POST" && url.pathname === "/api/telegram/verify") {
+			return handleTelegramVerify(request);
+		}
+		if (
+			request.method === "POST" &&
+			url.pathname === "/api/telegram/verify-2fa"
+		) {
+			return handleTelegramVerify2FA(request);
+		}
+		if (
+			request.method === "OPTIONS" &&
+			url.pathname.startsWith("/api/telegram/")
+		) {
+			return new Response(null, {
+				headers: {
+					"Access-Control-Allow-Origin": env.CORS_ORIGIN,
+					"Access-Control-Allow-Methods": "POST, OPTIONS",
+					"Access-Control-Allow-Headers": "Content-Type, Authorization",
 					"Access-Control-Allow-Credentials": "true",
 				},
 			});

@@ -66,12 +66,9 @@ export function OnboardingWizard() {
 
 			{/* Card */}
 			<Card className="shadow-xl border-border/50">
-				<CardContent className="px-8 py-8">
+				<CardContent className="px-8 py-8 min-h-[440px] flex flex-col">
 					{step === 1 && (
-						<WelcomeStep
-							onNext={handleNext}
-							userName={user?.name ?? "there"}
-						/>
+						<WelcomeStep onNext={handleNext} userName={user?.name ?? "there"} />
 					)}
 					{step === 2 && <ProviderStep onNext={handleNext} />}
 					{step === 3 && <CompletionStep onComplete={handleComplete} />}

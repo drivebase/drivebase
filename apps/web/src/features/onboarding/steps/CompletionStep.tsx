@@ -16,7 +16,9 @@ interface CompletionStepProps {
 }
 
 export function CompletionStep({ onComplete }: CompletionStepProps) {
-	const [{ fetching }, completeOnboarding] = useMutation(COMPLETE_ONBOARDING_MUTATION);
+	const [{ fetching }, completeOnboarding] = useMutation(
+		COMPLETE_ONBOARDING_MUTATION,
+	);
 	const [isCompleted, setIsCompleted] = useState(false);
 
 	const handleComplete = async () => {
@@ -37,7 +39,7 @@ export function CompletionStep({ onComplete }: CompletionStepProps) {
 	};
 
 	return (
-		<div className="flex flex-col items-center text-center space-y-6 py-4">
+		<div className="flex flex-col flex-1 items-center justify-center text-center space-y-6 py-4">
 			<div
 				className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 ${
 					isCompleted
@@ -53,8 +55,7 @@ export function CompletionStep({ onComplete }: CompletionStepProps) {
 			<div className="space-y-1.5">
 				<h2 className="text-2xl font-bold tracking-tight">You're all set!</h2>
 				<p className="text-muted-foreground text-sm leading-relaxed">
-					Your Drivebase workspace is ready. Start managing your files
-					securely.
+					Your Drivebase workspace is ready. Start managing your files securely.
 				</p>
 			</div>
 

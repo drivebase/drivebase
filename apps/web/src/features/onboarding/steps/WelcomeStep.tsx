@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { ArrowRight, HardDrive, ShieldCheck, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface WelcomeStepProps {
 	onNext: () => void;

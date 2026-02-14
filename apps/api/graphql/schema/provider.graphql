@@ -5,6 +5,10 @@ enum ProviderType {
 	GOOGLE_DRIVE
 	S3
 	LOCAL
+	DROPBOX
+	FTP
+	WEBDAV
+	TELEGRAM
 }
 
 """

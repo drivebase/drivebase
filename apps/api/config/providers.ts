@@ -12,6 +12,10 @@ import {
 } from "@drivebase/google-drive";
 import { LocalSensitiveFields, localRegistration } from "@drivebase/local";
 import { S3SensitiveFields, s3Registration } from "@drivebase/s3";
+import {
+	TelegramSensitiveFields,
+	telegramRegistration,
+} from "@drivebase/telegram";
 
 /**
  * Storage provider registry
@@ -24,6 +28,7 @@ export const providerRegistry: Record<string, ProviderRegistration> = {
 	[ProviderType.DROPBOX]: dropboxRegistration,
 	[ProviderType.FTP]: ftpRegistration,
 	[ProviderType.WEBDAV]: webdavRegistration,
+	[ProviderType.TELEGRAM]: telegramRegistration,
 };
 
 /**
@@ -36,6 +41,7 @@ export const providerSensitiveFields: Record<string, readonly string[]> = {
 	[ProviderType.DROPBOX]: DropboxSensitiveFields,
 	[ProviderType.FTP]: FTPSensitiveFields,
 	[ProviderType.WEBDAV]: WebDAVSensitiveFields,
+	[ProviderType.TELEGRAM]: TelegramSensitiveFields,
 };
 
 /**
@@ -83,6 +89,8 @@ function getProviderName(type: string): string {
 			return "FTP";
 		case ProviderType.WEBDAV:
 			return "WebDAV";
+		case ProviderType.TELEGRAM:
+			return "Telegram";
 		default:
 			return type;
 	}

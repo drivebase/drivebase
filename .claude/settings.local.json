@@ -1,8 +1,5 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(bunx tsc:*)",
-      "Bash(bun run:*)"
-    ]
-  }
+	"permissions": {
+		"allow": ["Bash(bunx tsc:*)", "Bash(bun run:*)"]
+	}
 }
