@@ -9,6 +9,9 @@ node_modules
 **/.cache
 **/.vite
 **/*.log
+**/.tanstack
+**/.next
+**/gql
 
 .env
 .env.*
@@ -19,7 +22,3 @@ node_modules
 .claude
 .zed
 .turbo
-.tanstack
-docs
-dist
-**/gql

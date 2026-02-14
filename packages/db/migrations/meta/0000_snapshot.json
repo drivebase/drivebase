@@ -1,5 +1,5 @@
 {
-  "id": "c11d5fb0-a090-4414-b4c4-bd2ed01560ec",
+  "id": "66f9ace7-73b8-4feb-b039-786151a1d455",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -773,7 +773,10 @@
       "values": [
         "google_drive",
         "s3",
-        "local"
+        "local",
+        "dropbox",
+        "ftp",
+        "webdav"
       ]
     },
     "public.user_role": {
