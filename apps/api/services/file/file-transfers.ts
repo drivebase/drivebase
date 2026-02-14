@@ -1,0 +1,262 @@
+import {
+	ConflictError,
+	joinPath,
+	sanitizeFilename,
+	ValidationError,
+} from "@drivebase/core";
+import type { Database } from "@drivebase/db";
+import { files } from "@drivebase/db";
+import { eq } from "drizzle-orm";
+import { env } from "../../config/env";
+import { logger } from "../../utils/logger";
+import { FolderService } from "../folder";
+import { ProviderService } from "../provider";
+import { getFile } from "./file-queries";
+
+/**
+ * Request file upload
+ * Returns upload information (URL or file ID for direct upload)
+ */
+export async function requestUpload(
+	db: Database,
+	userId: string,
+	name: string,
+	mimeType: string,
+	size: number,
+	folderId: string | undefined,
+	providerId: string,
+) {
+	logger.debug({ msg: "Requesting upload", userId, name, size, providerId });
+	if (!name || name.trim().length === 0) {
+		throw new ValidationError("File name is required");
+	}
+
+	if (size <= 0) {
+		throw new ValidationError("File size must be greater than 0");
+	}
+
+	try {
+		const sanitizedName = sanitizeFilename(name);
+
+		let folder = null;
+		let virtualPath: string;
+
+		if (folderId) {
+			const folderService = new FolderService(db);
+			folder = await folderService.getFolder(folderId, userId);
+			virtualPath = joinPath(folder.virtualPath, sanitizedName);
+		} else {
+			virtualPath = joinPath("/", sanitizedName);
+		}
+
+		const [existing] = await db
+			.select()
+			.from(files)
+			.where(eq(files.virtualPath, virtualPath))
+			.limit(1);
+
+		if (existing && !existing.isDeleted) {
+			throw new ConflictError(`File already exists at path: ${virtualPath}`);
+		}
+
+		const providerService = new ProviderService(db);
+		const providerRecord = await providerService.getProvider(
+			providerId,
+			userId,
+		);
+		const provider = await providerService.getProviderInstance(providerRecord);
+
+		const parentId =
+			folder?.remoteId ?? providerRecord.rootFolderId ?? undefined;
+
+		const uploadResponse = await provider.requestUpload({
+			name: sanitizedName,
+			mimeType,
+			size,
+			parentId,
+		});
+
+		await provider.cleanup();
+
+		const [fileRecord] = existing
+			? await db
+					.update(files)
+					.set({
+						name: sanitizedName,
+						mimeType,
+						size,
+						remoteId: uploadResponse.fileId,
+						providerId,
+						folderId: folderId ?? null,
+						uploadedBy: userId,
+						isDeleted: false,
+						starred: false,
+						updatedAt: new Date(),
+					})
+					.where(eq(files.id, existing.id))
+					.returning()
+			: await db
+					.insert(files)
+					.values({
+						virtualPath,
+						name: sanitizedName,
+						mimeType,
+						size,
+						remoteId: uploadResponse.fileId,
+						providerId,
+						folderId: folderId ?? null,
+						uploadedBy: userId,
+						isDeleted: false,
+					})
+					.returning();
+
+		if (!fileRecord) {
+			throw new Error("Failed to create file record");
+		}
+
+		const baseUrl = env.API_BASE_URL ?? `http://localhost:${env.PORT}`;
+		const proxyUrl = `${baseUrl}/api/upload/proxy?fileId=${fileRecord.id}`;
+
+		const uploadUrl = uploadResponse.useDirectUpload
+			? uploadResponse.uploadUrl
+			: proxyUrl;
+
+		logger.debug({
+			msg: "Upload requested",
+			fileId: fileRecord.id,
+			useDirectUpload: uploadResponse.useDirectUpload,
+			uploadUrl,
+		});
+
+		return {
+			file: fileRecord,
+			uploadUrl,
+			uploadFields: uploadResponse.uploadFields,
+			useDirectUpload: uploadResponse.useDirectUpload,
+		};
+	} catch (error) {
+		logger.error({ msg: "Request upload failed", userId, name, error });
+		throw error;
+	}
+}
+
+/**
+ * Request file download
+ */
+export async function requestDownload(
+	db: Database,
+	fileId: string,
+	userId: string,
+) {
+	logger.debug({ msg: "Requesting download", userId, fileId });
+
+	try {
+		const file = await getFile(db, fileId, userId);
+
+		const providerService = new ProviderService(db);
+		const providerRecord = await providerService.getProvider(
+			file.providerId,
+			userId,
+		);
+		const provider = await providerService.getProviderInstance(providerRecord);
+
+		const downloadResponse = await provider.requestDownload({
+			remoteId: file.remoteId,
+		});
+
+		await provider.cleanup();
+
+		const baseUrl = env.API_BASE_URL ?? `http://localhost:${env.PORT}`;
+		const proxyUrl = `${baseUrl}/api/download/proxy?fileId=${file.id}`;
+		const canUseDirectDownload =
+			downloadResponse.useDirectDownload &&
+			Boolean(downloadResponse.downloadUrl);
+
+		logger.debug({
+			msg: "Download requested",
+			fileId,
+			useDirectDownload: canUseDirectDownload,
+			downloadUrl: canUseDirectDownload
+				? downloadResponse.downloadUrl
+				: proxyUrl,
+		});
+
+		return {
+			file,
+			downloadUrl: canUseDirectDownload
+				? (downloadResponse.downloadUrl ?? undefined)
+				: proxyUrl,
+			useDirectDownload: canUseDirectDownload,
+		};
+	} catch (error) {
+		logger.error({ msg: "Request download failed", userId, fileId, error });
+		throw error;
+	}
+}
+
+/**
+ * Download file stream (for proxy download)
+ */
+export async function downloadFile(
+	db: Database,
+	fileId: string,
+	userId: string,
+): Promise<ReadableStream> {
+	logger.debug({ msg: "Downloading file stream", userId, fileId });
+	try {
+		const file = await getFile(db, fileId, userId);
+
+		const providerService = new ProviderService(db);
+		const providerRecord = await providerService.getProvider(
+			file.providerId,
+			userId,
+		);
+		const provider = await providerService.getProviderInstance(providerRecord);
+
+		const stream = await provider.downloadFile(file.remoteId);
+
+		return stream;
+	} catch (error) {
+		logger.error({
+			msg: "Download file stream failed",
+			userId,
+			fileId,
+			error,
+		});
+		throw error;
+	}
+}
+
+/**
+ * Get file metadata
+ */
+export async function getFileMetadata(
+	db: Database,
+	fileId: string,
+	userId: string,
+) {
+	logger.debug({ msg: "Getting file metadata", userId, fileId });
+
+	try {
+		const file = await getFile(db, fileId, userId);
+
+		const providerService = new ProviderService(db);
+		const providerRecord = await providerService.getProvider(
+			file.providerId,
+			userId,
+		);
+		const provider = await providerService.getProviderInstance(providerRecord);
+
+		const metadata = await provider.getFileMetadata(file.remoteId);
+
+		await provider.cleanup();
+
+		return {
+			...file,
+			providerMetadata: metadata,
+		};
+	} catch (error) {
+		logger.error({ msg: "Get file metadata failed", userId, fileId, error });
+		throw error;
+	}
+}

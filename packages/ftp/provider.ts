@@ -1,5 +1,4 @@
 import { PassThrough, Readable } from "node:stream";
-import * as ftp from "basic-ftp";
 import type {
 	CopyOptions,
 	CreateFolderOptions,
@@ -18,6 +17,7 @@ import type {
 	UploadResponse,
 } from "@drivebase/core";
 import { ProviderError } from "@drivebase/core";
+import * as ftp from "basic-ftp";
 import { type FTPConfig, FTPConfigSchema } from "./schema";
 
 function joinPath(base: string, ...parts: string[]): string {

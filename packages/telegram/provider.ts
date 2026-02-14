@@ -165,7 +165,7 @@ export class TelegramProvider implements IStorageProvider {
 			}
 
 			// Determine target entity and filename
-			let entity: string | number | BigInt = "me";
+			let entity: string | number | bigint = "me";
 			let fileName = "file";
 
 			if (remoteId.startsWith("pending_")) {

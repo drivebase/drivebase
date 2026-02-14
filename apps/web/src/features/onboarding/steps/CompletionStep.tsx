@@ -1,9 +1,9 @@
+import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { useMutation } from "urql";
-import { CheckCircle2, Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { graphql } from "@/gql";
-import { toast } from "sonner";
-import { useState } from "react";
 
 const COMPLETE_ONBOARDING_MUTATION = graphql(`
 	mutation CompleteOnboarding {

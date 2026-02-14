@@ -5,7 +5,6 @@ import {
 	dropboxRegistration,
 } from "@drivebase/dropbox";
 import { FTPSensitiveFields, ftpRegistration } from "@drivebase/ftp";
-import { WebDAVSensitiveFields, webdavRegistration } from "@drivebase/webdav";
 import {
 	GoogleDriveSensitiveFields,
 	googleDriveRegistration,
@@ -16,6 +15,7 @@ import {
 	TelegramSensitiveFields,
 	telegramRegistration,
 } from "@drivebase/telegram";
+import { WebDAVSensitiveFields, webdavRegistration } from "@drivebase/webdav";
 
 /**
  * Storage provider registry

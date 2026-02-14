@@ -1,7 +1,6 @@
 import { getAvailableProviders } from "../../config/providers";
 import { ProviderService } from "../../services/provider";
 import { logger } from "../../utils/logger";
-import { pubSub, type PubSubChannels } from "../pubsub";
 import type {
 	AvailableProvider,
 	AuthType as GQLAuthType,
@@ -11,6 +10,7 @@ import type {
 	StorageProviderResolvers,
 	SubscriptionResolvers,
 } from "../generated/types";
+import { type PubSubChannels, pubSub } from "../pubsub";
 import { requireAuth } from "./auth-helpers";
 
 /**

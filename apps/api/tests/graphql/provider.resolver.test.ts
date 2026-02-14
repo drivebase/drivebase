@@ -22,8 +22,8 @@ mock.module("../../config/providers", () => ({
 
 import {
 	AuthType,
-	ProviderType,
 	availableProviderResolvers,
+	ProviderType,
 	providerMutations,
 	providerQueries,
 	storageProviderResolvers,
