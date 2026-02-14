@@ -325,21 +325,23 @@ export function FileSystemTable({
 							<button
 								type="button"
 								onClick={() => onNavigate?.(folder.id)}
-								className="font-medium flex items-center gap-3 text-left hover:underline"
+								className="font-medium flex items-center gap-3 text-left hover:underline min-w-0"
 							>
-								<div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+								<div className="w-8 h-8 shrink-0 rounded-lg bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
 									<FolderIcon size={16} />
 								</div>
-								<span>{folder.name}</span>
+								<span className="truncate">{folder.name}</span>
 							</button>
 						);
 					}
 
 					const file = row.original.file;
 					return (
-						<div className="font-medium flex items-center gap-3">
-							<FileMimeIcon mimeType={file.mimeType} />
-							<span>{file.name}</span>
+						<div className="font-medium flex items-center gap-3 min-w-0">
+							<div className="shrink-0">
+								<FileMimeIcon mimeType={file.mimeType} />
+							</div>
+							<span className="truncate">{file.name}</span>
 						</div>
 					);
 				},
@@ -659,7 +661,7 @@ export function FileSystemTable({
 			</div>
 
 			<div>
-				<Table className="w-full table-fixed">
+				<Table className="w-full" style={{ minWidth: 700 }}>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
@@ -679,7 +681,7 @@ export function FileSystemTable({
 											header.column.id === "select"
 												? "w-11 min-w-11 max-w-11 px-2"
 												: header.column.id === "actions"
-													? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-20"
+													? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-20 bg-background"
 													: header.column.id === "name"
 														? "w-full min-w-[200px]"
 														: undefined
@@ -716,7 +718,7 @@ export function FileSystemTable({
 												cell.column.id === "select"
 													? "w-11 min-w-11 max-w-11 px-2"
 													: cell.column.id === "actions"
-														? "w-14 min-w-14 max-w-14 text-right pr-2 right-0 z-10 relative after:absolute after:inset-0 after:pointer-events-none group-hover:after:bg-muted/50 group-data-[state=selected]:bg-muted group-data-[state=selected]:after:hidden"
+														? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-10 bg-background group-hover:bg-muted/50 group-data-[state=selected]:bg-muted"
 														: cell.column.id === "name"
 															? "w-full min-w-[200px]"
 															: undefined
