@@ -1,4 +1,5 @@
-import { getDb } from "@drivebase/db";
+import { getDb, users } from "@drivebase/db";
+import { eq } from "drizzle-orm";
 import { env } from "../../config/env";
 import { ProviderService } from "../../services/provider";
 import { logger } from "../../utils/logger";
@@ -6,6 +7,8 @@ import { logger } from "../../utils/logger";
 /**
  * Handle GET /webhook/callback — OAuth provider callback.
  * The provider ID is extracted from the `state` query param (set during initiateOAuth).
+ * Redirects to /onboarding?connected=true if the user hasn't completed onboarding yet,
+ * otherwise to /providers?connected=true.
  */
 export async function handleOAuthCallback(request: Request): Promise<Response> {
 	const url = new URL(request.url);
@@ -20,16 +23,30 @@ export async function handleOAuthCallback(request: Request): Promise<Response> {
 		return new Response("Missing state parameter", { status: 400 });
 	}
 
+	const frontendUrl = env.CORS_ORIGIN;
+
 	try {
 		const db = getDb();
 		const providerService = new ProviderService(db);
-		await providerService.handleOAuthCallback(code, state);
+		const updatedProvider = await providerService.handleOAuthCallback(
+			code,
+			state,
+		);
 
-		const frontendUrl = env.CORS_ORIGIN;
-		return Response.redirect(`${frontendUrl}/providers?connected=true`, 302);
+		const [user] = await db
+			.select({ onboardingCompleted: users.onboardingCompleted })
+			.from(users)
+			.where(eq(users.id, updatedProvider.userId))
+			.limit(1);
+
+		const returnPath =
+			user && !user.onboardingCompleted
+				? "/onboarding?connected=true"
+				: "/providers?connected=true";
+
+		return Response.redirect(`${frontendUrl}${returnPath}`, 302);
 	} catch (error) {
 		logger.error({ msg: "OAuth callback failed", error });
-		const frontendUrl = env.CORS_ORIGIN;
 		return Response.redirect(
 			`${frontendUrl}/providers?error=oauth_failed`,
 			302,

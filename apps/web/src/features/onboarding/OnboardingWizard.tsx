@@ -1,6 +1,8 @@
+import { useNavigate } from "@tanstack/react-router";
 import { Check } from "lucide-react";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Route } from "@/routes/onboarding/index";
 import { useAuthStore } from "@/store/authStore";
 import { CompletionStep } from "./steps/CompletionStep";
 import { ProviderStep } from "./steps/ProviderStep";
@@ -12,12 +14,40 @@ const STEPS = [
 	{ id: 3, label: "Complete" },
 ];
 
+const STORAGE_KEY = "onboarding_step";
+
 export function OnboardingWizard() {
-	const [step, setStep] = useState(1);
+	const { connected } = Route.useSearch();
+	const navigate = useNavigate();
 	const { user } = useAuthStore();
 
-	const handleNext = () => setStep((prev) => prev + 1);
+	const [step, setStep] = useState<number>(() => {
+		// If returning from OAuth, jump straight to the completion step.
+		if (connected) return 3;
+		// Restore persisted step in case of accidental navigation.
+		const saved = localStorage.getItem(STORAGE_KEY);
+		return saved ? Number(saved) : 1;
+	});
+
+	// Clean up persisted step and strip the ?connected param once we're on step 3.
+	useEffect(() => {
+		if (step >= 3) {
+			localStorage.removeItem(STORAGE_KEY);
+			if (connected) {
+				navigate({ to: "/onboarding", search: { connected: undefined }, replace: true });
+			}
+		}
+	}, [step, connected, navigate]);
+
+	const handleNext = () =>
+		setStep((prev) => {
+			const next = prev + 1;
+			if (next < 3) localStorage.setItem(STORAGE_KEY, String(next));
+			return next;
+		});
+
 	const handleComplete = () => {
+		localStorage.removeItem(STORAGE_KEY);
 		window.location.href = "/";
 	};
 
