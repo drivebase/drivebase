@@ -1,5 +1,17 @@
 # Changelog
 
+# [1.5.0](https://github.com/drivebase/drivebase/compare/v1.4.0...v1.5.0) (2026-02-14)
+
+
+### Bug Fixes
+
+* enhance provider service and resolvers with improved sync handling ([051482c](https://github.com/drivebase/drivebase/commit/051482cece3f27d3ae15e106c81f744fa05ffdd1))
+
+
+### Features
+
+* add check-types script to all package.json ([789ef7a](https://github.com/drivebase/drivebase/commit/789ef7aa4de26bbd937e0c88ed250c4c53f55faf))
+
 # [1.4.0](https://github.com/drivebase/drivebase/compare/v1.3.3...v1.4.0) (2026-02-14)
 
 
