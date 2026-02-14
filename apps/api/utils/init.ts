@@ -1,9 +1,9 @@
 import { UserRole } from "@drivebase/core";
 import { getDb, users } from "@drivebase/db";
+import { getAvailableProviders } from "../config/providers";
+import { getRedis } from "../redis/client";
 import { UserService } from "../services/user";
 import { logger } from "./logger";
-import { getRedis } from "../redis/client";
-import { getAvailableProviders } from "../config/providers";
 
 /**
  * Initialize the application on first startup

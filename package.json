@@ -18,7 +18,8 @@
 		"db:studio": "bun run --filter=@drivebase/db studio",
 		"release": "release-it",
 		"prepare": "husky",
-		"format": "biome format --write"
+		"format": "biome format --write",
+		"check": "biome check --write"
 	},
 	"overrides": {
 		"yaml": "2.7.0"
