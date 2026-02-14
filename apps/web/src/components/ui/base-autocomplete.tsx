@@ -1,6 +1,6 @@
 "use client";
 
-import { Autocomplete as AutocompletePrimitive } from "@base-ui-components/react/autocomplete";
+import { Autocomplete as AutocompletePrimitive } from "@base-ui/react/autocomplete";
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import type * as React from "react";
