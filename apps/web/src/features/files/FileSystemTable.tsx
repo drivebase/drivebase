@@ -75,6 +75,8 @@ interface FileSystemTableProps {
 	onShowFileDetails?: (file: FileItemFragment) => void;
 	onToggleFileFavorite?: (file: FileItemFragment) => void;
 	onToggleFolderFavorite?: (folder: FolderItemFragment) => void;
+	onRenameFile?: (file: FileItemFragment) => void;
+	onRenameFolder?: (folder: FolderItemFragment) => void;
 	onDeleteSelection?: (selection: {
 		files: FileItemFragment[];
 		folders: FolderItemFragment[];
@@ -225,6 +227,8 @@ export function FileSystemTable({
 	onShowFileDetails,
 	onToggleFileFavorite,
 	onToggleFolderFavorite,
+	onRenameFile,
+	onRenameFolder,
 	onDeleteSelection,
 	isLoading,
 	showSharedColumn = false,
@@ -451,9 +455,7 @@ export function FileSystemTable({
 									{file ? (
 										<>
 											<DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
-											<DropdownMenuItem
-												onClick={() => onDownloadFile?.(file)}
-											>
+											<DropdownMenuItem onClick={() => onDownloadFile?.(file)}>
 												<Download size={14} className="mr-2" /> Download
 											</DropdownMenuItem>
 											<DropdownMenuItem>
@@ -463,7 +465,12 @@ export function FileSystemTable({
 										</>
 									) : null}
 									<DropdownMenuLabel>Organize</DropdownMenuLabel>
-									<DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={() => {
+											if (file) onRenameFile?.(file);
+											if (folder) onRenameFolder?.(folder);
+										}}
+									>
 										<Pencil size={14} className="mr-2" /> Rename
 									</DropdownMenuItem>
 									<DropdownMenuItem>
@@ -530,6 +537,8 @@ export function FileSystemTable({
 			onDeleteSelection,
 			onDownloadFile,
 			onNavigate,
+			onRenameFile,
+			onRenameFolder,
 			onShowFileDetails,
 			onToggleFileFavorite,
 			onToggleFolderFavorite,
