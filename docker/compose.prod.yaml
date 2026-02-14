@@ -55,3 +55,4 @@ services:
       - '6379:6379'
 volumes:
   postgres_data: null
+version: 1.3.2
