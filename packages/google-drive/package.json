@@ -8,6 +8,9 @@
 	"exports": {
 		".": "./index.ts"
 	},
+	"scripts": {
+		"check-types": "tsc --noEmit"
+	},
 	"dependencies": {
 		"@drivebase/core": "workspace:*",
 		"googleapis": "^144.0.0",

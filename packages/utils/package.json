@@ -8,7 +8,10 @@
 	"exports": {
 		".": "./index.ts"
 	},
-	"devDependencies": {
+	"scripts": {
+		"check-types": "tsc --noEmit"
+	},
+	"dependencies": {
 		"@types/bun": "latest"
 	},
 	"peerDependencies": {

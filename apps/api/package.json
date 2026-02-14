@@ -10,6 +10,7 @@
 		"start": "bun index.ts",
 		"test": "bun test",
 		"test:watch": "bun test --watch",
+		"check-types": "tsc --noEmit",
 		"codegen": "graphql-codegen --config codegen.yml",
 		"codegen:watch": "graphql-codegen --config codegen.yml --watch"
 	},
