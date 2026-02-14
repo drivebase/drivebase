@@ -36,6 +36,7 @@ import {
 	useContents,
 	useDeleteFile,
 	useMoveFile,
+	useRenameFile,
 	useRequestUpload,
 	useStarFile,
 	useUnstarFile,
@@ -43,10 +44,12 @@ import {
 import {
 	useDeleteFolder,
 	useMoveFolder,
+	useRenameFolder,
 	useStarFolder,
 	useUnstarFolder,
 } from "@/hooks/useFolders";
 import { useProviders } from "@/hooks/useProviders";
+import { promptDialog } from "@/lib/promptDialog";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 
@@ -125,6 +128,8 @@ function FilesPage() {
 	const [, deleteFolder] = useDeleteFolder();
 	const [, moveFile] = useMoveFile();
 	const [, moveFolder] = useMoveFolder();
+	const [, renameFile] = useRenameFile();
+	const [, renameFolder] = useRenameFolder();
 	const [, starFile] = useStarFile();
 	const [, unstarFile] = useUnstarFile();
 	const [, starFolder] = useStarFolder();
@@ -456,6 +461,60 @@ function FilesPage() {
 		}
 	};
 
+	const handleRenameFile = async (file: FileItemFragment) => {
+		const newName = await promptDialog("Rename File", `Rename "${file.name}"`, {
+			defaultValue: file.name,
+			placeholder: "Enter new name",
+			submitLabel: "Rename",
+		});
+		if (!newName || newName === file.name) return;
+
+		// Optimistic update
+		setFiles((prev) =>
+			prev.map((f) => (f.id === file.id ? { ...f, name: newName } : f)),
+		);
+
+		const result = await renameFile({ id: file.id, name: newName });
+		if (result.error) {
+			// Revert
+			setFiles((prev) =>
+				prev.map((f) => (f.id === file.id ? { ...f, name: file.name } : f)),
+			);
+			toast.error(`Failed to rename: ${result.error.message}`);
+		} else {
+			toast.success(`Renamed to "${newName}"`);
+		}
+	};
+
+	const handleRenameFolder = async (folder: FolderItemFragment) => {
+		const newName = await promptDialog(
+			"Rename Folder",
+			`Rename "${folder.name}"`,
+			{
+				defaultValue: folder.name,
+				placeholder: "Enter new name",
+				submitLabel: "Rename",
+			},
+		);
+		if (!newName || newName === folder.name) return;
+
+		// Optimistic update
+		setFolders((prev) =>
+			prev.map((f) => (f.id === folder.id ? { ...f, name: newName } : f)),
+		);
+
+		const result = await renameFolder({ id: folder.id, name: newName });
+		if (result.error) {
+			// Revert
+			setFolders((prev) =>
+				prev.map((f) => (f.id === folder.id ? { ...f, name: folder.name } : f)),
+			);
+			toast.error(`Failed to rename: ${result.error.message}`);
+		} else {
+			toast.success(`Renamed to "${newName}"`);
+		}
+	};
+
 	const handleDeleteSelection = async (selection: {
 		files: FileItemFragment[];
 		folders: FolderItemFragment[];
@@ -767,6 +826,8 @@ function FilesPage() {
 						onShowFileDetails={showDetails}
 						onToggleFileFavorite={handleToggleFileFavorite}
 						onToggleFolderFavorite={handleToggleFolderFavorite}
+						onRenameFile={handleRenameFile}
+						onRenameFolder={handleRenameFolder}
 						onDeleteSelection={handleDeleteSelection}
 						isLoading={contentsFetching && !contentsData}
 						showSharedColumn

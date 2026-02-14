@@ -5,6 +5,7 @@ import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/hooks/useAuth";
 import { ConfirmDialogHost } from "@/lib/confirmDialog";
+import { PromptDialogHost } from "@/lib/promptDialog";
 
 export const Route = createRootRoute({
 	component: RootComponent,
@@ -21,6 +22,7 @@ function RootComponent() {
 		<>
 			<Outlet />
 			<ConfirmDialogHost />
+			<PromptDialogHost />
 			<Toaster position="bottom-right" theme={theme} />
 		</>
 	);
