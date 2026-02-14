@@ -23,7 +23,11 @@ export function InvalidRequest() {
 					Missing required parameters. Please start the connection from the
 					Providers page.
 				</p>
-				<Button onClick={() => navigate({ to: "/providers", search: { connected: undefined } })}>
+				<Button
+					onClick={() =>
+						navigate({ to: "/providers", search: { connected: undefined } })
+					}
+				>
 					Go to Providers
 				</Button>
 			</div>
