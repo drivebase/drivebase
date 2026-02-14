@@ -476,9 +476,6 @@ export function FileSystemTable({
 									<DropdownMenuItem>
 										<Move size={14} className="mr-2" /> Move
 									</DropdownMenuItem>
-									<DropdownMenuItem>
-										<Copy size={14} className="mr-2" /> Make a copy
-									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuLabel>Library</DropdownMenuLabel>
 									<DropdownMenuItem>
