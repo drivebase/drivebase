@@ -26,7 +26,7 @@ const navigation = {
     },
     {
       name: "Discord",
-      href: "https://discord.gg/3kUSy2d",
+      href: "https://discord.gg/zy3XyWcU6D",
       icon: (props: React.SVGProps<SVGSVGElement>) => (
         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
           <title>Discord</title>
