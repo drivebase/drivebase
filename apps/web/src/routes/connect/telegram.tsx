@@ -54,7 +54,11 @@ function TelegramConnectPage() {
 
 	const handleVerifyCodeSubmit = async (code: string) => {
 		const result = await verifyCode(code);
-		if (result && "sessionString" in result && typeof result.sessionString === "string") {
+		if (
+			result &&
+			"sessionString" in result &&
+			typeof result.sessionString === "string"
+		) {
 			await handleCompleteAuth(result.sessionString);
 		} else if (result && "requires2FA" in result) {
 			toast.info("Two-factor authentication required");
