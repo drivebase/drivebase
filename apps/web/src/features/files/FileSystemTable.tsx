@@ -1,9 +1,11 @@
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import {
 	type ColumnDef,
 	type ColumnFiltersState,
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	type Row,
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table";
@@ -52,10 +54,18 @@ import {
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import { confirmDialog } from "@/lib/confirmDialog";
+import { cn } from "@/lib/utils";
 
 type FileRow = { kind: "file"; id: string; file: FileItemFragment };
 type FolderRow = { kind: "folder"; id: string; folder: FolderItemFragment };
 type RowItem = FileRow | FolderRow;
+
+export type DragItem = {
+	type: "file" | "folder";
+	id: string;
+	name: string;
+	item: FileItemFragment | FolderItemFragment;
+};
 
 interface FileSystemTableProps {
 	files: FileItemFragment[];
@@ -128,6 +138,83 @@ function LoadingTable({ showSharedColumn }: { showSharedColumn: boolean }) {
 	);
 }
 
+function DraggableTableRow({
+	row,
+	children,
+}: {
+	row: Row<RowItem>;
+	children: React.ReactNode;
+}) {
+	const original = row.original;
+	const dragData: DragItem =
+		original.kind === "file"
+			? {
+					type: "file",
+					id: original.file.id,
+					name: original.file.name,
+					item: original.file,
+				}
+			: {
+					type: "folder",
+					id: original.folder.id,
+					name: original.folder.name,
+					item: original.folder,
+				};
+
+	const {
+		attributes,
+		listeners,
+		setNodeRef: setDragRef,
+		isDragging,
+	} = useDraggable({
+		id: original.id,
+		data: dragData,
+	});
+
+	const { setNodeRef: setDropRef, isOver } = useDroppable({
+		id: original.id,
+		disabled: original.kind !== "folder",
+	});
+
+	const setRef = (el: HTMLTableRowElement | null) => {
+		setDragRef(el);
+		setDropRef(el);
+	};
+
+	return (
+		<TableRow
+			ref={setRef}
+			data-state={row.getIsSelected() && "selected"}
+			className={cn(
+				"group relative",
+				isDragging && "opacity-40",
+				isOver &&
+					original.kind === "folder" &&
+					"ring-2 ring-primary ring-inset bg-primary/5",
+			)}
+			{...attributes}
+			{...listeners}
+		>
+			{children}
+		</TableRow>
+	);
+}
+
+export function DragOverlayContent({ item }: { item: DragItem }) {
+	return (
+		<div className="flex items-center gap-3 bg-background border rounded-lg px-4 py-2 shadow-lg text-sm">
+			{item.type === "folder" ? (
+				<div className="w-7 h-7 rounded-md bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+					<FolderIcon size={14} />
+				</div>
+			) : (
+				<FileMimeIcon mimeType={(item.item as FileItemFragment).mimeType} />
+			)}
+			<span className="font-medium">{item.name}</span>
+		</div>
+	);
+}
+
 const STORAGE_KEY = "drivebase:file-table-columns";
 
 export function FileSystemTable({
@@ -144,6 +231,7 @@ export function FileSystemTable({
 	emptyStateMessage = "This folder is empty",
 }: FileSystemTableProps) {
 	const [rowSelection, setRowSelection] = useState({});
+
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
 		() => {
 			if (typeof window !== "undefined") {
@@ -611,11 +699,7 @@ export function FileSystemTable({
 					<TableBody>
 						{table.getRowModel().rows.length ? (
 							table.getRowModel().rows.map((row) => (
-								<TableRow
-									key={row.id}
-									data-state={row.getIsSelected() && "selected"}
-									className="group"
-								>
+								<DraggableTableRow key={row.id} row={row}>
 									{row.getVisibleCells().map((cell) => (
 										<TableCell
 											key={cell.id}
@@ -644,7 +728,7 @@ export function FileSystemTable({
 											)}
 										</TableCell>
 									))}
-								</TableRow>
+								</DraggableTableRow>
 							))
 						) : (
 							<TableRow>

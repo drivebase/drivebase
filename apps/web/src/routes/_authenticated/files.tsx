@@ -1,3 +1,13 @@
+import {
+	DndContext,
+	type DragEndEvent,
+	DragOverlay,
+	type DragStartEvent,
+	PointerSensor,
+	useDroppable,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
 import { createFileRoute } from "@tanstack/react-router";
 import axios from "axios";
 import { ChevronRight, FolderPlus, Home, Loader2, Upload } from "lucide-react";
@@ -6,7 +16,11 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { CreateFolderDialog } from "@/features/files/CreateFolderDialog";
-import { FileSystemTable } from "@/features/files/FileSystemTable";
+import {
+	type DragItem,
+	DragOverlayContent,
+	FileSystemTable,
+} from "@/features/files/FileSystemTable";
 import {
 	UploadProgressPanel,
 	type UploadQueueItem,
@@ -21,12 +35,14 @@ import type {
 import {
 	useContents,
 	useDeleteFile,
+	useMoveFile,
 	useRequestUpload,
 	useStarFile,
 	useUnstarFile,
 } from "@/hooks/useFiles";
 import {
 	useDeleteFolder,
+	useMoveFolder,
 	useStarFolder,
 	useUnstarFolder,
 } from "@/hooks/useFolders";
@@ -42,6 +58,35 @@ export const Route = createFileRoute("/_authenticated/files")({
 	validateSearch: (search) => searchSchema.parse(search),
 	component: FilesPage,
 });
+
+function DroppableBreadcrumb({
+	id,
+	children,
+	isCurrentPage,
+}: {
+	id: string;
+	children: React.ReactNode;
+	isCurrentPage?: boolean;
+}) {
+	const { setNodeRef, isOver } = useDroppable({
+		id: `breadcrumb:${id}`,
+		disabled: isCurrentPage,
+	});
+
+	return (
+		<div
+			ref={setNodeRef}
+			className={cn(
+				"rounded-md transition-all duration-150",
+				isOver &&
+					!isCurrentPage &&
+					"ring-2 ring-primary bg-primary/10 scale-105",
+			)}
+		>
+			{children}
+		</div>
+	);
+}
 
 function FilesPage() {
 	const { token } = useAuthStore();
@@ -59,6 +104,8 @@ function FilesPage() {
 	const [, requestUpload] = useRequestUpload();
 	const [, deleteFile] = useDeleteFile();
 	const [, deleteFolder] = useDeleteFolder();
+	const [, moveFile] = useMoveFile();
+	const [, moveFolder] = useMoveFolder();
 	const [, starFile] = useStarFile();
 	const [, unstarFile] = useUnstarFile();
 	const [, starFolder] = useStarFolder();
@@ -94,8 +141,15 @@ function FilesPage() {
 		return parts.map((part, index) => ({
 			name: part,
 			path: `/${parts.slice(0, index + 1).join("/")}`,
+			// The last breadcrumb is the current folder; the second-to-last is the parent
+			folderId:
+				index === parts.length - 1
+					? (currentFolder?.id ?? null)
+					: index === parts.length - 2
+						? (currentFolder?.parentId ?? null)
+						: null,
 		}));
-	}, [currentPath]);
+	}, [currentPath, currentFolder?.id, currentFolder?.parentId]);
 
 	const handleNavigate = (folderId: string) => {
 		const targetFolder = folders.find((f) => f.id === folderId);
@@ -476,132 +530,248 @@ function FilesPage() {
 		}
 	};
 
+	const [activeDrag, setActiveDrag] = useState<DragItem | null>(null);
+
+	const dndSensors = useSensors(
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 8,
+			},
+		}),
+	);
+
+	const handleDragStart = (event: DragStartEvent) => {
+		const dragData = event.active.data.current as DragItem | undefined;
+		if (dragData) {
+			setActiveDrag(dragData);
+		}
+	};
+
+	const handleDragEnd = (event: DragEndEvent) => {
+		setActiveDrag(null);
+		const { active, over } = event;
+		if (!over) return;
+
+		const dragData = active.data.current as DragItem | undefined;
+		if (!dragData) return;
+
+		const dropId = over.id as string;
+
+		// Don't drop onto yourself or current breadcrumb
+		if (
+			(dragData.type === "folder" && dropId === `folder:${dragData.id}`) ||
+			dropId === `breadcrumb:__current__`
+		) {
+			return;
+		}
+
+		// Determine target folder ID
+		let targetFolderId: string | null = null;
+		if (dropId.startsWith("folder:")) {
+			targetFolderId = dropId.replace("folder:", "");
+		} else if (dropId.startsWith("breadcrumb:")) {
+			const breadcrumbFolderId = dropId.replace("breadcrumb:", "");
+			targetFolderId =
+				breadcrumbFolderId === "__root__" ? null : breadcrumbFolderId;
+		} else {
+			return;
+		}
+
+		handleMoveItems([dragData], targetFolderId);
+	};
+
+	const handleDragCancel = () => {
+		setActiveDrag(null);
+	};
+
+	const handleMoveItems = async (
+		items: DragItem[],
+		targetFolderId: string | null,
+	) => {
+		for (const item of items) {
+			if (item.type === "file") {
+				const result = await moveFile({
+					id: item.id,
+					folderId: targetFolderId,
+				});
+				if (result.error) {
+					toast.error(`Failed to move "${item.name}": ${result.error.message}`);
+					return;
+				}
+			} else {
+				const result = await moveFolder({
+					id: item.id,
+					parentId: targetFolderId,
+				});
+				if (result.error) {
+					toast.error(`Failed to move "${item.name}": ${result.error.message}`);
+					return;
+				}
+			}
+		}
+		toast.success(
+			items.length === 1
+				? `Moved "${items[0].name}"`
+				: `Moved ${items.length} items`,
+		);
+		refreshContents({ requestPolicy: "network-only" });
+	};
+
 	return (
-		// biome-ignore lint/a11y/noStaticElementInteractions: this is a drag-and-drop container
-		<div
-			className="p-8 flex flex-col gap-6 h-full relative"
-			onDragEnter={handleDragEnter}
-			onDragLeave={handleDragLeave}
-			onDragOver={handleDragOver}
-			onDrop={handleDrop}
+		<DndContext
+			sensors={dndSensors}
+			onDragStart={handleDragStart}
+			onDragEnd={handleDragEnd}
+			onDragCancel={handleDragCancel}
 		>
-			{/* Header Actions */}
-			<div className="flex items-center justify-between">
-				{/* Breadcrumbs */}
-				<div className="flex items-center gap-1 text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg w-fit">
-					<Button
-						variant="ghost"
-						size="sm"
-						className={cn(
-							"h-6 px-2 hover:bg-muted hover:text-foreground transition-colors",
-							currentPath === "/" &&
-								"text-foreground font-medium pointer-events-none",
-						)}
-						onClick={() => handleBreadcrumbClick("/")}
-					>
-						<Home size={14} className="mr-1" />
-						Home
-					</Button>
-					{breadcrumbs.map((crumb, index) => (
-						<div key={crumb.path} className="flex items-center">
-							<ChevronRight size={14} className="mx-1 opacity-50" />
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: this is a drag-and-drop container */}
+			<div
+				className="p-8 flex flex-col gap-6 h-full relative"
+				onDragEnter={handleDragEnter}
+				onDragLeave={handleDragLeave}
+				onDragOver={handleDragOver}
+				onDrop={handleDrop}
+			>
+				{/* Header Actions */}
+				<div className="flex items-center justify-between">
+					{/* Breadcrumbs */}
+					<div className="flex items-center gap-1 text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg w-fit">
+						<DroppableBreadcrumb
+							id="__root__"
+							isCurrentPage={currentPath === "/"}
+						>
 							<Button
 								variant="ghost"
 								size="sm"
 								className={cn(
 									"h-6 px-2 hover:bg-muted hover:text-foreground transition-colors",
-									index === breadcrumbs.length - 1 &&
+									currentPath === "/" &&
 										"text-foreground font-medium pointer-events-none",
 								)}
-								onClick={() => handleBreadcrumbClick(crumb.path)}
+								onClick={() => handleBreadcrumbClick("/")}
 							>
-								{crumb.name}
+								<Home size={14} className="mr-1" />
+								Home
 							</Button>
-						</div>
-					))}
+						</DroppableBreadcrumb>
+						{breadcrumbs.map((crumb, index) => {
+							const isLast = index === breadcrumbs.length - 1;
+							// Use folder ID for droppable if available, otherwise disable drop
+							const droppableId = isLast
+								? "__current__"
+								: (crumb.folderId ?? `__disabled_${index}__`);
+							const canDrop = !isLast && crumb.folderId !== null;
+							return (
+								<div key={crumb.path} className="flex items-center">
+									<ChevronRight size={14} className="mx-1 opacity-50" />
+									<DroppableBreadcrumb
+										id={droppableId}
+										isCurrentPage={isLast || !canDrop}
+									>
+										<Button
+											variant="ghost"
+											size="sm"
+											className={cn(
+												"h-6 px-2 hover:bg-muted hover:text-foreground transition-colors",
+												isLast &&
+													"text-foreground font-medium pointer-events-none",
+											)}
+											onClick={() => handleBreadcrumbClick(crumb.path)}
+										>
+											{crumb.name}
+										</Button>
+									</DroppableBreadcrumb>
+								</div>
+							);
+						})}
+					</div>
+
+					<div className="flex gap-2">
+						<input
+							type="file"
+							ref={fileInputRef}
+							onChange={handleFileChange}
+							multiple
+							className="hidden"
+						/>
+						<Button
+							onClick={handleUploadClick}
+							disabled={isUploading || contentsFetching}
+							variant="outline"
+						>
+							{isUploading ? (
+								<Loader2 className="animate-spin mr-2" size={18} />
+							) : (
+								<Upload size={18} className="mr-2" />
+							)}
+							Upload File
+						</Button>
+						<Button
+							onClick={() => setIsCreateDialogOpen(true)}
+							disabled={contentsFetching}
+						>
+							<FolderPlus size={18} className="mr-2" />
+							New Folder
+						</Button>
+					</div>
 				</div>
 
-				<div className="flex gap-2">
-					<input
-						type="file"
-						ref={fileInputRef}
-						onChange={handleFileChange}
-						multiple
-						className="hidden"
+				{/* Content Area - Single Table */}
+				<div className="flex-1 overflow-y-auto">
+					<FileSystemTable
+						files={files}
+						folders={folders}
+						onNavigate={handleNavigate}
+						onDownloadFile={downloadFile}
+						onShowFileDetails={showDetails}
+						onToggleFileFavorite={handleToggleFileFavorite}
+						onToggleFolderFavorite={handleToggleFolderFavorite}
+						onDeleteSelection={handleDeleteSelection}
+						isLoading={contentsFetching}
+						showSharedColumn
 					/>
-					<Button
-						onClick={handleUploadClick}
-						disabled={isUploading || contentsFetching}
-						variant="outline"
-					>
-						{isUploading ? (
-							<Loader2 className="animate-spin mr-2" size={18} />
-						) : (
-							<Upload size={18} className="mr-2" />
-						)}
-						Upload File
-					</Button>
-					<Button
-						onClick={() => setIsCreateDialogOpen(true)}
-						disabled={contentsFetching}
-					>
-						<FolderPlus size={18} className="mr-2" />
-						New Folder
-					</Button>
 				</div>
-			</div>
 
-			{/* Content Area - Single Table */}
-			<div className="flex-1 overflow-y-auto">
-				<FileSystemTable
-					files={files}
-					folders={folders}
-					onNavigate={handleNavigate}
-					onDownloadFile={downloadFile}
-					onShowFileDetails={showDetails}
-					onToggleFileFavorite={handleToggleFileFavorite}
-					onToggleFolderFavorite={handleToggleFolderFavorite}
-					onDeleteSelection={handleDeleteSelection}
-					isLoading={contentsFetching}
-					showSharedColumn
+				<CreateFolderDialog
+					isOpen={isCreateDialogOpen}
+					onClose={() => setIsCreateDialogOpen(false)}
+					parentId={currentFolder?.id}
+				/>
+
+				<UploadProviderDialog
+					isOpen={isUploadDialogOpen}
+					onClose={() => setIsUploadDialogOpen(false)}
+					providers={activeProviders as StorageProvider[]}
+					fileName={selectedFiles[0]?.name}
+					fileMimeType={selectedFiles[0]?.type}
+					fileSize={selectedFiles[0]?.size}
+					onSelectProvider={(providerId) =>
+						handleUploadQueue(selectedFiles, providerId)
+					}
+				/>
+
+				{isDragActive ? (
+					<div className="absolute inset-4 rounded-xl border-2 border-dashed border-primary bg-primary/10 z-40 flex items-center justify-center pointer-events-none">
+						<div className="text-center">
+							<div className="text-base font-semibold text-foreground">
+								Drop files to upload
+							</div>
+							<div className="text-sm text-muted-foreground">
+								Supports multiple files
+							</div>
+						</div>
+					</div>
+				) : null}
+
+				<UploadProgressPanel
+					items={uploadQueue}
+					onClose={() => setUploadQueue([])}
 				/>
 			</div>
 
-			<CreateFolderDialog
-				isOpen={isCreateDialogOpen}
-				onClose={() => setIsCreateDialogOpen(false)}
-				parentId={currentFolder?.id}
-			/>
-
-			<UploadProviderDialog
-				isOpen={isUploadDialogOpen}
-				onClose={() => setIsUploadDialogOpen(false)}
-				providers={activeProviders as StorageProvider[]}
-				fileName={selectedFiles[0]?.name}
-				fileMimeType={selectedFiles[0]?.type}
-				fileSize={selectedFiles[0]?.size}
-				onSelectProvider={(providerId) =>
-					handleUploadQueue(selectedFiles, providerId)
-				}
-			/>
-
-			{isDragActive ? (
-				<div className="absolute inset-4 rounded-xl border-2 border-dashed border-primary bg-primary/10 z-40 flex items-center justify-center pointer-events-none">
-					<div className="text-center">
-						<div className="text-base font-semibold text-foreground">
-							Drop files to upload
-						</div>
-						<div className="text-sm text-muted-foreground">
-							Supports multiple files
-						</div>
-					</div>
-				</div>
-			) : null}
-
-			<UploadProgressPanel
-				items={uploadQueue}
-				onClose={() => setUploadQueue([])}
-			/>
-		</div>
+			<DragOverlay dropAnimation={null}>
+				{activeDrag ? <DragOverlayContent item={activeDrag} /> : null}
+			</DragOverlay>
+		</DndContext>
 	);
 }
