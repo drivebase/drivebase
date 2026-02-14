@@ -1,5 +1,19 @@
 # Changelog
 
+# [1.4.0](https://github.com/drivebase/drivebase/compare/v1.3.3...v1.4.0) (2026-02-14)
+
+
+### Bug Fixes
+
+* **telegram:** add connection timeout to prevent hanging during initialization ([62560d5](https://github.com/drivebase/drivebase/commit/62560d5ed3352aa710aac83d2d1c69a4174d01c2))
+* update Discord link in README and footer ([eaa834e](https://github.com/drivebase/drivebase/commit/eaa834ed00fb08c4886c80aef94ba7ee3154ae47))
+
+
+### Features
+
+* **init:** initialize Redis and log available providers during app startup ([07d7553](https://github.com/drivebase/drivebase/commit/07d7553bb0f2c13ee614fe4c0db5071d86e12caa))
+* **provider:** add Telegram storage provider ([78a11d6](https://github.com/drivebase/drivebase/commit/78a11d62fb9a85160dee1305497fe0fed7581576))
+
 ## [1.3.3](https://github.com/drivebase/drivebase/compare/v1.3.2...v1.3.3) (2026-02-14)
 
 ## [1.3.2](https://github.com/drivebase/drivebase/compare/v1.3.1...v1.3.2) (2026-02-14)
