@@ -14,7 +14,7 @@
     },
     "@release-it/bumper": {
       "out": [
-        "README.md",
+        "docker/compose.prod.yaml",
         "apps/www/components/landing/hero.tsx"
       ]
     }
