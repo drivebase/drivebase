@@ -56,14 +56,27 @@ export class TelegramProvider implements IStorageProvider {
 			{ connectionRetries: 3 },
 		);
 
-		await this.client.connect();
-
-		// Fetch dialogs to populate entity cache (needed to resolve channel IDs)
-		// We limit to 50 to avoid long startup, but enough to find the storage channel if active
+		// Connect with a timeout to prevent hanging indefinitely
+		// The underlying library sometimes has unhandled TIMEOUT errors in its update loop
+		// so we try to catch initial connection issues here.
 		try {
+			await Promise.race([
+				this.client.connect(),
+				new Promise((_, reject) =>
+					setTimeout(
+						() => reject(new Error("Telegram connection timeout")),
+						15000,
+					),
+				),
+			]);
+
+			// Fetch dialogs to populate entity cache (needed to resolve channel IDs)
+			// We limit to 50 to avoid long startup, but enough to find the storage channel if active
 			await this.client.getDialogs({ limit: 50 });
 		} catch (e) {
-			console.warn("Failed to fetch dialogs on init:", e);
+			console.warn("Telegram initialization warning:", e);
+			// We don't throw here to avoid crashing the whole provider initialization
+			// If actual operations (upload/download) fail, they will throw then.
 		}
 	}
 
