@@ -13,7 +13,6 @@
 		"codegen": "bunx graphql-codegen"
 	},
 	"dependencies": {
-		"@base-ui-components/react": "^1.0.0-rc.0",
 		"@base-ui/react": "^1.1.0",
 		"@drivebase/utils": "workspace:*",
 		"@fontsource-variable/geist": "^5.2.8",
