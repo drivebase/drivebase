@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1770970340355,
-      "tag": "0000_thin_spectrum",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1770970340356,
-      "tag": "0001_add_dropbox_provider",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1770970340357,
-      "tag": "0002_add_ftp_provider",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1770970340358,
-      "tag": "0003_add_webdav_provider",
+      "when": 1771040283237,
+      "tag": "0000_reflective_santa_claus",
       "breakpoints": true
     }
   ]
