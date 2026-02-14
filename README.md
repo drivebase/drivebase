@@ -1,6 +1,6 @@
 <img width="2401" height="1080" alt="banner" src="https://github.com/user-attachments/assets/da988617-3fd1-4dbe-9bb2-35f5c7495ca0" />
 
-<p align="center"><a href="https://github.com/drivebase/drivebase/discussions">Discussions</a> · <a href="https://drivebase.github.io/docs">Documentation</a> · <a href="https://discord.gg/3kUSy2d">Discord</a></p>
+<p align="center"><a href="https://github.com/drivebase/drivebase/discussions">Discussions</a> · <a href="https://drivebase.github.io/docs">Documentation</a> · <a href="https://discord.gg/zy3XyWcU6D">Discord</a></p>
 
 Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
 
@@ -111,10 +111,10 @@ Drivebase supports the following cloud providers:
 - [x] Dropbox
 - [x] FTP
 - [x] WebDAV
+- [x] Telegram
 - [ ] sFTP
 - [ ] Box
 - [ ] OneDrive
-- [ ] Telegram
 
 
 ## Contributing
