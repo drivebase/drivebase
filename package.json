@@ -17,7 +17,8 @@
 		"db:migrate": "bun run --filter=@drivebase/db migrate",
 		"db:studio": "bun run --filter=@drivebase/db studio",
 		"release": "release-it",
-		"prepare": "husky"
+		"prepare": "husky",
+		"format": "biome format --write"
 	},
 	"overrides": {
 		"yaml": "2.7.0"
