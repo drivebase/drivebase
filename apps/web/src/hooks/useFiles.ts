@@ -27,6 +27,7 @@ export function useContents(path?: string) {
 		query: CONTENTS_QUERY,
 		variables: { path: path ?? "" },
 		pause: !path,
+		requestPolicy: "cache-and-network",
 	});
 	return [result, reexecuteQuery] as const;
 }

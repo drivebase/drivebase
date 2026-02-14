@@ -1,6 +1,7 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 import { Toaster } from "sonner";
+import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/hooks/useAuth";
 import { ConfirmDialogHost } from "@/lib/confirmDialog";
@@ -14,11 +15,13 @@ function RootComponent() {
 	// This will fetch the user profile if a token exists in localStorage
 	useMe();
 
+	const { theme } = useTheme();
+
 	return (
 		<>
 			<Outlet />
 			<ConfirmDialogHost />
-			<Toaster position="bottom-right" richColors />
+			<Toaster position="bottom-right" theme={theme} />
 		</>
 	);
 }
