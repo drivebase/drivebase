@@ -1,7 +1,7 @@
 import { getAvailableProviders } from "../../config/providers";
 import { ProviderService } from "../../services/provider";
 import { logger } from "../../utils/logger";
-import { pubSub } from "../pubsub";
+import { pubSub, type PubSubChannels } from "../pubsub";
 import type {
 	AvailableProvider,
 	AuthType as GQLAuthType,
@@ -70,7 +70,10 @@ export const providerMutations: MutationResolvers = {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
 
-		return providerService.syncProvider(args.id, user.userId, args.options);
+		return providerService.syncProvider(args.id, user.userId, {
+			recursive: args.options?.recursive ?? undefined,
+			pruneDeleted: args.options?.pruneDeleted ?? undefined,
+		});
 	},
 
 	updateProviderQuota: async (_parent, args, context) => {
@@ -97,7 +100,7 @@ export const providerSubscriptions: SubscriptionResolvers = {
 	providerSyncProgress: {
 		subscribe: (_parent, args, _context) =>
 			pubSub.subscribe("providerSyncProgress", args.providerId),
-		resolve: (payload) => payload,
+		resolve: (payload: PubSubChannels["providerSyncProgress"][1]) => payload,
 	},
 };
 

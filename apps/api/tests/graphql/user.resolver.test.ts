@@ -13,6 +13,7 @@ mock.module("../../services/user", () => ({
 }));
 
 import {
+	UserRole,
 	userMutations,
 	userQueries,
 	userResolvers,
@@ -35,7 +36,7 @@ describe("user resolvers", () => {
 		);
 
 		expect(userServiceMock.findAll).toHaveBeenCalledWith(10, 0);
-		expect(result).toEqual([{ id: "u1" }]);
+		expect(result).toEqual([{ id: "u1" } as any]);
 	});
 
 	it("users query throws when unauthorized", async () => {
@@ -56,7 +57,10 @@ describe("user resolvers", () => {
 
 		await userMutations.updateUser?.(
 			{},
-			{ id: "u2", input: { role: "ADMIN", isActive: true } },
+			{
+				id: "u2",
+				input: { role: "ADMIN" as UserRole, isActive: true },
+			},
 			context,
 			{} as any,
 		);
