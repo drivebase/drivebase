@@ -18,6 +18,7 @@ Drivebase is a next-generation cloud-agnostic file management application that e
 - [Supported Providers](#supported-providers)
 - [Contributing](#contributing)
 - [License](#license)
+- [Star History](#star-history)
 
 ## Getting Started
 
@@ -123,3 +124,14 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
+## Star History
+
+<a href="https://www.star-history.com/#drivebase/drivebase&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=drivebase/drivebase&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=drivebase/drivebase&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=drivebase/drivebase&type=date&legend=top-left" />
+ </picture>
+</a>
