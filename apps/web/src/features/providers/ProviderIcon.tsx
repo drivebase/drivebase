@@ -9,7 +9,7 @@ interface ProviderIconProps {
 
 export function ProviderIcon({ type, className }: ProviderIconProps) {
 	const [error, setError] = useState(false);
-	
+
 	// Construct path based on ID (e.g., "google_drive" -> "/assets/providers/google_drive.svg")
 	const normalizedId = type.toLowerCase();
 	const logoPath = `/assets/providers/${normalizedId}.svg`;

@@ -1,5 +1,5 @@
 {
-  "id": "66f9ace7-73b8-4feb-b039-786151a1d455",
+  "id": "8cba04f9-9ec4-46ab-a18d-301c2f00e49b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -776,7 +776,8 @@
         "local",
         "dropbox",
         "ftp",
-        "webdav"
+        "webdav",
+        "telegram"
       ]
     },
     "public.user_role": {

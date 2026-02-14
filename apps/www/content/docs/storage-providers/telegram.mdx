@@ -1,0 +1,51 @@
+---
+title: Telegram
+description: Use Telegram's Saved Messages as cloud file storage
+---
+
+Drivebase integrates with Telegram, allowing you to use your Telegram account's "Saved Messages" as cloud file storage. Files are uploaded as documents to your Saved Messages and can be managed through Drivebase.
+
+## Prerequisites
+
+Before connecting, you need to obtain a Telegram API ID and API Hash from the Telegram developer portal.
+
+### 1. Create a Telegram Application
+
+- Go to [my.telegram.org](https://my.telegram.org) and log in with your phone number.
+- Navigate to **API development tools**.
+- Create a new application if you haven't already.
+
+### 2. Note Your Credentials
+
+You will need the following values:
+
+- **API ID** (a number, e.g. `12345678`)
+- **API Hash** (a hex string)
+
+These credentials identify your application to Telegram's API.
+
+## Connecting in Drivebase
+
+1. Navigate to the **Providers** page in Drivebase.
+2. Click **Connect Provider** and select **Telegram**.
+3. Enter your **API ID** and **API Hash**.
+4. Click **Connect**. You will be redirected to the Telegram login page.
+5. Enter your **phone number** (with country code).
+6. Enter the **verification code** sent to your Telegram app.
+7. If you have **Two-Factor Authentication** enabled, enter your 2FA password.
+
+Once authenticated, your Telegram session is securely stored and your Saved Messages are ready for use as storage.
+
+<Callout type="info">
+Your Telegram session string and API Hash are encrypted at rest using AES-256-GCM.
+Drivebase never stores your phone number or 2FA password.
+</Callout>
+
+## Notes
+
+- **Storage location**: Files are stored as documents in your Telegram "Saved Messages" chat.
+- **File size limit**: Telegram supports files up to 2 GB each (4 GB for Premium users).
+- **No folder support**: Telegram does not have a native folder concept. All files appear in a flat list.
+- **Uploads and downloads**: All file transfers go through the Drivebase API proxy (no presigned URLs).
+- **Quota**: Telegram does not expose storage quota information. The quota display will show as unlimited.
+- **remoteId**: Each file is identified by its Telegram message ID.

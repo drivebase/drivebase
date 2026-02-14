@@ -20,6 +20,7 @@
     "storage-providers/google-drive",
     "storage-providers/dropbox",
     "storage-providers/ftp",
-    "storage-providers/webdav"
+    "storage-providers/webdav",
+    "storage-providers/telegram"
   ]
 }

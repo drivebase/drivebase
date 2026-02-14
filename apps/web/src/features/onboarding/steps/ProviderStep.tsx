@@ -1,4 +1,4 @@
-import { Loader2} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -132,109 +132,111 @@ export function ProviderStep({ onNext }: ProviderStepProps) {
 	}
 
 	return (
-		<div className="space-y-6">
-			<div className="space-y-1.5">
-				<h2 className="text-2xl font-bold tracking-tight">Connect Storage</h2>
-				<p className="text-muted-foreground text-sm leading-relaxed">
-					Select a provider to connect your first storage drive.
-				</p>
-			</div>
-
-			<div className="space-y-5">
-				<div className="space-y-2">
-					<Label>Storage Provider</Label>
-					<Select
-						value={selectedProviderId}
-						onValueChange={(val) => {
-							setSelectedProviderId(val);
-							reset();
-						}}
-					>
-						<SelectTrigger>
-							<SelectValue placeholder="Select a provider..." />
-						</SelectTrigger>
-						<SelectContent>
-							{data?.availableProviders.map((provider) => (
-								<SelectItem key={provider.id} value={provider.id}>
-									{provider.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					{selectedProvider && (
-						<p className="text-xs text-muted-foreground">
-							{selectedProvider.description}
-						</p>
-					)}
+		<div className="flex flex-col flex-1">
+			<div className="space-y-6 flex-1">
+				<div className="space-y-1.5">
+					<h2 className="text-2xl font-bold tracking-tight">Connect Storage</h2>
+					<p className="text-muted-foreground text-sm leading-relaxed">
+						Select a provider to connect your first storage drive.
+					</p>
 				</div>
 
-				{selectedProvider && (
-					<form
-						onSubmit={handleSubmit(onSubmit)}
-						className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200"
-					>
-						<div className="space-y-2">
-							<Label htmlFor="_displayName">Display Name</Label>
-							<Input
-								id="_displayName"
-								placeholder={`My ${selectedProvider.name}`}
-								{...register("_displayName", { required: true })}
-							/>
-							{errors._displayName && (
-								<span className="text-xs text-destructive">Required</span>
-							)}
-						</div>
+				<div className="space-y-5">
+					<div className="space-y-2">
+						<Label>Storage Provider</Label>
+						<Select
+							value={selectedProviderId}
+							onValueChange={(val) => {
+								setSelectedProviderId(val);
+								reset();
+							}}
+						>
+							<SelectTrigger>
+								<SelectValue placeholder="Select a provider..." />
+							</SelectTrigger>
+							<SelectContent>
+								{data?.availableProviders.map((provider) => (
+									<SelectItem key={provider.id} value={provider.id}>
+										{provider.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{selectedProvider && (
+							<p className="text-xs text-muted-foreground">
+								{selectedProvider.description}
+							</p>
+						)}
+					</div>
 
-						{selectedProvider.configFields.map((field) => (
-							<div key={field.name} className="space-y-2">
-								<Label htmlFor={field.name}>
-									{field.label}
-									{field.required && (
-										<span className="text-destructive ml-1">*</span>
-									)}
-								</Label>
+					{selectedProvider && (
+						<form
+							onSubmit={handleSubmit(onSubmit)}
+							className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200"
+						>
+							<div className="space-y-2">
+								<Label htmlFor="_displayName">Display Name</Label>
 								<Input
-									id={field.name}
-									type={field.type === "password" ? "password" : "text"}
-									placeholder={field.placeholder ?? ""}
-									{...register(field.name, { required: field.required })}
+									id="_displayName"
+									placeholder={`My ${selectedProvider.name}`}
+									{...register("_displayName", { required: true })}
 								/>
-								{errors[field.name] && (
+								{errors._displayName && (
 									<span className="text-xs text-destructive">Required</span>
 								)}
-								{field.description && (
-									<p className="text-xs text-muted-foreground">
-										{field.description}
-									</p>
-								)}
 							</div>
-						))}
 
-						<Button
-							type="submit"
-							className="w-full"
-							disabled={connecting || initializingOAuth}
-						>
-							{(connecting || initializingOAuth) && (
-								<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-							)}
-							{selectedProvider.authType === "OAUTH"
-								? "Connect & Authorize"
-								: "Connect Storage"}
-						</Button>
-					</form>
-				)}
+							{selectedProvider.configFields.map((field) => (
+								<div key={field.name} className="space-y-2">
+									<Label htmlFor={field.name}>
+										{field.label}
+										{field.required && (
+											<span className="text-destructive ml-1">*</span>
+										)}
+									</Label>
+									<Input
+										id={field.name}
+										type={field.type === "password" ? "password" : "text"}
+										placeholder={field.placeholder ?? ""}
+										{...register(field.name, { required: field.required })}
+									/>
+									{errors[field.name] && (
+										<span className="text-xs text-destructive">Required</span>
+									)}
+									{field.description && (
+										<p className="text-xs text-muted-foreground">
+											{field.description}
+										</p>
+									)}
+								</div>
+							))}
 
-				<div className="text-center">
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={onNext}
-						className="text-muted-foreground text-xs h-8"
-					>
-						Skip for now
-					</Button>
+							<Button
+								type="submit"
+								className="w-full"
+								disabled={connecting || initializingOAuth}
+							>
+								{(connecting || initializingOAuth) && (
+									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+								)}
+								{selectedProvider.authType === "OAUTH"
+									? "Connect & Authorize"
+									: "Connect Storage"}
+							</Button>
+						</form>
+					)}
 				</div>
+			</div>
+
+			<div className="mt-auto pt-6 text-center">
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={onNext}
+					className="text-muted-foreground text-xs h-8"
+				>
+					Skip for now
+				</Button>
 			</div>
 		</div>
 	);
