@@ -2,6 +2,8 @@ import { UserRole } from "@drivebase/core";
 import { getDb, users } from "@drivebase/db";
 import { UserService } from "../services/user";
 import { logger } from "./logger";
+import { getRedis } from "../redis/client";
+import { getAvailableProviders } from "../config/providers";
 
 /**
  * Initialize the application on first startup
@@ -9,7 +11,19 @@ import { logger } from "./logger";
  */
 export async function initializeApp() {
 	logger.info("Initializing application...");
+
+	// Initialize Redis
+	getRedis();
+
 	const db = getDb();
+
+	// Log available providers
+	const providers = getAvailableProviders();
+	logger.info({
+		msg: "Available providers loaded",
+		count: providers.length,
+		providers: providers.map((p) => p.id),
+	});
 
 	// Check if any users exist
 	let existingUsers: unknown[] = [];
