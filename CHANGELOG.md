@@ -1,5 +1,22 @@
 # Changelog
 
+# [1.6.0](https://github.com/drivebase/drivebase/compare/v1.5.0...v1.6.0) (2026-02-14)
+
+
+### Bug Fixes
+
+* conditionally render quick actions in FileSystemTable based on file selection ([e2eea9f](https://github.com/drivebase/drivebase/commit/e2eea9f5a701c8a71871eeb18dc5ee24e6b40184))
+* enhance layout and styling for file and folder display in FileSystemTable ([4790b29](https://github.com/drivebase/drivebase/commit/4790b29317c698d79b85188fb8b19b230cbf608b))
+* onboarding flow with improved navigation ([#72](https://github.com/drivebase/drivebase/issues/72)) ([273a858](https://github.com/drivebase/drivebase/commit/273a858e3d9456b646a387df0e87d85dcfe1ce75))
+* remove provider service calls from file and folder move functions ([8fe2ca8](https://github.com/drivebase/drivebase/commit/8fe2ca85c069d0f0ccb891fed34f6c5056262f5b))
+* update Product Hunt badge link ([2efe352](https://github.com/drivebase/drivebase/commit/2efe3525cfd519aa938e58c8e5562d8a876d8b59))
+
+
+### Features
+
+* add rename functionality for files and folders in FileSystemTable ([a9663d9](https://github.com/drivebase/drivebase/commit/a9663d906f7cfac58b7ff7dba79359660ef45d0f))
+* implement drag-and-drop functionality for file and folder management ([1da0bc4](https://github.com/drivebase/drivebase/commit/1da0bc4e1a9f8c2ff6454c2fdb2e2809d629f979))
+
 # [1.5.0](https://github.com/drivebase/drivebase/compare/v1.4.0...v1.5.0) (2026-02-14)
 
 
