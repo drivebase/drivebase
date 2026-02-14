@@ -59,19 +59,38 @@ export const Route = createFileRoute("/_authenticated/files")({
 	component: FilesPage,
 });
 
+const BREADCRUMB_HOVER_DELAY = 800;
+
 function DroppableBreadcrumb({
 	id,
 	children,
 	isCurrentPage,
+	onHoverNavigate,
 }: {
 	id: string;
 	children: React.ReactNode;
 	isCurrentPage?: boolean;
+	onHoverNavigate?: () => void;
 }) {
 	const { setNodeRef, isOver } = useDroppable({
 		id: `breadcrumb:${id}`,
 		disabled: isCurrentPage,
 	});
+	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	useEffect(() => {
+		if (isOver && !isCurrentPage && onHoverNavigate) {
+			timerRef.current = setTimeout(() => {
+				onHoverNavigate();
+			}, BREADCRUMB_HOVER_DELAY);
+		}
+		return () => {
+			if (timerRef.current) {
+				clearTimeout(timerRef.current);
+				timerRef.current = null;
+			}
+		};
+	}, [isOver, isCurrentPage, onHoverNavigate]);
 
 	return (
 		<div
@@ -588,6 +607,22 @@ function FilesPage() {
 		items: DragItem[],
 		targetFolderId: string | null,
 	) => {
+		// Optimistically remove moved items from the current view
+		const movedFileIds = new Set(
+			items.filter((i) => i.type === "file").map((i) => i.id),
+		);
+		const movedFolderIds = new Set(
+			items.filter((i) => i.type === "folder").map((i) => i.id),
+		);
+
+		if (movedFileIds.size > 0) {
+			setFiles((prev) => prev.filter((f) => !movedFileIds.has(f.id)));
+		}
+		if (movedFolderIds.size > 0) {
+			setFolders((prev) => prev.filter((f) => !movedFolderIds.has(f.id)));
+		}
+
+		const failed: string[] = [];
 		for (const item of items) {
 			if (item.type === "file") {
 				const result = await moveFile({
@@ -595,8 +630,7 @@ function FilesPage() {
 					folderId: targetFolderId,
 				});
 				if (result.error) {
-					toast.error(`Failed to move "${item.name}": ${result.error.message}`);
-					return;
+					failed.push(item.name);
 				}
 			} else {
 				const result = await moveFolder({
@@ -604,17 +638,22 @@ function FilesPage() {
 					parentId: targetFolderId,
 				});
 				if (result.error) {
-					toast.error(`Failed to move "${item.name}": ${result.error.message}`);
-					return;
+					failed.push(item.name);
 				}
 			}
 		}
-		toast.success(
-			items.length === 1
-				? `Moved "${items[0].name}"`
-				: `Moved ${items.length} items`,
-		);
-		refreshContents({ requestPolicy: "network-only" });
+
+		if (failed.length > 0) {
+			toast.error(`Failed to move: ${failed.join(", ")}`);
+			// Revert by refetching current contents
+			refreshContents({ requestPolicy: "network-only" });
+		} else {
+			toast.success(
+				items.length === 1
+					? `Moved "${items[0].name}"`
+					: `Moved ${items.length} items`,
+			);
+		}
 	};
 
 	return (
@@ -639,6 +678,7 @@ function FilesPage() {
 						<DroppableBreadcrumb
 							id="__root__"
 							isCurrentPage={currentPath === "/"}
+							onHoverNavigate={() => handleBreadcrumbClick("/")}
 						>
 							<Button
 								variant="ghost"
@@ -667,6 +707,7 @@ function FilesPage() {
 									<DroppableBreadcrumb
 										id={droppableId}
 										isCurrentPage={isLast || !canDrop}
+										onHoverNavigate={() => handleBreadcrumbClick(crumb.path)}
 									>
 										<Button
 											variant="ghost"
@@ -727,7 +768,7 @@ function FilesPage() {
 						onToggleFileFavorite={handleToggleFileFavorite}
 						onToggleFolderFavorite={handleToggleFolderFavorite}
 						onDeleteSelection={handleDeleteSelection}
-						isLoading={contentsFetching}
+						isLoading={contentsFetching && !contentsData}
 						showSharedColumn
 					/>
 				</div>
