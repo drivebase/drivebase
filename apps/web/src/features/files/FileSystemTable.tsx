@@ -12,7 +12,6 @@ import {
 import { format } from "date-fns";
 import {
 	Columns,
-	Copy,
 	Download,
 	Eye,
 	FolderIcon,
