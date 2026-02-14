@@ -1,13 +1,13 @@
 "use client";
 
 import {
+  ArrowRightLeft,
   Box,
   Code,
-  Database,
   Layers,
   RefreshCw,
+  Route,
   Search,
-  Shield,
   Unlock,
   Users,
   Zap,
@@ -25,12 +25,13 @@ const features = [
     color: "bg-yellow-500/10 text-yellow-500",
   },
   {
-    title: "End-to-End Encryption",
+    title: "Smart Upload",
     description:
-      "Your files are encrypted at rest using AES-256. Only you have the keys.",
-    icon: Shield,
+      "Auto-route files by type or size. E.g. send PDFs to S3 and Images to Google Drive.",
+    icon: Route,
     className: "col-span-1",
     color: "bg-indigo-500/10 text-indigo-500",
+    comingSoon: true,
   },
   {
     title: "Docker Ready",
@@ -81,12 +82,13 @@ const features = [
     color: "bg-emerald-500/10 text-emerald-500",
   },
   {
-    title: "Metadata Support",
+    title: "Background Transfers",
     description:
-      "Attach custom tags and metadata to your files for advanced organization.",
-    icon: Database,
+      "Move files between cloud providers seamlessly in the background.",
+    icon: ArrowRightLeft,
     className: "col-span-1",
     color: "bg-gray-500/10 text-gray-500",
+    comingSoon: true,
   },
   {
     title: "No Vendor Lock-in",
@@ -151,13 +153,20 @@ export function BentoGrid() {
               <div className="absolute inset-0 -z-10 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
               <div className="flex flex-col justify-between h-full">
-                <div
-                  className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors",
-                    feature.color,
+                <div className="flex justify-between items-start">
+                  <div
+                    className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors",
+                      feature.color,
+                    )}
+                  >
+                    <feature.icon className="size-6" />
+                  </div>
+                  {feature.comingSoon && (
+                    <span className="inline-flex items-center rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-xs font-medium text-indigo-400 ring-1 ring-inset ring-indigo-500/20">
+                      Coming Soon
+                    </span>
                   )}
-                >
-                  <feature.icon className="size-6" />
                 </div>
 
                 <div>
