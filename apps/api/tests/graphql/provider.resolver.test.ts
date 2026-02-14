@@ -21,6 +21,8 @@ mock.module("../../config/providers", () => ({
 }));
 
 import {
+	AuthType,
+	ProviderType,
 	availableProviderResolvers,
 	providerMutations,
 	providerQueries,
@@ -44,7 +46,7 @@ describe("provider resolvers", () => {
 			context,
 			{} as any,
 		);
-		expect(result).toEqual([{ id: "google_drive", authType: "oauth" }]);
+		expect(result).toEqual([{ id: "google_drive", authType: "oauth" } as any]);
 	});
 
 	it("connectStorage lowercases provider type for service", async () => {
@@ -53,7 +55,13 @@ describe("provider resolvers", () => {
 
 		await providerMutations.connectStorage?.(
 			{},
-			{ input: { name: "Drive", type: "GOOGLE_DRIVE", config: { x: 1 } } },
+			{
+				input: {
+					name: "Drive",
+					type: "GOOGLE_DRIVE" as ProviderType,
+					config: { x: 1 },
+				},
+			},
 			context,
 			{} as any,
 		);
@@ -83,8 +91,10 @@ describe("provider resolvers", () => {
 	});
 
 	it("availableProvider authType field resolver maps to uppercase", () => {
-		expect(availableProviderResolvers.authType({ authType: "api_key" })).toBe(
-			"API_KEY",
-		);
+		expect(
+			availableProviderResolvers.authType({
+				authType: "api_key",
+			} as any),
+		).toBe("API_KEY");
 	});
 });

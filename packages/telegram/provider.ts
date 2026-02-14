@@ -194,7 +194,9 @@ export class TelegramProvider implements IStorageProvider {
 
 			// Send file
 			const file = new CustomFile(fileName, buffer.length, "", buffer);
-			await client.sendFile(entity, {
+			// gramjs uses BigInteger from 'bigjs' internally, but our ID is BigInt.
+			// Casting to any to allow library to handle conversion.
+			await client.sendFile(entity as any, {
 				file,
 				forceDocument: true,
 			});
@@ -205,7 +207,58 @@ export class TelegramProvider implements IStorageProvider {
 		}
 	}
 
-	// ...
+	async requestDownload(options: DownloadOptions): Promise<DownloadResponse> {
+		// Telegram doesn't support direct download URLs — always proxy
+		return {
+			fileId: options.remoteId,
+			downloadUrl: undefined,
+			useDirectDownload: false,
+		};
+	}
+
+	async downloadFile(remoteId: string): Promise<ReadableStream> {
+		const client = this.ensureInitialized();
+
+		try {
+			const messageId = parseInt(remoteId, 10);
+			if (Number.isNaN(messageId)) {
+				throw new ProviderError("telegram", "Invalid message ID");
+			}
+
+			const messages = await client.getMessages("me", {
+				ids: [messageId],
+			});
+
+			const message = messages[0];
+			if (!message || !message.media) {
+				throw new ProviderError(
+					"telegram",
+					"Message not found or has no media",
+				);
+			}
+
+			const downloaded = await client.downloadMedia(message, {});
+			if (!downloaded) {
+				throw new ProviderError("telegram", "Failed to download media");
+			}
+
+			const buffer = Buffer.isBuffer(downloaded)
+				? downloaded
+				: Buffer.from(downloaded as string);
+
+			return new ReadableStream({
+				start(controller) {
+					controller.enqueue(new Uint8Array(buffer));
+					controller.close();
+				},
+			});
+		} catch (error) {
+			if (error instanceof ProviderError) throw error;
+			throw new ProviderError("telegram", "Failed to download file", {
+				error,
+			});
+		}
+	}
 
 	async createFolder(options: CreateFolderOptions): Promise<string> {
 		const client = this.ensureInitialized();
@@ -223,7 +276,10 @@ export class TelegramProvider implements IStorageProvider {
 
 			const chats = (result as unknown as { chats: Api.Chat[] }).chats;
 			if (chats && chats.length > 0) {
-				return String(chats[0].id);
+				const chat = chats[0];
+				if (chat && chat.id) {
+					return String(chat.id);
+				}
 			}
 			throw new Error("No chat returned after channel creation");
 		} catch (error) {

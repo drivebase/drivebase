@@ -95,7 +95,7 @@ export class FolderService {
 		}
 
 		// Create folder in database
-		const [folder] = (await this.db
+		const [folder] = await this.db
 			.insert(folders)
 			.values({
 				virtualPath,
@@ -106,7 +106,7 @@ export class FolderService {
 				createdBy: userId,
 				isDeleted: false,
 			})
-			.returning()) as unknown[];
+			.returning();
 
 		if (!folder) {
 			throw new Error("Failed to create folder");

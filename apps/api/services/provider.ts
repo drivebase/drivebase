@@ -41,7 +41,7 @@ export class ProviderService {
 		}
 
 		// Notify start
-		pubSub.publish("providerSyncProgress", {
+		pubSub.publish("providerSyncProgress", providerId, {
 			providerId,
 			processed: 0,
 			status: "running",
@@ -132,7 +132,7 @@ export class ProviderService {
 
 					processedCount++;
 					if (processedCount % 10 === 0) {
-						pubSub.publish("providerSyncProgress", {
+						pubSub.publish("providerSyncProgress", providerId, {
 							providerId,
 							processed: processedCount,
 							status: "running",
@@ -201,7 +201,7 @@ export class ProviderService {
 
 					processedCount++;
 					if (processedCount % 10 === 0) {
-						pubSub.publish("providerSyncProgress", {
+						pubSub.publish("providerSyncProgress", providerId, {
 							providerId,
 							processed: processedCount,
 							status: "running",
@@ -221,7 +221,7 @@ export class ProviderService {
 
 			// Prune deleted files/folders if requested
 			if (pruneDeleted) {
-				pubSub.publish("providerSyncProgress", {
+				pubSub.publish("providerSyncProgress", providerId, {
 					providerId,
 					processed: processedCount,
 					status: "running",
@@ -272,7 +272,7 @@ export class ProviderService {
 				throw new Error("Failed to update provider");
 			}
 
-			pubSub.publish("providerSyncProgress", {
+			pubSub.publish("providerSyncProgress", providerId, {
 				providerId,
 				processed: processedCount,
 				status: "completed",
@@ -284,7 +284,7 @@ export class ProviderService {
 			return updated;
 		} catch (error) {
 			const msg = error instanceof Error ? error.message : String(error);
-			pubSub.publish("providerSyncProgress", {
+			pubSub.publish("providerSyncProgress", providerId, {
 				providerId,
 				processed: processedCount,
 				status: "error",
