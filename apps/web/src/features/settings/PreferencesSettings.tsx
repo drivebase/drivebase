@@ -2,7 +2,6 @@ import { Trans } from "@lingui/macro";
 import { Laptop, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
 	Select,
 	SelectContent,
@@ -31,52 +30,45 @@ export function PreferencesSettings() {
 				</p>
 			</div>
 			<div className="border-t border-border" />
-			<div className="space-y-4">
-				<Label className="text-base">
-					<Trans>Theme</Trans>
-				</Label>
-				<RadioGroup
-					defaultValue={theme}
+			<div className="flex items-center justify-between">
+				<div className="space-y-1">
+					<Label className="text-base">
+						<Trans>Theme</Trans>
+					</Label>
+					<p className="text-sm text-muted-foreground">
+						<Trans>Choose light, dark, or system theme</Trans>
+					</p>
+				</div>
+				<Select
+					value={theme}
 					onValueChange={(value) =>
 						setTheme(value as "light" | "dark" | "system")
 					}
-					className="grid grid-cols-3 gap-4"
 				>
-					<div>
-						<RadioGroupItem value="light" id="light" className="peer sr-only" />
-						<Label
-							htmlFor="light"
-							className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-card p-4 hover:border-accent transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer"
-						>
-							<Sun className="mb-3 h-6 w-6" />
-							<Trans>Light</Trans>
-						</Label>
-					</div>
-					<div>
-						<RadioGroupItem value="dark" id="dark" className="peer sr-only" />
-						<Label
-							htmlFor="dark"
-							className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-card p-4 hover:border-accent transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer"
-						>
-							<Moon className="mb-3 h-6 w-6" />
-							<Trans>Dark</Trans>
-						</Label>
-					</div>
-					<div>
-						<RadioGroupItem
-							value="system"
-							id="system"
-							className="peer sr-only"
-						/>
-						<Label
-							htmlFor="system"
-							className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-card p-4 hover:border-accent transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer"
-						>
-							<Laptop className="mb-3 h-6 w-6" />
-							<Trans>System</Trans>
-						</Label>
-					</div>
-				</RadioGroup>
+					<SelectTrigger className="w-[180px]">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="light">
+							<span className="flex items-center gap-2">
+								<Sun className="h-4 w-4" />
+								<Trans>Light</Trans>
+							</span>
+						</SelectItem>
+						<SelectItem value="dark">
+							<span className="flex items-center gap-2">
+								<Moon className="h-4 w-4" />
+								<Trans>Dark</Trans>
+							</span>
+						</SelectItem>
+						<SelectItem value="system">
+							<span className="flex items-center gap-2">
+								<Laptop className="h-4 w-4" />
+								<Trans>System</Trans>
+							</span>
+						</SelectItem>
+					</SelectContent>
+				</Select>
 			</div>
 
 			<div className="border-t border-border" />
