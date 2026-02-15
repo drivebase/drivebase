@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.1](https://github.com/drivebase/drivebase/compare/v1.9.0...v1.8.1) (2026-02-15)
+
+
+### Bug Fixes
+
+* update RightPanel to display update availability and remove Sidebar update link ([63020bf](https://github.com/drivebase/drivebase/commit/63020bf587993f52dc2bab8c409797950e2e45e2))
+
 # [1.9.0](https://github.com/drivebase/drivebase/compare/v1.8.0...v1.9.0) (2026-02-15)
 
 
