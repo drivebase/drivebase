@@ -32,9 +32,7 @@ export const providerQueries: QueryResolvers = {
 
 	availableProviders: async (_parent, _args, context) => {
 		requireAuth(context);
-		logger.info("Loading available providers...");
 		const providers = getAvailableProviders();
-		logger.info({ msg: "Available providers loaded", count: providers.length });
 		// Cast needed: getAvailableProviders returns core AuthType strings ('oauth')
 		// while the GQL schema uses enum values ('OAUTH').
 		// The field resolver below handles the actual serialization.

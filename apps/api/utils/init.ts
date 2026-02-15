@@ -1,5 +1,6 @@
 import { UserRole } from "@drivebase/core";
 import { getDb, users } from "@drivebase/db";
+import { sql } from "drizzle-orm";
 import { getAvailableProviders } from "../config/providers";
 import { getRedis } from "../redis/client";
 import { UserService } from "../services/user";
@@ -16,6 +17,15 @@ export async function initializeApp() {
 	getRedis();
 
 	const db = getDb();
+
+	// Test database connection
+	try {
+		await db.execute(sql`SELECT 1`);
+		logger.debug("PostgreSQL connected");
+	} catch (error) {
+		logger.error({ msg: "PostgreSQL connection failed", error });
+		throw error;
+	}
 
 	// Log available providers
 	const providers = getAvailableProviders();
