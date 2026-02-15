@@ -1,3 +1,5 @@
+import { msg, Trans } from "@lingui/macro";
+import { useLingui } from "@lingui/react";
 import { Link } from "@tanstack/react-router";
 import {
 	Cloud,
@@ -17,15 +19,16 @@ import {
 import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 
 const navItems = [
-	{ icon: LayoutDashboard, label: "Dashboard", to: "/" },
-	{ icon: Folder, label: "Files", to: "/files" },
-	{ icon: Star, label: "Favorites", to: "/favorites" },
-	{ icon: Cloud, label: "Providers", to: "/providers" },
-	{ icon: Trash2, label: "Trash", to: "/trash" },
-	{ icon: Settings, label: "Settings", to: "/settings" },
+	{ icon: LayoutDashboard, label: msg`Dashboard`, to: "/" },
+	{ icon: Folder, label: msg`Files`, to: "/files" },
+	{ icon: Star, label: msg`Favorites`, to: "/favorites" },
+	{ icon: Cloud, label: msg`Providers`, to: "/providers" },
+	{ icon: Trash2, label: msg`Trash`, to: "/trash" },
+	{ icon: Settings, label: msg`Settings`, to: "/settings" },
 ];
 
 export function Sidebar() {
+	const { i18n } = useLingui();
 	const { isUpdateAvailable, latestGithubVersion, githubRepo } = useAppUpdate();
 
 	return (
@@ -47,15 +50,19 @@ export function Sidebar() {
 				>
 					<div className="flex items-center justify-center gap-1 mb-0.5">
 						<RefreshCcwDot size={10} />
-						<span>Update</span>
+						<span>
+							<Trans>Update</Trans>
+						</span>
 					</div>
-					<div>Available</div>
+					<div>
+						<Trans>Available</Trans>
+					</div>
 				</a>
 			) : null}
 			<TooltipProvider>
 				<nav className="flex flex-col items-center gap-6 w-full">
 					{navItems.map((item) => (
-						<Tooltip key={item.label} delayDuration={0}>
+						<Tooltip key={item.to} delayDuration={0}>
 							<TooltipTrigger asChild>
 								<Link
 									to={item.to}
@@ -72,7 +79,7 @@ export function Sidebar() {
 								</Link>
 							</TooltipTrigger>
 							<TooltipContent side="right">
-								<p>{item.label}</p>
+								<p>{i18n._(item.label)}</p>
 							</TooltipContent>
 						</Tooltip>
 					))}

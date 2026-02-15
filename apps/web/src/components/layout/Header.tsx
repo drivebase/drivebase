@@ -1,3 +1,5 @@
+import { msg, Trans } from "@lingui/macro";
+import { useLingui } from "@lingui/react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -22,6 +24,7 @@ import type { FileItemFragment } from "@/gql/graphql";
 import { useFilesStore } from "@/shared/store/filesStore";
 
 export function Header() {
+	const { i18n } = useLingui();
 	const setSearchQuery = useFilesStore((state) => state.setSearchQuery);
 	const setFilterType = useFilesStore((state) => state.setFilterType);
 	const [inputValue, setInputValue] = useState("");
@@ -30,7 +33,7 @@ export function Header() {
 	const navigate = useNavigate();
 	const { data, fetching } = useSearchFiles(debouncedQuery, 5);
 
-	const pageTitle = getPageTitle(location.pathname);
+	const pageTitle = getPageTitle(location.pathname, i18n);
 	const searchResults = useMemo(
 		() => ((data?.searchFiles || []) as FileItemFragment[]).slice(0, 5),
 		[data?.searchFiles],
@@ -85,7 +88,7 @@ export function Header() {
 									setInputValue(value);
 									setSearchQuery(value);
 								}}
-								placeholder="Search files..."
+								placeholder={i18n._(msg`Search files...`)}
 								className="pl-9 pr-9 h-10 text-sm rounded-lg bg-background border border-border w-full"
 							/>
 							<div className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
@@ -104,31 +107,31 @@ export function Header() {
 											onClick={() => setFilterType("all")}
 											className="cursor-pointer hover:bg-muted/50 rounded-lg m-1"
 										>
-											All Files
+											<Trans>All Files</Trans>
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											onClick={() => setFilterType("document")}
 											className="cursor-pointer hover:bg-muted/50 rounded-lg m-1"
 										>
-											Documents
+											<Trans>Documents</Trans>
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											onClick={() => setFilterType("image")}
 											className="cursor-pointer hover:bg-muted/50 rounded-lg m-1"
 										>
-											Images
+											<Trans>Images</Trans>
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											onClick={() => setFilterType("video")}
 											className="cursor-pointer hover:bg-muted/50 rounded-lg m-1"
 										>
-											Videos
+											<Trans>Videos</Trans>
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											onClick={() => setFilterType("audio")}
 											className="cursor-pointer hover:bg-muted/50 rounded-lg m-1"
 										>
-											Audio
+											<Trans>Audio</Trans>
 										</DropdownMenuItem>
 									</DropdownMenuContent>
 								</DropdownMenu>
@@ -136,11 +139,13 @@ export function Header() {
 						</AutocompleteControl>
 						<AutocompleteContent className="w-[var(--anchor-width)] min-w-[var(--anchor-width)] bg-popover text-popover-foreground border-border rounded-xl shadow-lg mt-2 z-50">
 							<AutocompleteEmpty className="p-2 text-muted-foreground text-sm text-center">
-								{debouncedQuery.length === 0
-									? "Type to search files"
-									: fetching
-										? "Searching..."
-										: "No results found."}
+								{debouncedQuery.length === 0 ? (
+									<Trans>Type to search files</Trans>
+								) : fetching ? (
+									<Trans>Searching...</Trans>
+								) : (
+									<Trans>No results found.</Trans>
+								)}
 							</AutocompleteEmpty>
 							<AutocompleteList>
 								{(file) => (

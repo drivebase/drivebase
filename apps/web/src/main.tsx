@@ -2,6 +2,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "urql";
+import { I18nProvider } from "@/components/i18n-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { client } from "@/shared/lib/urql";
 
@@ -49,7 +50,9 @@ if (rootElement && !rootElement.innerHTML) {
 		<StrictMode>
 			<Provider value={client}>
 				<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-					<RouterProvider router={router} />
+					<I18nProvider>
+						<RouterProvider router={router} />
+					</I18nProvider>
 				</ThemeProvider>
 			</Provider>
 		</StrictMode>,
