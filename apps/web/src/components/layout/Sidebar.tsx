@@ -5,7 +5,6 @@ import {
 	Cloud,
 	Folder,
 	LayoutDashboard,
-	RefreshCcwDot,
 	Settings,
 	Star,
 	Trash2,
@@ -16,7 +15,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 
 const navItems = [
 	{ icon: LayoutDashboard, label: msg`Dashboard`, to: "/" },
@@ -29,36 +27,12 @@ const navItems = [
 
 export function Sidebar() {
 	const { i18n } = useLingui();
-	const { isUpdateAvailable, latestGithubVersion, githubRepo } = useAppUpdate();
 
 	return (
 		<div className="h-full w-20 flex flex-col items-center py-8 gap-10 shrink-0">
 			<div className="flex items-center justify-center text-primary">
 				<img src="/drivebase.svg" alt="Logo" className="w-12 h-12" />
 			</div>
-			{isUpdateAvailable ? (
-				<a
-					href={`https://github.com/${githubRepo}/releases/latest`}
-					target="_blank"
-					rel="noreferrer noopener"
-					className="w-[64px] rounded-lg px-2 py-1.5 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-[10px] leading-tight text-center font-semibold"
-					title={
-						latestGithubVersion
-							? `Latest: ${latestGithubVersion}`
-							: "Update available"
-					}
-				>
-					<div className="flex items-center justify-center gap-1 mb-0.5">
-						<RefreshCcwDot size={10} />
-						<span>
-							<Trans>Update</Trans>
-						</span>
-					</div>
-					<div>
-						<Trans>Available</Trans>
-					</div>
-				</a>
-			) : null}
 			<TooltipProvider>
 				<nav className="flex flex-col items-center gap-6 w-full">
 					{navItems.map((item) => (

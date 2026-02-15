@@ -11,7 +11,7 @@ import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 function DefaultAccountView() {
 	const user = useAuthStore((state) => state.user);
 	const navigate = useNavigate();
-	const { currentVersion } = useAppUpdate();
+	const { currentVersion, isUpdateAvailable, latestGithubVersion, githubRepo } = useAppUpdate();
 
 	if (!user) return null;
 
@@ -32,6 +32,16 @@ function DefaultAccountView() {
 					<p className="text-sm text-muted-foreground">{user.email}</p>
 				</div>
 				<p className="text-xs text-muted-foreground mt-1">v{currentVersion}</p>
+				{isUpdateAvailable && (
+					<a
+						href={`https://github.com/${githubRepo}/releases/latest`}
+						target="_blank"
+						rel="noreferrer noopener"
+						className="text-xs text-amber-600 dark:text-amber-400 hover:underline font-medium"
+					>
+						<Trans>Update available</Trans> {latestGithubVersion && `(v${latestGithubVersion})`}
+					</a>
+				)}
 				<Button
 					className="w-full"
 					size="lg"
