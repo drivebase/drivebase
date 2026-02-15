@@ -30,15 +30,15 @@ export default async function Page(props: {
 
   return (
     <main className="container mx-auto px-4 py-12 max-w-7xl">
-      <Link
-        href="/blogs"
-        className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-8 transition-colors"
-      >
-        <ArrowLeft className="size-4" />
-        Back to Blog
-      </Link>
-
       <div className="space-y-4 mb-12 max-w-4xl mx-auto">
+        <Link
+          href="/blogs"
+          className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-8 transition-colors"
+        >
+          <ArrowLeft className="size-4" />
+          Back to Blog
+        </Link>
+
         <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
           {page.data.title}
         </h1>
@@ -58,7 +58,7 @@ export default async function Page(props: {
         </div>
       </div>
 
-      <article className="prose prose-invert max-w-4xl mx-auto prose-headings:text-white prose-p:text-gray-300 prose-a:text-indigo-400 hover:prose-a:text-indigo-300 prose-code:text-indigo-300">
+      <article className="prose prose-invert max-w-4xl mx-auto">
         <InlineTOC items={page.data.toc} />
         <Mdx components={defaultMdxComponents} />
       </article>
