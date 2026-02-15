@@ -1,4 +1,4 @@
-<img width="2401" height="1080" alt="banner" src="https://github.com/user-attachments/assets/da988617-3fd1-4dbe-9bb2-35f5c7495ca0" />
+<img width="2167" height="1232" alt="banner" src="https://github.com/user-attachments/assets/0e96d8b8-1093-4e02-824f-d99319c07b46" />
 
 <p align="center"><a href="https://github.com/drivebase/drivebase/discussions">Discussions</a> · <a href="https://drivebase.one/docs">Documentation</a> · <a href="https://discord.gg/zy3XyWcU6D">Discord</a></p>
 
