@@ -1,4 +1,4 @@
-import { Trans, msg } from "@lingui/macro";
+import { msg, Trans } from "@lingui/macro";
 import { useLingui } from "@lingui/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -22,9 +22,7 @@ function SettingsPage() {
 			await logout();
 		} catch (_error) {
 			toast.error(
-				i18n._(
-					msg`Unable to sign out from server. Signing out locally.`,
-				),
+				i18n._(msg`Unable to sign out from server. Signing out locally.`),
 			);
 		} finally {
 			clearAuth();
