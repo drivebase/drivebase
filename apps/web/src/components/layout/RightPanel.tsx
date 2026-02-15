@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { Bell, Settings2, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,7 +39,7 @@ function DefaultAccountView() {
 					onClick={() => navigate({ to: "/my-account" })}
 				>
 					<Settings2 size={16} className="mr-2" />
-					My Account
+					<Trans>My Account</Trans>
 				</Button>
 			</div>
 
@@ -48,12 +49,12 @@ function DefaultAccountView() {
 				<div className="flex items-center justify-between mb-4">
 					<h3 className="font-semibold flex items-center gap-2">
 						<Bell size={18} />
-						Activity
+						<Trans>Activity</Trans>
 					</h3>
 				</div>
 				<div className="space-y-4">
 					<div className="text-sm text-muted-foreground text-center py-8">
-						No recent activity
+						<Trans>No recent activity</Trans>
 					</div>
 				</div>
 			</div>
@@ -80,7 +81,9 @@ export function RightPanel() {
 							onClick={clearContent}
 						>
 							<X className="h-4 w-4" />
-							<span className="sr-only">Close panel</span>
+							<span className="sr-only">
+								<Trans>Close panel</Trans>
+							</span>
 						</Button>
 					</div>
 					<div className="-mt-4 flex-1 overflow-y-auto">{content}</div>
