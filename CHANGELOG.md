@@ -1,5 +1,23 @@
 # Changelog
 
+# [1.7.0](https://github.com/drivebase/drivebase/compare/v1.6.0...v1.7.0) (2026-02-15)
+
+
+### Bug Fixes
+
+* biome checks ([fad5b77](https://github.com/drivebase/drivebase/commit/fad5b77d23a31d44e0f971984bd23250522e656d))
+* implement cascading virtualPath updates for renamed and moved folders and files ([bb8e12c](https://github.com/drivebase/drivebase/commit/bb8e12cc6e45d83088838de383e75cb886ae5fd4))
+* update Product Hunt link and optimize image component in Hero section ([3a6b07b](https://github.com/drivebase/drivebase/commit/3a6b07b0def4e5f6a14889dcbb7cc1e4f48bd13e))
+
+
+### Features
+
+* add tooltip component and integrate it into the Sidebar ([3dc4e84](https://github.com/drivebase/drivebase/commit/3dc4e841572af0b6e956edb12b1bd18144218825))
+* implement blog feature ([a694dd4](https://github.com/drivebase/drivebase/commit/a694dd49555939eae5426039de97392cb1bbf632))
+* implement i18n ([462038a](https://github.com/drivebase/drivebase/commit/462038a55d52d5ece8d381a9a390f7215489e785))
+* refactor apps/web to feature-based architecture ([26a77ba](https://github.com/drivebase/drivebase/commit/26a77ba8d8263b8c32f0e40e3a9f9f55666a2602))
+* update blog page layout and add new blog post on Drivebase ([d772248](https://github.com/drivebase/drivebase/commit/d772248c1c65925845d8c6c457d5df92866f2c83))
+
 # [1.6.0](https://github.com/drivebase/drivebase/compare/v1.5.0...v1.6.0) (2026-02-14)
 
 
