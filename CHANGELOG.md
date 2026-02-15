@@ -1,5 +1,17 @@
 # Changelog
 
+# [1.8.0](https://github.com/drivebase/drivebase/compare/v1.7.0...v1.8.0) (2026-02-15)
+
+
+### Bug Fixes
+
+* update documentation link to the correct site ([cc2fa05](https://github.com/drivebase/drivebase/commit/cc2fa05d4fd9d88ec8b1e75a4b52c2edec25ad32))
+
+
+### Features
+
+* add ability to move files across providers ([9fb9759](https://github.com/drivebase/drivebase/commit/9fb9759cbdde9ad58601f8883f3a0b83762e118d))
+
 # [1.7.0](https://github.com/drivebase/drivebase/compare/v1.6.0...v1.7.0) (2026-02-15)
 
 
