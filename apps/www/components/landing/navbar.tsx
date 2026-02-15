@@ -31,10 +31,10 @@ export function Navbar() {
                 API Reference
               </Link>
               <Link
-                href="/docs/storage-providers/overview"
+                href="/blogs"
                 className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
               >
-                All Providers
+                Blogs
               </Link>
             </div>
           </div>
