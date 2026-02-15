@@ -33,7 +33,7 @@ export function CompletionStep({ onComplete }: CompletionStepProps) {
 			setTimeout(() => {
 				onComplete();
 			}, 1000);
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Failed to complete onboarding");
 		}
 	};

@@ -17,8 +17,8 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getPageTitle } from "@/config/pageTitles";
-import type { FileItemFragment } from "@/gql/graphql";
 import { useSearchFiles } from "@/features/files/hooks/useFiles";
+import type { FileItemFragment } from "@/gql/graphql";
 import { useFilesStore } from "@/shared/store/filesStore";
 
 export function Header() {

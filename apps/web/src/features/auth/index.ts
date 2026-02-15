@@ -1,16 +1,16 @@
 // Components
-export { LoginPage } from "./LoginPage";
-export { RegisterPage } from "./RegisterPage";
-export { AuthLayout } from "./AuthLayout";
 
+export { AuthLayout } from "./AuthLayout";
 // Hooks
 export {
-	useMe,
 	useLogin,
-	useRegister,
 	useLogout,
+	useMe,
+	useRegister,
 	useUpdateMyProfile,
 } from "./hooks/useAuth";
+export { LoginPage } from "./LoginPage";
+export { RegisterPage } from "./RegisterPage";
 
 // Store
 export { useAuthStore } from "./store/authStore";

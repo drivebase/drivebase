@@ -2,14 +2,18 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
 import { FileSystemTable } from "@/features/files/FileSystemTable";
-import { useFileActions } from "@/features/files/useFileActions";
-import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
-import { useStarFile, useStarredFiles, useUnstarFile } from "@/features/files/hooks/useFiles";
+import {
+	useStarFile,
+	useStarredFiles,
+	useUnstarFile,
+} from "@/features/files/hooks/useFiles";
 import {
 	useStarFolder,
 	useStarredFolders,
 	useUnstarFolder,
 } from "@/features/files/hooks/useFolders";
+import { useFileActions } from "@/features/files/useFileActions";
+import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
 
 export const Route = createFileRoute("/_authenticated/favorites")({

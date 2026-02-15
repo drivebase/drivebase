@@ -15,8 +15,8 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { UserRole } from "@/gql/graphql";
 import { useRegister } from "@/features/auth/hooks/useAuth";
+import { UserRole } from "@/gql/graphql";
 import { AuthLayout } from "./AuthLayout";
 
 const registerSchema = z.object({

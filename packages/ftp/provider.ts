@@ -35,7 +35,7 @@ function resolvePath(rootPath: string | undefined, remotePath: string): string {
 	return root ? `${root}${normalized}` : normalized;
 }
 
-function stripRoot(rootPath: string | undefined, fullPath: string): string {
+function _stripRoot(rootPath: string | undefined, fullPath: string): string {
 	const root = rootPath ? rootPath.replace(/\/+$/, "") : "";
 	if (root && fullPath.startsWith(root)) {
 		return fullPath.slice(root.length) || "/";

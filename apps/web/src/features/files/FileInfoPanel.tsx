@@ -1,9 +1,9 @@
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { FileMimeIcon } from "@/features/files/FileMimeIcon";
+import { useFile } from "@/features/files/hooks/useFiles";
 import { formatFileTypeLabel, formatSize } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
-import { useFile } from "@/features/files/hooks/useFiles";
 
 interface FileInfoPanelProps {
 	fileId: string;

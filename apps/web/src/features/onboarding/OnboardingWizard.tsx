@@ -2,8 +2,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Route } from "@/routes/onboarding/index";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { Route } from "@/routes/onboarding/index";
 import { CompletionStep } from "./steps/CompletionStep";
 import { ProviderStep } from "./steps/ProviderStep";
 import { WelcomeStep } from "./steps/WelcomeStep";
@@ -34,7 +34,11 @@ export function OnboardingWizard() {
 		if (step >= 3) {
 			localStorage.removeItem(STORAGE_KEY);
 			if (connected) {
-				navigate({ to: "/onboarding", search: { connected: undefined }, replace: true });
+				navigate({
+					to: "/onboarding",
+					search: { connected: undefined },
+					replace: true,
+				});
 			}
 		}
 	}, [step, connected, navigate]);
