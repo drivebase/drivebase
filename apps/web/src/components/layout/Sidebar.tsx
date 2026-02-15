@@ -8,6 +8,12 @@ import {
 	Star,
 	Trash2,
 } from "lucide-react";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 
 const navItems = [
@@ -46,24 +52,32 @@ export function Sidebar() {
 					<div>Available</div>
 				</a>
 			) : null}
-			<nav className="flex flex-col items-center gap-6 w-full">
-				{navItems.map((item) => (
-					<Link
-						key={item.label}
-						to={item.to}
-						className="w-12 h-12 rounded-xl transition-all duration-200 flex items-center justify-center shrink-0"
-						activeProps={{
-							className: "bg-primary/10 text-primary",
-						}}
-						inactiveProps={{
-							className:
-								"text-muted-foreground hover:text-foreground hover:bg-muted/50",
-						}}
-					>
-						<item.icon size={24} />
-					</Link>
-				))}
-			</nav>
+			<TooltipProvider>
+				<nav className="flex flex-col items-center gap-6 w-full">
+					{navItems.map((item) => (
+						<Tooltip key={item.label} delayDuration={0}>
+							<TooltipTrigger asChild>
+								<Link
+									to={item.to}
+									className="w-12 h-12 rounded-xl transition-all duration-200 flex items-center justify-center shrink-0"
+									activeProps={{
+										className: "bg-primary/10 text-primary",
+									}}
+									inactiveProps={{
+										className:
+											"text-muted-foreground hover:text-foreground hover:bg-muted/50",
+									}}
+								>
+									<item.icon size={24} />
+								</Link>
+							</TooltipTrigger>
+							<TooltipContent side="right">
+								<p>{item.label}</p>
+							</TooltipContent>
+						</Tooltip>
+					))}
+				</nav>
+			</TooltipProvider>
 		</div>
 	);
 }
