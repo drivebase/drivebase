@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "urql";
-import { APP_METADATA_QUERY } from "@/api/metadata";
+import { APP_METADATA_QUERY } from "@/shared/api/metadata";
 
 const LOCAL_VERSION_KEY = "drivebase.local_version";
 const LATEST_GITHUB_VERSION_KEY = "drivebase.latest_github_version";

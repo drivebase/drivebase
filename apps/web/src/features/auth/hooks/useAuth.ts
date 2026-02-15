@@ -6,11 +6,11 @@ import {
 	ME_QUERY,
 	REGISTER_MUTATION,
 	UPDATE_MY_PROFILE_MUTATION,
-} from "@/api/auth";
-import { UserFragment } from "@/api/fragments";
+} from "@/features/auth/api/auth";
+import { UserFragment } from "@/shared/api/fragments";
 import { useFragment as getFragmentData } from "@/gql/fragment-masking";
 import type { LoginInput, RegisterInput } from "@/gql/graphql";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore } from "@/features/auth/store/authStore";
 
 export function useMe() {
 	const [result, reexecuteQuery] = useQuery({

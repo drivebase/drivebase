@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { AuthType, type StorageProvider } from "@/gql/graphql";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { ProviderIcon } from "./ProviderIcon";
 
 interface ConnectedProviderCardProps {

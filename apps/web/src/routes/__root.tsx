@@ -3,9 +3,9 @@ import { AlertTriangle } from "lucide-react";
 import { Toaster } from "sonner";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
-import { useMe } from "@/hooks/useAuth";
-import { ConfirmDialogHost } from "@/lib/confirmDialog";
-import { PromptDialogHost } from "@/lib/promptDialog";
+import { useMe } from "@/features/auth/hooks/useAuth";
+import { ConfirmDialogHost } from "@/shared/lib/confirmDialog";
+import { PromptDialogHost } from "@/shared/lib/promptDialog";
 
 export const Route = createRootRoute({
 	component: RootComponent,

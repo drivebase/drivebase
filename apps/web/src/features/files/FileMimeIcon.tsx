@@ -8,7 +8,7 @@ import {
 	Video,
 } from "lucide-react";
 import { getFileKind } from "@/features/files/utils";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 interface FileMimeIconProps {
 	mimeType?: string | null;

@@ -2,9 +2,9 @@ import axios from "axios";
 import { toast } from "sonner";
 import { FileInfoPanel } from "@/features/files/FileInfoPanel";
 import type { FileItemFragment } from "@/gql/graphql";
-import { useRequestDownload } from "@/hooks/useFiles";
-import { useAuthStore } from "@/store/authStore";
-import { useRightPanelStore } from "@/store/rightPanelStore";
+import { useRequestDownload } from "@/features/files/hooks/useFiles";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
 function triggerBrowserDownload(url: string, fileName?: string) {
 	const link = document.createElement("a");

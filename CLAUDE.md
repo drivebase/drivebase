@@ -72,6 +72,58 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - `packages/s3` - S3-compatible provider (AWS SDK v3)
 - `packages/local` - local filesystem provider
 - `apps/api` - GraphQL API server
+- `apps/web` - React web app (TanStack Router, urql, Zustand)
+
+### Web App Architecture (`apps/web/src/`)
+
+The web app uses a **feature-based architecture**. All domain logic lives in self-contained feature directories. Route files are thin composition layers that wire hooks and components together.
+
+```
+apps/web/src/
+├── features/           # Domain-specific modules (self-contained)
+│   ├── files/          # File/folder management
+│   │   ├── api/        # GraphQL queries & mutations (file.ts, folder.ts)
+│   │   ├── hooks/      # useFiles, useFolders, useUpload, useFileDrop,
+│   │   │               # useFileOperations, useDragAndDrop, useBreadcrumbs
+│   │   ├── components/ # DroppableBreadcrumb, FilesToolbar, FileDropZone
+│   │   └── index.ts    # Barrel export
+│   ├── providers/      # Storage provider management
+│   │   ├── api/        # provider.ts (queries, mutations, subscriptions)
+│   │   ├── hooks/      # useProviders, useProviderConnect, useProviderSync,
+│   │   │               # useProviderDisconnect, useProviderQuota
+│   │   └── index.ts
+│   ├── auth/           # Authentication
+│   │   ├── api/        # auth.ts
+│   │   ├── hooks/      # useAuth (useMe, useLogin, useRegister, useLogout)
+│   │   ├── store/      # authStore (Zustand)
+│   │   └── index.ts
+│   ├── dashboard/      # Dashboard page
+│   ├── settings/       # Settings page
+│   ├── onboarding/     # Onboarding wizard
+│   └── telegram/       # Telegram auth flow
+├── shared/             # Cross-feature utilities
+│   ├── hooks/          # useOptimisticList, useAppUpdate
+│   ├── components/     # InfoPanel (base component)
+│   ├── api/            # fragments, activity, metadata, permission, user
+│   ├── store/          # rightPanelStore, filesStore
+│   └── lib/            # urql client, confirmDialog, promptDialog, utils
+├── components/         # UI layer (unchanged)
+│   ├── layout/         # DashboardLayout, Header, Sidebar, RightPanel
+│   └── ui/             # shadcn components
+├── gql/                # GraphQL codegen output (do not edit)
+├── routes/             # TanStack Router route files (thin composition)
+└── config/             # Static configuration
+```
+
+#### Web App Rules
+
+- **Feature isolation**: Domain logic (API calls, hooks, components) belongs in `features/<domain>/`. Never put business logic directly in route files.
+- **Thin route files**: Route components should only compose hooks and render components. All state management, mutations, and side effects go in hooks.
+- **Import paths**: Use `@/features/<domain>/...` for feature code, `@/shared/...` for cross-cutting concerns. The `@/` alias maps to `./src/`.
+- **Optimistic updates**: Use `useOptimisticList` from `@/shared/hooks/useOptimisticList` for lists that need optimistic mutations with rollback.
+- **New features**: Create a new directory under `features/` with `api/`, `hooks/`, `components/` subdirectories and an `index.ts` barrel export.
+- **Shared code**: Only put code in `shared/` if it's used by 2+ features. Feature-specific code stays in the feature directory.
+- **Barrel exports**: Each feature has an `index.ts` that re-exports its public API. Internal implementation details should not be exported.
 
 ## Current Product Standards (Must Follow)
 

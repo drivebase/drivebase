@@ -9,7 +9,7 @@ import {
 	STAR_FOLDER_MUTATION,
 	STARRED_FOLDERS_QUERY,
 	UNSTAR_FOLDER_MUTATION,
-} from "@/api/folder";
+} from "@/features/files/api/folder";
 
 export function useFolder(id: string) {
 	const [result] = useQuery({

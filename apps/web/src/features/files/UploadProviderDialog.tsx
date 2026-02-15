@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import type { StorageProvider } from "@/gql/graphql";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 interface UploadProviderDialogProps {
 	isOpen: boolean;

@@ -8,8 +8,8 @@ import { AlertTriangle, Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { useMe } from "@/hooks/useAuth";
-import { useAuthStore } from "@/store/authStore";
+import { useMe } from "@/features/auth/hooks/useAuth";
+import { useAuthStore } from "@/features/auth/store/authStore";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: ({ location }) => {

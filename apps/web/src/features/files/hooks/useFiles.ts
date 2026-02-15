@@ -12,7 +12,7 @@ import {
 	STAR_FILE_MUTATION,
 	STARRED_FILES_QUERY,
 	UNSTAR_FILE_MUTATION,
-} from "@/api/file";
+} from "@/features/files/api/file";
 
 export function useFiles(folderId?: string | null, limit = 50, offset = 0) {
 	const [result] = useQuery({

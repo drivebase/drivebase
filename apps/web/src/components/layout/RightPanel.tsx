@@ -3,9 +3,9 @@ import { Bell, Settings2, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useAppUpdate } from "@/hooks/useAppUpdate";
-import { useAuthStore } from "@/store/authStore";
-import { useRightPanelStore } from "@/store/rightPanelStore";
+import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
 function DefaultAccountView() {
 	const user = useAuthStore((state) => state.user);

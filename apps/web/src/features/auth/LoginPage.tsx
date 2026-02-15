@@ -15,7 +15,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useLogin } from "@/hooks/useAuth";
+import { useLogin } from "@/features/auth/hooks/useAuth";
 import { AuthLayout } from "./AuthLayout";
 
 const loginSchema = z.object({

@@ -1,16 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Star } from "lucide-react";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FileSystemTable } from "@/features/files/FileSystemTable";
 import { useFileActions } from "@/features/files/useFileActions";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
-import { useStarFile, useStarredFiles, useUnstarFile } from "@/hooks/useFiles";
+import { useStarFile, useStarredFiles, useUnstarFile } from "@/features/files/hooks/useFiles";
 import {
 	useStarFolder,
 	useStarredFolders,
 	useUnstarFolder,
-} from "@/hooks/useFolders";
+} from "@/features/files/hooks/useFolders";
+import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
 
 export const Route = createFileRoute("/_authenticated/favorites")({
 	component: FavoritesPage,
@@ -23,30 +23,25 @@ function FavoritesPage() {
 	const { data: starredFilesData, fetching: filesFetching } = useStarredFiles();
 	const { data: starredFoldersData, fetching: foldersFetching } =
 		useStarredFolders();
+
+	const fileList = useOptimisticList<FileItemFragment>(
+		starredFilesData?.starredFiles as FileItemFragment[] | undefined,
+	);
+	const folderList = useOptimisticList<FolderItemFragment>(
+		starredFoldersData?.starredFolders as FolderItemFragment[] | undefined,
+	);
+
 	const [, starFile] = useStarFile();
 	const [, unstarFile] = useUnstarFile();
 	const [, starFolder] = useStarFolder();
 	const [, unstarFolder] = useUnstarFolder();
 
-	const [files, setFiles] = useState<FileItemFragment[]>([]);
-	const [folders, setFolders] = useState<FolderItemFragment[]>([]);
-
-	useEffect(() => {
-		setFiles((starredFilesData?.starredFiles || []) as FileItemFragment[]);
-	}, [starredFilesData?.starredFiles]);
-
-	useEffect(() => {
-		setFolders(
-			(starredFoldersData?.starredFolders || []) as FolderItemFragment[],
-		);
-	}, [starredFoldersData?.starredFolders]);
-
 	const handleToggleFileFavorite = async (file: FileItemFragment) => {
 		const currentStarred =
-			files.find((f) => f.id === file.id)?.starred ?? file.starred;
+			fileList.items.find((f) => f.id === file.id)?.starred ?? file.starred;
 
 		if (currentStarred) {
-			setFiles((prev) => prev.filter((f) => f.id !== file.id));
+			fileList.removeItem(file.id);
 		}
 
 		try {
@@ -65,7 +60,7 @@ function FavoritesPage() {
 			);
 		} catch (error) {
 			if (currentStarred) {
-				setFiles((prev) => [{ ...file, starred: true }, ...prev]);
+				fileList.resetItem(file.id);
 			}
 			const message =
 				error instanceof Error
@@ -77,10 +72,11 @@ function FavoritesPage() {
 
 	const handleToggleFolderFavorite = async (folder: FolderItemFragment) => {
 		const currentStarred =
-			folders.find((f) => f.id === folder.id)?.starred ?? folder.starred;
+			folderList.items.find((f) => f.id === folder.id)?.starred ??
+			folder.starred;
 
 		if (currentStarred) {
-			setFolders((prev) => prev.filter((f) => f.id !== folder.id));
+			folderList.removeItem(folder.id);
 		}
 
 		try {
@@ -99,7 +95,7 @@ function FavoritesPage() {
 			);
 		} catch (error) {
 			if (currentStarred) {
-				setFolders((prev) => [{ ...folder, starred: true }, ...prev]);
+				folderList.resetItem(folder.id);
 			}
 			const message =
 				error instanceof Error
@@ -112,8 +108,8 @@ function FavoritesPage() {
 	if (
 		!filesFetching &&
 		!foldersFetching &&
-		folders.length === 0 &&
-		files.length === 0
+		folderList.items.length === 0 &&
+		fileList.items.length === 0
 	) {
 		return (
 			<div className="p-8 flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
@@ -128,11 +124,13 @@ function FavoritesPage() {
 		<div className="p-8 flex flex-col gap-10 h-full overflow-y-auto">
 			<section>
 				<FileSystemTable
-					files={files}
-					folders={folders}
+					files={fileList.items}
+					folders={folderList.items}
 					isLoading={filesFetching || foldersFetching}
 					onNavigate={(folderId) => {
-						const folder = folders.find((item) => item.id === folderId);
+						const folder = folderList.items.find(
+							(item) => item.id === folderId,
+						);
 						if (!folder) return;
 						navigate({
 							to: "/files",

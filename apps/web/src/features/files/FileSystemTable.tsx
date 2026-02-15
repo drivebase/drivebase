@@ -52,8 +52,8 @@ import {
 } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
-import { confirmDialog } from "@/lib/confirmDialog";
-import { cn } from "@/lib/utils";
+import { confirmDialog } from "@/shared/lib/confirmDialog";
+import { cn } from "@/shared/lib/utils";
 
 type FileRow = { kind: "file"; id: string; file: FileItemFragment };
 type FolderRow = { kind: "folder"; id: string; folder: FolderItemFragment };

@@ -8,18 +8,8 @@ import {
 	Plus,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { useMutation, useQuery, useSubscription } from "urql";
-import {
-	AVAILABLE_PROVIDERS_QUERY,
-	CONNECT_PROVIDER_MUTATION,
-	DISCONNECT_PROVIDER_MUTATION,
-	INITIATE_PROVIDER_OAUTH_MUTATION,
-	PROVIDER_SYNC_PROGRESS_SUBSCRIPTION,
-	PROVIDERS_QUERY,
-	SYNC_PROVIDER_MUTATION,
-	UPDATE_PROVIDER_QUOTA_MUTATION,
-} from "@/api/provider";
+import { useQuery } from "urql";
+import { AVAILABLE_PROVIDERS_QUERY, PROVIDERS_QUERY } from "@/features/providers/api/provider";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -36,14 +26,12 @@ import { ConnectProviderDialog } from "@/features/providers/ConnectProviderDialo
 import { ProviderInfoPanel } from "@/features/providers/ProviderInfoPanel";
 import { QuotaSettingsDialog } from "@/features/providers/QuotaSettingsDialog";
 import { SyncProviderDialog } from "@/features/providers/SyncProviderDialog";
-import {
-	AuthType,
-	type AvailableProvider,
-	type ProviderType,
-	type StorageProvider,
-	type SyncOptionsInput,
-} from "@/gql/graphql";
-import { useRightPanelStore } from "@/store/rightPanelStore";
+import { useProviderConnect } from "@/features/providers/hooks/useProviderConnect";
+import { useProviderDisconnect } from "@/features/providers/hooks/useProviderDisconnect";
+import { useProviderQuota } from "@/features/providers/hooks/useProviderQuota";
+import { useProviderSync } from "@/features/providers/hooks/useProviderSync";
+import type { AvailableProvider, StorageProvider } from "@/gql/graphql";
+import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
 export const Route = createFileRoute("/_authenticated/providers")({
 	component: ProvidersPage,
@@ -65,198 +53,32 @@ function ProvidersPage() {
 		refreshConnected,
 	] = useQuery({ query: PROVIDERS_QUERY });
 
-	const [, connectProvider] = useMutation(CONNECT_PROVIDER_MUTATION);
-	const [, disconnectProvider] = useMutation(DISCONNECT_PROVIDER_MUTATION);
-	const [, initiateOAuth] = useMutation(INITIATE_PROVIDER_OAUTH_MUTATION);
-	const [, syncProvider] = useMutation(SYNC_PROVIDER_MUTATION);
-	const [, updateProviderQuota] = useMutation(UPDATE_PROVIDER_QUOTA_MUTATION);
-
-	const [selectedProvider, setSelectedProvider] =
-		useState<AvailableProvider | null>(null);
-	const [disconnectId, setDisconnectId] = useState<string | null>(null);
-	const [isDisconnecting, setIsDisconnecting] = useState(false);
-	const [isConnecting, setIsConnecting] = useState(false);
-	const [isInitiatingOAuth, setIsInitiatingOAuth] = useState<string | null>(
-		null,
-	);
-	const [settingsProvider, setSettingsProvider] =
-		useState<StorageProvider | null>(null);
-	const [isSavingSettings, setIsSavingSettings] = useState(false);
-	const [syncingProviderId, setSyncingProviderId] = useState<string | null>(
-		null,
-	);
-	const [syncDialogProvider, setSyncDialogProvider] =
-		useState<StorageProvider | null>(null);
 	const [error, setError] = useState<string | null>(null);
 
-	const [{ data: syncProgress }] = useSubscription({
-		query: PROVIDER_SYNC_PROGRESS_SUBSCRIPTION,
-		variables: { providerId: syncingProviderId || "" },
-		pause: !syncingProviderId,
-	});
+	const refresh = () => refreshConnected({ requestPolicy: "network-only" });
+	const onError = (msg: string) => setError(msg);
+
+	const connect = useProviderConnect({ onSuccess: refresh });
+	const disconnect = useProviderDisconnect({ onSuccess: refresh, onError });
+	const sync = useProviderSync({ onSuccess: refresh, onError });
+	const quota = useProviderQuota({ onSuccess: refresh, onError });
+
+	// Merge errors from connect hook
+	const displayError = error || connect.error;
+	const clearError = () => {
+		setError(null);
+		connect.setError(null);
+	};
 
 	useEffect(() => {
 		if (connected) {
-			// In a real app, use a toast here
 			console.log("Provider connected successfully!");
-			refreshConnected({ requestPolicy: "network-only" });
+			refresh();
 		}
-	}, [connected, refreshConnected]);
-
-	useEffect(() => {
-		if (!syncProgress?.providerSyncProgress || !syncingProviderId) return;
-		const { status, message, processed } = syncProgress.providerSyncProgress;
-		const toastId = `sync-${syncingProviderId}`;
-
-		if (status === "running") {
-			toast.loading(message || `Syncing... processed ${processed} items`, {
-				id: toastId,
-			});
-		} else if (status === "completed") {
-			toast.success(message || "Sync completed successfully!", {
-				id: toastId,
-			});
-		} else if (status === "error") {
-			toast.error(message || "Sync failed", {
-				id: toastId,
-			});
-		}
-	}, [syncProgress, syncingProviderId]);
-
-	const handleConnect = async (formData: Record<string, unknown>) => {
-		if (!selectedProvider) return;
-		setIsConnecting(true);
-		setError(null);
-		try {
-			// Extract custom name from form data, rest is config
-			const { _displayName, ...config } = formData;
-
-			const result = await connectProvider({
-				input: {
-					name: (_displayName as string) || selectedProvider.name,
-					type: selectedProvider.id.toUpperCase() as ProviderType,
-					config: config,
-				},
-			});
-
-			if (result.error) {
-				setError(`Failed to connect: ${result.error.message}`);
-				setIsConnecting(false);
-				return;
-			}
-
-			const providerId = result.data?.connectStorage.id;
-
-			if (selectedProvider.authType === AuthType.Oauth && providerId) {
-				await handleInitiateOAuth(providerId);
-				return;
-			}
-
-			refreshConnected({ requestPolicy: "network-only" });
-			setSelectedProvider(null);
-		} catch (error) {
-			console.error(error);
-			setError("An unexpected error occurred.");
-		} finally {
-			setIsConnecting(false);
-		}
-	};
-
-	const handleInitiateOAuth = async (id: string) => {
-		setIsInitiatingOAuth(id);
-		setError(null);
-		try {
-			const oauthResult = await initiateOAuth({ id });
-			if (oauthResult.error) {
-				setError(`Failed to initiate OAuth: ${oauthResult.error.message}`);
-			} else if (oauthResult.data?.initiateProviderOAuth) {
-				const { authorizationUrl, state } =
-					oauthResult.data.initiateProviderOAuth;
-				localStorage.setItem(`oauth_state_${id}`, state);
-				window.location.href = authorizationUrl;
-			}
-		} catch (error) {
-			console.error(error);
-			setError("An unexpected error occurred.");
-		} finally {
-			setIsInitiatingOAuth(null);
-		}
-	};
-
-	const handleDisconnectClick = (id: string) => {
-		setDisconnectId(id);
-	};
+	}, [connected]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const handleOpenProviderInfo = (provider: StorageProvider) => {
 		setRightPanelContent(<ProviderInfoPanel providerId={provider.id} />);
-	};
-
-	const handleSyncProvider = async (id: string, options: SyncOptionsInput) => {
-		setSyncingProviderId(id);
-		try {
-			const result = await syncProvider({ id, options });
-			if (result.error) {
-				setError(`Failed to sync provider: ${result.error.message}`);
-				return;
-			}
-
-			await refreshConnected({ requestPolicy: "network-only" });
-		} catch (e) {
-			console.error(e);
-			setError("An unexpected error occurred while syncing provider.");
-		} finally {
-			setSyncingProviderId(null);
-		}
-	};
-	const handleSaveProviderQuota = async (input: {
-		id: string;
-		quotaTotal: number;
-		quotaUsed: number;
-	}) => {
-		setIsSavingSettings(true);
-		try {
-			const result = await updateProviderQuota({
-				input: {
-					id: input.id,
-					quotaTotal: input.quotaTotal,
-					quotaUsed: input.quotaUsed,
-				},
-			});
-
-			if (result.error) {
-				setError(`Failed to update provider settings: ${result.error.message}`);
-				return;
-			}
-
-			await refreshConnected({ requestPolicy: "network-only" });
-			setSettingsProvider(null);
-		} catch (e) {
-			console.error(e);
-			setError(
-				"An unexpected error occurred while updating provider settings.",
-			);
-		} finally {
-			setIsSavingSettings(false);
-		}
-	};
-
-	const confirmDisconnect = async () => {
-		if (!disconnectId) return;
-		setIsDisconnecting(true);
-		try {
-			const result = await disconnectProvider({ id: disconnectId });
-			if (result.error) {
-				setError(`Failed to disconnect: ${result.error.message}`);
-			} else {
-				refreshConnected({ requestPolicy: "network-only" });
-				setDisconnectId(null);
-			}
-		} catch (error) {
-			console.error(error);
-			setError("An unexpected error occurred.");
-		} finally {
-			setIsDisconnecting(false);
-		}
 	};
 
 	const availableProviders = (availableData?.availableProviders ||
@@ -268,15 +90,15 @@ function ProvidersPage() {
 
 	return (
 		<div className="p-8 flex flex-col gap-8 h-full overflow-y-auto">
-			{error && (
+			{displayError && (
 				<div className="bg-destructive/15 text-destructive p-4 rounded-lg flex items-center gap-2">
 					<AlertTriangle className="h-5 w-5" />
-					<span>{error}</span>
+					<span>{displayError}</span>
 					<Button
 						variant="ghost"
 						size="sm"
 						className="ml-auto h-auto p-1 text-destructive hover:bg-destructive/20"
-						onClick={() => setError(null)}
+						onClick={clearError}
 					>
 						Dismiss
 					</Button>
@@ -319,16 +141,17 @@ function ProvidersPage() {
 							<ConnectedProviderCard
 								key={provider.id}
 								provider={provider}
-								onDisconnect={handleDisconnectClick}
-								onQuota={setSettingsProvider}
+								onDisconnect={disconnect.setDisconnectId}
+								onQuota={quota.setSettingsProvider}
 								onInfo={handleOpenProviderInfo}
-								onSync={setSyncDialogProvider}
+								onSync={sync.setSyncDialogProvider}
 								isDisconnecting={
-									isDisconnecting && disconnectId === provider.id
+									disconnect.isDisconnecting &&
+									disconnect.disconnectId === provider.id
 								}
-								isSyncing={syncingProviderId === provider.id}
-								onReconnect={handleInitiateOAuth}
-								isReconnecting={isInitiatingOAuth === provider.id}
+								isSyncing={sync.syncingProviderId === provider.id}
+								onReconnect={connect.handleInitiateOAuth}
+								isReconnecting={connect.isInitiatingOAuth === provider.id}
 							/>
 						))}
 					</div>
@@ -355,7 +178,7 @@ function ProvidersPage() {
 							<AvailableProviderCard
 								key={provider.id}
 								provider={provider}
-								onConnect={setSelectedProvider}
+								onConnect={connect.setSelectedProvider}
 							/>
 						))}
 					</div>
@@ -386,21 +209,19 @@ function ProvidersPage() {
 				</div>
 			</div>
 
-			{/* Connect Dialog */}
-			{selectedProvider && (
+			{connect.selectedProvider && (
 				<ConnectProviderDialog
-					provider={selectedProvider}
-					isOpen={!!selectedProvider}
-					onClose={() => setSelectedProvider(null)}
-					onConnect={handleConnect}
-					isConnecting={isConnecting}
+					provider={connect.selectedProvider}
+					isOpen={!!connect.selectedProvider}
+					onClose={() => connect.setSelectedProvider(null)}
+					onConnect={connect.handleConnect}
+					isConnecting={connect.isConnecting}
 				/>
 			)}
 
-			{/* Disconnect Confirmation Dialog */}
 			<Dialog
-				open={!!disconnectId}
-				onOpenChange={(open) => !open && setDisconnectId(null)}
+				open={!!disconnect.disconnectId}
+				onOpenChange={(open) => !open && disconnect.setDisconnectId(null)}
 			>
 				<DialogContent>
 					<DialogHeader>
@@ -414,17 +235,17 @@ function ProvidersPage() {
 					<DialogFooter>
 						<Button
 							variant="outline"
-							onClick={() => setDisconnectId(null)}
-							disabled={isDisconnecting}
+							onClick={() => disconnect.setDisconnectId(null)}
+							disabled={disconnect.isDisconnecting}
 						>
 							Cancel
 						</Button>
 						<Button
 							variant="destructive"
-							onClick={confirmDisconnect}
-							disabled={isDisconnecting}
+							onClick={disconnect.confirmDisconnect}
+							disabled={disconnect.isDisconnecting}
 						>
-							{isDisconnecting ? (
+							{disconnect.isDisconnecting ? (
 								<Loader2 className="animate-spin h-4 w-4 mr-2" />
 							) : null}
 							Disconnect
@@ -434,19 +255,19 @@ function ProvidersPage() {
 			</Dialog>
 
 			<SyncProviderDialog
-				isOpen={!!syncDialogProvider}
-				onClose={() => setSyncDialogProvider(null)}
-				provider={syncDialogProvider}
-				isSyncing={!!syncingProviderId}
-				onSync={handleSyncProvider}
+				isOpen={!!sync.syncDialogProvider}
+				onClose={() => sync.setSyncDialogProvider(null)}
+				provider={sync.syncDialogProvider}
+				isSyncing={!!sync.syncingProviderId}
+				onSync={sync.handleSyncProvider}
 			/>
 
 			<QuotaSettingsDialog
-				isOpen={!!settingsProvider}
-				onClose={() => setSettingsProvider(null)}
-				provider={settingsProvider}
-				isSaving={isSavingSettings}
-				onSave={handleSaveProviderQuota}
+				isOpen={!!quota.settingsProvider}
+				onClose={() => quota.setSettingsProvider(null)}
+				provider={quota.settingsProvider}
+				isSaving={quota.isSavingSettings}
+				onSave={quota.handleSaveProviderQuota}
 			/>
 		</div>
 	);
