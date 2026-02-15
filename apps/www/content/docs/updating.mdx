@@ -1,0 +1,217 @@
+---
+title: Updating Drivebase
+description: Keep your Drivebase installation up to date with the latest features and security patches
+---
+
+Drivebase regularly releases updates with new features, improvements, and security patches. This guide walks you through the update process and best practices.
+
+## Update Notifications
+
+Drivebase automatically checks for updates and notifies you when a new version is available. When logged in, you'll see an **"Update available"** indicator in the right panel below the version number. Click it to view the latest release notes on GitHub.
+
+## Before You Update
+
+<Callout type="warn" title="Important">
+  Always backup your data before updating to a new version.
+</Callout>
+
+### Backup Your Database
+
+Create a backup of your PostgreSQL database:
+
+```bash
+docker exec -t drivebase-postgres pg_dump -U postgres drivebase > backup-$(date +%Y%m%d).sql
+```
+
+If you're using a managed database service, use their backup tools instead.
+
+### Review Release Notes
+
+Before updating, always check the [release notes](https://github.com/drivebase/drivebase/releases) for:
+- Breaking changes
+- New features
+- Required environment variable changes
+- Special migration instructions
+
+## Updating with Docker
+
+The recommended way to update Drivebase is by pulling the latest Docker image.
+
+### Step 1: Pull the Latest Image
+
+```bash
+docker pull ghcr.io/drivebase/drivebase:latest
+```
+
+### Step 2: Stop the Current Container
+
+If you're using Docker Compose:
+
+```bash
+docker compose down
+```
+
+Or if running a standalone container:
+
+```bash
+docker stop drivebase
+docker rm drivebase
+```
+
+### Step 3: Start with the New Image
+
+Using Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+Or standalone:
+
+```bash
+docker run -d \
+  --name drivebase \
+  -p 3000:3000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e JWT_SECRET="your-secret" \
+  -v drivebase-data:/app/data \
+  ghcr.io/drivebase/drivebase:latest
+```
+
+Make sure to use the same environment variables and volume mounts as before.
+
+### Step 4: Verify the Update
+
+1. **Check the logs** to ensure the application started successfully:
+   ```bash
+   docker compose logs -f
+   ```
+
+2. **Database migrations** run automatically on startup. Look for migration success messages in the logs.
+
+3. **Log in** to the web interface and verify the new version number in the right panel.
+
+## Version Pinning (Recommended for Production)
+
+Instead of using `latest`, pin to specific versions in production environments:
+
+```yaml {3}
+services:
+  drivebase:
+    image: ghcr.io/drivebase/drivebase:v1.2.0
+    # ... rest of configuration
+```
+
+This approach:
+- Prevents unexpected updates
+- Gives you control over when to upgrade
+- Makes deployments predictable and repeatable
+
+To update:
+1. Change the version tag in your `compose.yaml`
+2. Run `docker compose up -d`
+
+## Rolling Back
+
+If you encounter issues after updating:
+
+### Step 1: Stop the New Version
+
+```bash
+docker compose down
+```
+
+### Step 2: Pull the Previous Version
+
+```bash
+docker pull ghcr.io/drivebase/drivebase:v1.0.0
+```
+
+### Step 3: Update Your Configuration
+
+In your `docker-compose.yml`, change the image tag:
+
+```yaml
+image: ghcr.io/drivebase/drivebase:v1.0.0
+```
+
+### Step 4: Restore Database (if needed)
+
+If the update included database migrations that caused issues:
+
+```bash
+docker exec -i drivebase-postgres psql -U postgres drivebase < backup-20260215.sql
+```
+
+### Step 5: Start the Previous Version
+
+```bash
+docker compose up -d
+```
+
+## Update Best Practices
+
+- **Test in staging**: If possible, test updates in a staging environment before production
+- **Schedule maintenance windows**: Update during low-traffic periods
+- **Monitor after updates**: Watch logs and metrics for 24-48 hours after updating
+- **Keep backups**: Maintain at least 3 recent database backups
+- **Document your setup**: Keep notes on your specific configuration for easier troubleshooting
+
+## Checking Your Current Version
+
+You can check your current Drivebase version in several ways:
+
+### In the Web Interface
+
+Log in and look at the right panel. Your version is displayed below your email address.
+
+### Using Docker
+
+```bash
+docker exec drivebase bun --version
+```
+
+### Via API
+
+Query the metadata endpoint:
+
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  https://your-domain.com/graphql \
+  -d '{"query":"query { appMetadata { version } }"}'
+```
+
+## Troubleshooting Updates
+
+### Update Fails to Start
+
+1. Check the logs: `docker compose logs -f`
+2. Verify environment variables are set correctly
+3. Ensure database is accessible
+4. Check disk space: `docker system df`
+
+### Database Migration Errors
+
+If migrations fail:
+
+1. Check the logs for specific error messages
+2. Verify database user has required permissions
+3. Restore from backup and retry
+4. Check the GitHub issues for known migration problems
+
+### Version Mismatch Warnings
+
+If you see version mismatch warnings:
+
+1. Clear browser cache and cookies
+2. Do a hard refresh (Cmd/Ctrl + Shift + R)
+3. Ensure all services are running the same version
+
+## Getting Help
+
+If you encounter issues during updates:
+
+- Check the [Troubleshooting guide](/docs/troubleshooting)
+- Search [GitHub Issues](https://github.com/drivebase/drivebase/issues)
+- Ask in [GitHub Discussions](https://github.com/drivebase/drivebase/discussions)
+- Join our community chat

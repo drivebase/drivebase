@@ -54,11 +54,6 @@ server {
 - **Local Storage**: If using the local provider, ensure the storage volume is backed up and has sufficient IOPS.
 - **S3/Object Storage**: Use IAM roles or restricted access keys with the minimum necessary permissions (limited to specific buckets).
 
-## Upgrading Drivebase
+## Updating Drivebase
 
-To upgrade to a newer version:
-
-1. Pull the latest Docker image: `docker pull ghcr.io/drivebase/drivebase:latest`.
-2. Stop the current container.
-3. Start the new container with the same environment variables and volumes.
-4. Drivebase automatically handles database migrations on startup.
+To keep your Drivebase installation up to date with the latest features and security patches, see the [Updating guide](/docs/updating).
