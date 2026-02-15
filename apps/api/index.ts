@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { env } from "./config/env";
 import { handleDownloadProxy } from "./server/routes/download-proxy";
 import { handleOAuthCallback } from "./server/routes/oauth";
@@ -10,6 +11,21 @@ import { handleUploadProxy } from "./server/routes/upload-proxy";
 import { yoga } from "./server/yoga";
 import { initializeApp } from "./utils/init";
 import { logger } from "./utils/logger";
+
+/**
+ * Get application version
+ */
+let appVersion = "unknown";
+try {
+	const packageJsonPath = new URL("../../package.json", import.meta.url);
+	const packageJsonContent = await readFile(packageJsonPath, "utf-8");
+	const packageJson = JSON.parse(packageJsonContent) as { version?: string };
+	appVersion = packageJson.version ?? "unknown";
+} catch (_error) {
+	// Ignore error, keep version as unknown
+}
+
+logger.info(`Drivebase v${appVersion}`);
 
 /**
  * Initialize application (create default user if needed)
@@ -97,7 +113,9 @@ const server = Bun.serve({
 	},
 });
 
-logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
+logger.info(
+	`● Drivebase API running on http://localhost:${server.port}/graphql`,
+);
 
 // Graceful shutdown
 process.on("SIGINT", async () => {

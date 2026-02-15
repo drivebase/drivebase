@@ -23,7 +23,7 @@ export function getRedis(): Redis {
 		});
 
 		redisInstance.on("connect", () => {
-			logger.info("Redis connected");
+			logger.debug("Redis connected");
 		});
 	}
 
