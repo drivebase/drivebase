@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/macro";
 import {
 	createFileRoute,
 	Outlet,
@@ -36,7 +37,9 @@ function FullScreenBrandLoader() {
 			/>
 			<div className="flex items-center gap-2 text-sm text-muted-foreground">
 				<Loader2 className="h-4 w-4 animate-spin" />
-				<span>Loading your account...</span>
+				<span>
+					<Trans>Loading your account...</Trans>
+				</span>
 			</div>
 		</div>
 	);
@@ -52,18 +55,24 @@ function ServerUnavailable({ onRetry }: { onRetry: () => void }) {
 					className="h-12 w-12 mx-auto"
 				/>
 				<div className="space-y-2">
-					<h2 className="text-xl font-semibold">Server Unreachable</h2>
+					<h2 className="text-xl font-semibold">
+						<Trans>Server Unreachable</Trans>
+					</h2>
 					<p className="text-sm text-muted-foreground">
-						Unable to connect to the API right now. Check the server and try
-						again.
+						<Trans>
+							Unable to connect to the API right now. Check the server and try
+							again.
+						</Trans>
 					</p>
 				</div>
 				<div className="flex items-center justify-center gap-2 text-destructive text-sm">
 					<AlertTriangle className="h-4 w-4" />
-					<span>Connection failed</span>
+					<span>
+						<Trans>Connection failed</Trans>
+					</span>
 				</div>
 				<Button onClick={onRetry} className="w-full">
-					Retry
+					<Trans>Retry</Trans>
 				</Button>
 			</div>
 		</div>

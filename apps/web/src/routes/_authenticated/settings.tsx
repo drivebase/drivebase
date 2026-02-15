@@ -1,3 +1,5 @@
+import { msg, Trans } from "@lingui/macro";
+import { useLingui } from "@lingui/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 function SettingsPage() {
+	const { i18n } = useLingui();
 	const navigate = useNavigate();
 	const [, logout] = useLogout();
 	const clearAuth = useAuthStore((state) => state.logout);
@@ -18,7 +21,9 @@ function SettingsPage() {
 		try {
 			await logout();
 		} catch (_error) {
-			toast.error("Unable to sign out from server. Signing out locally.");
+			toast.error(
+				i18n._(msg`Unable to sign out from server. Signing out locally.`),
+			);
 		} finally {
 			clearAuth();
 			navigate({ to: "/login", replace: true });
@@ -30,7 +35,7 @@ function SettingsPage() {
 			<PreferencesSettings />
 			<div className="border-t border-border pt-6">
 				<Button variant="outline" onClick={handleSignOut}>
-					Sign out
+					<Trans>Sign out</Trans>
 				</Button>
 			</div>
 		</div>

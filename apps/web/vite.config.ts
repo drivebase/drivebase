@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from "node:url";
+import { lingui } from "@lingui/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
@@ -13,12 +14,20 @@ export default defineConfig(({ mode }) => ({
 			target: "react",
 			autoCodeSplitting: true,
 		}),
-		viteReact(),
+		viteReact({
+			babel: {
+				plugins: ["macros"],
+			},
+		}),
+		lingui(),
 		tailwindcss(),
 	],
 	resolve: {
 		alias: {
 			"@": fileURLToPath(new URL("./src", import.meta.url)),
 		},
+	},
+	optimizeDeps: {
+		include: ["@lingui/core", "@lingui/react"],
 	},
 }));

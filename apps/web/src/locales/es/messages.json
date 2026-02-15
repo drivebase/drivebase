@@ -1,0 +1,311 @@
+{
+	"XJOV1Y": {
+		"message": "Activity",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/RightPanel.tsx", 52]],
+		"translation": "Actividad"
+	},
+	"kXd/Nh": {
+		"message": "All Files",
+		"placeholders": {},
+		"comments": [],
+		"origin": [
+			["src/components/layout/Header.tsx", 110],
+			["src/config/pageTitles.ts", 6]
+		],
+		"translation": "Todos los archivos"
+	},
+	"aAIQg2": {
+		"message": "Appearance",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/features/settings/PreferencesSettings.tsx", 23]],
+		"translation": "Apariencia"
+	},
+	"/rTz0M": {
+		"message": "Audio",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Header.tsx", 134]],
+		"translation": "Audio"
+	},
+	"csDS2L": {
+		"message": "Available",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Sidebar.tsx", 58]],
+		"translation": "Disponible"
+	},
+	"SZ++dx": {
+		"translation": "Elige tema claro, oscuro o del sistema",
+		"message": "Choose light, dark, or system theme",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/features/settings/PreferencesSettings.tsx", 39]]
+	},
+	"lJSQt0": {
+		"message": "Choose your preferred language",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/features/settings/PreferencesSettings.tsx", 82]],
+		"translation": "Elige tu idioma preferido"
+	},
+	"mO95sp": {
+		"message": "Close panel",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/RightPanel.tsx", 85]],
+		"translation": "Cerrar panel"
+	},
+	"FGWsd4": {
+		"message": "Connection failed",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/_authenticated.tsx", 71]],
+		"translation": "Conexión fallida"
+	},
+	"A1wnIK": {
+		"message": "Customize the appearance of the application. Automatically switch between day and night themes.",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/features/settings/PreferencesSettings.tsx", 26]],
+		"translation": "Personaliza la apariencia de la aplicación. Cambia automáticamente entre temas diurnos y nocturnos."
+	},
+	"pvnfJD": {
+		"message": "Dark",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/features/settings/PreferencesSettings.tsx", 61]],
+		"translation": "Oscuro"
+	},
+	"7p5kLi": {
+		"message": "Dashboard",
+		"placeholders": {},
+		"comments": [],
+		"origin": [
+			["src/components/layout/Sidebar.tsx", 22],
+			["src/config/pageTitles.ts", 5],
+			["src/config/pageTitles.ts", 30]
+		],
+		"translation": "Panel de control"
+	},
+	"E/muDO": {
+		"message": "Documents",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Header.tsx", 116]],
+		"translation": "Documentos"
+	},
+	"X9kySA": {
+		"message": "Favorites",
+		"placeholders": {},
+		"comments": [],
+		"origin": [
+			["src/components/layout/Sidebar.tsx", 24],
+			["src/config/pageTitles.ts", 7]
+		],
+		"translation": "Favoritos"
+	},
+	"sER+bs": {
+		"message": "Files",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Sidebar.tsx", 23]],
+		"translation": "Archivos"
+	},
+	"an5hVd": {
+		"message": "Images",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Header.tsx", 122]],
+		"translation": "Imágenes"
+	},
+	"vXIe7J": {
+		"message": "Language",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/features/settings/PreferencesSettings.tsx", 79]],
+		"translation": "Idioma"
+	},
+	"1njn7W": {
+		"message": "Light",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/features/settings/PreferencesSettings.tsx", 55]],
+		"translation": "Claro"
+	},
+	"wspW+b": {
+		"message": "Loading your account...",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/_authenticated.tsx", 41]],
+		"translation": "Cargando tu cuenta..."
+	},
+	"qhwV2C": {
+		"message": "My Account",
+		"placeholders": {},
+		"comments": [],
+		"origin": [
+			["src/components/layout/RightPanel.tsx", 42],
+			["src/config/pageTitles.ts", 11]
+		],
+		"translation": "Mi cuenta"
+	},
+	"m0I2ba": {
+		"message": "No recent activity",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/RightPanel.tsx", 57]],
+		"translation": "Sin actividad reciente"
+	},
+	"MZbQHL": {
+		"message": "No results found.",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Header.tsx", 147]],
+		"translation": "No se encontraron resultados."
+	},
+	"jerYcl": {
+		"message": "Providers",
+		"placeholders": {},
+		"comments": [],
+		"origin": [
+			["src/components/layout/Sidebar.tsx", 25],
+			["src/config/pageTitles.ts", 8]
+		],
+		"translation": "Proveedores"
+	},
+	"6gRgw8": {
+		"message": "Retry",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/_authenticated.tsx", 75]],
+		"translation": "Reintentar"
+	},
+	"iMIFta": {
+		"message": "Search files...",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Header.tsx", 91]],
+		"translation": "Buscar archivos..."
+	},
+	"Du+zn+": {
+		"message": "Searching...",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Header.tsx", 145]],
+		"translation": "Buscando..."
+	},
+	"G29RDz": {
+		"message": "Server may be unreachable",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/__root.tsx", 63]],
+		"translation": "El servidor puede estar inaccesible"
+	},
+	"uFFkkF": {
+		"message": "Server Unreachable",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/_authenticated.tsx", 59]],
+		"translation": "Servidor inaccesible"
+	},
+	"Tz0i8g": {
+		"message": "Settings",
+		"placeholders": {},
+		"comments": [],
+		"origin": [
+			["src/components/layout/Sidebar.tsx", 27],
+			["src/config/pageTitles.ts", 10]
+		],
+		"translation": "Configuración"
+	},
+	"fcWrnU": {
+		"message": "Sign out",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/_authenticated/settings.tsx", 38]],
+		"translation": "Cerrar sesión"
+	},
+	"diiLp7": {
+		"message": "Something went wrong while loading the app.",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/__root.tsx", 43]],
+		"translation": "Algo salió mal al cargar la aplicación."
+	},
+	"D+NlUC": {
+		"message": "System",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/features/settings/PreferencesSettings.tsx", 67]],
+		"translation": "Sistema"
+	},
+	"FEr96N": {
+		"message": "Theme",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/features/settings/PreferencesSettings.tsx", 36]],
+		"translation": "Tema"
+	},
+	"GQ3O42": {
+		"message": "Trash",
+		"placeholders": {},
+		"comments": [],
+		"origin": [
+			["src/components/layout/Sidebar.tsx", 26],
+			["src/config/pageTitles.ts", 9]
+		],
+		"translation": "Papelera"
+	},
+	"KDw4GX": {
+		"message": "Try again",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/__root.tsx", 67]],
+		"translation": "Intentar de nuevo"
+	},
+	"eRl566": {
+		"message": "Type to search files",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Header.tsx", 143]],
+		"translation": "Escribe para buscar archivos"
+	},
+	"dbabJ0": {
+		"message": "Unable to connect to the API right now. Check the server and try again.",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/_authenticated.tsx", 62]],
+		"translation": "No se puede conectar a la API en este momento. Verifica el servidor e intenta de nuevo."
+	},
+	"sprgN1": {
+		"message": "Unable to load Drivebase",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/__root.tsx", 56]],
+		"translation": "No se puede cargar Drivebase"
+	},
+	"7ySf2i": {
+		"message": "Unable to sign out from server. Signing out locally.",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/routes/_authenticated/settings.tsx", 25]],
+		"translation": "No se puede cerrar sesión desde el servidor. Cerrando sesión localmente."
+	},
+	"EkH9pt": {
+		"message": "Update",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Sidebar.tsx", 54]],
+		"translation": "Actualizar"
+	},
+	"RKuImK": {
+		"message": "Videos",
+		"placeholders": {},
+		"comments": [],
+		"origin": [["src/components/layout/Header.tsx", 128]],
+		"translation": "Videos"
+	}
+}

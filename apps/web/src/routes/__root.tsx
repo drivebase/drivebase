@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/macro";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 import { Toaster } from "sonner";
@@ -36,9 +37,11 @@ function RootErrorComponent({
 	reset: () => void;
 }) {
 	const message =
-		error instanceof Error
-			? error.message
-			: "Something went wrong while loading the app.";
+		error instanceof Error ? (
+			error.message
+		) : (
+			<Trans>Something went wrong while loading the app.</Trans>
+		);
 
 	return (
 		<div className="min-h-screen w-full flex items-center justify-center p-8">
@@ -49,15 +52,19 @@ function RootErrorComponent({
 					className="h-12 w-12 mx-auto"
 				/>
 				<div className="space-y-2">
-					<h1 className="text-xl font-semibold">Unable to load Drivebase</h1>
+					<h1 className="text-xl font-semibold">
+						<Trans>Unable to load Drivebase</Trans>
+					</h1>
 					<p className="text-sm text-muted-foreground">{message}</p>
 				</div>
 				<div className="flex items-center justify-center gap-2 text-destructive text-sm">
 					<AlertTriangle className="h-4 w-4" />
-					<span>Server may be unreachable</span>
+					<span>
+						<Trans>Server may be unreachable</Trans>
+					</span>
 				</div>
 				<Button className="w-full" onClick={reset}>
-					Try again
+					<Trans>Try again</Trans>
 				</Button>
 			</div>
 		</div>
