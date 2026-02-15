@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { type FieldValues, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "urql";
 import { Button } from "@/components/ui/button";
@@ -78,13 +78,14 @@ export function ProviderStep({ onNext }: ProviderStepProps) {
 		(p) => p.id === selectedProviderId,
 	);
 
-	const onSubmit = async (formData: any) => {
+	const onSubmit = async (formData: FieldValues) => {
 		if (!selectedProvider) return;
 
 		const { _displayName, ...config } = formData;
 
 		try {
 			// Convert provider ID (e.g., "google_drive") to enum format (e.g., "GOOGLE_DRIVE")
+			// biome-ignore lint/suspicious/noExplicitAny: Casting to any to avoid type mismatch with generated GraphQL types
 			const providerType = selectedProvider.id.toUpperCase() as any;
 
 			const result = await connectStorage({

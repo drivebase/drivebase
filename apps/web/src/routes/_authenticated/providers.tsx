@@ -7,7 +7,7 @@ import {
 	Loader2,
 	Plus,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "urql";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,7 +58,10 @@ function ProvidersPage() {
 
 	const [error, setError] = useState<string | null>(null);
 
-	const refresh = () => refreshConnected({ requestPolicy: "network-only" });
+	const refresh = useCallback(
+		() => refreshConnected({ requestPolicy: "network-only" }),
+		[refreshConnected],
+	);
 	const onError = (msg: string) => setError(msg);
 
 	const connect = useProviderConnect({ onSuccess: refresh });
@@ -78,7 +81,7 @@ function ProvidersPage() {
 			console.log("Provider connected successfully!");
 			refresh();
 		}
-	}, [connected, refresh]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [connected, refresh]);
 
 	const handleOpenProviderInfo = (provider: StorageProvider) => {
 		setRightPanelContent(<ProviderInfoPanel providerId={provider.id} />);
