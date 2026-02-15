@@ -1,5 +1,17 @@
 # Changelog
 
+# [1.9.0](https://github.com/drivebase/drivebase/compare/v1.8.0...v1.9.0) (2026-02-15)
+
+
+### Bug Fixes
+
+* update Dockerfile to ignore scripts during bun install ([251c67f](https://github.com/drivebase/drivebase/commit/251c67f81d275ea15c509806e52c4fd5c5cf81f6))
+
+
+### Features
+
+* add render configuration and environment variables for deployment ([3cd9cb4](https://github.com/drivebase/drivebase/commit/3cd9cb4b6396eb6a7079103b999e375d2dedc4d9))
+
 # [1.8.0](https://github.com/drivebase/drivebase/compare/v1.7.0...v1.8.0) (2026-02-15)
 
 
