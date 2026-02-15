@@ -1,14 +1,14 @@
 import axios from "axios";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
-import type { StorageProvider } from "@/gql/graphql";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import {
 	useDeleteFile,
 	useRequestUpload,
 } from "@/features/files/hooks/useFiles";
+import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
 import { useProviders } from "@/features/providers/hooks/useProviders";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import type { StorageProvider } from "@/gql/graphql";
 
 interface UseUploadOptions {
 	currentFolderId: string | undefined;

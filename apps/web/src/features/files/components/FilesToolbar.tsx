@@ -73,8 +73,7 @@ export function FilesToolbar({
 									size="sm"
 									className={cn(
 										"h-6 px-2 hover:bg-muted hover:text-foreground transition-colors",
-										isLast &&
-											"text-foreground font-medium pointer-events-none",
+										isLast && "text-foreground font-medium pointer-events-none",
 									)}
 									onClick={() => onBreadcrumbClick(crumb.path)}
 								>

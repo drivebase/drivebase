@@ -1,23 +1,23 @@
 // Components
-export { ConnectedProviderCard } from "./ConnectedProviderCard";
-export { AvailableProviderCard } from "./AvailableProviderCard";
-export { ConnectProviderDialog } from "./ConnectProviderDialog";
-export { SyncProviderDialog } from "./SyncProviderDialog";
-export { QuotaSettingsDialog } from "./QuotaSettingsDialog";
-export { ProviderInfoPanel } from "./ProviderInfoPanel";
-export { ProviderIcon } from "./ProviderIcon";
 
+export { AvailableProviderCard } from "./AvailableProviderCard";
+export { ConnectedProviderCard } from "./ConnectedProviderCard";
+export { ConnectProviderDialog } from "./ConnectProviderDialog";
 // Hooks
 export { useProviderConnect } from "./hooks/useProviderConnect";
-export { useProviderSync } from "./hooks/useProviderSync";
 export { useProviderDisconnect } from "./hooks/useProviderDisconnect";
 export { useProviderQuota } from "./hooks/useProviderQuota";
+export { useProviderSync } from "./hooks/useProviderSync";
 export {
-	useProviders,
-	useProvider,
 	useConnectProvider,
 	useDisconnectProvider,
-	useSyncProvider,
 	useInitiateProviderOAuth,
+	useProvider,
+	useProviders,
+	useSyncProvider,
 	useUpdateProviderQuota,
 } from "./hooks/useProviders";
+export { ProviderIcon } from "./ProviderIcon";
+export { ProviderInfoPanel } from "./ProviderInfoPanel";
+export { QuotaSettingsDialog } from "./QuotaSettingsDialog";
+export { SyncProviderDialog } from "./SyncProviderDialog";

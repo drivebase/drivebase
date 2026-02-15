@@ -3,22 +3,22 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { CreateFolderDialog } from "@/features/files/CreateFolderDialog";
+import { FileDropZone } from "@/features/files/components/FileDropZone";
+import { FilesToolbar } from "@/features/files/components/FilesToolbar";
 import {
 	DragOverlayContent,
 	FileSystemTable,
 } from "@/features/files/FileSystemTable";
-import { UploadProgressPanel } from "@/features/files/UploadProgressPanel";
-import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
-import { useFileActions } from "@/features/files/useFileActions";
-import { FileDropZone } from "@/features/files/components/FileDropZone";
-import { FilesToolbar } from "@/features/files/components/FilesToolbar";
 import { useBreadcrumbs } from "@/features/files/hooks/useBreadcrumbs";
 import { useDragAndDrop } from "@/features/files/hooks/useDragAndDrop";
 import { useFileDrop } from "@/features/files/hooks/useFileDrop";
 import { useFileOperations } from "@/features/files/hooks/useFileOperations";
-import { useUpload } from "@/features/files/hooks/useUpload";
-import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import { useContents } from "@/features/files/hooks/useFiles";
+import { useUpload } from "@/features/files/hooks/useUpload";
+import { UploadProgressPanel } from "@/features/files/UploadProgressPanel";
+import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
+import { useFileActions } from "@/features/files/useFileActions";
+import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 
 const searchSchema = z.object({
 	path: z.string().optional().catch(undefined),
@@ -58,8 +58,7 @@ function FilesPage() {
 
 	const upload = useUpload({
 		currentFolderId: currentFolder?.id,
-		onUploadComplete: () =>
-			refreshContents({ requestPolicy: "network-only" }),
+		onUploadComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 
 	const breadcrumbs = useBreadcrumbs(currentPath, currentFolder);
@@ -155,9 +154,7 @@ function FilesPage() {
 			</div>
 
 			<DragOverlay dropAnimation={null}>
-				{dnd.activeDrag ? (
-					<DragOverlayContent item={dnd.activeDrag} />
-				) : null}
+				{dnd.activeDrag ? <DragOverlayContent item={dnd.activeDrag} /> : null}
 			</DragOverlay>
 		</DndContext>
 	);

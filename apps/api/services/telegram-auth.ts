@@ -18,7 +18,7 @@ const pendingAuths = new Map<string, PendingAuth>();
 const AUTH_TTL_MS = 5 * 60 * 1000;
 
 /** Clean up expired sessions periodically */
-function cleanupExpired() {
+function _cleanupExpired() {
 	const now = Date.now();
 	for (const [key, auth] of pendingAuths) {
 		if (now - auth.createdAt > AUTH_TTL_MS) {

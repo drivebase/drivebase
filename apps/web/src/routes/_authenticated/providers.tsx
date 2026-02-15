@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "urql";
-import { AVAILABLE_PROVIDERS_QUERY, PROVIDERS_QUERY } from "@/features/providers/api/provider";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -21,15 +20,19 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AvailableProviderCard } from "@/features/providers/AvailableProviderCard";
+import {
+	AVAILABLE_PROVIDERS_QUERY,
+	PROVIDERS_QUERY,
+} from "@/features/providers/api/provider";
 import { ConnectedProviderCard } from "@/features/providers/ConnectedProviderCard";
 import { ConnectProviderDialog } from "@/features/providers/ConnectProviderDialog";
-import { ProviderInfoPanel } from "@/features/providers/ProviderInfoPanel";
-import { QuotaSettingsDialog } from "@/features/providers/QuotaSettingsDialog";
-import { SyncProviderDialog } from "@/features/providers/SyncProviderDialog";
 import { useProviderConnect } from "@/features/providers/hooks/useProviderConnect";
 import { useProviderDisconnect } from "@/features/providers/hooks/useProviderDisconnect";
 import { useProviderQuota } from "@/features/providers/hooks/useProviderQuota";
 import { useProviderSync } from "@/features/providers/hooks/useProviderSync";
+import { ProviderInfoPanel } from "@/features/providers/ProviderInfoPanel";
+import { QuotaSettingsDialog } from "@/features/providers/QuotaSettingsDialog";
+import { SyncProviderDialog } from "@/features/providers/SyncProviderDialog";
 import type { AvailableProvider, StorageProvider } from "@/gql/graphql";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
@@ -75,7 +78,7 @@ function ProvidersPage() {
 			console.log("Provider connected successfully!");
 			refresh();
 		}
-	}, [connected]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [connected, refresh]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const handleOpenProviderInfo = (provider: StorageProvider) => {
 		setRightPanelContent(<ProviderInfoPanel providerId={provider.id} />);

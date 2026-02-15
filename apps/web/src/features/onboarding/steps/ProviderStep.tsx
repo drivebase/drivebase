@@ -115,7 +115,7 @@ export function ProviderStep({ onNext }: ProviderStepProps) {
 				toast.success("Storage connected successfully!");
 				onNext();
 			}
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Failed to connect storage provider");
 		}
 	};

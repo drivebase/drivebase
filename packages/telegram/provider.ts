@@ -277,7 +277,7 @@ export class TelegramProvider implements IStorageProvider {
 			const chats = (result as unknown as { chats: Api.Chat[] }).chats;
 			if (chats && chats.length > 0) {
 				const chat = chats[0];
-				if (chat && chat.id) {
+				if (chat?.id) {
 					return String(chat.id);
 				}
 			}

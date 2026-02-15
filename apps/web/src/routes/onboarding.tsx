@@ -30,7 +30,7 @@ function OnboardingLayout() {
 	const [meResult] = useMe();
 
 	useEffect(() => {
-		if (user && user.onboardingCompleted) {
+		if (user?.onboardingCompleted) {
 			navigate({ to: "/", replace: true });
 		}
 	}, [user, navigate]);
@@ -53,7 +53,7 @@ function OnboardingLayout() {
 
 	// If we have a user but onboarding is completed, we are redirecting.
 	// Render loader to prevent flashing onboarding content.
-	if (user && user.onboardingCompleted) {
+	if (user?.onboardingCompleted) {
 		return (
 			<div className="min-h-screen w-full flex flex-col items-center justify-center gap-3">
 				<img

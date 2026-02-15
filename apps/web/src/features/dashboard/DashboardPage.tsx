@@ -4,10 +4,14 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileTable } from "@/features/files/FileTable";
 import { FolderCard } from "@/features/files/FolderCard";
+import {
+	useFiles,
+	useStarFile,
+	useUnstarFile,
+} from "@/features/files/hooks/useFiles";
+import { useStarredFolders } from "@/features/files/hooks/useFolders";
 import { useFileActions } from "@/features/files/useFileActions";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
-import { useFiles, useStarFile, useUnstarFile } from "@/features/files/hooks/useFiles";
-import { useStarredFolders } from "@/features/files/hooks/useFolders";
 
 export function DashboardPage() {
 	const { data: starredData, fetching: starredFetching } = useStarredFolders();

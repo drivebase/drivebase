@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { PreferencesSettings } from "@/features/settings/PreferencesSettings";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { PreferencesSettings } from "@/features/settings/PreferencesSettings";
 
 export const Route = createFileRoute("/_authenticated/settings")({
 	component: SettingsPage,

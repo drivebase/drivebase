@@ -1,5 +1,4 @@
 import { toast } from "sonner";
-import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import {
 	useDeleteFile,
 	useRenameFile,
@@ -12,8 +11,9 @@ import {
 	useStarFolder,
 	useUnstarFolder,
 } from "@/features/files/hooks/useFolders";
-import { promptDialog } from "@/shared/lib/promptDialog";
+import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
+import { promptDialog } from "@/shared/lib/promptDialog";
 
 interface UseFileOperationsOptions {
 	serverFiles: FileItemFragment[] | undefined;

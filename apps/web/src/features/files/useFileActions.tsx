@@ -1,9 +1,9 @@
 import axios from "axios";
 import { toast } from "sonner";
-import { FileInfoPanel } from "@/features/files/FileInfoPanel";
-import type { FileItemFragment } from "@/gql/graphql";
-import { useRequestDownload } from "@/features/files/hooks/useFiles";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { FileInfoPanel } from "@/features/files/FileInfoPanel";
+import { useRequestDownload } from "@/features/files/hooks/useFiles";
+import type { FileItemFragment } from "@/gql/graphql";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
 function triggerBrowserDownload(url: string, fileName?: string) {
