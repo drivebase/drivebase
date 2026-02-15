@@ -1,6 +1,5 @@
+import type { I18n, MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/macro";
-import type { MessageDescriptor } from "@lingui/core";
-import type { I18n } from "@lingui/core";
 
 export const pageTitles: Record<string, MessageDescriptor> = {
 	"/": msg`Dashboard`,
