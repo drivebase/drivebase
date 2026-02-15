@@ -112,6 +112,9 @@ export function useFileOperations({
 			fileList.resetItem(file.id);
 			toast.error(`Failed to rename: ${result.error.message}`);
 		} else {
+			if (result.data?.renameFile) {
+				fileList.updateItem(file.id, result.data.renameFile);
+			}
 			toast.success(`Renamed to "${newName}"`);
 		}
 	};
@@ -135,6 +138,10 @@ export function useFileOperations({
 			folderList.resetItem(folder.id);
 			toast.error(`Failed to rename: ${result.error.message}`);
 		} else {
+			// Update with server response to get the new virtualPath
+			if (result.data?.renameFolder) {
+				folderList.updateItem(folder.id, result.data.renameFolder);
+			}
 			toast.success(`Renamed to "${newName}"`);
 		}
 	};

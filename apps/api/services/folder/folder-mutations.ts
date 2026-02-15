@@ -6,8 +6,8 @@ import {
 	ValidationError,
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { folders } from "@drivebase/db";
-import { and, eq } from "drizzle-orm";
+import { files, folders } from "@drivebase/db";
+import { and, eq, like, sql } from "drizzle-orm";
 import { ProviderService } from "../provider";
 import { getFolder } from "./folder-queries";
 
@@ -164,6 +164,37 @@ export async function renameFolder(
 		throw new Error("Failed to rename folder");
 	}
 
+	// Cascade virtualPath update to all descendant folders and files
+	const oldPathPrefix = `${folder.virtualPath}/`;
+	const newPathPrefix = `${newVirtualPath}/`;
+	const prefixLength = oldPathPrefix.length;
+
+	await db
+		.update(folders)
+		.set({
+			virtualPath: sql`${newPathPrefix} || SUBSTR(${folders.virtualPath}, ${prefixLength + 1})`,
+			updatedAt: new Date(),
+		})
+		.where(
+			and(
+				like(folders.virtualPath, `${oldPathPrefix}%`),
+				eq(folders.isDeleted, false),
+			),
+		);
+
+	await db
+		.update(files)
+		.set({
+			virtualPath: sql`${newPathPrefix} || SUBSTR(${files.virtualPath}, ${prefixLength + 1})`,
+			updatedAt: new Date(),
+		})
+		.where(
+			and(
+				like(files.virtualPath, `${oldPathPrefix}%`),
+				eq(files.isDeleted, false),
+			),
+		);
+
 	return updated;
 }
 
@@ -216,6 +247,37 @@ export async function moveFolder(
 	if (!updated) {
 		throw new Error("Failed to move folder");
 	}
+
+	// Cascade virtualPath update to all descendant folders and files
+	const oldPathPrefix = `${folder.virtualPath}/`;
+	const newPathPrefix = `${newVirtualPath}/`;
+	const prefixLength = oldPathPrefix.length;
+
+	await db
+		.update(folders)
+		.set({
+			virtualPath: sql`${newPathPrefix} || SUBSTR(${folders.virtualPath}, ${prefixLength + 1})`,
+			updatedAt: new Date(),
+		})
+		.where(
+			and(
+				like(folders.virtualPath, `${oldPathPrefix}%`),
+				eq(folders.isDeleted, false),
+			),
+		);
+
+	await db
+		.update(files)
+		.set({
+			virtualPath: sql`${newPathPrefix} || SUBSTR(${files.virtualPath}, ${prefixLength + 1})`,
+			updatedAt: new Date(),
+		})
+		.where(
+			and(
+				like(files.virtualPath, `${oldPathPrefix}%`),
+				eq(files.isDeleted, false),
+			),
+		);
 
 	return updated;
 }
