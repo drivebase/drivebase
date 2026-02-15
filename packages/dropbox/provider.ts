@@ -170,7 +170,7 @@ export class DropboxProvider implements IStorageProvider {
 	async uploadFile(
 		remoteId: string,
 		data: ReadableStream | Buffer,
-	): Promise<void> {
+	): Promise<string | undefined> {
 		const token = await this.ensureAccessToken();
 
 		const arg = JSON.stringify({
@@ -199,6 +199,8 @@ export class DropboxProvider implements IStorageProvider {
 				`Failed to upload file: ${response.status} ${text}`,
 			);
 		}
+
+		return undefined;
 	}
 
 	/**

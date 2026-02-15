@@ -5,6 +5,7 @@ import {
 	FILE_QUERY,
 	FILES_QUERY,
 	MOVE_FILE_MUTATION,
+	MOVE_FILE_TO_PROVIDER_MUTATION,
 	RENAME_FILE_MUTATION,
 	REQUEST_DOWNLOAD_MUTATION,
 	REQUEST_UPLOAD_MUTATION,
@@ -73,6 +74,11 @@ export function useRenameFile() {
 
 export function useMoveFile() {
 	const [result, execute] = useMutation(MOVE_FILE_MUTATION);
+	return [result, execute] as const;
+}
+
+export function useMoveFileToProvider() {
+	const [result, execute] = useMutation(MOVE_FILE_TO_PROVIDER_MUTATION);
 	return [result, execute] as const;
 }
 

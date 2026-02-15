@@ -107,7 +107,7 @@ export class LocalProvider implements IStorageProvider {
 	async uploadFile(
 		remoteId: string,
 		data: ReadableStream | Buffer,
-	): Promise<void> {
+	): Promise<string | undefined> {
 		const fullPath = this.resolveRemotePath(remoteId);
 
 		try {

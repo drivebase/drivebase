@@ -186,7 +186,7 @@ export class WebDAVProvider implements IStorageProvider {
 	async uploadFile(
 		remoteId: string,
 		data: ReadableStream | Buffer,
-	): Promise<void> {
+	): Promise<string | undefined> {
 		const { client } = this.ensureInitialized();
 
 		try {
@@ -218,6 +218,8 @@ export class WebDAVProvider implements IStorageProvider {
 				error: mapWebDAVError(error),
 			});
 		}
+
+		return undefined;
 	}
 
 	async requestDownload(options: DownloadOptions): Promise<DownloadResponse> {

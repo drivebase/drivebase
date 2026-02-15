@@ -65,8 +65,17 @@ export async function handleUploadProxy(request: Request): Promise<Response> {
 			fileId,
 			providerId: file.providerId,
 		});
-		await provider.uploadFile(file.remoteId, request.body);
+		const newRemoteId = await provider.uploadFile(file.remoteId, request.body);
 		await provider.cleanup();
+
+		// If the provider returned a new remote ID (e.g. Telegram message ID),
+		// update the file record so subsequent downloads use the correct ID.
+		if (newRemoteId && newRemoteId !== file.remoteId) {
+			await db
+				.update(files)
+				.set({ remoteId: newRemoteId, updatedAt: new Date() })
+				.where(eq(files.id, fileId));
+		}
 
 		logger.debug({ msg: "Proxy upload success", fileId });
 

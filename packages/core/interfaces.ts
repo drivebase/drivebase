@@ -136,8 +136,12 @@ export interface IStorageProvider {
 	 * Upload file directly (used when provider doesn't support presigned URLs)
 	 * @param remoteId - Remote ID from requestUpload
 	 * @param data - File data as ReadableStream or Buffer
+	 * @returns Optionally returns the final remote ID if it differs from the one provided by requestUpload
 	 */
-	uploadFile(remoteId: string, data: ReadableStream | Buffer): Promise<void>;
+	uploadFile(
+		remoteId: string,
+		data: ReadableStream | Buffer,
+	): Promise<string | undefined>;
 
 	/**
 	 * Request file download

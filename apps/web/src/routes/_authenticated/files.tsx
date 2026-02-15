@@ -18,6 +18,7 @@ import { useUpload } from "@/features/files/hooks/useUpload";
 import { UploadProgressPanel } from "@/features/files/UploadProgressPanel";
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useFileActions } from "@/features/files/useFileActions";
+import { useProviders } from "@/features/providers/hooks/useProviders";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 
 const searchSchema = z.object({
@@ -34,6 +35,7 @@ function FilesPage() {
 	const navigate = Route.useNavigate();
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const { downloadFile, showDetails } = useFileActions();
+	const { data: providersData } = useProviders();
 
 	const currentPath = searchPath || "/";
 
@@ -113,6 +115,7 @@ function FilesPage() {
 					<FileSystemTable
 						files={files}
 						folders={folders}
+						providers={providersData?.storageProviders}
 						onNavigate={handleNavigate}
 						onDownloadFile={downloadFile}
 						onShowFileDetails={showDetails}
@@ -120,6 +123,7 @@ function FilesPage() {
 						onToggleFolderFavorite={operations.handleToggleFolderFavorite}
 						onRenameFile={operations.handleRenameFile}
 						onRenameFolder={operations.handleRenameFolder}
+						onMoveFileToProvider={operations.handleMoveFileToProvider}
 						onDeleteSelection={operations.handleDeleteSelection}
 						isLoading={contentsFetching && !contentsData}
 						showSharedColumn

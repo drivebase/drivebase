@@ -199,7 +199,7 @@ export class S3Provider implements IStorageProvider {
 	async uploadFile(
 		remoteId: string,
 		data: ReadableStream | Buffer,
-	): Promise<void> {
+	): Promise<string | undefined> {
 		const { client, bucket } = this.ensureInitialized();
 
 		try {
@@ -215,6 +215,8 @@ export class S3Provider implements IStorageProvider {
 				error: mapAwsError(error),
 			});
 		}
+
+		return undefined;
 	}
 
 	async requestDownload(options: DownloadOptions): Promise<DownloadResponse> {

@@ -260,3 +260,98 @@ export async function getFileMetadata(
 		throw error;
 	}
 }
+
+/**
+ * Move file to a different storage provider.
+ * Streams the file from source to destination without buffering.
+ */
+export async function moveFileToProvider(
+	db: Database,
+	fileId: string,
+	userId: string,
+	targetProviderId: string,
+) {
+	logger.debug({
+		msg: "Moving file to provider",
+		userId,
+		fileId,
+		targetProviderId,
+	});
+
+	const file = await getFile(db, fileId, userId);
+
+	if (file.providerId === targetProviderId) {
+		throw new ValidationError("File is already on this provider");
+	}
+
+	const providerService = new ProviderService(db);
+
+	const sourceRecord = await providerService.getProvider(
+		file.providerId,
+		userId,
+	);
+	const sourceProvider =
+		await providerService.getProviderInstance(sourceRecord);
+
+	const targetRecord = await providerService.getProvider(
+		targetProviderId,
+		userId,
+	);
+	const targetProvider =
+		await providerService.getProviderInstance(targetRecord);
+
+	try {
+		const stream = await sourceProvider.downloadFile(file.remoteId);
+
+		const uploadResponse = await targetProvider.requestUpload({
+			name: file.name,
+			mimeType: file.mimeType,
+			size: file.size,
+			parentId: targetRecord.rootFolderId ?? undefined,
+		});
+
+		const finalRemoteId =
+			(await targetProvider.uploadFile(uploadResponse.fileId, stream)) ||
+			uploadResponse.fileId;
+
+		await sourceProvider.delete({
+			remoteId: file.remoteId,
+			isFolder: false,
+		});
+
+		const [updated] = await db
+			.update(files)
+			.set({
+				providerId: targetProviderId,
+				remoteId: finalRemoteId,
+				updatedAt: new Date(),
+			})
+			.where(eq(files.id, fileId))
+			.returning();
+
+		if (!updated) {
+			throw new Error("Failed to update file record");
+		}
+
+		logger.debug({
+			msg: "File moved to provider",
+			fileId,
+			from: file.providerId,
+			to: targetProviderId,
+		});
+
+		return updated;
+	} catch (error) {
+		logger.error({
+			msg: "Move file to provider failed",
+			userId,
+			fileId,
+			targetProviderId,
+			error,
+		});
+		throw error;
+	} finally {
+		await sourceProvider.cleanup();
+		await targetProvider.cleanup();
+	}
+}

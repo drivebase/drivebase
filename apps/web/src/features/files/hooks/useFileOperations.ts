@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import {
 	useDeleteFile,
+	useMoveFileToProvider,
 	useRenameFile,
 	useStarFile,
 	useUnstarFile,
@@ -33,6 +34,7 @@ export function useFileOperations({
 	const [, deleteFolder] = useDeleteFolder();
 	const [, renameFile] = useRenameFile();
 	const [, renameFolder] = useRenameFolder();
+	const [, moveFileToProvider] = useMoveFileToProvider();
 	const [, starFile] = useStarFile();
 	const [, unstarFile] = useUnstarFile();
 	const [, starFolder] = useStarFolder();
@@ -146,6 +148,22 @@ export function useFileOperations({
 		}
 	};
 
+	const handleMoveFileToProvider = async (
+		file: FileItemFragment,
+		providerId: string,
+	) => {
+		const result = await moveFileToProvider({ id: file.id, providerId });
+		if (result.error) {
+			toast.error(`Failed to move: ${result.error.message}`);
+		} else {
+			if (result.data?.moveFileToProvider) {
+				fileList.updateItem(file.id, result.data.moveFileToProvider);
+			}
+			toast.success(`Moved "${file.name}" to new provider`);
+			onMutationComplete?.();
+		}
+	};
+
 	const handleDeleteSelection = async (selection: {
 		files: FileItemFragment[];
 		folders: FolderItemFragment[];
@@ -248,6 +266,7 @@ export function useFileOperations({
 		handleToggleFolderFavorite,
 		handleRenameFile,
 		handleRenameFolder,
+		handleMoveFileToProvider,
 		handleDeleteSelection,
 	};
 }
