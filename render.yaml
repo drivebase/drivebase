@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: drivebase
+    image:
+      url: ghcr.io/drivebase/drivebase:v1.8.0
+    plan: free
+    autoDeploy: true
+
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: drivebase-db
+          property: connectionString
+
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: drivebase-redis
+          property: connectionString
+
+      - key: JWT_SECRET
+        generateValue: true
+
+      - key: ENCRYPTION_KEY
+        generateValue: true
+
+      - key: CORS_ORIGIN
+        sync: false
+
+      # automatically becomes https://your-service.onrender.com
+      - key: API_BASE_URL
+        fromService:
+          type: web
+          name: drivebase
+          property: url
+
+
+  - type: redis
+    name: drivebase-redis
+    plan: free
+    ipAllowList: []
+
+
+databases:
+  - name: drivebase-db
+    plan: free
+    databaseName: drivebase
+    user: postgres

@@ -18,6 +18,10 @@
 					"file": "docker/compose.prod.yaml",
 					"type": "text/plain"
 				},
+				{
+					"file": "render.yaml",
+					"type": "text/plain"
+				},
 				"apps/www/components/landing/hero.tsx"
 			]
 		}
