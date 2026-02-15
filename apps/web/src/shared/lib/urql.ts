@@ -28,6 +28,7 @@ export const client = new Client({
 			forwardSubscription(operation) {
 				return {
 					subscribe: (sink) => {
+						// biome-ignore lint/suspicious/noExplicitAny: library type mismatch between urql and graphql-sse
 						const dispose = sseClient.subscribe(operation as any, sink as any);
 						return {
 							unsubscribe: dispose,

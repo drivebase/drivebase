@@ -196,6 +196,7 @@ export class TelegramProvider implements IStorageProvider {
 			const file = new CustomFile(fileName, buffer.length, "", buffer);
 			// gramjs uses BigInteger from 'bigjs' internally, but our ID is BigInt.
 			// Casting to any to allow library to handle conversion.
+			// biome-ignore lint/suspicious/noExplicitAny: gramjs expects BigInteger but handles other types at runtime
 			await client.sendFile(entity as any, {
 				file,
 				forceDocument: true,

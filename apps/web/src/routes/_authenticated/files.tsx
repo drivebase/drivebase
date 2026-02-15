@@ -93,7 +93,6 @@ function FilesPage() {
 			onDragEnd={dnd.handleDragEnd}
 			onDragCancel={dnd.handleDragCancel}
 		>
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop container */}
 			<div
 				className="p-8 flex flex-col gap-6 h-full relative"
 				{...dragHandlers}
