@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useUpdateMyProfile } from "@/hooks/useAuth";
-import { useAuthStore } from "@/store/authStore";
+import { useUpdateMyProfile } from "@/features/auth/hooks/useAuth";
+import { useAuthStore } from "@/features/auth/store/authStore";
 
 export const Route = createFileRoute("/_authenticated/my-account")({
 	component: MyAccountPage,

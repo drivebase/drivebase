@@ -3,7 +3,7 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "urql";
 import { ThemeProvider } from "@/components/theme-provider";
-import { client } from "@/lib/urql";
+import { client } from "@/shared/lib/urql";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";

@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { Loader2, Shield } from "lucide-react";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
-import { useProvider } from "@/hooks/useProviders";
+import { useProvider } from "@/features/providers/hooks/useProviders";
 
 interface ProviderInfoPanelProps {
 	providerId: string;

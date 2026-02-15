@@ -6,8 +6,8 @@ import {
 } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
-import { useMe } from "@/hooks/useAuth";
-import { useAuthStore } from "@/store/authStore";
+import { useMe } from "@/features/auth/hooks/useAuth";
+import { useAuthStore } from "@/features/auth/store/authStore";
 
 export const Route = createFileRoute("/onboarding")({
 	beforeLoad: ({ location }) => {

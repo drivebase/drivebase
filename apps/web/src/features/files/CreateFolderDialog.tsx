@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCreateFolder } from "@/hooks/useFolders";
+import { useCreateFolder } from "@/features/files/hooks/useFolders";
 
 interface CreateFolderDialogProps {
 	isOpen: boolean;

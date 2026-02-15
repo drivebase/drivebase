@@ -3,7 +3,7 @@ import { Check } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Route } from "@/routes/onboarding/index";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import { CompletionStep } from "./steps/CompletionStep";
 import { ProviderStep } from "./steps/ProviderStep";
 import { WelcomeStep } from "./steps/WelcomeStep";

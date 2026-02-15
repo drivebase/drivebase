@@ -7,7 +7,7 @@ import {
 	PROVIDERS_QUERY,
 	SYNC_PROVIDER_MUTATION,
 	UPDATE_PROVIDER_QUOTA_MUTATION,
-} from "@/api/provider";
+} from "@/features/providers/api/provider";
 
 export function useProviders() {
 	const [result] = useQuery({

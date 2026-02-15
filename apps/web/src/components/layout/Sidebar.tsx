@@ -8,7 +8,7 @@ import {
 	Star,
 	Trash2,
 } from "lucide-react";
-import { useAppUpdate } from "@/hooks/useAppUpdate";
+import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 
 const navItems = [
 	{ icon: LayoutDashboard, label: "Dashboard", to: "/" },
