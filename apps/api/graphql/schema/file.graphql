@@ -98,6 +98,11 @@ extend type Mutation {
 	moveFile(id: ID!, folderId: ID): File!
 
 	"""
+	Move file to a different storage provider (transfers data via streaming)
+	"""
+	moveFileToProvider(id: ID!, providerId: ID!): File!
+
+	"""
 	Delete file (soft delete)
 	"""
 	deleteFile(id: ID!): Boolean!

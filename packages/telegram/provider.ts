@@ -143,7 +143,7 @@ export class TelegramProvider implements IStorageProvider {
 	async uploadFile(
 		remoteId: string,
 		data: ReadableStream | Buffer,
-	): Promise<void> {
+	): Promise<string | undefined> {
 		const client = this.ensureInitialized();
 
 		try {
@@ -197,10 +197,13 @@ export class TelegramProvider implements IStorageProvider {
 			// gramjs uses BigInteger from 'bigjs' internally, but our ID is BigInt.
 			// Casting to any to allow library to handle conversion.
 			// biome-ignore lint/suspicious/noExplicitAny: gramjs expects BigInteger but handles other types at runtime
-			await client.sendFile(entity as any, {
+			const result = await client.sendFile(entity as any, {
 				file,
 				forceDocument: true,
 			});
+
+			// Return entity:messageId format so downloadFile knows where to find it
+			return `${String(entity)}:${String(result.id)}`;
 		} catch (error) {
 			throw new ProviderError("telegram", "Failed to upload file", {
 				error,
@@ -221,12 +224,43 @@ export class TelegramProvider implements IStorageProvider {
 		const client = this.ensureInitialized();
 
 		try {
-			const messageId = parseInt(remoteId, 10);
-			if (Number.isNaN(messageId)) {
-				throw new ProviderError("telegram", "Invalid message ID");
+			// Check for invalid pending IDs (from before the fix)
+			if (remoteId.startsWith("pending_")) {
+				throw new ProviderError(
+					"telegram",
+					"File has temporary ID and was never fully uploaded. Please re-upload the file.",
+				);
 			}
 
-			const messages = await client.getMessages("me", {
+			// Parse remoteId format: <entityId>:<messageId>
+			// Fallback: if no colon, assume old format (just message ID) and use "me"
+			let entity: string | number | bigint = "me";
+			let messageIdStr = remoteId;
+
+			if (remoteId.includes(":")) {
+				const [entityStr, msgId] = remoteId.split(":", 2);
+				if (entityStr && msgId) {
+					messageIdStr = msgId;
+					// Parse entity: if it's "me", use string; otherwise parse as BigInt
+					if (entityStr === "me") {
+						entity = "me";
+					} else {
+						try {
+							entity = BigInt(entityStr);
+						} catch {
+							entity = "me";
+						}
+					}
+				}
+			}
+
+			const messageId = parseInt(messageIdStr, 10);
+			if (Number.isNaN(messageId)) {
+				throw new ProviderError("telegram", "Invalid message ID format");
+			}
+
+			// biome-ignore lint/suspicious/noExplicitAny: gramjs expects BigInteger but handles other types at runtime
+			const messages = await client.getMessages(entity as any, {
 				ids: [messageId],
 			});
 

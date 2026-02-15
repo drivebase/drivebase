@@ -150,6 +150,17 @@ export const fileMutations: MutationResolvers = {
 		);
 	},
 
+	moveFileToProvider: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+
+		return fileService.moveFileToProvider(
+			args.id,
+			user.userId,
+			args.providerId,
+		);
+	},
+
 	deleteFile: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);

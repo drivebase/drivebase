@@ -111,6 +111,14 @@ export const MOVE_FILE_MUTATION = graphql(`
   }
 `);
 
+export const MOVE_FILE_TO_PROVIDER_MUTATION = graphql(`
+  mutation MoveFileToProvider($id: ID!, $providerId: ID!) {
+    moveFileToProvider(id: $id, providerId: $providerId) {
+      ...FileItem
+    }
+  }
+`);
+
 export const DELETE_FILE_MUTATION = graphql(`
   mutation DeleteFile($id: ID!) {
     deleteFile(id: $id)

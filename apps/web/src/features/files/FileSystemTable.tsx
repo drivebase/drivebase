@@ -33,6 +33,9 @@ import {
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -66,9 +69,16 @@ export type DragItem = {
 	item: FileItemFragment | FolderItemFragment;
 };
 
+export type ProviderInfo = {
+	id: string;
+	name: string;
+	type: string;
+};
+
 interface FileSystemTableProps {
 	files: FileItemFragment[];
 	folders?: FolderItemFragment[];
+	providers?: ProviderInfo[];
 	onNavigate?: (folderId: string) => void;
 	onDownloadFile?: (file: FileItemFragment) => void;
 	onShowFileDetails?: (file: FileItemFragment) => void;
@@ -76,6 +86,7 @@ interface FileSystemTableProps {
 	onToggleFolderFavorite?: (folder: FolderItemFragment) => void;
 	onRenameFile?: (file: FileItemFragment) => void;
 	onRenameFolder?: (folder: FolderItemFragment) => void;
+	onMoveFileToProvider?: (file: FileItemFragment, providerId: string) => void;
 	onDeleteSelection?: (selection: {
 		files: FileItemFragment[];
 		folders: FolderItemFragment[];
@@ -221,6 +232,7 @@ const STORAGE_KEY = "drivebase:file-table-columns";
 export function FileSystemTable({
 	files,
 	folders = [],
+	providers = [],
 	onNavigate,
 	onDownloadFile,
 	onShowFileDetails,
@@ -228,6 +240,7 @@ export function FileSystemTable({
 	onToggleFolderFavorite,
 	onRenameFile,
 	onRenameFolder,
+	onMoveFileToProvider,
 	onDeleteSelection,
 	isLoading,
 	showSharedColumn = false,
@@ -472,9 +485,37 @@ export function FileSystemTable({
 									>
 										<Pencil size={14} className="mr-2" /> Rename
 									</DropdownMenuItem>
-									<DropdownMenuItem>
-										<Move size={14} className="mr-2" /> Move
-									</DropdownMenuItem>
+									{file && providers.length > 0 ? (
+										<DropdownMenuSub>
+											<DropdownMenuSubTrigger>
+												<Move size={14} className="mr-2" /> Move to
+											</DropdownMenuSubTrigger>
+											<DropdownMenuSubContent>
+												{providers
+													.filter((p) => p.id !== file.provider?.id)
+													.map((provider) => (
+														<DropdownMenuItem
+															key={provider.id}
+															onClick={() =>
+																onMoveFileToProvider?.(file, provider.id)
+															}
+														>
+															<ProviderIcon
+																type={provider.type}
+																className="h-4 w-4 mr-2"
+															/>
+															{provider.name}
+														</DropdownMenuItem>
+													))}
+												{providers.filter((p) => p.id !== file.provider?.id)
+													.length === 0 ? (
+													<DropdownMenuItem disabled>
+														No other providers
+													</DropdownMenuItem>
+												) : null}
+											</DropdownMenuSubContent>
+										</DropdownMenuSub>
+									) : null}
 									<DropdownMenuSeparator />
 									<DropdownMenuLabel>Library</DropdownMenuLabel>
 									<DropdownMenuItem>
@@ -532,12 +573,14 @@ export function FileSystemTable({
 		[
 			onDeleteSelection,
 			onDownloadFile,
+			onMoveFileToProvider,
 			onNavigate,
 			onRenameFile,
 			onRenameFolder,
 			onShowFileDetails,
 			onToggleFileFavorite,
 			onToggleFolderFavorite,
+			providers,
 		],
 	);
 

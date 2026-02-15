@@ -11,6 +11,7 @@ import { starFile, unstarFile } from "./file/file-stars";
 import {
 	downloadFile,
 	getFileMetadata,
+	moveFileToProvider,
 	requestDownload,
 	requestUpload,
 } from "./file/file-transfers";
@@ -68,6 +69,10 @@ export class FileService {
 
 	async moveFile(fileId: string, userId: string, newFolderId?: string) {
 		return moveFile(this.db, fileId, userId, newFolderId);
+	}
+
+	async moveFileToProvider(fileId: string, userId: string, providerId: string) {
+		return moveFileToProvider(this.db, fileId, userId, providerId);
 	}
 
 	async deleteFile(fileId: string, userId: string) {

@@ -190,7 +190,7 @@ export class GoogleDriveProvider implements IStorageProvider {
 	async uploadFile(
 		remoteId: string,
 		data: ReadableStream | Buffer,
-	): Promise<void> {
+	): Promise<string | undefined> {
 		const drive = this.ensureInitialized();
 
 		// Ensure we have a valid token
@@ -233,6 +233,8 @@ export class GoogleDriveProvider implements IStorageProvider {
 				error,
 			});
 		}
+
+		return undefined;
 	}
 
 	/**

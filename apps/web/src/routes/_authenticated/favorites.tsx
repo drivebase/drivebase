@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import { toast } from "sonner";
 import { FileSystemTable } from "@/features/files/FileSystemTable";
 import {
+	useMoveFileToProvider,
 	useStarFile,
 	useStarredFiles,
 	useUnstarFile,
@@ -13,6 +14,7 @@ import {
 	useUnstarFolder,
 } from "@/features/files/hooks/useFolders";
 import { useFileActions } from "@/features/files/useFileActions";
+import { useProviders } from "@/features/providers/hooks/useProviders";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
 
@@ -23,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/favorites")({
 function FavoritesPage() {
 	const navigate = useNavigate();
 	const { downloadFile, showDetails } = useFileActions();
+	const { data: providersData } = useProviders();
 
 	const { data: starredFilesData, fetching: filesFetching } = useStarredFiles();
 	const { data: starredFoldersData, fetching: foldersFetching } =
@@ -39,6 +42,22 @@ function FavoritesPage() {
 	const [, unstarFile] = useUnstarFile();
 	const [, starFolder] = useStarFolder();
 	const [, unstarFolder] = useUnstarFolder();
+	const [, moveFileToProvider] = useMoveFileToProvider();
+
+	const handleMoveFileToProvider = async (
+		file: FileItemFragment,
+		providerId: string,
+	) => {
+		const result = await moveFileToProvider({ id: file.id, providerId });
+		if (result.error) {
+			toast.error(`Failed to move: ${result.error.message}`);
+		} else {
+			if (result.data?.moveFileToProvider) {
+				fileList.updateItem(file.id, result.data.moveFileToProvider);
+			}
+			toast.success(`Moved "${file.name}" to new provider`);
+		}
+	};
 
 	const handleToggleFileFavorite = async (file: FileItemFragment) => {
 		const currentStarred =
@@ -130,6 +149,7 @@ function FavoritesPage() {
 				<FileSystemTable
 					files={fileList.items}
 					folders={folderList.items}
+					providers={providersData?.storageProviders}
 					isLoading={filesFetching || foldersFetching}
 					onNavigate={(folderId) => {
 						const folder = folderList.items.find(
@@ -145,6 +165,7 @@ function FavoritesPage() {
 					onShowFileDetails={showDetails}
 					onToggleFileFavorite={handleToggleFileFavorite}
 					onToggleFolderFavorite={handleToggleFolderFavorite}
+					onMoveFileToProvider={handleMoveFileToProvider}
 					showSharedColumn
 					emptyStateMessage="No favorites yet"
 				/>

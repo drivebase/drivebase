@@ -147,7 +147,7 @@ export class FTPProvider implements IStorageProvider {
 	async uploadFile(
 		remoteId: string,
 		data: ReadableStream | Buffer,
-	): Promise<void> {
+	): Promise<string | undefined> {
 		const client = await this.getConnectedClient();
 
 		try {
@@ -172,6 +172,8 @@ export class FTPProvider implements IStorageProvider {
 				error: mapFtpError(error),
 			});
 		}
+
+		return undefined;
 	}
 
 	async requestDownload(options: DownloadOptions): Promise<DownloadResponse> {
