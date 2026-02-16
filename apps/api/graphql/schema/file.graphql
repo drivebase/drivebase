@@ -74,6 +74,11 @@ extend type Query {
 	Get starred files
 	"""
 	starredFiles: [File!]!
+
+	"""
+	Get active upload sessions for the current user
+	"""
+	activeUploadSessions: [UploadSessionInfo!]!
 }
 
 extend type Mutation {
@@ -116,6 +121,35 @@ extend type Mutation {
 	Unstar a file
 	"""
 	unstarFile(id: ID!): File!
+
+	"""
+	Initiate a chunked upload session for large files
+	"""
+	initiateChunkedUpload(
+		input: InitiateChunkedUploadInput!
+	): ChunkedUploadSession!
+
+	"""
+	Cancel an active upload session
+	"""
+	cancelUploadSession(sessionId: ID!): Boolean!
+
+	"""
+	Retry a failed upload session
+	"""
+	retryUploadSession(sessionId: ID!): Boolean!
+
+	"""
+	Complete an S3 multipart upload by providing part ETags
+	"""
+	completeS3MultipartUpload(sessionId: ID!, parts: [S3PartInput!]!): Boolean!
+}
+
+extend type Subscription {
+	"""
+	Real-time upload progress events
+	"""
+	uploadProgress(sessionId: ID!): UploadProgressEvent!
 }
 
 input RequestUploadInput {
@@ -137,4 +171,58 @@ type DownloadResponse {
 	fileId: ID!
 	downloadUrl: String
 	useDirectDownload: Boolean!
+}
+
+"""
+Chunked upload session types
+"""
+input InitiateChunkedUploadInput {
+	name: String!
+	mimeType: String!
+	totalSize: Float!
+	chunkSize: Float
+	folderId: ID
+	providerId: ID!
+}
+
+type ChunkedUploadSession {
+	sessionId: ID!
+	totalChunks: Int!
+	chunkSize: Float!
+	useDirectUpload: Boolean!
+	presignedPartUrls: [PresignedPartUrl!]
+}
+
+type PresignedPartUrl {
+	partNumber: Int!
+	url: String!
+}
+
+input S3PartInput {
+	partNumber: Int!
+	etag: String!
+}
+
+type UploadProgressEvent {
+	sessionId: ID!
+	status: String!
+	phase: String!
+	receivedChunks: Int!
+	totalChunks: Int!
+	providerBytesTransferred: Float!
+	totalSize: Float!
+	errorMessage: String
+}
+
+type UploadSessionInfo {
+	sessionId: ID!
+	fileName: String!
+	totalSize: Float!
+	status: String!
+	phase: String!
+	receivedChunks: Int!
+	totalChunks: Int!
+	providerBytesTransferred: Float!
+	errorMessage: String
+	createdAt: String!
 }
