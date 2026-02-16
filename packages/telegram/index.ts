@@ -6,6 +6,7 @@
  * Auth is handled via phone + OTP + optional 2FA (not standard OAuth).
  */
 
+export { sendCode, verify2FA, verifyCode } from "./auth";
 export {
 	handleTelegramOAuthCallback,
 	initiateTelegramOAuth,
@@ -21,6 +22,7 @@ export {
 import type { ProviderRegistration } from "@drivebase/core";
 import { handleTelegramOAuthCallback, initiateTelegramOAuth } from "./oauth";
 import { TelegramProvider } from "./provider";
+import { createTelegramRoutes } from "./routes";
 import { TelegramConfigFields, TelegramConfigSchema } from "./schema";
 
 /**
@@ -39,4 +41,6 @@ export const telegramRegistration: ProviderRegistration = {
 	authType: "oauth",
 	initiateOAuth: initiateTelegramOAuth,
 	handleOAuthCallback: handleTelegramOAuthCallback,
+	routes: createTelegramRoutes(),
+	routePrefix: "/api/telegram",
 };

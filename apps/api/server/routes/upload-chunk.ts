@@ -1,55 +1,25 @@
 import { getDb } from "@drivebase/db";
+import type { Context } from "hono";
 import { getUploadQueue } from "../../queue/upload-queue";
 import { UploadSessionManager } from "../../services/file/upload-session";
-import { verifyToken } from "../../utils/jwt";
 import { logger } from "../../utils/logger";
-import { getProxyCorsHeaders } from "../cors";
+import type { AppEnv } from "../app";
 
 /**
  * Handle POST /api/upload/chunk — Receive a file chunk for a chunked upload session
  */
-export async function handleUploadChunk(request: Request): Promise<Response> {
-	const url = new URL(request.url);
-	const sessionId = url.searchParams.get("sessionId");
-	const chunkIndexStr = url.searchParams.get("chunkIndex");
-
-	const corsHeaders = getProxyCorsHeaders();
+export async function handleUploadChunk(c: Context<AppEnv>): Promise<Response> {
+	const sessionId = c.req.query("sessionId");
+	const chunkIndexStr = c.req.query("chunkIndex");
+	const user = c.get("user");
 
 	if (!sessionId || !chunkIndexStr) {
-		return new Response(
-			JSON.stringify({ error: "Missing sessionId or chunkIndex" }),
-			{
-				status: 400,
-				headers: { "Content-Type": "application/json", ...corsHeaders },
-			},
-		);
+		return c.json({ error: "Missing sessionId or chunkIndex" }, 400);
 	}
 
 	const chunkIndex = parseInt(chunkIndexStr, 10);
 	if (Number.isNaN(chunkIndex) || chunkIndex < 0) {
-		return new Response(JSON.stringify({ error: "Invalid chunkIndex" }), {
-			status: 400,
-			headers: { "Content-Type": "application/json", ...corsHeaders },
-		});
-	}
-
-	// Validate bearer token
-	const authHeader = request.headers.get("Authorization");
-	if (!authHeader || !authHeader.startsWith("Bearer ")) {
-		return new Response("Unauthorized", { status: 401, headers: corsHeaders });
-	}
-
-	const token = authHeader.split(" ")[1];
-	if (!token) {
-		return new Response("Unauthorized", { status: 401, headers: corsHeaders });
-	}
-
-	let userId: string;
-	try {
-		const payload = await verifyToken(token);
-		userId = payload.userId;
-	} catch {
-		return new Response("Invalid token", { status: 401, headers: corsHeaders });
+		return c.json({ error: "Invalid chunkIndex" }, 400);
 	}
 
 	try {
@@ -57,14 +27,14 @@ export async function handleUploadChunk(request: Request): Promise<Response> {
 		const sessionManager = new UploadSessionManager(db);
 
 		// Read chunk data from request body
-		const arrayBuffer = await request.arrayBuffer();
+		const arrayBuffer = await c.req.raw.arrayBuffer();
 		const data = Buffer.from(arrayBuffer);
 
 		const result = await sessionManager.receiveChunk(
 			sessionId,
 			chunkIndex,
 			data,
-			userId,
+			user.userId,
 		);
 
 		// If all chunks received, assemble and enqueue BullMQ job
@@ -98,16 +68,11 @@ export async function handleUploadChunk(request: Request): Promise<Response> {
 			});
 		}
 
-		return new Response(
-			JSON.stringify({
-				success: true,
-				chunkIndex: result.chunkIndex,
-				isComplete: result.isComplete,
-			}),
-			{
-				headers: { "Content-Type": "application/json", ...corsHeaders },
-			},
-		);
+		return c.json({
+			success: true,
+			chunkIndex: result.chunkIndex,
+			isComplete: result.isComplete,
+		});
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		logger.error({
@@ -117,9 +82,6 @@ export async function handleUploadChunk(request: Request): Promise<Response> {
 			error: errorMessage,
 		});
 
-		return new Response(JSON.stringify({ error: errorMessage }), {
-			status: 500,
-			headers: { "Content-Type": "application/json", ...corsHeaders },
-		});
+		return c.json({ error: errorMessage }, 500);
 	}
 }

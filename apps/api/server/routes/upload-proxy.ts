@@ -1,63 +1,38 @@
 import { files, getDb } from "@drivebase/db";
 import { eq } from "drizzle-orm";
+import type { Context } from "hono";
 import { FileService } from "../../services/file";
 import { ProviderService } from "../../services/provider";
-import { verifyToken } from "../../utils/jwt";
 import { logger } from "../../utils/logger";
-import { getProxyCorsHeaders } from "../cors";
+import type { AppEnv } from "../app";
 
 /**
  * Handle POST /api/upload/proxy — Proxy file upload to provider
  */
-export async function handleUploadProxy(request: Request): Promise<Response> {
-	const url = new URL(request.url);
-	const fileId = url.searchParams.get("fileId");
-
-	const corsHeaders = getProxyCorsHeaders();
+export async function handleUploadProxy(c: Context<AppEnv>): Promise<Response> {
+	const fileId = c.req.query("fileId");
+	const user = c.get("user");
 
 	if (!fileId) {
-		return new Response("Missing fileId", {
-			status: 400,
-			headers: corsHeaders,
-		});
+		return c.json({ error: "Missing fileId" }, 400);
 	}
 
 	logger.debug({ msg: "Proxy upload started", fileId });
 
-	const authHeader = request.headers.get("Authorization");
-	if (!authHeader || !authHeader.startsWith("Bearer ")) {
-		return new Response("Unauthorized", { status: 401, headers: corsHeaders });
-	}
-	const token = authHeader.split(" ")[1];
-	if (!token) {
-		return new Response("Unauthorized", { status: 401, headers: corsHeaders });
-	}
-
-	let userId: string;
-	try {
-		const payload = await verifyToken(token);
-		userId = payload.userId;
-	} catch (_error) {
-		return new Response("Invalid token", { status: 401, headers: corsHeaders });
-	}
-
 	try {
 		const db = getDb();
 		const fileService = new FileService(db);
-		const file = await fileService.getFile(fileId, userId);
+		const file = await fileService.getFile(fileId, user.userId);
 
 		const providerService = new ProviderService(db);
 		const providerRecord = await providerService.getProvider(
 			file.providerId,
-			userId,
+			user.userId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 
-		if (!request.body) {
-			return new Response("Missing body", {
-				status: 400,
-				headers: corsHeaders,
-			});
+		if (!c.req.raw.body) {
+			return c.json({ error: "Missing body" }, 400);
 		}
 
 		logger.debug({
@@ -65,7 +40,10 @@ export async function handleUploadProxy(request: Request): Promise<Response> {
 			fileId,
 			providerId: file.providerId,
 		});
-		const newRemoteId = await provider.uploadFile(file.remoteId, request.body);
+		const newRemoteId = await provider.uploadFile(
+			file.remoteId,
+			c.req.raw.body,
+		);
 		await provider.cleanup();
 
 		// If the provider returned a new remote ID (e.g. Telegram message ID),
@@ -79,11 +57,14 @@ export async function handleUploadProxy(request: Request): Promise<Response> {
 
 		logger.debug({ msg: "Proxy upload success", fileId });
 
-		return new Response(JSON.stringify({ success: true }), {
-			headers: { "Content-Type": "application/json", ...corsHeaders },
-		});
+		return c.json({ success: true });
 	} catch (error) {
-		logger.error({ msg: "Proxy upload failed", error, fileId, userId });
+		logger.error({
+			msg: "Proxy upload failed",
+			error,
+			fileId,
+			userId: user.userId,
+		});
 
 		try {
 			if (fileId) {
@@ -99,9 +80,6 @@ export async function handleUploadProxy(request: Request): Promise<Response> {
 		}
 
 		const errorMessage = error instanceof Error ? error.message : String(error);
-		return new Response(`Upload failed: ${errorMessage}`, {
-			status: 500,
-			headers: corsHeaders,
-		});
+		return c.text(`Upload failed: ${errorMessage}`, 500);
 	}
 }

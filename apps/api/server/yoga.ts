@@ -67,25 +67,7 @@ export const yoga = createYoga({
 	context: createContext,
 	graphiql: env.NODE_ENV === "development",
 	logging: graphQLLogger,
-	cors: (request) => {
-		const origin = request.headers.get("origin");
-
-		if (env.NODE_ENV === "development" && origin?.includes("localhost")) {
-			return {
-				origin: origin,
-				credentials: true,
-				methods: ["POST", "GET", "OPTIONS"],
-				allowedHeaders: ["Content-Type", "Authorization"],
-			};
-		}
-
-		return {
-			origin: env.CORS_ORIGIN,
-			credentials: true,
-			methods: ["POST", "GET", "OPTIONS"],
-			allowedHeaders: ["Content-Type", "Authorization"],
-		};
-	},
+	cors: false, // CORS handled by Hono middleware
 	maskedErrors: {
 		maskError: (error: unknown) => {
 			const original = (error as { originalError?: unknown }).originalError;

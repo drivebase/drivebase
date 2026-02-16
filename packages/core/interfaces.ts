@@ -317,4 +317,13 @@ export interface ProviderRegistration {
 		code: string,
 		callbackUrl: string,
 	) => Promise<ProviderConfig>;
+	/**
+	 * Optional Hono sub-app for provider-specific REST routes.
+	 * Typed as `unknown` to avoid Hono dependency in core.
+	 */
+	routes?: unknown;
+	/**
+	 * Mount prefix for routes. Defaults to `/api/providers/<type>`.
+	 */
+	routePrefix?: string;
 }
