@@ -24,6 +24,7 @@ generates:
         File: "@drivebase/db#File as DbFile"
         Folder: "@drivebase/db#Folder as DbFolder"
         StorageProvider: "@drivebase/db#StorageProvider as DbStorageProvider"
+        OAuthProviderCredential: "@drivebase/db#OAuthProviderCredential as DbOAuthProviderCredential"
         Permission: "@drivebase/db#Permission as DbPermission"
         Activity: "@drivebase/db#Activity as DbActivity"
       # Use type imports

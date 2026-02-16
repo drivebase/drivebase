@@ -1,5 +1,13 @@
 import type { IStorageProvider } from "@drivebase/core";
-import type { Database, storageProviders } from "@drivebase/db";
+import type {
+	Database,
+	oauthProviderCredentials,
+	storageProviders,
+} from "@drivebase/db";
+import {
+	createOAuthProviderCredential,
+	listOAuthProviderCredentials,
+} from "./provider/provider-credentials";
 import {
 	connectProvider,
 	disconnectProvider,
@@ -35,9 +43,29 @@ export class ProviderService {
 		userId: string,
 		name: string,
 		type: string,
-		config: Record<string, unknown>,
+		config: Record<string, unknown> | undefined,
+		oauthCredentialId?: string,
 	) {
-		return connectProvider(this.db, userId, name, type, config);
+		return connectProvider(
+			this.db,
+			userId,
+			name,
+			type,
+			config,
+			oauthCredentialId,
+		);
+	}
+
+	async listOAuthProviderCredentials(userId: string, type: string) {
+		return listOAuthProviderCredentials(this.db, userId, type);
+	}
+
+	async createOAuthProviderCredential(
+		userId: string,
+		type: string,
+		config: Record<string, unknown>,
+	): Promise<typeof oauthProviderCredentials.$inferSelect> {
+		return createOAuthProviderCredential(this.db, userId, type, config);
 	}
 
 	async initiateOAuth(providerId: string, userId: string) {

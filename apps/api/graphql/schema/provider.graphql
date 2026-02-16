@@ -49,8 +49,18 @@ type ProviderConfigField {
 	label: String!
 	type: String!
 	required: Boolean!
+	isIdentifier: Boolean!
 	description: String
 	placeholder: String
+}
+
+type OAuthProviderCredential {
+	id: ID!
+	type: ProviderType!
+	identifierLabel: String!
+	identifierValue: String!
+	createdAt: DateTime!
+	updatedAt: DateTime!
 }
 
 type AvailableProvider {
@@ -84,6 +94,11 @@ extend type Query {
 	Get list of available storage provider types
 	"""
 	availableProviders: [AvailableProvider!]!
+
+	"""
+	Get reusable OAuth app credentials for the current user and provider type
+	"""
+	oauthProviderCredentials(type: ProviderType!): [OAuthProviderCredential!]!
 }
 
 input SyncOptionsInput {
@@ -118,6 +133,13 @@ extend type Mutation {
 	The OAuth callback is handled via GET /webhook/callback/:id
 	"""
 	initiateProviderOAuth(id: ID!): OAuthInitResult!
+
+	"""
+	Create and save reusable OAuth app credentials for a provider
+	"""
+	createOAuthProviderCredential(
+		input: CreateOAuthProviderCredentialInput!
+	): OAuthProviderCredential!
 }
 
 input UpdateProviderQuotaInput {
@@ -128,6 +150,12 @@ input UpdateProviderQuotaInput {
 
 input ConnectStorageInput {
 	name: String!
+	type: ProviderType!
+	config: JSON
+	oauthCredentialId: ID
+}
+
+input CreateOAuthProviderCredentialInput {
 	type: ProviderType!
 	config: JSON!
 }

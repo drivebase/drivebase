@@ -5,6 +5,7 @@ import {
 	pgTable,
 	text,
 	timestamp,
+	uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
 import { users } from "./users";
@@ -61,5 +62,42 @@ export const storageProviders = pgTable("storage_providers", {
 		.defaultNow(),
 });
 
+/**
+ * Reusable OAuth app credentials for provider connections.
+ * Stores provider client/app identifiers and secrets separate from connection instances.
+ */
+export const oauthProviderCredentials = pgTable(
+	"oauth_provider_credentials",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn(() => createId()),
+		type: providerTypeEnum("type").notNull(),
+		encryptedConfig: text("encrypted_config").notNull(),
+		identifierLabel: text("identifier_label").notNull(),
+		identifierValue: text("identifier_value").notNull(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("oauth_provider_credentials_user_type_identifier_idx").on(
+			table.userId,
+			table.type,
+			table.identifierValue,
+		),
+	],
+);
+
 export type StorageProvider = typeof storageProviders.$inferSelect;
 export type NewStorageProvider = typeof storageProviders.$inferInsert;
+export type OAuthProviderCredential =
+	typeof oauthProviderCredentials.$inferSelect;
+export type NewOAuthProviderCredential =
+	typeof oauthProviderCredentials.$inferInsert;
