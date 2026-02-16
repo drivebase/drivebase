@@ -1,6 +1,6 @@
 {
-  "$schema": "https://railway.app/railway.schema.json",
-  "deploy": {
-    "startCommand": "docker compose up"
-  }
+	"$schema": "https://railway.app/railway.schema.json",
+	"deploy": {
+		"startCommand": "docker compose up"
+	}
 }

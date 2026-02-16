@@ -1,4 +1,4 @@
-import { msg, Trans } from "@lingui/macro";
+import { msg } from "@lingui/macro";
 import { useLingui } from "@lingui/react";
 import { Link } from "@tanstack/react-router";
 import {

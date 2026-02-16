@@ -8,6 +8,13 @@
 			"when": 1771051678073,
 			"tag": "0000_slim_chronomancer",
 			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1771138078073,
+			"tag": "0001_chunked_uploads",
+			"breakpoints": true
 		}
 	]
 }

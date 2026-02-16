@@ -1,6 +1,9 @@
 import { Readable } from "node:stream";
 import {
+	AbortMultipartUploadCommand,
+	CompleteMultipartUploadCommand,
 	CopyObjectCommand,
+	CreateMultipartUploadCommand,
 	DeleteObjectCommand,
 	DeleteObjectsCommand,
 	GetObjectCommand,
@@ -9,6 +12,7 @@ import {
 	ListObjectsV2Command,
 	PutObjectCommand,
 	S3Client,
+	UploadPartCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type {
@@ -23,9 +27,11 @@ import type {
 	ListOptions,
 	ListResult,
 	MoveOptions,
+	MultipartUploadResult,
 	ProviderConfig,
 	ProviderQuota,
 	UploadOptions,
+	UploadPartResult,
 	UploadResponse,
 } from "@drivebase/core";
 import { ProviderError } from "@drivebase/core";
@@ -102,6 +108,8 @@ function toNodeReadable(value: unknown): Readable {
 export class S3Provider implements IStorageProvider {
 	private client: S3Client | null = null;
 	private config: S3Config | null = null;
+
+	supportsChunkedUpload = true;
 
 	async initialize(config: ProviderConfig): Promise<void> {
 		const parsed = S3ConfigSchema.safeParse(config);
@@ -531,6 +539,151 @@ export class S3Provider implements IStorageProvider {
 				modifiedAt: toDate(listResponse.Contents?.[0]?.LastModified),
 			};
 		}
+	}
+
+	async initiateMultipartUpload(
+		options: UploadOptions,
+	): Promise<MultipartUploadResult> {
+		const { client, bucket } = this.ensureInitialized();
+		const key = joinKey(options.parentId, options.name);
+
+		try {
+			const response = await client.send(
+				new CreateMultipartUploadCommand({
+					Bucket: bucket,
+					Key: key,
+					ContentType: options.mimeType || "application/octet-stream",
+				}),
+			);
+
+			if (!response.UploadId) {
+				throw new Error("S3 did not return an UploadId");
+			}
+
+			return {
+				uploadId: response.UploadId,
+				remoteId: key,
+			};
+		} catch (error) {
+			if (error instanceof ProviderError) throw error;
+			throw new ProviderError("s3", "Failed to initiate multipart upload", {
+				error: mapAwsError(error),
+			});
+		}
+	}
+
+	async uploadPart(
+		uploadId: string,
+		remoteId: string,
+		partNumber: number,
+		data: Buffer,
+	): Promise<UploadPartResult> {
+		const { client, bucket } = this.ensureInitialized();
+
+		try {
+			const response = await client.send(
+				new UploadPartCommand({
+					Bucket: bucket,
+					Key: remoteId,
+					UploadId: uploadId,
+					PartNumber: partNumber,
+					Body: data,
+				}),
+			);
+
+			if (!response.ETag) {
+				throw new Error("S3 did not return an ETag for part");
+			}
+
+			return {
+				partNumber,
+				etag: response.ETag,
+			};
+		} catch (error) {
+			if (error instanceof ProviderError) throw error;
+			throw new ProviderError("s3", `Failed to upload part ${partNumber}`, {
+				error: mapAwsError(error),
+			});
+		}
+	}
+
+	async completeMultipartUpload(
+		uploadId: string,
+		remoteId: string,
+		parts: UploadPartResult[],
+	): Promise<void> {
+		const { client, bucket } = this.ensureInitialized();
+
+		try {
+			await client.send(
+				new CompleteMultipartUploadCommand({
+					Bucket: bucket,
+					Key: remoteId,
+					UploadId: uploadId,
+					MultipartUpload: {
+						Parts: parts
+							.sort((a, b) => a.partNumber - b.partNumber)
+							.map((part) => ({
+								PartNumber: part.partNumber,
+								ETag: part.etag,
+							})),
+					},
+				}),
+			);
+		} catch (error) {
+			throw new ProviderError("s3", "Failed to complete multipart upload", {
+				error: mapAwsError(error),
+			});
+		}
+	}
+
+	async abortMultipartUpload(
+		uploadId: string,
+		remoteId: string,
+	): Promise<void> {
+		const { client, bucket } = this.ensureInitialized();
+
+		try {
+			await client.send(
+				new AbortMultipartUploadCommand({
+					Bucket: bucket,
+					Key: remoteId,
+					UploadId: uploadId,
+				}),
+			);
+		} catch (error) {
+			throw new ProviderError("s3", "Failed to abort multipart upload", {
+				error: mapAwsError(error),
+			});
+		}
+	}
+
+	/**
+	 * Generate presigned URLs for multipart upload parts
+	 * Used for direct client-to-S3 multipart uploads
+	 */
+	async generatePresignedPartUrls(
+		uploadId: string,
+		remoteId: string,
+		totalParts: number,
+	): Promise<Array<{ partNumber: number; url: string }>> {
+		const { client, bucket } = this.ensureInitialized();
+
+		const urls: Array<{ partNumber: number; url: string }> = [];
+
+		for (let i = 1; i <= totalParts; i++) {
+			const command = new UploadPartCommand({
+				Bucket: bucket,
+				Key: remoteId,
+				UploadId: uploadId,
+				PartNumber: i,
+			});
+
+			const url = await getSignedUrl(client, command, { expiresIn: 3600 });
+			urls.push({ partNumber: i, url });
+		}
+
+		return urls;
 	}
 
 	async cleanup(): Promise<void> {
