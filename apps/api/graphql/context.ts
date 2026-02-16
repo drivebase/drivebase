@@ -4,6 +4,7 @@ import type { YogaInitialContext } from "graphql-yoga";
 import { getSession } from "../redis/session";
 import type { JWTPayload } from "../utils/jwt";
 import { extractToken, verifyToken } from "../utils/jwt";
+import { logger } from "../utils/logger";
 
 export interface GraphQLContext {
 	/** Database client */
@@ -45,7 +46,7 @@ export async function createContext(
 			}
 		} catch (error) {
 			// Invalid token, user remains null
-			console.error("Token verification failed:", error);
+			logger.debug({ msg: "Token verification failed", error });
 		}
 	}
 

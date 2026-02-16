@@ -1,5 +1,6 @@
 import { getDb, users } from "@drivebase/db";
 import { eq } from "drizzle-orm";
+import type { Context } from "hono";
 import { env } from "../../config/env";
 import { ProviderService } from "../../services/provider";
 import { logger } from "../../utils/logger";
@@ -10,17 +11,15 @@ import { logger } from "../../utils/logger";
  * Redirects to /onboarding?connected=true if the user hasn't completed onboarding yet,
  * otherwise to /providers?connected=true.
  */
-export async function handleOAuthCallback(request: Request): Promise<Response> {
-	const url = new URL(request.url);
-
-	const code = url.searchParams.get("code");
-	const state = url.searchParams.get("state");
+export async function handleOAuthCallback(c: Context): Promise<Response> {
+	const code = c.req.query("code");
+	const state = c.req.query("state");
 
 	if (!code) {
-		return new Response("Missing authorization code", { status: 400 });
+		return c.text("Missing authorization code", 400);
 	}
 	if (!state) {
-		return new Response("Missing state parameter", { status: 400 });
+		return c.text("Missing state parameter", 400);
 	}
 
 	const frontendUrl = env.CORS_ORIGIN;
@@ -44,12 +43,9 @@ export async function handleOAuthCallback(request: Request): Promise<Response> {
 				? "/onboarding?connected=true"
 				: "/providers?connected=true";
 
-		return Response.redirect(`${frontendUrl}${returnPath}`, 302);
+		return c.redirect(`${frontendUrl}${returnPath}`, 302);
 	} catch (error) {
 		logger.error({ msg: "OAuth callback failed", error });
-		return Response.redirect(
-			`${frontendUrl}/providers?error=oauth_failed`,
-			302,
-		);
+		return c.redirect(`${frontendUrl}/providers?error=oauth_failed`, 302);
 	}
 }

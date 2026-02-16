@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@drivebase/core": "workspace:*",
+		"hono": "^4.7.0",
 		"telegram": "^2.26.22",
 		"zod": "^3.22.4"
 	},

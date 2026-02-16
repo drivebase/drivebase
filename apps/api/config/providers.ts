@@ -16,6 +16,9 @@ import {
 	telegramRegistration,
 } from "@drivebase/telegram";
 import { WebDAVSensitiveFields, webdavRegistration } from "@drivebase/webdav";
+import type { Hono } from "hono";
+import type { AppEnv } from "../server/app";
+import { logger } from "../utils/logger";
 
 /**
  * Storage provider registry
@@ -93,5 +96,27 @@ function getProviderName(type: string): string {
 			return "Telegram";
 		default:
 			return type;
+	}
+}
+
+/**
+ * Mount provider plugin routes to Hono app
+ * Each provider can optionally provide REST routes that are mounted with auth middleware
+ */
+export function mountPluginRoutes(app: Hono<AppEnv>): void {
+	const { authMiddleware } = require("../server/middleware/auth");
+
+	for (const [type, registration] of Object.entries(providerRegistry)) {
+		if (registration.routes) {
+			const prefix = registration.routePrefix || `/api/providers/${type}`;
+
+			// Apply auth middleware to all plugin routes
+			app.use(`${prefix}/*`, authMiddleware);
+
+			// Mount the plugin's Hono sub-app
+			app.route(prefix, registration.routes as Hono);
+
+			logger.debug(`Routes mounted at ${prefix}`);
+		}
 	}
 }

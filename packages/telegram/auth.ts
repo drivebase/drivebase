@@ -2,7 +2,6 @@ import { ProviderError } from "@drivebase/core";
 import { Api, TelegramClient } from "telegram";
 import { computeCheck } from "telegram/Password";
 import { StringSession } from "telegram/sessions";
-import { logger } from "../utils/logger";
 
 interface PendingAuth {
 	client: TelegramClient;
@@ -68,7 +67,7 @@ export async function sendCode(
 		return { phoneCodeHash: result.phoneCodeHash };
 	} catch (error) {
 		await client.disconnect().catch(() => {});
-		logger.error({ msg: "Telegram sendCode failed", error });
+		console.error("Telegram sendCode failed:", error);
 		throw new ProviderError("telegram", "Failed to send verification code", {
 			error: error instanceof Error ? error.message : String(error),
 		});
@@ -118,7 +117,7 @@ export async function verifyCode(
 		// Other error — cleanup
 		await pending.client.disconnect().catch(() => {});
 		pendingAuths.delete(providerId);
-		logger.error({ msg: "Telegram verifyCode failed", error });
+		console.error("Telegram verifyCode failed:", error);
 		throw new ProviderError("telegram", "Failed to verify code", {
 			error: error instanceof Error ? error.message : String(error),
 		});
@@ -160,7 +159,7 @@ export async function verify2FA(
 	} catch (error) {
 		await pending.client.disconnect().catch(() => {});
 		pendingAuths.delete(providerId);
-		logger.error({ msg: "Telegram verify2FA failed", error });
+		console.error("Telegram verify2FA failed:", error);
 		throw new ProviderError("telegram", "Failed to verify 2FA password", {
 			error: error instanceof Error ? error.message : String(error),
 		});
