@@ -53,6 +53,32 @@ export const CONNECT_PROVIDER_MUTATION = graphql(`
   }
 `);
 
+export const CREATE_OAUTH_PROVIDER_CREDENTIAL_MUTATION = graphql(`
+    mutation CreateOAuthProviderCredential($input: CreateOAuthProviderCredentialInput!) {
+      createOAuthProviderCredential(input: $input) {
+        id
+        type
+        identifierLabel
+        identifierValue
+        createdAt
+        updatedAt
+      }
+    }
+  `);
+
+export const OAUTH_PROVIDER_CREDENTIALS_QUERY = graphql(`
+    query GetOAuthProviderCredentials($type: ProviderType!) {
+      oauthProviderCredentials(type: $type) {
+        id
+        type
+        identifierLabel
+        identifierValue
+        createdAt
+        updatedAt
+      }
+    }
+  `);
+
 export const DISCONNECT_PROVIDER_MUTATION = graphql(`
   mutation DisconnectProvider($id: ID!) {
     disconnectProvider(id: $id)
@@ -91,7 +117,7 @@ export const INITIATE_PROVIDER_OAUTH_MUTATION = graphql(`
 `);
 
 export const AVAILABLE_PROVIDERS_QUERY = graphql(`
-  query GetAvailableProviders {
+  query GetAvailableProvidersForProvidersPage {
     availableProviders {
       id
       name
@@ -102,6 +128,7 @@ export const AVAILABLE_PROVIDERS_QUERY = graphql(`
         label
         type
         required
+        isIdentifier
         description
         placeholder
       }

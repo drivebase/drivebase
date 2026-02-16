@@ -10,6 +10,8 @@ import { folderMutations, folderQueries } from "./folder";
 import { metadataQueries } from "./metadata";
 import {
 	availableProviderResolvers,
+	oauthProviderCredentialResolvers,
+	providerConfigFieldResolvers,
 	providerMutations,
 	providerQueries,
 	providerSubscriptions,
@@ -61,5 +63,7 @@ export const resolvers: Resolvers = {
 	User: userResolvers,
 	StorageProvider: storageProviderResolvers,
 	AvailableProvider: availableProviderResolvers,
+	ProviderConfigField: providerConfigFieldResolvers,
+	OAuthProviderCredential: oauthProviderCredentialResolvers,
 	File: fileResolvers,
 };

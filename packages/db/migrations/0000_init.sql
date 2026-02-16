@@ -2,6 +2,7 @@ CREATE TYPE "public"."activity_type" AS ENUM('upload', 'download', 'create', 'up
 CREATE TYPE "public"."permission_role" AS ENUM('viewer', 'editor', 'admin', 'owner');--> statement-breakpoint
 CREATE TYPE "public"."auth_type" AS ENUM('oauth', 'api_key', 'email_pass', 'no_auth');--> statement-breakpoint
 CREATE TYPE "public"."provider_type" AS ENUM('google_drive', 's3', 'local', 'dropbox', 'ftp', 'webdav', 'telegram');--> statement-breakpoint
+CREATE TYPE "public"."upload_session_status" AS ENUM('pending', 'uploading', 'assembling', 'transferring', 'completed', 'failed', 'cancelled');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('viewer', 'editor', 'admin', 'owner');--> statement-breakpoint
 CREATE TABLE "activities" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -60,6 +61,17 @@ CREATE TABLE "permissions" (
 	CONSTRAINT "permissions_folder_id_user_id_unique" UNIQUE("folder_id","user_id")
 );
 --> statement-breakpoint
+CREATE TABLE "oauth_provider_credentials" (
+	"id" text PRIMARY KEY NOT NULL,
+	"type" "provider_type" NOT NULL,
+	"encrypted_config" text NOT NULL,
+	"identifier_label" text NOT NULL,
+	"identifier_value" text NOT NULL,
+	"user_id" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "storage_providers" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
@@ -74,6 +86,35 @@ CREATE TABLE "storage_providers" (
 	"quota_total" bigint,
 	"quota_used" bigint DEFAULT 0 NOT NULL,
 	"last_sync_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "upload_chunks" (
+	"id" text PRIMARY KEY NOT NULL,
+	"session_id" text NOT NULL,
+	"chunk_index" integer NOT NULL,
+	"size" bigint NOT NULL,
+	"received_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "upload_chunks_session_chunk_idx" UNIQUE("session_id","chunk_index")
+);
+--> statement-breakpoint
+CREATE TABLE "upload_sessions" (
+	"id" text PRIMARY KEY NOT NULL,
+	"file_name" text NOT NULL,
+	"mime_type" text NOT NULL,
+	"total_size" bigint NOT NULL,
+	"chunk_size" integer DEFAULT 52428800 NOT NULL,
+	"total_chunks" integer NOT NULL,
+	"received_chunks" integer DEFAULT 0 NOT NULL,
+	"status" "upload_session_status" DEFAULT 'pending' NOT NULL,
+	"error_message" text,
+	"provider_id" text NOT NULL,
+	"folder_id" text,
+	"file_id" text,
+	"user_id" text NOT NULL,
+	"bullmq_job_id" text,
+	"expires_at" timestamp with time zone NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -105,4 +146,11 @@ ALTER TABLE "folders" ADD CONSTRAINT "folders_created_by_users_id_fk" FOREIGN KE
 ALTER TABLE "permissions" ADD CONSTRAINT "permissions_folder_id_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "permissions" ADD CONSTRAINT "permissions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "permissions" ADD CONSTRAINT "permissions_granted_by_users_id_fk" FOREIGN KEY ("granted_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "storage_providers" ADD CONSTRAINT "storage_providers_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+ALTER TABLE "oauth_provider_credentials" ADD CONSTRAINT "oauth_provider_credentials_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "storage_providers" ADD CONSTRAINT "storage_providers_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "upload_chunks" ADD CONSTRAINT "upload_chunks_session_id_upload_sessions_id_fk" FOREIGN KEY ("session_id") REFERENCES "public"."upload_sessions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "upload_sessions" ADD CONSTRAINT "upload_sessions_provider_id_storage_providers_id_fk" FOREIGN KEY ("provider_id") REFERENCES "public"."storage_providers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "upload_sessions" ADD CONSTRAINT "upload_sessions_folder_id_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "upload_sessions" ADD CONSTRAINT "upload_sessions_file_id_files_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."files"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "upload_sessions" ADD CONSTRAINT "upload_sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "oauth_provider_credentials_user_type_identifier_idx" ON "oauth_provider_credentials" USING btree ("user_id","type","identifier_value");

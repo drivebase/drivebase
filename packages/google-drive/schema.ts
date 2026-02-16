@@ -39,6 +39,7 @@ export const GoogleDriveConfigFields: ProviderConfigField[] = [
 		label: "Client ID",
 		type: "text",
 		required: true,
+		isIdentifier: true,
 		description: "OAuth 2.0 Client ID from Google Cloud Console",
 		placeholder: "Enter Client ID",
 	},

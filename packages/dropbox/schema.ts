@@ -39,6 +39,7 @@ export const DropboxConfigFields: ProviderConfigField[] = [
 		label: "App Key",
 		type: "text",
 		required: true,
+		isIdentifier: true,
 		description: "Dropbox app key from the Dropbox App Console",
 		placeholder: "Enter App Key",
 	},

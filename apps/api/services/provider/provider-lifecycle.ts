@@ -8,6 +8,7 @@ import {
 } from "../../config/providers";
 import { encryptConfig } from "../../utils/encryption";
 import { logger } from "../../utils/logger";
+import { getOAuthCredentialConfig } from "./provider-credentials";
 
 /**
  * Connect a new storage provider.
@@ -24,29 +25,45 @@ export async function connectProvider(
 	userId: string,
 	name: string,
 	type: string,
-	config: Record<string, unknown>,
+	config: Record<string, unknown> | undefined,
+	oauthCredentialId?: string,
 ) {
 	const registration = getProviderRegistration(type);
+	const sensitiveFields = getSensitiveFields(type);
+	let resolvedConfig: Record<string, unknown>;
 
-	// Validate config using provider schema
-	const schema = registration.configSchema as {
-		safeParse: (v: unknown) => {
-			success: boolean;
-			error?: { errors: unknown[] };
+	if (registration.authType === "oauth" && oauthCredentialId) {
+		resolvedConfig = await getOAuthCredentialConfig(
+			db,
+			oauthCredentialId,
+			userId,
+			type,
+		);
+	} else {
+		if (!config) {
+			throw new ValidationError("Provider configuration is required");
+		}
+
+		const schema = registration.configSchema as {
+			safeParse: (v: unknown) => {
+				success: boolean;
+				error?: { errors: unknown[] };
+				data?: Record<string, unknown>;
+			};
 		};
-	};
-	const validation = schema.safeParse(config);
+		const validation = schema.safeParse(config);
 
-	if (!validation.success) {
-		throw new ValidationError("Invalid provider configuration", {
-			errors: validation.error?.errors,
-		});
+		if (!validation.success || !validation.data) {
+			throw new ValidationError("Invalid provider configuration", {
+				errors: validation.error?.errors,
+			});
+		}
+
+		resolvedConfig = validation.data;
 	}
 
-	const sensitiveFields = getSensitiveFields(type);
-
 	if (registration.authType === "oauth") {
-		const encryptedConfig = encryptConfig(config, sensitiveFields);
+		const encryptedConfig = encryptConfig(resolvedConfig, sensitiveFields);
 
 		try {
 			const [savedProvider] = await db
@@ -80,7 +97,7 @@ export async function connectProvider(
 
 	// Non-OAuth providers: initialize, test connection, fetch quota
 	const provider = registration.factory();
-	await provider.initialize(config);
+	await provider.initialize(resolvedConfig);
 
 	const connected = await provider.testConnection();
 	if (!connected) {
@@ -90,7 +107,7 @@ export async function connectProvider(
 	const quota = await provider.getQuota();
 	await provider.cleanup();
 
-	const encryptedConfig = encryptConfig(config, sensitiveFields);
+	const encryptedConfig = encryptConfig(resolvedConfig, sensitiveFields);
 
 	try {
 		const [savedProvider] = await db

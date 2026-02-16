@@ -5,6 +5,8 @@ import type {
 	AuthType as GQLAuthType,
 	ProviderType as GQLProviderType,
 	MutationResolvers,
+	OAuthProviderCredentialResolvers,
+	ProviderConfigFieldResolvers,
 	QueryResolvers,
 	StorageProviderResolvers,
 	SubscriptionResolvers,
@@ -37,6 +39,13 @@ export const providerQueries: QueryResolvers = {
 		// The field resolver below handles the actual serialization.
 		return providers as unknown as AvailableProvider[];
 	},
+
+	oauthProviderCredentials: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
+		const type = args.type.toLowerCase();
+		return providerService.listOAuthProviderCredentials(user.userId, type);
+	},
 };
 
 export const providerMutations: MutationResolvers = {
@@ -50,6 +59,19 @@ export const providerMutations: MutationResolvers = {
 		return providerService.connectProvider(
 			user.userId,
 			args.input.name,
+			type,
+			(args.input.config as Record<string, unknown> | null) ?? undefined,
+			args.input.oauthCredentialId ?? undefined,
+		);
+	},
+
+	createOAuthProviderCredential: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
+		const type = args.input.type.toLowerCase();
+
+		return providerService.createOAuthProviderCredential(
+			user.userId,
 			type,
 			args.input.config as Record<string, unknown>,
 		);
@@ -126,3 +148,12 @@ export const availableProviderResolvers = {
 	authType: (parent: { authType: string }) =>
 		parent.authType.toUpperCase() as GQLAuthType,
 };
+
+export const providerConfigFieldResolvers: ProviderConfigFieldResolvers = {
+	isIdentifier: (parent) => parent.isIdentifier ?? false,
+};
+
+export const oauthProviderCredentialResolvers: OAuthProviderCredentialResolvers =
+	{
+		type: (parent) => (parent.type as string).toUpperCase() as GQLProviderType,
+	};

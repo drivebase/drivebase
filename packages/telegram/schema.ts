@@ -33,6 +33,7 @@ export const TelegramConfigFields: ProviderConfigField[] = [
 		label: "API ID",
 		type: "number",
 		required: true,
+		isIdentifier: true,
 		description: "Telegram API ID from my.telegram.org",
 		placeholder: "12345678",
 	},

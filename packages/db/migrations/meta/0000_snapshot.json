@@ -1,5 +1,5 @@
 {
-	"id": "8cba04f9-9ec4-46ab-a18d-301c2f00e49b",
+	"id": "912b9f1b-ca90-414e-a959-f9b190d6b18e",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -460,6 +460,108 @@
 			"checkConstraints": {},
 			"isRLSEnabled": false
 		},
+		"public.oauth_provider_credentials": {
+			"name": "oauth_provider_credentials",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"type": {
+					"name": "type",
+					"type": "provider_type",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"encrypted_config": {
+					"name": "encrypted_config",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"identifier_label": {
+					"name": "identifier_label",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"identifier_value": {
+					"name": "identifier_value",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"oauth_provider_credentials_user_type_identifier_idx": {
+					"name": "oauth_provider_credentials_user_type_identifier_idx",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "type",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "identifier_value",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"oauth_provider_credentials_user_id_users_id_fk": {
+					"name": "oauth_provider_credentials_user_id_users_id_fk",
+					"tableFrom": "oauth_provider_credentials",
+					"tableTo": "users",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
 		"public.storage_providers": {
 			"name": "storage_providers",
 			"schema": "",
@@ -567,6 +669,224 @@
 				"storage_providers_user_id_users_id_fk": {
 					"name": "storage_providers_user_id_users_id_fk",
 					"tableFrom": "storage_providers",
+					"tableTo": "users",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.upload_chunks": {
+			"name": "upload_chunks",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"session_id": {
+					"name": "session_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"chunk_index": {
+					"name": "chunk_index",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"size": {
+					"name": "size",
+					"type": "bigint",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"received_at": {
+					"name": "received_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"upload_chunks_session_id_upload_sessions_id_fk": {
+					"name": "upload_chunks_session_id_upload_sessions_id_fk",
+					"tableFrom": "upload_chunks",
+					"tableTo": "upload_sessions",
+					"columnsFrom": ["session_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"upload_chunks_session_chunk_idx": {
+					"name": "upload_chunks_session_chunk_idx",
+					"nullsNotDistinct": false,
+					"columns": ["session_id", "chunk_index"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.upload_sessions": {
+			"name": "upload_sessions",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"file_name": {
+					"name": "file_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"mime_type": {
+					"name": "mime_type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"total_size": {
+					"name": "total_size",
+					"type": "bigint",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"chunk_size": {
+					"name": "chunk_size",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 52428800
+				},
+				"total_chunks": {
+					"name": "total_chunks",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"received_chunks": {
+					"name": "received_chunks",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"status": {
+					"name": "status",
+					"type": "upload_session_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'pending'"
+				},
+				"error_message": {
+					"name": "error_message",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"provider_id": {
+					"name": "provider_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"folder_id": {
+					"name": "folder_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"file_id": {
+					"name": "file_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"bullmq_job_id": {
+					"name": "bullmq_job_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"upload_sessions_provider_id_storage_providers_id_fk": {
+					"name": "upload_sessions_provider_id_storage_providers_id_fk",
+					"tableFrom": "upload_sessions",
+					"tableTo": "storage_providers",
+					"columnsFrom": ["provider_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"upload_sessions_folder_id_folders_id_fk": {
+					"name": "upload_sessions_folder_id_folders_id_fk",
+					"tableFrom": "upload_sessions",
+					"tableTo": "folders",
+					"columnsFrom": ["folder_id"],
+					"columnsTo": ["id"],
+					"onDelete": "set null",
+					"onUpdate": "no action"
+				},
+				"upload_sessions_file_id_files_id_fk": {
+					"name": "upload_sessions_file_id_files_id_fk",
+					"tableFrom": "upload_sessions",
+					"tableTo": "files",
+					"columnsFrom": ["file_id"],
+					"columnsTo": ["id"],
+					"onDelete": "set null",
+					"onUpdate": "no action"
+				},
+				"upload_sessions_user_id_users_id_fk": {
+					"name": "upload_sessions_user_id_users_id_fk",
+					"tableFrom": "upload_sessions",
 					"tableTo": "users",
 					"columnsFrom": ["user_id"],
 					"columnsTo": ["id"],
@@ -703,6 +1023,19 @@
 				"ftp",
 				"webdav",
 				"telegram"
+			]
+		},
+		"public.upload_session_status": {
+			"name": "upload_session_status",
+			"schema": "public",
+			"values": [
+				"pending",
+				"uploading",
+				"assembling",
+				"transferring",
+				"completed",
+				"failed",
+				"cancelled"
 			]
 		},
 		"public.user_role": {

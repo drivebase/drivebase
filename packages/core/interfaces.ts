@@ -275,6 +275,8 @@ export interface ProviderConfigField {
 	type: "text" | "password" | "number" | "boolean";
 	/** Whether field is required */
 	required: boolean;
+	/** Whether this field is the provider-specific identifier used for display/picking */
+	isIdentifier?: boolean;
 	/** Help text or description */
 	description?: string;
 	/** Placeholder text */

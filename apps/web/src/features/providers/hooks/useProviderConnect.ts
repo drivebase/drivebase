@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "urql";
 import {
 	CONNECT_PROVIDER_MUTATION,
+	CREATE_OAUTH_PROVIDER_CREDENTIAL_MUTATION,
 	INITIATE_PROVIDER_OAUTH_MUTATION,
 } from "@/features/providers/api/provider";
 import {
@@ -16,6 +17,9 @@ interface UseProviderConnectOptions {
 
 export function useProviderConnect({ onSuccess }: UseProviderConnectOptions) {
 	const [, connectProvider] = useMutation(CONNECT_PROVIDER_MUTATION);
+	const [, createOAuthCredential] = useMutation(
+		CREATE_OAUTH_PROVIDER_CREDENTIAL_MUTATION,
+	);
 	const [, initiateOAuth] = useMutation(INITIATE_PROVIDER_OAUTH_MUTATION);
 
 	const [selectedProvider, setSelectedProvider] =
@@ -47,18 +51,49 @@ export function useProviderConnect({ onSuccess }: UseProviderConnectOptions) {
 		}
 	};
 
-	const handleConnect = async (formData: Record<string, unknown>) => {
+	const handleConnect = async (formData: {
+		displayName?: string;
+		config?: Record<string, unknown>;
+		oauthCredentialId?: string;
+	}) => {
 		if (!selectedProvider) return;
 		setIsConnecting(true);
 		setError(null);
 		try {
-			const { _displayName, ...config } = formData;
+			let oauthCredentialId = formData.oauthCredentialId;
+
+			if (selectedProvider.authType === AuthType.Oauth && !oauthCredentialId) {
+				if (!formData.config) {
+					setError("OAuth credentials are required");
+					setIsConnecting(false);
+					return;
+				}
+
+				const credentialResult = await createOAuthCredential({
+					input: {
+						type: selectedProvider.id.toUpperCase() as ProviderType,
+						config: formData.config,
+					},
+				});
+
+				if (credentialResult.error) {
+					setError(
+						`Failed to save OAuth credentials: ${credentialResult.error.message}`,
+					);
+					setIsConnecting(false);
+					return;
+				}
+
+				oauthCredentialId =
+					credentialResult.data?.createOAuthProviderCredential.id;
+			}
 
 			const result = await connectProvider({
 				input: {
-					name: (_displayName as string) || selectedProvider.name,
+					name: formData.displayName || selectedProvider.name,
 					type: selectedProvider.id.toUpperCase() as ProviderType,
-					config: config,
+					config: formData.config,
+					oauthCredentialId,
 				},
 			});
 
