@@ -1,5 +1,18 @@
 # Changelog
 
+# [1.10.0](https://github.com/drivebase/drivebase/compare/v1.8.1...v1.10.0) (2026-02-16)
+
+
+### Bug Fixes
+
+* add uploadS3Direct and uploadProxyChunks functions for chunked file uploads ([02f1f9a](https://github.com/drivebase/drivebase/commit/02f1f9abb63fab4fe348051bbae515e2113e7718))
+
+
+### Features
+
+* implement resumable chunked file uploads ([66dd313](https://github.com/drivebase/drivebase/commit/66dd3137bc5013202ce35339d27feb4fb3c370dc))
+* **providers:** add OAuth New/Existing credential tabs with reusable user-scoped credential ([eac0bdb](https://github.com/drivebase/drivebase/commit/eac0bdb152ee895bb101bc1ee8ba7715b2ab7010))
+
 ## [1.8.1](https://github.com/drivebase/drivebase/compare/v1.9.0...v1.8.1) (2026-02-15)
 
 
