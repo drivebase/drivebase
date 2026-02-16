@@ -34,6 +34,192 @@ export function useChunkedUpload(callbacks: ChunkedUploadCallbacks) {
 		pause: !activeSessionRef.current,
 	});
 
+	const uploadS3Direct = useCallback(
+		async (
+			file: File,
+			sessionId: string,
+			totalChunks: number,
+			chunkSize: number,
+			presignedPartUrls: ReadonlyArray<{ partNumber: number; url: string }>,
+			queueId: string,
+		): Promise<boolean> => {
+			const parts: Array<{ partNumber: number; etag: string }> = [];
+
+			for (let i = 0; i < totalChunks; i++) {
+				const start = i * chunkSize;
+				const end = Math.min(start + chunkSize, file.size);
+				const chunk = file.slice(start, end);
+
+				const partUrl = presignedPartUrls[i];
+				if (!partUrl) {
+					throw new Error(`Missing presigned URL for part ${i + 1}`);
+				}
+
+				let lastError: Error | undefined;
+				let etag: string | undefined;
+
+				for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+					try {
+						const response = await fetch(partUrl.url, {
+							method: "PUT",
+							body: chunk,
+						});
+
+						if (!response.ok) {
+							throw new Error(`S3 part upload failed: ${response.status}`);
+						}
+
+						etag = response.headers.get("etag") ?? undefined;
+						if (!etag) {
+							throw new Error("S3 did not return ETag for part");
+						}
+
+						lastError = undefined;
+						break;
+					} catch (error) {
+						lastError =
+							error instanceof Error ? error : new Error(String(error));
+
+						if (attempt < MAX_RETRIES - 1) {
+							await new Promise((resolve) =>
+								setTimeout(resolve, 1000 * 2 ** attempt),
+							);
+						}
+					}
+				}
+
+				if (lastError) throw lastError;
+
+				parts.push({ partNumber: partUrl.partNumber, etag: etag as string });
+
+				const progress = Math.round(((i + 1) / totalChunks) * 100);
+				callbacks.onProgress(queueId, {
+					progress,
+					phase: "client_to_server",
+				});
+			}
+
+			// Complete the S3 multipart upload
+			const completeResult = await completeS3Multipart({
+				sessionId,
+				parts,
+			});
+
+			if (completeResult.error) {
+				throw new Error(
+					completeResult.error.message ?? "Failed to complete S3 upload",
+				);
+			}
+
+			callbacks.onProgress(queueId, {
+				status: "success",
+				progress: 100,
+				phase: "server_to_provider",
+			});
+
+			return true;
+		},
+		[callbacks, completeS3Multipart],
+	);
+
+	const uploadProxyChunks = useCallback(
+		async (
+			file: File,
+			sessionId: string,
+			totalChunks: number,
+			chunkSize: number,
+			queueId: string,
+		): Promise<boolean> => {
+			const apiUrl =
+				import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") ??
+				"http://localhost:4000";
+
+			for (let i = 0; i < totalChunks; i++) {
+				const start = i * chunkSize;
+				const end = Math.min(start + chunkSize, file.size);
+				const chunk = file.slice(start, end);
+
+				let lastError: Error | undefined;
+
+				for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+					try {
+						const response = await fetch(
+							`${apiUrl}/api/upload/chunk?sessionId=${sessionId}&chunkIndex=${i}`,
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/octet-stream",
+									...(token ? { Authorization: `Bearer ${token}` } : {}),
+								},
+								body: chunk,
+							},
+						);
+
+						if (!response.ok) {
+							const errorText = await response.text();
+							throw new Error(`Chunk upload failed: ${errorText}`);
+						}
+
+						const data = (await response.json()) as {
+							success: boolean;
+							isComplete: boolean;
+						};
+
+						if (data.isComplete) {
+							// All chunks received, server will assemble and enqueue
+							callbacks.onProgress(queueId, {
+								progress: 50,
+								phase: "server_to_provider",
+								status: "uploading",
+							});
+						}
+
+						lastError = undefined;
+						break;
+					} catch (error) {
+						lastError =
+							error instanceof Error ? error : new Error(String(error));
+
+						if (attempt < MAX_RETRIES - 1) {
+							await new Promise((resolve) =>
+								setTimeout(resolve, 1000 * 2 ** attempt),
+							);
+						}
+					}
+				}
+
+				if (lastError) throw lastError;
+
+				// Progress for client_to_server phase: 0-50%
+				const chunkProgress = Math.round(((i + 1) / totalChunks) * 50);
+				callbacks.onProgress(queueId, {
+					progress: chunkProgress,
+					phase: "client_to_server",
+				});
+			}
+
+			// After all chunks sent, the server handles assembly and provider transfer
+			// The subscription will provide real-time progress for the server_to_provider phase
+			// For now, we mark it as success since the server will handle the rest in the background
+			callbacks.onProgress(queueId, {
+				status: "uploading",
+				progress: 50,
+				phase: "server_to_provider",
+			});
+
+			// Wait for server-side processing to complete by polling session state
+			// In a production app, this would use the subscription. For now, return true
+			// since the BullMQ worker handles the rest asynchronously.
+			callbacks.onProgress(queueId, {
+				status: "success",
+				progress: 100,
+			});
+
+			return true;
+		},
+		[callbacks, token],
+	);
+
 	const uploadChunked = useCallback(
 		async (
 			file: File,
@@ -111,186 +297,8 @@ export function useChunkedUpload(callbacks: ChunkedUploadCallbacks) {
 				activeSessionRef.current = null;
 			}
 		},
-		[initiateChunkedUpload, token, callbacks],
+		[initiateChunkedUpload, callbacks, uploadS3Direct, uploadProxyChunks],
 	);
-
-	const uploadS3Direct = async (
-		file: File,
-		sessionId: string,
-		totalChunks: number,
-		chunkSize: number,
-		presignedPartUrls: ReadonlyArray<{ partNumber: number; url: string }>,
-		queueId: string,
-	): Promise<boolean> => {
-		const parts: Array<{ partNumber: number; etag: string }> = [];
-
-		for (let i = 0; i < totalChunks; i++) {
-			const start = i * chunkSize;
-			const end = Math.min(start + chunkSize, file.size);
-			const chunk = file.slice(start, end);
-
-			const partUrl = presignedPartUrls[i];
-			if (!partUrl) {
-				throw new Error(`Missing presigned URL for part ${i + 1}`);
-			}
-
-			let lastError: Error | undefined;
-			let etag: string | undefined;
-
-			for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-				try {
-					const response = await fetch(partUrl.url, {
-						method: "PUT",
-						body: chunk,
-					});
-
-					if (!response.ok) {
-						throw new Error(`S3 part upload failed: ${response.status}`);
-					}
-
-					etag = response.headers.get("etag") ?? undefined;
-					if (!etag) {
-						throw new Error("S3 did not return ETag for part");
-					}
-
-					lastError = undefined;
-					break;
-				} catch (error) {
-					lastError = error instanceof Error ? error : new Error(String(error));
-
-					if (attempt < MAX_RETRIES - 1) {
-						await new Promise((resolve) =>
-							setTimeout(resolve, 1000 * 2 ** attempt),
-						);
-					}
-				}
-			}
-
-			if (lastError) throw lastError;
-
-			parts.push({ partNumber: partUrl.partNumber, etag: etag as string });
-
-			const progress = Math.round(((i + 1) / totalChunks) * 100);
-			callbacks.onProgress(queueId, {
-				progress,
-				phase: "client_to_server",
-			});
-		}
-
-		// Complete the S3 multipart upload
-		const completeResult = await completeS3Multipart({
-			sessionId,
-			parts,
-		});
-
-		if (completeResult.error) {
-			throw new Error(
-				completeResult.error.message ?? "Failed to complete S3 upload",
-			);
-		}
-
-		callbacks.onProgress(queueId, {
-			status: "success",
-			progress: 100,
-			phase: "server_to_provider",
-		});
-
-		return true;
-	};
-
-	const uploadProxyChunks = async (
-		file: File,
-		sessionId: string,
-		totalChunks: number,
-		chunkSize: number,
-		queueId: string,
-	): Promise<boolean> => {
-		const apiUrl =
-			import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") ??
-			"http://localhost:4000";
-
-		for (let i = 0; i < totalChunks; i++) {
-			const start = i * chunkSize;
-			const end = Math.min(start + chunkSize, file.size);
-			const chunk = file.slice(start, end);
-
-			let lastError: Error | undefined;
-
-			for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-				try {
-					const response = await fetch(
-						`${apiUrl}/api/upload/chunk?sessionId=${sessionId}&chunkIndex=${i}`,
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/octet-stream",
-								...(token ? { Authorization: `Bearer ${token}` } : {}),
-							},
-							body: chunk,
-						},
-					);
-
-					if (!response.ok) {
-						const errorText = await response.text();
-						throw new Error(`Chunk upload failed: ${errorText}`);
-					}
-
-					const data = (await response.json()) as {
-						success: boolean;
-						isComplete: boolean;
-					};
-
-					if (data.isComplete) {
-						// All chunks received, server will assemble and enqueue
-						callbacks.onProgress(queueId, {
-							progress: 50,
-							phase: "server_to_provider",
-							status: "uploading",
-						});
-					}
-
-					lastError = undefined;
-					break;
-				} catch (error) {
-					lastError = error instanceof Error ? error : new Error(String(error));
-
-					if (attempt < MAX_RETRIES - 1) {
-						await new Promise((resolve) =>
-							setTimeout(resolve, 1000 * 2 ** attempt),
-						);
-					}
-				}
-			}
-
-			if (lastError) throw lastError;
-
-			// Progress for client_to_server phase: 0-50%
-			const chunkProgress = Math.round(((i + 1) / totalChunks) * 50);
-			callbacks.onProgress(queueId, {
-				progress: chunkProgress,
-				phase: "client_to_server",
-			});
-		}
-
-		// After all chunks sent, the server handles assembly and provider transfer
-		// The subscription will provide real-time progress for the server_to_provider phase
-		// For now, we mark it as success since the server will handle the rest in the background
-		callbacks.onProgress(queueId, {
-			status: "uploading",
-			progress: 50,
-			phase: "server_to_provider",
-		});
-
-		// Wait for server-side processing to complete by polling session state
-		// In a production app, this would use the subscription. For now, return true
-		// since the BullMQ worker handles the rest asynchronously.
-		callbacks.onProgress(queueId, {
-			status: "success",
-			progress: 100,
-		});
-
-		return true;
-	};
 
 	const cancelSession = useCallback(
 		async (sessionId: string) => {
