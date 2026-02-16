@@ -225,6 +225,26 @@ export interface FileMetadata {
 }
 
 /**
+ * Result of initiating a multipart upload
+ */
+export interface MultipartUploadResult {
+	/** Provider-specific upload session ID (e.g. S3 UploadId, Google Drive resumable URI) */
+	uploadId: string;
+	/** Remote ID / key for the final file */
+	remoteId: string;
+}
+
+/**
+ * Result of uploading a single part
+ */
+export interface UploadPartResult {
+	/** Part number (1-based) */
+	partNumber: number;
+	/** ETag returned by the provider for this part */
+	etag: string;
+}
+
+/**
  * Folder metadata from provider
  */
 export interface FolderMetadata {

@@ -1,5 +1,10 @@
 {
 	"permissions": {
-		"allow": ["Bash(bunx tsc:*)", "Bash(bun run:*)", "Bash(wc:*)"]
+		"allow": [
+			"Bash(bunx tsc:*)",
+			"Bash(bun run:*)",
+			"Bash(wc:*)",
+			"Bash(bun add:*)"
+		]
 	}
 }

@@ -31,6 +31,18 @@ export function getRedis(): Redis {
 }
 
 /**
+ * Create a new Redis connection suitable for BullMQ.
+ * BullMQ requires maxRetriesPerRequest to be null.
+ */
+export function createBullMQConnection(): Redis {
+	return new Redis(env.REDIS_URL, {
+		maxRetriesPerRequest: null,
+		enableReadyCheck: true,
+		lazyConnect: false,
+	});
+}
+
+/**
  * Close Redis connection
  */
 export async function closeRedis(): Promise<void> {

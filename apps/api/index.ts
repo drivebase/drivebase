@@ -1,5 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { env } from "./config/env";
+import { closeUploadQueue } from "./queue/upload-queue";
+import { startUploadWorker, stopUploadWorker } from "./queue/upload-worker";
 import { handleDownloadProxy } from "./server/routes/download-proxy";
 import { handleOAuthCallback } from "./server/routes/oauth";
 import {
@@ -7,6 +9,7 @@ import {
 	handleTelegramVerify,
 	handleTelegramVerify2FA,
 } from "./server/routes/telegram";
+import { handleUploadChunk } from "./server/routes/upload-chunk";
 import { handleUploadProxy } from "./server/routes/upload-proxy";
 import { yoga } from "./server/yoga";
 import { initializeApp } from "./utils/init";
@@ -51,6 +54,21 @@ const server = Bun.serve({
 			return handleUploadProxy(request);
 		}
 		if (request.method === "OPTIONS" && url.pathname === "/api/upload/proxy") {
+			return new Response(null, {
+				headers: {
+					"Access-Control-Allow-Origin": env.CORS_ORIGIN,
+					"Access-Control-Allow-Methods": "POST, OPTIONS",
+					"Access-Control-Allow-Headers": "Content-Type, Authorization",
+					"Access-Control-Allow-Credentials": "true",
+				},
+			});
+		}
+
+		// Chunked upload route
+		if (request.method === "POST" && url.pathname === "/api/upload/chunk") {
+			return handleUploadChunk(request);
+		}
+		if (request.method === "OPTIONS" && url.pathname === "/api/upload/chunk") {
 			return new Response(null, {
 				headers: {
 					"Access-Control-Allow-Origin": env.CORS_ORIGIN,
@@ -117,15 +135,17 @@ logger.info(
 	`● Drivebase API running on http://localhost:${server.port}/graphql`,
 );
 
-// Graceful shutdown
-process.on("SIGINT", async () => {
-	logger.info("Shutting down gracefully...");
-	server.stop();
-	process.exit(0);
-});
+// Start BullMQ upload worker
+startUploadWorker();
 
-process.on("SIGTERM", async () => {
+// Graceful shutdown
+async function shutdown() {
 	logger.info("Shutting down gracefully...");
 	server.stop();
+	await stopUploadWorker();
+	await closeUploadQueue();
 	process.exit(0);
-});
+}
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);

@@ -1,7 +1,8 @@
 import axios from "axios";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { useChunkedUpload } from "@/features/files/hooks/useChunkedUpload";
 import {
 	useDeleteFile,
 	useRequestUpload,
@@ -9,6 +10,8 @@ import {
 import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
 import { useProviders } from "@/features/providers/hooks/useProviders";
 import type { StorageProvider } from "@/gql/graphql";
+
+const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
 
 interface UseUploadOptions {
 	currentFolderId: string | undefined;
@@ -34,17 +37,31 @@ export function useUpload({
 		return providersData?.storageProviders.filter((p) => p.isActive) || [];
 	}, [providersData]);
 
-	const updateQueueItem = (id: string, patch: Partial<UploadQueueItem>) => {
-		setUploadQueue((prev) =>
-			prev.map((item) => (item.id === id ? { ...item, ...patch } : item)),
-		);
-	};
+	const updateQueueItem = useCallback(
+		(id: string, patch: Partial<UploadQueueItem>) => {
+			setUploadQueue((prev) =>
+				prev.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+			);
+		},
+		[],
+	);
+
+	// Chunked upload hook for large files
+	const { uploadChunked, cancelSession, retrySession } = useChunkedUpload({
+		onProgress: updateQueueItem,
+	});
 
 	const uploadSingleFile = async (
 		file: File,
 		providerId: string,
 		queueId: string,
 	) => {
+		// Route large files to chunked upload
+		if (file.size > CHUNK_THRESHOLD) {
+			return uploadChunked(file, providerId, queueId, currentFolderId);
+		}
+
+		// Existing small file upload path (unchanged)
 		let createdFileId: string | undefined;
 		updateQueueItem(queueId, {
 			status: "uploading",
@@ -200,6 +217,19 @@ export function useUpload({
 
 	const clearUploadQueue = () => setUploadQueue([]);
 
+	const restoreSessions = useCallback((items: UploadQueueItem[]) => {
+		setUploadQueue((prev) => {
+			// Avoid duplicates by sessionId
+			const existingSessionIds = new Set(
+				prev.filter((i) => i.sessionId).map((i) => i.sessionId),
+			);
+			const newItems = items.filter(
+				(i) => !i.sessionId || !existingSessionIds.has(i.sessionId),
+			);
+			return [...prev, ...newItems];
+		});
+	}, []);
+
 	return {
 		fileInputRef,
 		isUploading,
@@ -213,5 +243,9 @@ export function useUpload({
 		handleFilesSelected,
 		handleUploadQueue,
 		clearUploadQueue,
+		restoreSessions,
+		updateQueueItem,
+		cancelSession,
+		retrySession,
 	};
 }

@@ -2,7 +2,9 @@ import type {
 	DownloadResponse,
 	FileMetadata,
 	FolderMetadata,
+	MultipartUploadResult,
 	ProviderQuota,
+	UploadPartResult,
 	UploadResponse,
 } from "./types";
 
@@ -197,6 +199,44 @@ export interface IStorageProvider {
 	 * Cleanup resources
 	 */
 	cleanup(): Promise<void>;
+
+	/**
+	 * Whether this provider supports native chunked/multipart uploads
+	 */
+	supportsChunkedUpload?: boolean;
+
+	/**
+	 * Initiate a multipart upload session with the provider
+	 * @returns Upload ID and remote ID for the multipart upload
+	 */
+	initiateMultipartUpload?(
+		options: UploadOptions,
+	): Promise<MultipartUploadResult>;
+
+	/**
+	 * Upload a single part of a multipart upload
+	 * @returns Part number and ETag for completing the upload
+	 */
+	uploadPart?(
+		uploadId: string,
+		remoteId: string,
+		partNumber: number,
+		data: Buffer,
+	): Promise<UploadPartResult>;
+
+	/**
+	 * Complete a multipart upload by assembling all parts
+	 */
+	completeMultipartUpload?(
+		uploadId: string,
+		remoteId: string,
+		parts: UploadPartResult[],
+	): Promise<void>;
+
+	/**
+	 * Abort a multipart upload and clean up uploaded parts
+	 */
+	abortMultipartUpload?(uploadId: string, remoteId: string): Promise<void>;
 }
 
 /**
