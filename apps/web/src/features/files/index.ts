@@ -10,6 +10,7 @@ export type { DragItem } from "./FileSystemTable";
 export { DragOverlayContent, FileSystemTable } from "./FileSystemTable";
 export { FolderCard } from "./FolderCard";
 export { useBreadcrumbs } from "./hooks/useBreadcrumbs";
+export { useChunkedUpload } from "./hooks/useChunkedUpload";
 export { useDragAndDrop } from "./hooks/useDragAndDrop";
 export { useFileDrop } from "./hooks/useFileDrop";
 export { useFileOperations } from "./hooks/useFileOperations";
@@ -39,6 +40,7 @@ export {
 	useUnstarFolder,
 } from "./hooks/useFolders";
 export { useUpload } from "./hooks/useUpload";
+export { useUploadSessionRestore } from "./hooks/useUploadSessionRestore";
 export type { UploadQueueItem } from "./UploadProgressPanel";
 export { UploadProgressPanel } from "./UploadProgressPanel";
 export { UploadProviderDialog } from "./UploadProviderDialog";
