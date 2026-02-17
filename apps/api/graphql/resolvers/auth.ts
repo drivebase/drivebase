@@ -1,11 +1,24 @@
-import type { UserRole } from "@drivebase/core";
 import { AuthService } from "../../services/auth";
 import type {
 	AuthResponseResolvers,
 	MutationResolvers,
 	QueryResolvers,
+	WorkspaceRole,
 } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
+
+function mapWorkspaceRole(role: string): WorkspaceRole {
+	switch (role.toLowerCase()) {
+		case "owner":
+			return "OWNER" as WorkspaceRole;
+		case "admin":
+			return "ADMIN" as WorkspaceRole;
+		case "editor":
+			return "EDITOR" as WorkspaceRole;
+		default:
+			return "VIEWER" as WorkspaceRole;
+	}
+}
 
 export const authQueries: QueryResolvers = {
 	me: async (_parent, _args, context) => {
@@ -18,14 +31,15 @@ export const authQueries: QueryResolvers = {
 export const authMutations: MutationResolvers = {
 	register: async (_parent, args, context) => {
 		const authService = new AuthService(context.db);
-		const role = args.input.role.toLowerCase() as UserRole;
 		const result = await authService.register(
 			args.input.email,
 			args.input.password,
-			role,
 			context.ip,
 		);
-		return result;
+		return {
+			...result,
+			workspaceRole: mapWorkspaceRole(result.workspaceRole),
+		};
 	},
 
 	login: async (_parent, args, context) => {
@@ -35,7 +49,10 @@ export const authMutations: MutationResolvers = {
 			args.input.password,
 			context.ip,
 		);
-		return result;
+		return {
+			...result,
+			workspaceRole: mapWorkspaceRole(result.workspaceRole),
+		};
 	},
 
 	logout: async (_parent, _args, context) => {
@@ -88,4 +105,6 @@ export const authMutations: MutationResolvers = {
 export const authResponseResolvers: AuthResponseResolvers = {
 	token: (parent) => parent.token,
 	user: (parent) => parent.user,
+	workspaceId: (parent) => parent.workspaceId,
+	workspaceRole: (parent) => parent.workspaceRole,
 };

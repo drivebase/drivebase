@@ -33,7 +33,7 @@ type StorageProvider {
 	name: String!
 	type: ProviderType!
 	authType: AuthType!
-	userId: ID!
+	workspaceId: ID!
 	isActive: Boolean!
 	accountEmail: String
 	accountName: String

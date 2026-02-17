@@ -1,0 +1,77 @@
+"""
+Workspace and membership management
+"""
+enum WorkspaceRole {
+	OWNER
+	ADMIN
+	EDITOR
+	VIEWER
+}
+
+type Workspace {
+	id: ID!
+	name: String!
+	slug: String!
+	createdBy: ID!
+	createdAt: DateTime!
+	updatedAt: DateTime!
+	role: WorkspaceRole!
+}
+
+type WorkspaceMember {
+	id: ID!
+	workspaceId: ID!
+	userId: ID!
+	role: WorkspaceRole!
+	joinedAt: DateTime!
+	createdAt: DateTime!
+	updatedAt: DateTime!
+	user: User!
+}
+
+type WorkspaceInvite {
+	id: ID!
+	workspaceId: ID!
+	token: String!
+	role: WorkspaceRole!
+	expiresAt: DateTime
+	maxUses: Int
+	useCount: Int!
+	createdBy: ID!
+	createdAt: DateTime!
+	updatedAt: DateTime!
+	inviteUrl: String!
+}
+
+extend type Query {
+	workspace: Workspace!
+	workspaceMembers: [WorkspaceMember!]!
+	workspaceInvites: [WorkspaceInvite!]!
+	myWorkspaces: [Workspace!]!
+}
+
+input CreateInviteLinkInput {
+	role: WorkspaceRole!
+	expiresAt: DateTime
+	maxUses: Int
+}
+
+input UpdateWorkspaceInput {
+	name: String!
+}
+
+input UpdateMemberRoleInput {
+	userId: ID!
+	role: WorkspaceRole!
+}
+
+extend type Mutation {
+	updateWorkspace(input: UpdateWorkspaceInput!): Workspace!
+	createInviteLink(input: CreateInviteLinkInput!): WorkspaceInvite!
+	revokeInvite(inviteId: ID!): Boolean!
+	acceptInvite(token: String!): Workspace!
+	removeMember(userId: ID!): Boolean!
+	updateMemberRole(input: UpdateMemberRoleInput!): WorkspaceMember!
+	leaveWorkspace: Boolean!
+	switchWorkspace(workspaceId: ID!): AuthResponse!
+}

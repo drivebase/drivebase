@@ -5,7 +5,6 @@ export const UserFragment = graphql(`
     id
     name
     email
-    role
     isActive
     onboardingCompleted
     lastLoginAt

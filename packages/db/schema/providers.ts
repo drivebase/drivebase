@@ -8,7 +8,7 @@ import {
 	uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
-import { users } from "./users";
+import { workspaces } from "./workspaces";
 
 /**
  * Provider type enum
@@ -44,9 +44,9 @@ export const storageProviders = pgTable("storage_providers", {
 	type: providerTypeEnum("type").notNull(),
 	authType: authTypeEnum("auth_type").notNull().default("no_auth"),
 	encryptedConfig: text("encrypted_config").notNull(),
-	userId: text("user_id")
+	workspaceId: text("workspace_id")
 		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
+		.references(() => workspaces.id, { onDelete: "cascade" }),
 	isActive: boolean("is_active").notNull().default(true),
 	accountEmail: text("account_email"),
 	accountName: text("account_name"),
@@ -76,9 +76,9 @@ export const oauthProviderCredentials = pgTable(
 		encryptedConfig: text("encrypted_config").notNull(),
 		identifierLabel: text("identifier_label").notNull(),
 		identifierValue: text("identifier_value").notNull(),
-		userId: text("user_id")
+		workspaceId: text("workspace_id")
 			.notNull()
-			.references(() => users.id, { onDelete: "cascade" }),
+			.references(() => workspaces.id, { onDelete: "cascade" }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -87,8 +87,8 @@ export const oauthProviderCredentials = pgTable(
 			.defaultNow(),
 	},
 	(table) => [
-		uniqueIndex("oauth_provider_credentials_user_type_identifier_idx").on(
-			table.userId,
+		uniqueIndex("oauth_provider_credentials_workspace_type_identifier_idx").on(
+			table.workspaceId,
 			table.type,
 			table.identifierValue,
 		),

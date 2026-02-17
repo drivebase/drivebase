@@ -33,14 +33,15 @@ export class ProviderService {
 
 	async syncProvider(
 		providerId: string,
-		userId: string,
+		workspaceId: string,
+		actorUserId: string,
 		options?: { recursive?: boolean; pruneDeleted?: boolean },
 	) {
-		return syncProvider(this.db, providerId, userId, options);
+		return syncProvider(this.db, providerId, workspaceId, actorUserId, options);
 	}
 
 	async connectProvider(
-		userId: string,
+		workspaceId: string,
 		name: string,
 		type: string,
 		config: Record<string, unknown> | undefined,
@@ -48,7 +49,7 @@ export class ProviderService {
 	) {
 		return connectProvider(
 			this.db,
-			userId,
+			workspaceId,
 			name,
 			type,
 			config,
@@ -56,51 +57,55 @@ export class ProviderService {
 		);
 	}
 
-	async listOAuthProviderCredentials(userId: string, type: string) {
-		return listOAuthProviderCredentials(this.db, userId, type);
+	async listOAuthProviderCredentials(workspaceId: string, type: string) {
+		return listOAuthProviderCredentials(this.db, workspaceId, type);
 	}
 
 	async createOAuthProviderCredential(
-		userId: string,
+		workspaceId: string,
 		type: string,
 		config: Record<string, unknown>,
 	): Promise<typeof oauthProviderCredentials.$inferSelect> {
-		return createOAuthProviderCredential(this.db, userId, type, config);
+		return createOAuthProviderCredential(this.db, workspaceId, type, config);
 	}
 
-	async initiateOAuth(providerId: string, userId: string, source?: string) {
-		return initiateOAuth(this.db, providerId, userId, source);
+	async initiateOAuth(
+		providerId: string,
+		workspaceId: string,
+		source?: string,
+	) {
+		return initiateOAuth(this.db, providerId, workspaceId, source);
 	}
 
 	async handleOAuthCallback(code: string, state: string) {
 		return handleOAuthCallback(this.db, code, state);
 	}
 
-	async disconnectProvider(providerId: string, userId: string) {
-		return disconnectProvider(this.db, providerId, userId);
+	async disconnectProvider(providerId: string, workspaceId: string) {
+		return disconnectProvider(this.db, providerId, workspaceId);
 	}
 
 	async updateProviderQuota(
 		providerId: string,
-		userId: string,
+		workspaceId: string,
 		quotaTotal: number | null,
 		quotaUsed: number,
 	) {
 		return updateProviderQuota(
 			this.db,
 			providerId,
-			userId,
+			workspaceId,
 			quotaTotal,
 			quotaUsed,
 		);
 	}
 
-	async getProviders(userId: string) {
-		return getProviders(this.db, userId);
+	async getProviders(workspaceId: string) {
+		return getProviders(this.db, workspaceId);
 	}
 
-	async getProvider(providerId: string, userId: string) {
-		return getProvider(this.db, providerId, userId);
+	async getProvider(providerId: string, workspaceId: string) {
+		return getProvider(this.db, providerId, workspaceId);
 	}
 
 	async getProviderInstance(

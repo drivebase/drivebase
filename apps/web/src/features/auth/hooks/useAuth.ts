@@ -47,9 +47,14 @@ export function useLogin() {
 		async (variables: { input: LoginInput }) => {
 			const response = await loginMutation(variables);
 			if (response.data?.login) {
-				const { token, user: userFragment } = response.data.login;
+				const {
+					token,
+					user: userFragment,
+					workspaceId,
+					workspaceRole,
+				} = response.data.login;
 				const user = getFragmentData(UserFragment, userFragment);
-				setAuth(user, token);
+				setAuth(user, token, workspaceId, workspaceRole);
 			}
 			return response;
 		},
@@ -67,9 +72,14 @@ export function useRegister() {
 		async (variables: { input: RegisterInput }) => {
 			const response = await registerMutation(variables);
 			if (response.data?.register) {
-				const { token, user: userFragment } = response.data.register;
+				const {
+					token,
+					user: userFragment,
+					workspaceId,
+					workspaceRole,
+				} = response.data.register;
 				const user = getFragmentData(UserFragment, userFragment);
-				setAuth(user, token);
+				setAuth(user, token, workspaceId, workspaceRole);
 			}
 			return response;
 		},

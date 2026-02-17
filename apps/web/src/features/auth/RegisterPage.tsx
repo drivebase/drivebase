@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRegister } from "@/features/auth/hooks/useAuth";
-import { UserRole } from "@/gql/graphql";
 import { AuthLayout } from "./AuthLayout";
 
 const registerSchema = z.object({
@@ -43,7 +42,6 @@ export function RegisterPage() {
 		const result = await register({
 			input: {
 				...values,
-				role: UserRole.Viewer, // Default role
 			},
 		});
 		if (result.data?.register) {

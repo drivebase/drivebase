@@ -64,7 +64,7 @@ function parseAndValidateConfig(type: string, config: Record<string, unknown>) {
 
 export async function createOAuthProviderCredential(
 	db: Database,
-	userId: string,
+	workspaceId: string,
 	type: string,
 	config: Record<string, unknown>,
 ) {
@@ -99,11 +99,11 @@ export async function createOAuthProviderCredential(
 			encryptedConfig,
 			identifierLabel: identifierField.label,
 			identifierValue,
-			userId,
+			workspaceId,
 		})
 		.onConflictDoUpdate({
 			target: [
-				oauthProviderCredentials.userId,
+				oauthProviderCredentials.workspaceId,
 				oauthProviderCredentials.type,
 				oauthProviderCredentials.identifierValue,
 			],
@@ -124,7 +124,7 @@ export async function createOAuthProviderCredential(
 
 export async function listOAuthProviderCredentials(
 	db: Database,
-	userId: string,
+	workspaceId: string,
 	type: string,
 ) {
 	const registration = getProviderRegistration(type);
@@ -140,7 +140,7 @@ export async function listOAuthProviderCredentials(
 		.from(oauthProviderCredentials)
 		.where(
 			and(
-				eq(oauthProviderCredentials.userId, userId),
+				eq(oauthProviderCredentials.workspaceId, workspaceId),
 				eq(
 					oauthProviderCredentials.type,
 					type as
@@ -160,7 +160,7 @@ export async function listOAuthProviderCredentials(
 export async function getOAuthCredentialConfig(
 	db: Database,
 	credentialId: string,
-	userId: string,
+	workspaceId: string,
 	type: string,
 ) {
 	const [credential] = await db
@@ -169,7 +169,7 @@ export async function getOAuthCredentialConfig(
 		.where(
 			and(
 				eq(oauthProviderCredentials.id, credentialId),
-				eq(oauthProviderCredentials.userId, userId),
+				eq(oauthProviderCredentials.workspaceId, workspaceId),
 				eq(
 					oauthProviderCredentials.type,
 					type as

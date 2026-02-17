@@ -1,8 +1,4 @@
-import {
-	AuthenticationError,
-	type UserRole,
-	ValidationError,
-} from "@drivebase/core";
+import { AuthenticationError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
 import { eq } from "drizzle-orm";
@@ -15,18 +11,18 @@ import {
 	validatePassword,
 	verifyPassword,
 } from "../../utils/password";
+import { WorkspaceService } from "../workspace";
 
 /**
- * Register a new user (only owner can register)
+ * Register a new user
  */
 export async function register(
 	db: Database,
 	email: string,
 	password: string,
-	role: UserRole,
 	ipAddress: string,
 ) {
-	logger.info({ msg: "Register attempt", email, role, ipAddress });
+	logger.info({ msg: "Register attempt", email, ipAddress });
 
 	await checkRateLimit(`auth:register:${ipAddress}`, RateLimits.AUTH);
 	logger.debug("Rate limit check passed");
@@ -64,7 +60,6 @@ export async function register(
 			name: defaultName,
 			email,
 			passwordHash,
-			role: role,
 			isActive: true,
 		})
 		.returning();
@@ -78,11 +73,21 @@ export async function register(
 		throw new Error("Failed to create user");
 	}
 
+	// Create default workspace for the new user
+	logger.debug("Creating default workspace...");
+	const workspaceService = new WorkspaceService(db);
+	const workspace = await workspaceService.createWorkspace(
+		`${defaultName}'s Workspace`,
+		user.id,
+	);
+	logger.debug({ msg: "Workspace created", workspaceId: workspace.id });
+
 	logger.debug("Creating JWT token...");
 	const token = await createToken({
 		userId: user.id,
 		email: user.email,
-		role: user.role,
+		workspaceId: workspace.id,
+		workspaceRole: "owner",
 	});
 	logger.debug("JWT token created");
 
@@ -90,7 +95,8 @@ export async function register(
 	await createSession(token, {
 		userId: user.id,
 		email: user.email,
-		role: user.role,
+		workspaceId: workspace.id,
+		workspaceRole: "owner",
 		createdAt: Date.now(),
 	});
 	logger.debug("Session stored");
@@ -98,6 +104,8 @@ export async function register(
 	const result = {
 		user,
 		token,
+		workspaceId: workspace.id,
+		workspaceRole: "owner" as const,
 	};
 
 	logger.info({
@@ -132,9 +140,7 @@ export async function login(
 
 	logger.debug({
 		msg: "User found",
-		user: user
-			? { id: user.id, email: user.email, role: user.role }
-			: "not found",
+		user: user ? { id: user.id, email: user.email } : "not found",
 	});
 
 	if (!user) {
@@ -162,11 +168,46 @@ export async function login(
 		.set({ lastLoginAt: new Date() })
 		.where(eq(users.id, user.id));
 
+	// Get user's default workspace
+	const workspaceService = new WorkspaceService(db);
+	const defaultWs = await workspaceService.getDefaultWorkspace(user.id);
+
+	if (!defaultWs) {
+		// Create a workspace if none exists (migration edge case)
+		logger.debug("No workspace found, creating default workspace...");
+		const workspace = await workspaceService.createWorkspace(
+			`${user.name}'s Workspace`,
+			user.id,
+		);
+		const workspaceId = workspace.id;
+		const workspaceRole = "owner";
+
+		const token = await createToken({
+			userId: user.id,
+			email: user.email,
+			workspaceId,
+			workspaceRole,
+		});
+
+		await createSession(token, {
+			userId: user.id,
+			email: user.email,
+			workspaceId,
+			workspaceRole,
+			createdAt: Date.now(),
+		});
+
+		return { user, token, workspaceId, workspaceRole };
+	}
+
+	const { workspace, role: workspaceRole } = defaultWs;
+
 	logger.debug("Creating JWT token...");
 	const token = await createToken({
 		userId: user.id,
 		email: user.email,
-		role: user.role,
+		workspaceId: workspace.id,
+		workspaceRole,
 	});
 	logger.debug("JWT token created");
 
@@ -174,7 +215,8 @@ export async function login(
 	await createSession(token, {
 		userId: user.id,
 		email: user.email,
-		role: user.role,
+		workspaceId: workspace.id,
+		workspaceRole,
 		createdAt: Date.now(),
 	});
 	logger.debug("Session stored");
@@ -182,6 +224,8 @@ export async function login(
 	const result = {
 		user,
 		token,
+		workspaceId: workspace.id,
+		workspaceRole,
 	};
 
 	logger.info({

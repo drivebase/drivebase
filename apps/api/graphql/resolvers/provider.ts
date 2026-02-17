@@ -22,13 +22,13 @@ export const providerQueries: QueryResolvers = {
 	storageProviders: async (_parent, _args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
-		return providerService.getProviders(user.userId);
+		return providerService.getProviders(user.workspaceId);
 	},
 
 	storageProvider: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
-		return providerService.getProvider(args.id, user.userId);
+		return providerService.getProvider(args.id, user.workspaceId);
 	},
 
 	availableProviders: async (_parent, _args, context) => {
@@ -44,7 +44,7 @@ export const providerQueries: QueryResolvers = {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
 		const type = args.type.toLowerCase();
-		return providerService.listOAuthProviderCredentials(user.userId, type);
+		return providerService.listOAuthProviderCredentials(user.workspaceId, type);
 	},
 };
 
@@ -57,7 +57,7 @@ export const providerMutations: MutationResolvers = {
 		const type = args.input.type.toLowerCase();
 
 		return providerService.connectProvider(
-			user.userId,
+			user.workspaceId,
 			args.input.name,
 			type,
 			(args.input.config as Record<string, unknown> | null) ?? undefined,
@@ -71,7 +71,7 @@ export const providerMutations: MutationResolvers = {
 		const type = args.input.type.toLowerCase();
 
 		return providerService.createOAuthProviderCredential(
-			user.userId,
+			user.workspaceId,
 			type,
 			args.input.config as Record<string, unknown>,
 		);
@@ -81,7 +81,7 @@ export const providerMutations: MutationResolvers = {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
 
-		await providerService.disconnectProvider(args.id, user.userId);
+		await providerService.disconnectProvider(args.id, user.workspaceId);
 		return true;
 	},
 
@@ -89,10 +89,15 @@ export const providerMutations: MutationResolvers = {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
 
-		return providerService.syncProvider(args.id, user.userId, {
-			recursive: args.options?.recursive ?? undefined,
-			pruneDeleted: args.options?.pruneDeleted ?? undefined,
-		});
+		return providerService.syncProvider(
+			args.id,
+			user.workspaceId,
+			user.userId,
+			{
+				recursive: args.options?.recursive ?? undefined,
+				pruneDeleted: args.options?.pruneDeleted ?? undefined,
+			},
+		);
 	},
 
 	updateProviderQuota: async (_parent, args, context) => {
@@ -101,7 +106,7 @@ export const providerMutations: MutationResolvers = {
 
 		return providerService.updateProviderQuota(
 			args.input.id,
-			user.userId,
+			user.workspaceId,
 			args.input.quotaTotal ?? null,
 			args.input.quotaUsed,
 		);
@@ -113,7 +118,7 @@ export const providerMutations: MutationResolvers = {
 
 		return providerService.initiateOAuth(
 			args.id,
-			user.userId,
+			user.workspaceId,
 			args.source?.toLowerCase(),
 		);
 	},

@@ -12,6 +12,8 @@ export const LOGIN_MUTATION = graphql(`
   mutation Login($input: LoginInput!) {
     login(input: $input) {
       token
+      workspaceId
+      workspaceRole
       user {
         ...UserItem
       }
@@ -23,6 +25,8 @@ export const REGISTER_MUTATION = graphql(`
   mutation Register($input: RegisterInput!) {
     register(input: $input) {
       token
+      workspaceId
+      workspaceRole
       user {
         ...UserItem
       }

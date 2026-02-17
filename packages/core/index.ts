@@ -11,7 +11,7 @@ export {
 	ActivityType,
 	PermissionRole,
 	ProviderType,
-	UserRole,
+	WorkspaceRole,
 } from "./enums";
 // Errors
 export {
