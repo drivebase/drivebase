@@ -12,17 +12,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateFolder } from "@/features/files/hooks/useFolders";
+import type { CreateFolderMutation } from "@/gql/graphql";
+
+type CreatedFolder = CreateFolderMutation["createFolder"];
 
 interface CreateFolderDialogProps {
 	isOpen: boolean;
 	onClose: () => void;
 	parentId?: string;
+	onCreated?: (folder: CreatedFolder) => void;
 }
 
 export function CreateFolderDialog({
 	isOpen,
 	onClose,
 	parentId,
+	onCreated,
 }: CreateFolderDialogProps) {
 	const [name, setName] = useState("");
 	const [{ fetching }, createFolder] = useCreateFolder();
@@ -31,14 +36,17 @@ export function CreateFolderDialog({
 		e.preventDefault();
 		if (!name.trim()) return;
 
-		const { error } = await createFolder({
+		const result = await createFolder({
 			input: {
 				name: name.trim(),
 				parentId,
 			},
 		});
 
-		if (!error) {
+		if (!result.error) {
+			if (result.data?.createFolder) {
+				onCreated?.(result.data.createFolder);
+			}
 			setName("");
 			onClose();
 		}
