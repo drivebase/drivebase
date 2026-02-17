@@ -3,7 +3,7 @@ CREATE TYPE "public"."permission_role" AS ENUM('viewer', 'editor', 'admin', 'own
 CREATE TYPE "public"."auth_type" AS ENUM('oauth', 'api_key', 'email_pass', 'no_auth');--> statement-breakpoint
 CREATE TYPE "public"."provider_type" AS ENUM('google_drive', 's3', 'local', 'dropbox', 'ftp', 'webdav', 'telegram');--> statement-breakpoint
 CREATE TYPE "public"."upload_session_status" AS ENUM('pending', 'uploading', 'assembling', 'transferring', 'completed', 'failed', 'cancelled');--> statement-breakpoint
-CREATE TYPE "public"."user_role" AS ENUM('viewer', 'editor', 'admin', 'owner');--> statement-breakpoint
+CREATE TYPE "public"."workspace_role" AS ENUM('owner', 'admin', 'editor', 'viewer');--> statement-breakpoint
 CREATE TABLE "activities" (
 	"id" text PRIMARY KEY NOT NULL,
 	"type" "activity_type" NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE "oauth_provider_credentials" (
 	"encrypted_config" text NOT NULL,
 	"identifier_label" text NOT NULL,
 	"identifier_value" text NOT NULL,
-	"user_id" text NOT NULL,
+	"workspace_id" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -78,7 +78,7 @@ CREATE TABLE "storage_providers" (
 	"type" "provider_type" NOT NULL,
 	"auth_type" "auth_type" DEFAULT 'no_auth' NOT NULL,
 	"encrypted_config" text NOT NULL,
-	"user_id" text NOT NULL,
+	"workspace_id" text NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"account_email" text,
 	"account_name" text,
@@ -124,13 +124,46 @@ CREATE TABLE "users" (
 	"name" text NOT NULL,
 	"email" text NOT NULL,
 	"password_hash" text NOT NULL,
-	"role" "user_role" DEFAULT 'viewer' NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"onboarding_completed" boolean DEFAULT false NOT NULL,
 	"last_login_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "users_email_unique" UNIQUE("email")
+);
+--> statement-breakpoint
+CREATE TABLE "workspace_invites" (
+	"id" text PRIMARY KEY NOT NULL,
+	"workspace_id" text NOT NULL,
+	"token" text NOT NULL,
+	"role" "workspace_role" DEFAULT 'viewer' NOT NULL,
+	"expires_at" timestamp with time zone,
+	"max_uses" integer,
+	"use_count" integer DEFAULT 0 NOT NULL,
+	"created_by" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "workspace_invites_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
+CREATE TABLE "workspace_members" (
+	"id" text PRIMARY KEY NOT NULL,
+	"workspace_id" text NOT NULL,
+	"user_id" text NOT NULL,
+	"role" "workspace_role" DEFAULT 'viewer' NOT NULL,
+	"joined_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "workspaces" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"slug" text NOT NULL,
+	"created_by" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "workspaces_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 ALTER TABLE "activities" ADD CONSTRAINT "activities_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -146,11 +179,17 @@ ALTER TABLE "folders" ADD CONSTRAINT "folders_created_by_users_id_fk" FOREIGN KE
 ALTER TABLE "permissions" ADD CONSTRAINT "permissions_folder_id_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "permissions" ADD CONSTRAINT "permissions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "permissions" ADD CONSTRAINT "permissions_granted_by_users_id_fk" FOREIGN KEY ("granted_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "oauth_provider_credentials" ADD CONSTRAINT "oauth_provider_credentials_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "storage_providers" ADD CONSTRAINT "storage_providers_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "oauth_provider_credentials" ADD CONSTRAINT "oauth_provider_credentials_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "storage_providers" ADD CONSTRAINT "storage_providers_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "upload_chunks" ADD CONSTRAINT "upload_chunks_session_id_upload_sessions_id_fk" FOREIGN KEY ("session_id") REFERENCES "public"."upload_sessions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "upload_sessions" ADD CONSTRAINT "upload_sessions_provider_id_storage_providers_id_fk" FOREIGN KEY ("provider_id") REFERENCES "public"."storage_providers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "upload_sessions" ADD CONSTRAINT "upload_sessions_folder_id_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "upload_sessions" ADD CONSTRAINT "upload_sessions_file_id_files_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."files"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "upload_sessions" ADD CONSTRAINT "upload_sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "oauth_provider_credentials_user_type_identifier_idx" ON "oauth_provider_credentials" USING btree ("user_id","type","identifier_value");
+ALTER TABLE "workspace_invites" ADD CONSTRAINT "workspace_invites_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "workspace_invites" ADD CONSTRAINT "workspace_invites_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "workspaces" ADD CONSTRAINT "workspaces_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "oauth_provider_credentials_workspace_type_identifier_idx" ON "oauth_provider_credentials" USING btree ("workspace_id","type","identifier_value");--> statement-breakpoint
+CREATE UNIQUE INDEX "workspace_members_workspace_user_idx" ON "workspace_members" USING btree ("workspace_id","user_id");
