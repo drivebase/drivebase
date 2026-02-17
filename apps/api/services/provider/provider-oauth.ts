@@ -2,16 +2,16 @@ import { NotFoundError, ProviderError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { storageProviders } from "@drivebase/db";
 import { eq } from "drizzle-orm";
-import { env } from "../../config/env";
 import {
 	getProviderRegistration,
 	getSensitiveFields,
 } from "../../config/providers";
+import { getPublicApiBaseUrl } from "../../config/url";
 import { decryptConfig, encryptConfig } from "../../utils/encryption";
 import { getProvider } from "./provider-queries";
 
 function buildCallbackUrl(): string {
-	const baseUrl = env.API_BASE_URL ?? `http://localhost:${env.PORT}`;
+	const baseUrl = getPublicApiBaseUrl();
 	return `${baseUrl}/webhook/callback`;
 }
 

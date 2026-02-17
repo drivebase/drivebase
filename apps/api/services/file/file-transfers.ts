@@ -7,7 +7,7 @@ import {
 import type { Database } from "@drivebase/db";
 import { files } from "@drivebase/db";
 import { eq } from "drizzle-orm";
-import { env } from "../../config/env";
+import { getPublicApiBaseUrl } from "../../config/url";
 import { logger } from "../../utils/logger";
 import { FolderService } from "../folder";
 import { ProviderService } from "../provider";
@@ -114,7 +114,7 @@ export async function requestUpload(
 			throw new Error("Failed to create file record");
 		}
 
-		const baseUrl = env.API_BASE_URL ?? `http://localhost:${env.PORT}`;
+		const baseUrl = getPublicApiBaseUrl();
 		const proxyUrl = `${baseUrl}/api/upload/proxy?fileId=${fileRecord.id}`;
 
 		const uploadUrl = uploadResponse.useDirectUpload
@@ -166,7 +166,7 @@ export async function requestDownload(
 
 		await provider.cleanup();
 
-		const baseUrl = env.API_BASE_URL ?? `http://localhost:${env.PORT}`;
+		const baseUrl = getPublicApiBaseUrl();
 		const proxyUrl = `${baseUrl}/api/download/proxy?fileId=${file.id}`;
 		const canUseDirectDownload =
 			downloadResponse.useDirectDownload &&
