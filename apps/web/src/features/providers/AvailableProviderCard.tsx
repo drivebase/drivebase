@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { ExternalLink, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -10,15 +10,33 @@ interface AvailableProviderCardProps {
 	onConnect: (provider: AvailableProvider) => void;
 }
 
+function getProviderDocsUrl(providerId: string): string {
+	const path = providerId.toLowerCase().replaceAll("_", "-");
+	return `https://drivebase.one/docs/storage-providers/${path}`;
+}
+
 export function AvailableProviderCard({
 	provider,
 	onConnect,
 }: AvailableProviderCardProps) {
 	return (
-		<Card
-			className="group relative overflow-hidden transition-all flex flex-col items-center text-center p-6 gap-4"
-			onClick={() => onConnect(provider)}
-		>
+		<Card className="group relative overflow-hidden transition-all flex flex-col items-center text-center p-6 gap-4">
+			<Button
+				variant="ghost"
+				size="icon"
+				className="absolute right-3 top-3"
+				asChild
+			>
+				<a
+					href={getProviderDocsUrl(provider.id)}
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label={`Open ${provider.name} docs`}
+				>
+					<ExternalLink className="h-4 w-4" />
+				</a>
+			</Button>
+
 			<div className="rounded-full bg-primary/10 p-4">
 				<ProviderIcon type={provider.id} className="h-8 w-8" />
 			</div>
@@ -30,10 +48,16 @@ export function AvailableProviderCard({
 				</p>
 			</div>
 
-			<Button variant="outline" className="w-full mt-auto">
+			<div className="w-full">
+			<Button
+				variant="outline"
+					className="w-full"
+				onClick={() => onConnect(provider)}
+			>
 				<Plus className="h-4 w-4 mr-2" />
 				Connect
 			</Button>
+			</div>
 		</Card>
 	);
 }
