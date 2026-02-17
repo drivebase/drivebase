@@ -1,5 +1,5 @@
 {
-	"id": "912b9f1b-ca90-414e-a959-f9b190d6b18e",
+	"id": "a370b6f1-0b9c-49aa-8167-d5e608a34071",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -599,8 +599,8 @@
 					"primaryKey": false,
 					"notNull": true
 				},
-				"user_id": {
-					"name": "user_id",
+				"workspace_id": {
+					"name": "workspace_id",
 					"type": "text",
 					"primaryKey": false,
 					"notNull": true
@@ -666,11 +666,11 @@
 			},
 			"indexes": {},
 			"foreignKeys": {
-				"storage_providers_user_id_users_id_fk": {
-					"name": "storage_providers_user_id_users_id_fk",
+				"storage_providers_workspace_id_workspaces_id_fk": {
+					"name": "storage_providers_workspace_id_workspaces_id_fk",
 					"tableFrom": "storage_providers",
-					"tableTo": "users",
-					"columnsFrom": ["user_id"],
+					"tableTo": "workspaces",
+					"columnsFrom": ["workspace_id"],
 					"columnsTo": ["id"],
 					"onDelete": "cascade",
 					"onUpdate": "no action"
@@ -981,6 +981,61 @@
 					"columns": ["email"]
 				}
 			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.workspaces": {
+			"name": "workspaces",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"owner_id": {
+					"name": "owner_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"workspaces_owner_id_users_id_fk": {
+					"name": "workspaces_owner_id_users_id_fk",
+					"tableFrom": "workspaces",
+					"tableTo": "users",
+					"columnsFrom": ["owner_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
 			"policies": {},
 			"checkConstraints": {},
 			"isRLSEnabled": false

@@ -42,7 +42,9 @@ export function CompletionStep({
 	});
 	const [isCompleted, setIsCompleted] = useState(false);
 	const connectedProvider = providerId
-		? connectedData?.storageProviders.find((provider) => provider.id === providerId)
+		? connectedData?.storageProviders.find(
+				(provider) => provider.id === providerId,
+			)
 		: undefined;
 
 	const handleComplete = async () => {
