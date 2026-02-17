@@ -31,6 +31,7 @@ interface ConnectedProviderCardProps {
 	onQuota: (provider: StorageProvider) => void;
 	onInfo: (provider: StorageProvider) => void;
 	onSync: (provider: StorageProvider) => void;
+	canManageProviders: boolean;
 	isDisconnecting: boolean;
 	isSyncing?: boolean;
 	onReconnect?: (id: string) => void;
@@ -43,6 +44,7 @@ export function ConnectedProviderCard({
 	onQuota,
 	onInfo,
 	onSync,
+	canManageProviders,
 	isDisconnecting,
 	isSyncing,
 	onReconnect,
@@ -90,37 +92,39 @@ export function ConnectedProviderCard({
 						)}
 					</Badge>
 
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon" className="h-8 w-8">
-								<MoreVertical className="h-4 w-4" />
-								<span className="sr-only">Open menu</span>
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuLabel>Actions</DropdownMenuLabel>
-							<DropdownMenuItem onClick={() => onInfo(provider)}>
-								<Info className="mr-2 h-4 w-4" /> View
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => onSync(provider)}
-								disabled={isSyncing}
-							>
-								<RefreshCw className="mr-2 h-4 w-4" /> Sync
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => onQuota(provider)}>
-								<Settings className="mr-2 h-4 w-4" /> Quota
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								variant="destructive"
-								onClick={() => onDisconnect(provider.id)}
-								disabled={isDisconnecting}
-							>
-								<Trash2 className="mr-2 h-4 w-4" /> Disconnect
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					{canManageProviders ? (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="ghost" size="icon" className="h-8 w-8">
+									<MoreVertical className="h-4 w-4" />
+									<span className="sr-only">Open menu</span>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuLabel>Actions</DropdownMenuLabel>
+								<DropdownMenuItem onClick={() => onInfo(provider)}>
+									<Info className="mr-2 h-4 w-4" /> View
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => onSync(provider)}
+									disabled={isSyncing}
+								>
+									<RefreshCw className="mr-2 h-4 w-4" /> Sync
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => onQuota(provider)}>
+									<Settings className="mr-2 h-4 w-4" /> Quota
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem
+									variant="destructive"
+									onClick={() => onDisconnect(provider.id)}
+									disabled={isDisconnecting}
+								>
+									<Trash2 className="mr-2 h-4 w-4" /> Disconnect
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					) : null}
 				</div>
 			</CardHeader>
 
@@ -145,6 +149,7 @@ export function ConnectedProviderCard({
 				{/* Reconnect Action if needed */}
 				{!provider.isActive &&
 					provider.authType === AuthType.Oauth &&
+					canManageProviders &&
 					onReconnect && (
 						<Button
 							variant="outline"

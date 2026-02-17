@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import { FileSystemTable } from "@/features/files/FileSystemTable";
 import {
 	useMoveFileToProvider,
@@ -15,6 +16,8 @@ import {
 } from "@/features/files/hooks/useFolders";
 import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
+import { can, getActiveWorkspaceId } from "@/features/workspaces";
+import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
 
@@ -26,6 +29,17 @@ function FavoritesPage() {
 	const navigate = useNavigate();
 	const { downloadFile, showDetails } = useFileActions();
 	const { data: providersData } = useProviders();
+	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
+	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
+	const [membersResult] = useWorkspaceMembers(
+		activeWorkspaceId,
+		!activeWorkspaceId,
+	);
+	const currentWorkspaceRole =
+		membersResult.data?.workspaceMembers.find(
+			(member) => member.userId === currentUserId,
+		)?.role ?? null;
+	const canWriteFiles = can(currentWorkspaceRole, "files.write");
 
 	const { data: starredFilesData, fetching: filesFetching } = useStarredFiles();
 	const { data: starredFoldersData, fetching: foldersFetching } =
@@ -163,9 +177,15 @@ function FavoritesPage() {
 					}}
 					onDownloadFile={downloadFile}
 					onShowFileDetails={showDetails}
-					onToggleFileFavorite={handleToggleFileFavorite}
-					onToggleFolderFavorite={handleToggleFolderFavorite}
-					onMoveFileToProvider={handleMoveFileToProvider}
+					onToggleFileFavorite={
+						canWriteFiles ? handleToggleFileFavorite : undefined
+					}
+					onToggleFolderFavorite={
+						canWriteFiles ? handleToggleFolderFavorite : undefined
+					}
+					onMoveFileToProvider={
+						canWriteFiles ? handleMoveFileToProvider : undefined
+					}
 					showSharedColumn
 					emptyStateMessage="No favorites yet"
 				/>

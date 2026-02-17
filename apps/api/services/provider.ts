@@ -22,7 +22,7 @@ import {
 } from "./provider/provider-queries";
 import { syncProvider } from "./provider/provider-sync";
 import { getProviderConfigPreview } from "./provider/provider-utils";
-import { getOwnedWorkspaceId } from "./workspace/workspace";
+import { getAccessibleWorkspaceId } from "./workspace/workspace";
 
 export class ProviderService {
 	constructor(private db: Database) {}
@@ -39,7 +39,7 @@ export class ProviderService {
 		preferredWorkspaceId?: string,
 		options?: { recursive?: boolean; pruneDeleted?: boolean },
 	) {
-		const workspaceId = await getOwnedWorkspaceId(
+		const workspaceId = await getAccessibleWorkspaceId(
 			this.db,
 			userId,
 			preferredWorkspaceId,
@@ -55,7 +55,7 @@ export class ProviderService {
 		oauthCredentialId?: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getOwnedWorkspaceId(
+		const workspaceId = await getAccessibleWorkspaceId(
 			this.db,
 			userId,
 			preferredWorkspaceId,
@@ -89,7 +89,7 @@ export class ProviderService {
 		source?: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getOwnedWorkspaceId(
+		const workspaceId = await getAccessibleWorkspaceId(
 			this.db,
 			userId,
 			preferredWorkspaceId,
@@ -113,7 +113,7 @@ export class ProviderService {
 		userId: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getOwnedWorkspaceId(
+		const workspaceId = await getAccessibleWorkspaceId(
 			this.db,
 			userId,
 			preferredWorkspaceId,
@@ -134,7 +134,7 @@ export class ProviderService {
 		quotaUsed: number,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getOwnedWorkspaceId(
+		const workspaceId = await getAccessibleWorkspaceId(
 			this.db,
 			userId,
 			preferredWorkspaceId,
@@ -155,7 +155,7 @@ export class ProviderService {
 	}
 
 	async getProviders(userId: string, preferredWorkspaceId?: string) {
-		const workspaceId = await getOwnedWorkspaceId(
+		const workspaceId = await getAccessibleWorkspaceId(
 			this.db,
 			userId,
 			preferredWorkspaceId,
@@ -168,7 +168,7 @@ export class ProviderService {
 		userId: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getOwnedWorkspaceId(
+		const workspaceId = await getAccessibleWorkspaceId(
 			this.db,
 			userId,
 			preferredWorkspaceId,

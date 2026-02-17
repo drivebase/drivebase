@@ -24,6 +24,7 @@ export {
 	useWorkspaceMembers,
 	useWorkspaces,
 } from "./hooks/useWorkspaces";
+export { can, type WorkspacePermission } from "./lib/permissions";
 export {
 	clearActiveWorkspaceId,
 	getActiveWorkspaceId,

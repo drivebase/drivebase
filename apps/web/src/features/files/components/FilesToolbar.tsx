@@ -12,6 +12,7 @@ interface BreadcrumbItem {
 interface FilesToolbarProps {
 	currentPath: string;
 	breadcrumbs: BreadcrumbItem[];
+	canWriteFiles: boolean;
 	isUploading: boolean;
 	isLoading: boolean;
 	onBreadcrumbClick: (path: string) => void;
@@ -24,6 +25,7 @@ interface FilesToolbarProps {
 export function FilesToolbar({
 	currentPath,
 	breadcrumbs,
+	canWriteFiles,
 	isUploading,
 	isLoading,
 	onBreadcrumbClick,
@@ -86,29 +88,33 @@ export function FilesToolbar({
 			</div>
 
 			<div className="flex gap-2">
-				<input
-					type="file"
-					ref={fileInputRef}
-					onChange={onFileChange}
-					multiple
-					className="hidden"
-				/>
-				<Button
-					onClick={onUploadClick}
-					disabled={isUploading || isLoading}
-					variant="outline"
-				>
-					{isUploading ? (
-						<Loader2 className="animate-spin mr-2" size={18} />
-					) : (
-						<Upload size={18} className="mr-2" />
-					)}
-					Upload File
-				</Button>
-				<Button onClick={onNewFolder} disabled={isLoading}>
-					<FolderPlus size={18} className="mr-2" />
-					New Folder
-				</Button>
+				{canWriteFiles ? (
+					<>
+						<input
+							type="file"
+							ref={fileInputRef}
+							onChange={onFileChange}
+							multiple
+							className="hidden"
+						/>
+						<Button
+							onClick={onUploadClick}
+							disabled={isUploading || isLoading}
+							variant="outline"
+						>
+							{isUploading ? (
+								<Loader2 className="animate-spin mr-2" size={18} />
+							) : (
+								<Upload size={18} className="mr-2" />
+							)}
+							Upload File
+						</Button>
+						<Button onClick={onNewFolder} disabled={isLoading}>
+							<FolderPlus size={18} className="mr-2" />
+							New Folder
+						</Button>
+					</>
+				) : null}
 			</div>
 		</div>
 	);
