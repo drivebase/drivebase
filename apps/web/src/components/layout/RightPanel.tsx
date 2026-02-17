@@ -48,7 +48,7 @@ function DefaultAccountView() {
 					className="w-full"
 					size="lg"
 					variant={"outline"}
-					onClick={() => navigate({ to: "/my-account" })}
+					onClick={() => navigate({ to: "/settings" })}
 				>
 					<Settings2 size={16} className="mr-2" />
 					<Trans>My Account</Trans>

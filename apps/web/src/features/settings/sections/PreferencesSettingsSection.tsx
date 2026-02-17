@@ -12,7 +12,7 @@ import {
 import { locales } from "@/lib/i18n";
 import { useLocaleStore } from "@/shared/store/localeStore";
 
-export function PreferencesSettings() {
+export function PreferencesSettingsSection() {
 	const { theme, setTheme } = useTheme();
 	const { locale, setLocale } = useLocaleStore();
 
