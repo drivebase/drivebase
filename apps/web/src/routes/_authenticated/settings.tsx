@@ -1,42 +1,23 @@
-import { msg, Trans } from "@lingui/macro";
-import { useLingui } from "@lingui/react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { useLogout } from "@/features/auth/hooks/useAuth";
-import { useAuthStore } from "@/features/auth/store/authStore";
-import { PreferencesSettings } from "@/features/settings/PreferencesSettings";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { SettingsCategoryNav } from "@/features/settings/components/SettingsCategoryNav";
 
 export const Route = createFileRoute("/_authenticated/settings")({
+	beforeLoad: ({ location }) => {
+		if (location.pathname === "/settings") {
+			throw redirect({ to: "/settings/general", replace: true });
+		}
+	},
 	component: SettingsPage,
 });
 
 function SettingsPage() {
-	const { i18n } = useLingui();
-	const navigate = useNavigate();
-	const [, logout] = useLogout();
-	const clearAuth = useAuthStore((state) => state.logout);
-
-	const handleSignOut = async () => {
-		try {
-			await logout();
-		} catch (_error) {
-			toast.error(
-				i18n._(msg`Unable to sign out from server. Signing out locally.`),
-			);
-		} finally {
-			clearAuth();
-			navigate({ to: "/login", replace: true });
-		}
-	};
-
 	return (
-		<div className="p-8 max-w-2xl space-y-8">
-			<PreferencesSettings />
-			<div className="border-t border-border pt-6">
-				<Button variant="outline" onClick={handleSignOut}>
-					<Trans>Sign out</Trans>
-				</Button>
+		<div className="p-8 h-full">
+			<div className="flex gap-8 h-full">
+				<SettingsCategoryNav />
+				<div className="flex-1 overflow-y-auto pr-2">
+					<Outlet />
+				</div>
 			</div>
 		</div>
 	);
