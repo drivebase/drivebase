@@ -141,6 +141,10 @@ function FilesPage() {
 					isOpen={isCreateDialogOpen}
 					onClose={() => setIsCreateDialogOpen(false)}
 					parentId={currentFolder?.id}
+					onCreated={(folder) => {
+						folderList.addItem(folder as FolderItemFragment);
+						refreshContents({ requestPolicy: "network-only" });
+					}}
 				/>
 
 				<UploadProviderDialog
