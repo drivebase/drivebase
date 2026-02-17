@@ -72,3 +72,16 @@ export async function getOwnedWorkspaceId(
 
 	return createdWorkspace.id;
 }
+
+export async function listOwnedWorkspaces(
+	db: WorkspaceDbLike,
+	ownerId: string,
+) {
+	logger.debug({ msg: "Listing owned workspaces", ownerId });
+
+	return db
+		.select()
+		.from(workspaces)
+		.where(eq(workspaces.ownerId, ownerId))
+		.orderBy(asc(workspaces.createdAt));
+}

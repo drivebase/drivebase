@@ -1,0 +1,17 @@
+"""
+Workspace management
+"""
+type Workspace {
+	id: ID!
+	name: String!
+	ownerId: ID!
+	createdAt: DateTime!
+	updatedAt: DateTime!
+}
+
+extend type Query {
+	"""
+	Get current user's workspaces
+	"""
+	workspaces: [Workspace!]!
+}

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
 import type { User } from "@/gql/graphql";
 
 interface AuthState {
@@ -23,6 +24,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 	},
 	logout: () => {
 		localStorage.removeItem("token");
+		localStorage.removeItem(ACTIVE_WORKSPACE_STORAGE_KEY);
 		set({ user: null, token: null, isAuthenticated: false });
 	},
 }));
