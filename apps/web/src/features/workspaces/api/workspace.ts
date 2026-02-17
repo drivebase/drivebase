@@ -7,6 +7,20 @@ export const WORKSPACES_QUERY = graphql(`
     workspaces {
       id
       name
+      color
+      ownerId
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const CREATE_WORKSPACE_MUTATION = graphql(`
+  mutation CreateWorkspace($input: CreateWorkspaceInput!) {
+    createWorkspace(input: $input) {
+      id
+      name
+      color
       ownerId
       createdAt
       updatedAt

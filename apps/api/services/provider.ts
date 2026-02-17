@@ -36,9 +36,14 @@ export class ProviderService {
 	async syncProvider(
 		providerId: string,
 		userId: string,
+		preferredWorkspaceId?: string,
 		options?: { recursive?: boolean; pruneDeleted?: boolean },
 	) {
-		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		const workspaceId = await getOwnedWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
 		logger.debug({
 			msg: "Resolved workspace for provider sync",
 			userId,
@@ -54,8 +59,13 @@ export class ProviderService {
 		type: string,
 		config: Record<string, unknown> | undefined,
 		oauthCredentialId?: string,
+		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		const workspaceId = await getOwnedWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
 		logger.debug({
 			msg: "Resolved workspace for provider connect",
 			userId,
@@ -86,8 +96,17 @@ export class ProviderService {
 		return createOAuthProviderCredential(this.db, userId, type, config);
 	}
 
-	async initiateOAuth(providerId: string, userId: string, source?: string) {
-		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+	async initiateOAuth(
+		providerId: string,
+		userId: string,
+		source?: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getOwnedWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
 		logger.debug({
 			msg: "Resolved workspace for provider oauth initiation",
 			userId,
@@ -102,8 +121,16 @@ export class ProviderService {
 		return handleOAuthCallback(this.db, code, state);
 	}
 
-	async disconnectProvider(providerId: string, userId: string) {
-		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+	async disconnectProvider(
+		providerId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getOwnedWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
 		logger.debug({
 			msg: "Resolved workspace for provider disconnect",
 			userId,
@@ -118,8 +145,13 @@ export class ProviderService {
 		userId: string,
 		quotaTotal: number | null,
 		quotaUsed: number,
+		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		const workspaceId = await getOwnedWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
 		logger.debug({
 			msg: "Resolved workspace for provider quota update",
 			userId,
@@ -135,8 +167,12 @@ export class ProviderService {
 		);
 	}
 
-	async getProviders(userId: string) {
-		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+	async getProviders(userId: string, preferredWorkspaceId?: string) {
+		const workspaceId = await getOwnedWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
 		logger.debug({
 			msg: "Resolved workspace for provider list",
 			userId,
@@ -145,8 +181,16 @@ export class ProviderService {
 		return getProviders(this.db, workspaceId);
 	}
 
-	async getProvider(providerId: string, userId: string) {
-		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+	async getProvider(
+		providerId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getOwnedWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
 		logger.debug({
 			msg: "Resolved workspace for provider fetch",
 			userId,

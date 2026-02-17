@@ -24,6 +24,7 @@ import {
 type WorkspaceRow = {
 	id: string;
 	name?: string;
+	color?: string;
 	ownerId?: string;
 };
 
@@ -72,6 +73,7 @@ describe("workspace service", () => {
 		const insertedWorkspace: WorkspaceRow = {
 			id: "ws-1",
 			name: "My Workspace",
+			color: "sky",
 			ownerId: "user-1",
 		};
 		db.returning.mockResolvedValue([insertedWorkspace]);
@@ -86,6 +88,7 @@ describe("workspace service", () => {
 
 		expect(db.values).toHaveBeenCalledWith({
 			name: "My Workspace",
+			color: "sky",
 			ownerId: "user-1",
 		});
 		expect(result).toEqual(insertedWorkspace);
@@ -109,7 +112,12 @@ describe("workspace service", () => {
 	it("getOwnedWorkspaceId creates default workspace when none exists", async () => {
 		db.limit.mockResolvedValueOnce([]);
 		db.returning.mockResolvedValueOnce([
-			{ id: "ws-created", name: "My Workspace", ownerId: "user-2" },
+			{
+				id: "ws-created",
+				name: "My Workspace",
+				color: "sky",
+				ownerId: "user-2",
+			},
 		]);
 
 		const workspaceId = await getOwnedWorkspaceId(
@@ -123,6 +131,7 @@ describe("workspace service", () => {
 		expect(workspaceId).toBe("ws-created");
 		expect(db.values).toHaveBeenCalledWith({
 			name: "My Workspace",
+			color: "sky",
 			ownerId: "user-2",
 		});
 	});

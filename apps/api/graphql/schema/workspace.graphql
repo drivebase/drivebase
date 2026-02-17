@@ -1,9 +1,18 @@
 """
 Workspace management
 """
+enum WorkspaceColor {
+	ROSE
+	PEACH
+	AMBER
+	MINT
+	SKY
+}
+
 type Workspace {
 	id: ID!
 	name: String!
+	color: WorkspaceColor!
 	ownerId: ID!
 	createdAt: DateTime!
 	updatedAt: DateTime!
@@ -14,4 +23,16 @@ extend type Query {
 	Get current user's workspaces
 	"""
 	workspaces: [Workspace!]!
+}
+
+input CreateWorkspaceInput {
+	name: String!
+	color: WorkspaceColor!
+}
+
+extend type Mutation {
+	"""
+	Create a new workspace
+	"""
+	createWorkspace(input: CreateWorkspaceInput!): Workspace!
 }
