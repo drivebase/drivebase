@@ -19,6 +19,7 @@ import {
 } from "./provider";
 import { scalarResolvers } from "./scalars";
 import { userMutations, userQueries, userResolvers } from "./user";
+import { workspaceQueries } from "./workspace";
 
 /**
  * Combine all resolvers
@@ -33,6 +34,7 @@ export const resolvers: Resolvers = {
 		...folderQueries,
 		...fileQueries,
 		...metadataQueries,
+		...workspaceQueries,
 
 		// Placeholder resolvers for unimplemented features
 		activities: async () => [],

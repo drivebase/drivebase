@@ -11,6 +11,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { useWorkspaceBootstrap } from "@/features/workspaces";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: ({ location }) => {
@@ -83,6 +84,7 @@ function AuthenticatedLayout() {
 	const navigate = useNavigate();
 	const { token, user, isAuthenticated, logout } = useAuthStore();
 	const [meResult, reexecuteMe] = useMe();
+	useWorkspaceBootstrap();
 	const hasNetworkError = Boolean(meResult.error?.networkError);
 
 	useEffect(() => {
