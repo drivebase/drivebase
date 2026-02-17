@@ -17,8 +17,13 @@ const STEPS = [
 const STORAGE_KEY = "onboarding_step";
 
 export function OnboardingWizard() {
-	const { connected, oauth, step: stepFromSearch, providerId, error } =
-		Route.useSearch();
+	const {
+		connected,
+		oauth,
+		step: stepFromSearch,
+		providerId,
+		error,
+	} = Route.useSearch();
 	const navigate = useNavigate();
 	const { user } = useAuthStore();
 

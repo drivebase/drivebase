@@ -21,6 +21,7 @@ import {
 } from "./provider/provider-queries";
 import { syncProvider } from "./provider/provider-sync";
 import { getProviderConfigPreview } from "./provider/provider-utils";
+import { getOwnedWorkspaceId } from "./workspace/workspace";
 
 export class ProviderService {
 	constructor(private db: Database) {}
@@ -36,7 +37,8 @@ export class ProviderService {
 		userId: string,
 		options?: { recursive?: boolean; pruneDeleted?: boolean },
 	) {
-		return syncProvider(this.db, providerId, userId, options);
+		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		return syncProvider(this.db, providerId, workspaceId, userId, options);
 	}
 
 	async connectProvider(
@@ -46,8 +48,10 @@ export class ProviderService {
 		config: Record<string, unknown> | undefined,
 		oauthCredentialId?: string,
 	) {
+		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
 		return connectProvider(
 			this.db,
+			workspaceId,
 			userId,
 			name,
 			type,
@@ -69,7 +73,8 @@ export class ProviderService {
 	}
 
 	async initiateOAuth(providerId: string, userId: string, source?: string) {
-		return initiateOAuth(this.db, providerId, userId, source);
+		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		return initiateOAuth(this.db, providerId, workspaceId, source);
 	}
 
 	async handleOAuthCallback(code: string, state: string) {
@@ -77,7 +82,8 @@ export class ProviderService {
 	}
 
 	async disconnectProvider(providerId: string, userId: string) {
-		return disconnectProvider(this.db, providerId, userId);
+		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		return disconnectProvider(this.db, providerId, workspaceId);
 	}
 
 	async updateProviderQuota(
@@ -86,21 +92,24 @@ export class ProviderService {
 		quotaTotal: number | null,
 		quotaUsed: number,
 	) {
+		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
 		return updateProviderQuota(
 			this.db,
 			providerId,
-			userId,
+			workspaceId,
 			quotaTotal,
 			quotaUsed,
 		);
 	}
 
 	async getProviders(userId: string) {
-		return getProviders(this.db, userId);
+		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		return getProviders(this.db, workspaceId);
 	}
 
 	async getProvider(providerId: string, userId: string) {
-		return getProvider(this.db, providerId, userId);
+		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		return getProvider(this.db, providerId, workspaceId);
 	}
 
 	async getProviderInstance(

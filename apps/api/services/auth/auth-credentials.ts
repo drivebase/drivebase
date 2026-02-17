@@ -15,6 +15,7 @@ import {
 	validatePassword,
 	verifyPassword,
 } from "../../utils/password";
+import { createDefaultWorkspace } from "../workspace/workspace";
 
 /**
  * Register a new user (only owner can register)
@@ -58,25 +59,31 @@ export async function register(
 	logger.debug("Password hashed");
 
 	logger.debug("Inserting user into database...");
-	const [user] = await db
-		.insert(users)
-		.values({
-			name: defaultName,
-			email,
-			passwordHash,
-			role: role,
-			isActive: true,
-		})
-		.returning();
+	const user = await db.transaction(async (tx) => {
+		const [createdUser] = await tx
+			.insert(users)
+			.values({
+				name: defaultName,
+				email,
+				passwordHash,
+				role: role,
+				isActive: true,
+			})
+			.returning();
+
+		if (!createdUser) {
+			throw new Error("Failed to create user");
+		}
+
+		await createDefaultWorkspace(tx, createdUser.id);
+
+		return createdUser;
+	});
 
 	logger.debug({
 		msg: "User created",
 		user: user ? { id: user.id, email: user.email } : "NULL",
 	});
-
-	if (!user) {
-		throw new Error("Failed to create user");
-	}
 
 	logger.debug("Creating JWT token...");
 	const token = await createToken({

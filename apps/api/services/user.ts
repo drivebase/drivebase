@@ -8,6 +8,7 @@ import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
 import { eq } from "drizzle-orm";
 import { hashPassword, validatePassword } from "../utils/password";
+import { createDefaultWorkspace } from "./workspace/workspace";
 
 export class UserService {
 	constructor(private db: Database) {}
@@ -89,21 +90,27 @@ export class UserService {
 
 		const defaultName = data.name?.trim() || data.email.split("@")[0] || "User";
 
-		// Create user
-		const [user] = await this.db
-			.insert(users)
-			.values({
-				name: defaultName,
-				email: data.email,
-				passwordHash,
-				role: data.role,
-				isActive: true,
-			})
-			.returning();
+		// Create user + default workspace
+		const user = await this.db.transaction(async (tx) => {
+			const [createdUser] = await tx
+				.insert(users)
+				.values({
+					name: defaultName,
+					email: data.email,
+					passwordHash,
+					role: data.role,
+					isActive: true,
+				})
+				.returning();
 
-		if (!user) {
-			throw new Error("Failed to create user");
-		}
+			if (!createdUser) {
+				throw new Error("Failed to create user");
+			}
+
+			await createDefaultWorkspace(tx, createdUser.id);
+
+			return createdUser;
+		});
 
 		return user;
 	}

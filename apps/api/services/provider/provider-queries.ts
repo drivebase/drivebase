@@ -9,18 +9,18 @@ import {
 } from "../../config/providers";
 import { decryptConfig } from "../../utils/encryption";
 
-export async function getProviders(db: Database, userId: string) {
+export async function getProviders(db: Database, workspaceId: string) {
 	return db
 		.select()
 		.from(storageProviders)
-		.where(eq(storageProviders.userId, userId))
+		.where(eq(storageProviders.workspaceId, workspaceId))
 		.orderBy(storageProviders.createdAt);
 }
 
 export async function getProvider(
 	db: Database,
 	providerId: string,
-	userId: string,
+	workspaceId: string,
 ) {
 	const [provider] = await db
 		.select()
@@ -28,7 +28,7 @@ export async function getProvider(
 		.where(
 			and(
 				eq(storageProviders.id, providerId),
-				eq(storageProviders.userId, userId),
+				eq(storageProviders.workspaceId, workspaceId),
 			),
 		)
 		.limit(1);
