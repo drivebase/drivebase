@@ -1,6 +1,6 @@
 import { msg } from "@lingui/macro";
 import { useLingui } from "@lingui/react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	Cloud,
 	Folder,
@@ -9,12 +9,27 @@ import {
 	Star,
 	Trash2,
 } from "lucide-react";
+import { useMemo } from "react";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+	getActiveWorkspaceId,
+	getWorkspaceColorClass,
+	setActiveWorkspaceId,
+	useWorkspaces,
+} from "@/features/workspaces";
 
 const navItems = [
 	{ icon: LayoutDashboard, label: msg`Dashboard`, to: "/" },
@@ -27,6 +42,27 @@ const navItems = [
 
 export function Sidebar() {
 	const { i18n } = useLingui();
+	const navigate = useNavigate();
+	const [{ data }] = useWorkspaces(false);
+
+	const activeWorkspaceId = getActiveWorkspaceId();
+	const workspaces = data?.workspaces ?? [];
+	const activeWorkspace =
+		workspaces.find((workspace) => workspace.id === activeWorkspaceId) ??
+		workspaces[0] ??
+		null;
+
+	const workspaceAvatarInitial = useMemo(() => {
+		if (!activeWorkspace?.name) {
+			return "W";
+		}
+		return activeWorkspace.name.charAt(0).toUpperCase();
+	}, [activeWorkspace?.name]);
+
+	function handleSwitchWorkspace(workspaceId: string) {
+		setActiveWorkspaceId(workspaceId);
+		window.location.reload();
+	}
 
 	return (
 		<div className="h-full w-20 flex flex-col items-center py-8 gap-10 shrink-0">
@@ -34,7 +70,7 @@ export function Sidebar() {
 				<img src="/drivebase.svg" alt="Logo" className="w-12 h-12" />
 			</div>
 			<TooltipProvider>
-				<nav className="flex flex-col items-center gap-6 w-full">
+				<nav className="flex flex-col items-center gap-6 w-full flex-1">
 					{navItems.map((item) => (
 						<Tooltip key={item.to} delayDuration={0}>
 							<TooltipTrigger asChild>
@@ -58,6 +94,49 @@ export function Sidebar() {
 						</Tooltip>
 					))}
 				</nav>
+
+				<DropdownMenu>
+					<Tooltip delayDuration={0}>
+						<TooltipTrigger asChild>
+							<DropdownMenuTrigger asChild>
+								<button
+									type="button"
+									className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-semibold border border-border/60 ${getWorkspaceColorClass(
+										activeWorkspace?.color,
+									)}`}
+								>
+									{workspaceAvatarInitial}
+								</button>
+							</DropdownMenuTrigger>
+						</TooltipTrigger>
+						<TooltipContent side="right">
+							<p>{activeWorkspace?.name ?? i18n._(msg`Workspace`)}</p>
+						</TooltipContent>
+					</Tooltip>
+
+					<DropdownMenuContent align="end" className="min-w-52">
+						<DropdownMenuLabel>{i18n._(msg`Workspaces`)}</DropdownMenuLabel>
+						<DropdownMenuSeparator />
+						{workspaces.map((workspace) => (
+							<DropdownMenuItem
+								key={workspace.id}
+								onClick={() => handleSwitchWorkspace(workspace.id)}
+							>
+								<div
+									className={`w-3 h-3 rounded-sm mr-2 ${getWorkspaceColorClass(workspace.color)}`}
+								/>
+								<span className="flex-1 truncate">{workspace.name}</span>
+								{workspace.id === activeWorkspace?.id ? "✓" : null}
+							</DropdownMenuItem>
+						))}
+						<DropdownMenuSeparator />
+						<DropdownMenuItem
+							onClick={() => navigate({ to: "/workspaces/create" })}
+						>
+							{i18n._(msg`Create workspace`)}
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</TooltipProvider>
 		</div>
 	);

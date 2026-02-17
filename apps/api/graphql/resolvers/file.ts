@@ -226,9 +226,11 @@ export const fileMutations: MutationResolvers = {
 
 		// Check if provider supports direct multipart (S3)
 		const providerService = new ProviderService(context.db);
+		const workspaceId = context.headers.get("x-workspace-id") ?? undefined;
 		const providerRecord = await providerService.getProvider(
 			input.providerId,
 			user.userId,
+			workspaceId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 
@@ -367,9 +369,11 @@ export const fileMutations: MutationResolvers = {
 
 		// Get the S3 provider instance
 		const providerService = new ProviderService(context.db);
+		const workspaceId = context.headers.get("x-workspace-id") ?? undefined;
 		const providerRecord = await providerService.getProvider(
 			session.providerId,
 			user.userId,
+			workspaceId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 

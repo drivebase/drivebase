@@ -5,6 +5,7 @@ import {
 	fetchExchange,
 	subscriptionExchange,
 } from "urql";
+import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
 
 const API_URL =
 	import.meta.env.VITE_PUBLIC_API_URL || "http://localhost:4000/graphql";
@@ -13,8 +14,10 @@ const sseClient = createSSEClient({
 	url: API_URL,
 	headers: () => {
 		const token = localStorage.getItem("token");
+		const workspaceId = localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY);
 		return {
 			authorization: token ? `Bearer ${token}` : "",
+			"x-workspace-id": workspaceId || "",
 		};
 	},
 });
@@ -40,9 +43,11 @@ export const client = new Client({
 	],
 	fetchOptions: () => {
 		const token = localStorage.getItem("token");
+		const workspaceId = localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY);
 		return {
 			headers: {
 				authorization: token ? `Bearer ${token}` : "",
+				"x-workspace-id": workspaceId || "",
 			},
 		};
 	},

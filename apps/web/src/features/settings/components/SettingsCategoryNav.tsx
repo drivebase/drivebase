@@ -6,7 +6,7 @@ const categories = [
 	{
 		to: "/settings/general",
 		icon: SlidersHorizontal,
-		label: <Trans>General</Trans>
+		label: <Trans>General</Trans>,
 	},
 	{
 		to: "/settings/security",

@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
 import { users } from "./users";
+import { workspaces } from "./workspaces";
 
 /**
  * Provider type enum
@@ -44,9 +45,9 @@ export const storageProviders = pgTable("storage_providers", {
 	type: providerTypeEnum("type").notNull(),
 	authType: authTypeEnum("auth_type").notNull().default("no_auth"),
 	encryptedConfig: text("encrypted_config").notNull(),
-	userId: text("user_id")
+	workspaceId: text("workspace_id")
 		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
+		.references(() => workspaces.id, { onDelete: "cascade" }),
 	isActive: boolean("is_active").notNull().default(true),
 	accountEmail: text("account_email"),
 	accountName: text("account_name"),

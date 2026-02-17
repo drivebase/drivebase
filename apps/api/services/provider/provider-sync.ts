@@ -11,6 +11,7 @@ import { getProviderInstance } from "./provider-queries";
 export async function syncProvider(
 	db: Database,
 	providerId: string,
+	workspaceId: string,
 	userId: string,
 	options?: { recursive?: boolean; pruneDeleted?: boolean },
 ) {
@@ -22,7 +23,7 @@ export async function syncProvider(
 		.where(
 			and(
 				eq(storageProviders.id, providerId),
-				eq(storageProviders.userId, userId),
+				eq(storageProviders.workspaceId, workspaceId),
 			),
 		)
 		.limit(1);

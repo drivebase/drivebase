@@ -49,14 +49,14 @@ export function AvailableProviderCard({
 			</div>
 
 			<div className="w-full">
-			<Button
-				variant="outline"
+				<Button
+					variant="outline"
 					className="w-full"
-				onClick={() => onConnect(provider)}
-			>
-				<Plus className="h-4 w-4 mr-2" />
-				Connect
-			</Button>
+					onClick={() => onConnect(provider)}
+				>
+					<Plus className="h-4 w-4 mr-2" />
+					Connect
+				</Button>
 			</div>
 		</Card>
 	);
