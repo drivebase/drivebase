@@ -20,6 +20,8 @@ import {
 import { scalarResolvers } from "./scalars";
 import { userMutations, userQueries, userResolvers } from "./user";
 import {
+	workspaceInviteResolvers,
+	workspaceMemberResolvers,
 	workspaceMutations,
 	workspaceQueries,
 	workspaceResolvers,
@@ -74,4 +76,6 @@ export const resolvers: Resolvers = {
 	OAuthProviderCredential: oauthProviderCredentialResolvers,
 	File: fileResolvers,
 	Workspace: workspaceResolvers,
+	WorkspaceMember: workspaceMemberResolvers,
+	WorkspaceInvite: workspaceInviteResolvers,
 };
