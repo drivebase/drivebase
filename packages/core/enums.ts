@@ -1,14 +1,14 @@
 /**
- * User roles in the system
+ * Workspace member roles
  */
-export enum UserRole {
+export enum WorkspaceRole {
 	/** Read-only access to shared files */
 	VIEWER = "viewer",
 	/** Can upload, edit, and organize files */
 	EDITOR = "editor",
-	/** Can manage users and connect providers */
+	/** Can manage members and connect providers */
 	ADMIN = "admin",
-	/** Full system access, can manage all users and providers */
+	/** Full workspace access */
 	OWNER = "owner",
 }
 

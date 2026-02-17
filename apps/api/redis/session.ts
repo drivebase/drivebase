@@ -6,7 +6,8 @@ const SESSION_TTL = 7 * 24 * 60 * 60; // 7 days in seconds
 export interface SessionData {
 	userId: string;
 	email: string;
-	role: string;
+	workspaceId: string;
+	workspaceRole: string;
 	createdAt: number;
 }
 

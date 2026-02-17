@@ -53,7 +53,6 @@ type Mutation {
 input RegisterInput {
 	email: String!
 	password: String!
-	role: UserRole!
 }
 
 input LoginInput {
@@ -86,4 +85,14 @@ type AuthResponse {
 	Authenticated user
 	"""
 	user: User!
+
+	"""
+	Active workspace for this auth session
+	"""
+	workspaceId: ID!
+
+	"""
+	Current user's role in the active workspace
+	"""
+	workspaceRole: WorkspaceRole!
 }

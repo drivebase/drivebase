@@ -11,7 +11,8 @@ import { getProviderInstance } from "./provider-queries";
 export async function syncProvider(
 	db: Database,
 	providerId: string,
-	userId: string,
+	workspaceId: string,
+	actorUserId: string,
 	options?: { recursive?: boolean; pruneDeleted?: boolean },
 ) {
 	const { recursive = true, pruneDeleted = false } = options || {};
@@ -22,7 +23,7 @@ export async function syncProvider(
 		.where(
 			and(
 				eq(storageProviders.id, providerId),
-				eq(storageProviders.userId, userId),
+				eq(storageProviders.workspaceId, workspaceId),
 			),
 		)
 		.limit(1);
@@ -91,7 +92,7 @@ export async function syncProvider(
 								remoteId: folder.remoteId,
 								providerId,
 								parentId: parentDbId,
-								createdBy: userId,
+								createdBy: actorUserId,
 								updatedAt: folder.modifiedAt,
 								createdAt: folder.modifiedAt,
 							})
@@ -178,7 +179,7 @@ export async function syncProvider(
 							remoteId: file.remoteId,
 							providerId,
 							folderId: parentDbId,
-							uploadedBy: userId,
+							uploadedBy: actorUserId,
 							updatedAt: file.modifiedAt,
 							createdAt: file.modifiedAt,
 						});

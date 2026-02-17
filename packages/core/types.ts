@@ -1,9 +1,4 @@
-import type {
-	ActivityType,
-	PermissionRole,
-	ProviderType,
-	UserRole,
-} from "./enums";
+import type { ActivityType, PermissionRole, ProviderType } from "./enums";
 
 /**
  * Base entity with common fields
@@ -20,7 +15,6 @@ export interface BaseEntity {
 export interface User extends BaseEntity {
 	email: string;
 	passwordHash: string;
-	role: UserRole;
 	isActive: boolean;
 	lastLoginAt?: Date;
 }
@@ -139,7 +133,8 @@ export interface Activity extends BaseEntity {
 export interface Session {
 	userId: string;
 	email: string;
-	role: UserRole;
+	workspaceId: string;
+	workspaceRole: string;
 	createdAt: number;
 	expiresAt: number;
 }

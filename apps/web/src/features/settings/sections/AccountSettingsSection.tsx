@@ -10,6 +10,7 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 
 export function AccountSettingsSection() {
 	const user = useAuthStore((state) => state.user);
+	const workspaceRole = useAuthStore((state) => state.workspaceRole);
 	const [, updateMyProfile] = useUpdateMyProfile();
 	const [name, setName] = useState("");
 	const [isSaving, setIsSaving] = useState(false);
@@ -103,7 +104,7 @@ export function AccountSettingsSection() {
 						<Shield size={16} />
 						Role
 					</span>
-					<span>{user.role}</span>
+					<span>{workspaceRole ?? "viewer"}</span>
 				</div>
 			</div>
 		</div>

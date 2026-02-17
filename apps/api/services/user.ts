@@ -1,9 +1,4 @@
-import {
-	ConflictError,
-	NotFoundError,
-	type UserRole,
-	ValidationError,
-} from "@drivebase/core";
+import { ConflictError, NotFoundError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
 import { eq } from "drizzle-orm";
@@ -61,12 +56,7 @@ export class UserService {
 	/**
 	 * Create a new user
 	 */
-	async create(data: {
-		email: string;
-		password: string;
-		role: UserRole;
-		name?: string;
-	}) {
+	async create(data: { email: string; password: string; name?: string }) {
 		// Validate password
 		const validation = validatePassword(data.password);
 		if (!validation.valid) {
@@ -96,7 +86,6 @@ export class UserService {
 				name: defaultName,
 				email: data.email,
 				passwordHash,
-				role: data.role,
 				isActive: true,
 			})
 			.returning();
@@ -111,7 +100,7 @@ export class UserService {
 	/**
 	 * Update user
 	 */
-	async update(id: string, data: { role?: UserRole; isActive?: boolean }) {
+	async update(id: string, data: { isActive?: boolean }) {
 		const [user] = await this.db
 			.update(users)
 			.set({

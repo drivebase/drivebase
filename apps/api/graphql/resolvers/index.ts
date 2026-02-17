@@ -22,7 +22,14 @@ import {
 	storageProviderResolvers,
 } from "./provider";
 import { scalarResolvers } from "./scalars";
-import { userMutations, userQueries, userResolvers } from "./user";
+import { userResolvers } from "./user";
+import {
+	workspaceInviteResolvers,
+	workspaceMemberResolvers,
+	workspaceMutations,
+	workspaceQueries,
+	workspaceResolvers,
+} from "./workspace";
 
 /**
  * Combine all resolvers
@@ -32,11 +39,11 @@ export const resolvers: Resolvers = {
 
 	Query: {
 		...authQueries,
-		...userQueries,
 		...providerQueries,
 		...folderQueries,
 		...fileQueries,
 		...metadataQueries,
+		...workspaceQueries,
 
 		// Placeholder resolvers for unimplemented features
 		activities: async () => [],
@@ -44,7 +51,6 @@ export const resolvers: Resolvers = {
 
 	Mutation: {
 		...authMutations,
-		...userMutations,
 		...providerMutations,
 		...folderMutations,
 		...fileMutations,
@@ -58,6 +64,9 @@ export const resolvers: Resolvers = {
 
 	AuthResponse: authResponseResolvers,
 	User: userResolvers,
+	Workspace: workspaceResolvers,
+	WorkspaceMember: workspaceMemberResolvers,
+	WorkspaceInvite: workspaceInviteResolvers,
 	StorageProvider: storageProviderResolvers,
 	AvailableProvider: availableProviderResolvers,
 	ProviderConfigField: providerConfigFieldResolvers,

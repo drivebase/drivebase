@@ -1,9 +1,8 @@
-import { UserRole } from "@drivebase/core";
 import { getDb, users } from "@drivebase/db";
 import { sql } from "drizzle-orm";
 import { getAvailableProviders } from "../config/providers";
 import { getRedis } from "../redis/client";
-import { UserService } from "../services/user";
+import { AuthService } from "../services/auth";
 import { logger } from "./logger";
 
 /**
@@ -56,18 +55,18 @@ export async function initializeApp() {
 			process.env.DEFAULT_OWNER_EMAIL || "admin@drivebase.local";
 		const defaultPassword = process.env.DEFAULT_OWNER_PASSWORD || "admin123";
 
-		const userService = new UserService(db);
+		const authService = new AuthService(db);
 
 		try {
-			const owner = await userService.create({
-				email: defaultEmail,
-				password: defaultPassword,
-				role: UserRole.OWNER,
-			});
+			const owner = await authService.register(
+				defaultEmail,
+				defaultPassword,
+				"system",
+			);
 
 			logger.info({
 				msg: "Default owner user created",
-				email: owner.email,
+				email: owner.user.email,
 				password: defaultPassword,
 				warning: "Please change the password after first login!",
 			});

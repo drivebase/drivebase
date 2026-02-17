@@ -12,7 +12,8 @@ const AUDIENCE = "drivebase-api";
 export interface JWTPayload {
 	userId: string;
 	email: string;
-	role: string;
+	workspaceId: string;
+	workspaceRole: string;
 }
 
 /**
@@ -47,7 +48,8 @@ export async function verifyToken(token: string): Promise<JWTPayload> {
 		if (
 			typeof payload.userId !== "string" ||
 			typeof payload.email !== "string" ||
-			typeof payload.role !== "string"
+			typeof payload.workspaceId !== "string" ||
+			typeof payload.workspaceRole !== "string"
 		) {
 			throw new Error("Invalid token payload structure");
 		}

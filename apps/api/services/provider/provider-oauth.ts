@@ -46,10 +46,10 @@ function buildCallbackUrl(): string {
 export async function initiateOAuth(
 	db: Database,
 	providerId: string,
-	userId: string,
+	workspaceId: string,
 	source?: string,
 ) {
-	const providerRecord = await getProvider(db, providerId, userId);
+	const providerRecord = await getProvider(db, providerId, workspaceId);
 
 	const registration = getProviderRegistration(providerRecord.type);
 

@@ -1,15 +1,5 @@
-import { boolean, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
-
-/**
- * User role enum
- */
-export const userRoleEnum = pgEnum("user_role", [
-	"viewer",
-	"editor",
-	"admin",
-	"owner",
-]);
 
 /**
  * Users table
@@ -21,7 +11,6 @@ export const users = pgTable("users", {
 	name: text("name").notNull(),
 	email: text("email").notNull().unique(),
 	passwordHash: text("password_hash").notNull(),
-	role: userRoleEnum("role").notNull().default("viewer"),
 	isActive: boolean("is_active").notNull().default(true),
 	onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
 	lastLoginAt: timestamp("last_login_at", { withTimezone: true }),

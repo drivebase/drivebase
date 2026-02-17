@@ -1,4 +1,3 @@
-import type { UserRole } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { login, register } from "./auth/auth-credentials";
 import {
@@ -20,13 +19,8 @@ export class AuthService {
 		return getCurrentUser(this.db, userId);
 	}
 
-	async register(
-		email: string,
-		password: string,
-		role: UserRole,
-		ipAddress: string,
-	) {
-		return register(this.db, email, password, role, ipAddress);
+	async register(email: string, password: string, ipAddress: string) {
+		return register(this.db, email, password, ipAddress);
 	}
 
 	async login(email: string, password: string, ipAddress: string) {
