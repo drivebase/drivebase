@@ -54,8 +54,7 @@ function CreateWorkspacePage() {
 
     if (result.data?.createWorkspace) {
       setActiveWorkspaceId(result.data.createWorkspace.id);
-      navigate({ to: "/", replace: true });
-      window.location.reload();
+      window.location.assign("/");
       return;
     }
 
