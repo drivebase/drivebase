@@ -14,6 +14,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { graphql } from "@/gql";
+import { OAuthInitiator, type ProviderType } from "@/gql/graphql";
 
 const AVAILABLE_PROVIDERS_QUERY = graphql(`
 	query GetAvailableProviders {
@@ -45,21 +46,49 @@ const CONNECT_STORAGE_MUTATION = graphql(`
 `);
 
 const INITIATE_OAUTH_MUTATION = graphql(`
-	mutation InitiateProviderOAuth($id: ID!) {
-		initiateProviderOAuth(id: $id) {
+	mutation InitiateProviderOAuth($id: ID!, $source: OAuthInitiator) {
+		initiateProviderOAuth(id: $id, source: $source) {
 			authorizationUrl
 			state
 		}
 	}
 `);
 
+const CONNECTED_PROVIDERS_QUERY = graphql(`
+	query GetOnboardingConnectedProviders {
+		storageProviders {
+			id
+			name
+			type
+			isActive
+		}
+	}
+`);
+
 interface ProviderStepProps {
 	onNext: () => void;
+	oauth?: string;
+	providerId?: string;
+	error?: string;
 }
 
-export function ProviderStep({ onNext }: ProviderStepProps) {
+function toProviderType(providerId: string): ProviderType {
+	return providerId.toUpperCase() as ProviderType;
+}
+
+export function ProviderStep({
+	onNext,
+	oauth,
+	providerId,
+	error,
+}: ProviderStepProps) {
 	const [selectedProviderId, setSelectedProviderId] = useState<string>("");
 	const [{ data, fetching }] = useQuery({ query: AVAILABLE_PROVIDERS_QUERY });
+	const hasOAuthCallbackResult = oauth === "success" || oauth === "failed";
+	const [{ data: connectedData, fetching: fetchingConnected }] = useQuery({
+		query: CONNECTED_PROVIDERS_QUERY,
+		requestPolicy: hasOAuthCallbackResult ? "network-only" : "cache-first",
+	});
 	const [{ fetching: connecting }, connectStorage] = useMutation(
 		CONNECT_STORAGE_MUTATION,
 	);
@@ -78,15 +107,21 @@ export function ProviderStep({ onNext }: ProviderStepProps) {
 		(p) => p.id === selectedProviderId,
 	);
 
+	const connectedProvider = providerId
+		? connectedData?.storageProviders.find((provider) => provider.id === providerId)
+		: undefined;
+	const oauthErrorMessage =
+		error === "oauth_failed"
+			? "Authorization failed. Please try connecting your provider again."
+			: "Authorization failed. Please try again.";
+
 	const onSubmit = async (formData: FieldValues) => {
 		if (!selectedProvider) return;
 
 		const { _displayName, ...config } = formData;
 
 		try {
-			// Convert provider ID (e.g., "google_drive") to enum format (e.g., "GOOGLE_DRIVE")
-			// biome-ignore lint/suspicious/noExplicitAny: Casting to any to avoid type mismatch with generated GraphQL types
-			const providerType = selectedProvider.id.toUpperCase() as any;
+			const providerType = toProviderType(selectedProvider.id);
 
 			const result = await connectStorage({
 				input: {
@@ -105,7 +140,10 @@ export function ProviderStep({ onNext }: ProviderStepProps) {
 
 			if (selectedProvider.authType === "OAUTH" && provider) {
 				// Initiate OAuth flow
-				const oauthResult = await initiateOAuth({ id: provider.id });
+				const oauthResult = await initiateOAuth({
+					id: provider.id,
+					source: OAuthInitiator.Onboarding,
+				});
 				if (oauthResult.data?.initiateProviderOAuth.authorizationUrl) {
 					// Persist current step so the wizard can restore it if navigation is interrupted.
 					localStorage.setItem("onboarding_step", "2");
@@ -139,6 +177,31 @@ export function ProviderStep({ onNext }: ProviderStepProps) {
 						Select a provider to connect your first storage drive.
 					</p>
 				</div>
+
+				{oauth === "success" && (
+					<div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
+						{fetchingConnected ? (
+							<div className="flex items-center gap-2">
+								<Loader2 className="h-4 w-4 animate-spin" />
+								<span>Verifying connected provider...</span>
+							</div>
+						) : connectedProvider ? (
+							<span>
+								Connected successfully: <strong>{connectedProvider.name}</strong>
+							</span>
+						) : (
+							<span>
+								Authorization completed. Provider sync is still refreshing.
+							</span>
+						)}
+					</div>
+				)}
+
+				{oauth === "failed" && (
+					<div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+						{oauthErrorMessage}
+					</div>
+				)}
 
 				<div className="space-y-5">
 					<div className="space-y-2">
@@ -234,7 +297,7 @@ export function ProviderStep({ onNext }: ProviderStepProps) {
 					onClick={onNext}
 					className="text-muted-foreground text-xs h-8"
 				>
-					Skip for now
+					{oauth === "success" ? "Continue" : "Skip for now"}
 				</Button>
 			</div>
 		</div>

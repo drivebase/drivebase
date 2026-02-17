@@ -113,7 +113,13 @@ function AuthenticatedLayout() {
 		if (user && !user.onboardingCompleted) {
 			navigate({
 				to: "/onboarding",
-				search: { connected: undefined },
+				search: {
+					connected: undefined,
+					oauth: undefined,
+					step: undefined,
+					providerId: undefined,
+					error: undefined,
+				},
 				replace: true,
 			});
 		}

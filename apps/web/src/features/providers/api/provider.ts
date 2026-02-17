@@ -108,8 +108,8 @@ export const UPDATE_PROVIDER_QUOTA_MUTATION = graphql(`
 `);
 
 export const INITIATE_PROVIDER_OAUTH_MUTATION = graphql(`
-  mutation InitiateProviderOAuth($id: ID!) {
-    initiateProviderOAuth(id: $id) {
+  mutation InitiateProviderOAuth($id: ID!, $source: OAuthInitiator) {
+    initiateProviderOAuth(id: $id, source: $source) {
       authorizationUrl
       state
     }

@@ -10,6 +10,30 @@ import { getPublicApiBaseUrl } from "../../config/url";
 import { decryptConfig, encryptConfig } from "../../utils/encryption";
 import { getProvider } from "./provider-queries";
 
+type OAuthInitiatorSource = "default" | "onboarding";
+
+function normalizeOAuthSource(source?: string): OAuthInitiatorSource {
+	if (source === "onboarding") {
+		return "onboarding";
+	}
+	return "default";
+}
+
+function parseOAuthState(state: string): {
+	providerId: string;
+	source: OAuthInitiatorSource;
+} {
+	const [providerId, _csrfToken, source] = state.split(":");
+	if (!providerId) {
+		throw new ValidationError("Invalid OAuth state parameter");
+	}
+
+	return {
+		providerId,
+		source: normalizeOAuthSource(source),
+	};
+}
+
 function buildCallbackUrl(): string {
 	const baseUrl = getPublicApiBaseUrl();
 	return `${baseUrl}/webhook/callback`;
@@ -23,6 +47,7 @@ export async function initiateOAuth(
 	db: Database,
 	providerId: string,
 	userId: string,
+	source?: string,
 ) {
 	const providerRecord = await getProvider(db, providerId, userId);
 
@@ -39,7 +64,7 @@ export async function initiateOAuth(
 	const config = decryptConfig(providerRecord.encryptedConfig, sensitiveFields);
 
 	// Encode provider ID + random CSRF token into state
-	const state = `${providerId}:${crypto.randomUUID()}`;
+	const state = `${providerId}:${crypto.randomUUID()}:${normalizeOAuthSource(source)}`;
 	const callbackUrl = buildCallbackUrl();
 	return registration.initiateOAuth(config, callbackUrl, state);
 }
@@ -55,11 +80,7 @@ export async function handleOAuthCallback(
 	code: string,
 	state: string,
 ) {
-	// Extract provider ID from state (format: "<providerId>:<csrfToken>")
-	const providerId = state.split(":")[0];
-	if (!providerId) {
-		throw new ValidationError("Invalid OAuth state parameter");
-	}
+	const { providerId, source } = parseOAuthState(state);
 
 	const [providerRecord] = await db
 		.select()
@@ -138,5 +159,8 @@ export async function handleOAuthCallback(
 		throw new Error("Failed to update provider after OAuth callback");
 	}
 
-	return updated;
+	return {
+		provider: updated,
+		source,
+	};
 }

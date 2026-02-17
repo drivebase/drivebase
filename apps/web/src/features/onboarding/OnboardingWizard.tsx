@@ -17,26 +17,49 @@ const STEPS = [
 const STORAGE_KEY = "onboarding_step";
 
 export function OnboardingWizard() {
-	const { connected } = Route.useSearch();
+	const { connected, oauth, step: stepFromSearch, providerId, error } =
+		Route.useSearch();
 	const navigate = useNavigate();
 	const { user } = useAuthStore();
 
 	const [step, setStep] = useState<number>(() => {
-		// If returning from OAuth, jump straight to the completion step.
+		if (stepFromSearch === 3) {
+			return 3;
+		}
+
+		if (stepFromSearch === 2) {
+			return 2;
+		}
+
+		if (oauth === "success") {
+			return 3;
+		}
+
+		if (oauth === "failed") {
+			return 2;
+		}
+
+		// Legacy behavior for older callback redirects.
 		if (connected) return 3;
 		// Restore persisted step in case of accidental navigation.
 		const saved = localStorage.getItem(STORAGE_KEY);
 		return saved ? Number(saved) : 1;
 	});
 
-	// Clean up persisted step and strip the ?connected param once we're on step 3.
+	// Clean up persisted step and strip legacy ?connected param once we're on step 3.
 	useEffect(() => {
 		if (step >= 3) {
 			localStorage.removeItem(STORAGE_KEY);
 			if (connected) {
 				navigate({
 					to: "/onboarding",
-					search: { connected: undefined },
+					search: {
+						connected: undefined,
+						oauth: undefined,
+						step: undefined,
+						providerId: undefined,
+						error: undefined,
+					},
 					replace: true,
 				});
 			}
@@ -104,8 +127,21 @@ export function OnboardingWizard() {
 					{step === 1 && (
 						<WelcomeStep onNext={handleNext} userName={user?.name ?? "there"} />
 					)}
-					{step === 2 && <ProviderStep onNext={handleNext} />}
-					{step === 3 && <CompletionStep onComplete={handleComplete} />}
+					{step === 2 && (
+						<ProviderStep
+							onNext={handleNext}
+							oauth={oauth}
+							providerId={providerId}
+							error={error}
+						/>
+					)}
+					{step === 3 && (
+						<CompletionStep
+							onComplete={handleComplete}
+							oauth={oauth}
+							providerId={providerId}
+						/>
+					)}
 				</CardContent>
 			</Card>
 		</div>
