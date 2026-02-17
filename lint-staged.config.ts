@@ -4,4 +4,5 @@
  */
 export default {
 	"*.ts": "biome format --write",
+	"!messages.ts": [],
 };
