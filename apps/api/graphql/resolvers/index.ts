@@ -19,6 +19,11 @@ import {
 } from "./provider";
 import { scalarResolvers } from "./scalars";
 import { userMutations, userQueries, userResolvers } from "./user";
+import {
+	workspaceMutations,
+	workspaceQueries,
+	workspaceResolvers,
+} from "./workspace";
 
 /**
  * Combine all resolvers
@@ -33,6 +38,7 @@ export const resolvers: Resolvers = {
 		...folderQueries,
 		...fileQueries,
 		...metadataQueries,
+		...workspaceQueries,
 
 		// Placeholder resolvers for unimplemented features
 		activities: async () => [],
@@ -44,6 +50,7 @@ export const resolvers: Resolvers = {
 		...providerMutations,
 		...folderMutations,
 		...fileMutations,
+		...workspaceMutations,
 
 		// Placeholder resolvers for permissions (TODO)
 		grantFolderAccess: async () => {
@@ -66,4 +73,5 @@ export const resolvers: Resolvers = {
 	ProviderConfigField: providerConfigFieldResolvers,
 	OAuthProviderCredential: oauthProviderCredentialResolvers,
 	File: fileResolvers,
+	Workspace: workspaceResolvers,
 };

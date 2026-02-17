@@ -1,4 +1,4 @@
-import { getDb, users } from "@drivebase/db";
+import { getDb, users, workspaces } from "@drivebase/db";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { env } from "../../config/env";
@@ -41,14 +41,15 @@ export async function handleOAuthCallback(c: Context): Promise<Response> {
 			return c.redirect(`${frontendUrl}/onboarding?${params.toString()}`, 302);
 		}
 
-		const [user] = await db
+		const [owner] = await db
 			.select({ onboardingCompleted: users.onboardingCompleted })
-			.from(users)
-			.where(eq(users.id, updatedProvider.userId))
+			.from(workspaces)
+			.innerJoin(users, eq(users.id, workspaces.ownerId))
+			.where(eq(workspaces.id, updatedProvider.workspaceId))
 			.limit(1);
 
 		const returnPath =
-			user && !user.onboardingCompleted
+			owner && !owner.onboardingCompleted
 				? "/onboarding?connected=true"
 				: "/providers?connected=true";
 

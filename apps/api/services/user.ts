@@ -7,7 +7,9 @@ import {
 import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
 import { eq } from "drizzle-orm";
+import { logger } from "../utils/logger";
 import { hashPassword, validatePassword } from "../utils/password";
+import { createDefaultWorkspace } from "./workspace/workspace";
 
 export class UserService {
 	constructor(private db: Database) {}
@@ -89,21 +91,39 @@ export class UserService {
 
 		const defaultName = data.name?.trim() || data.email.split("@")[0] || "User";
 
-		// Create user
-		const [user] = await this.db
-			.insert(users)
-			.values({
-				name: defaultName,
-				email: data.email,
-				passwordHash,
-				role: data.role,
-				isActive: true,
-			})
-			.returning();
+		logger.info({
+			msg: "Creating user with default workspace",
+			email: data.email,
+			role: data.role,
+		});
 
-		if (!user) {
-			throw new Error("Failed to create user");
-		}
+		// Create user + default workspace
+		const user = await this.db.transaction(async (tx) => {
+			const [createdUser] = await tx
+				.insert(users)
+				.values({
+					name: defaultName,
+					email: data.email,
+					passwordHash,
+					role: data.role,
+					isActive: true,
+				})
+				.returning();
+
+			if (!createdUser) {
+				throw new Error("Failed to create user");
+			}
+
+			const workspace = await createDefaultWorkspace(tx, createdUser.id);
+
+			logger.info({
+				msg: "Created default workspace for user",
+				userId: createdUser.id,
+				workspaceId: workspace.id,
+			});
+
+			return createdUser;
+		});
 
 		return user;
 	}

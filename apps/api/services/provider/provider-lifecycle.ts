@@ -22,6 +22,7 @@ import { getOAuthCredentialConfig } from "./provider-credentials";
  */
 export async function connectProvider(
 	db: Database,
+	workspaceId: string,
 	userId: string,
 	name: string,
 	type: string,
@@ -73,7 +74,7 @@ export async function connectProvider(
 					type: type as "google_drive" | "s3" | "local",
 					authType: "oauth",
 					encryptedConfig,
-					userId,
+					workspaceId,
 					isActive: false,
 					quotaUsed: 0,
 				})
@@ -88,7 +89,7 @@ export async function connectProvider(
 			logger.error({
 				msg: "Failed to insert OAuth provider",
 				error,
-				userId,
+				workspaceId,
 				type,
 			});
 			throw error;
@@ -117,7 +118,7 @@ export async function connectProvider(
 				type: type as "google_drive" | "s3" | "local",
 				authType: registration.authType,
 				encryptedConfig,
-				userId,
+				workspaceId,
 				isActive: true,
 				quotaTotal: quota.total ?? null,
 				quotaUsed: quota.used,
@@ -134,7 +135,7 @@ export async function connectProvider(
 		logger.error({
 			msg: "Failed to insert non-OAuth provider",
 			error,
-			userId,
+			workspaceId,
 			type,
 		});
 		throw error;
@@ -147,7 +148,7 @@ export async function connectProvider(
 export async function disconnectProvider(
 	db: Database,
 	providerId: string,
-	userId: string,
+	workspaceId: string,
 ) {
 	const [provider] = await db
 		.select()
@@ -155,7 +156,7 @@ export async function disconnectProvider(
 		.where(
 			and(
 				eq(storageProviders.id, providerId),
-				eq(storageProviders.userId, userId),
+				eq(storageProviders.workspaceId, workspaceId),
 			),
 		)
 		.limit(1);
@@ -173,7 +174,7 @@ export async function disconnectProvider(
 export async function updateProviderQuota(
 	db: Database,
 	providerId: string,
-	userId: string,
+	workspaceId: string,
 	quotaTotal: number | null,
 	quotaUsed: number,
 ) {
@@ -183,7 +184,7 @@ export async function updateProviderQuota(
 		.where(
 			and(
 				eq(storageProviders.id, providerId),
-				eq(storageProviders.userId, userId),
+				eq(storageProviders.workspaceId, workspaceId),
 			),
 		)
 		.limit(1);

@@ -108,7 +108,9 @@ export function ProviderStep({
 	);
 
 	const connectedProvider = providerId
-		? connectedData?.storageProviders.find((provider) => provider.id === providerId)
+		? connectedData?.storageProviders.find(
+				(provider) => provider.id === providerId,
+			)
 		: undefined;
 	const oauthErrorMessage =
 		error === "oauth_failed"
@@ -187,7 +189,8 @@ export function ProviderStep({
 							</div>
 						) : connectedProvider ? (
 							<span>
-								Connected successfully: <strong>{connectedProvider.name}</strong>
+								Connected successfully:{" "}
+								<strong>{connectedProvider.name}</strong>
 							</span>
 						) : (
 							<span>
