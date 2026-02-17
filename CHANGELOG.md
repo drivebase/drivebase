@@ -1,5 +1,17 @@
 # Changelog
 
+# [1.12.0](https://github.com/drivebase/drivebase/compare/v1.11.1...v1.12.0) (2026-02-17)
+
+
+### Bug Fixes
+
+* add getPublicApiBaseUrl function for resolving public API base URL ([4eb6b4a](https://github.com/drivebase/drivebase/commit/4eb6b4a03babc7c243f796461c108a997f3bff7b))
+
+
+### Features
+
+* **onboarding:** enhance OAuth flow with source tracking and improved redirects ([8ab9774](https://github.com/drivebase/drivebase/commit/8ab97742d4c61af8b6fa7e0e45cc28d160fe923b))
+
 ## [1.11.1](https://github.com/drivebase/drivebase/compare/v1.11.0...v1.11.1) (2026-02-17)
 
 
