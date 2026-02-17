@@ -71,6 +71,7 @@ describe("provider resolvers", () => {
 			"Drive",
 			"google_drive",
 			{ x: 1 },
+			undefined,
 		);
 	});
 
