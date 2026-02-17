@@ -1,9 +1,11 @@
 import type { Database } from "@drivebase/db";
 import { workspaces } from "@drivebase/db";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { logger } from "../../utils/logger";
 
 const DEFAULT_WORKSPACE_NAME = "My Workspace";
+const DEFAULT_WORKSPACE_COLOR = "sky";
+const WORKSPACE_COLORS = new Set(["rose", "peach", "amber", "mint", "sky"]);
 
 type WorkspaceDbLike = Pick<Database, "insert" | "select">;
 
@@ -17,6 +19,7 @@ export async function createDefaultWorkspace(
 		.insert(workspaces)
 		.values({
 			name: DEFAULT_WORKSPACE_NAME,
+			color: DEFAULT_WORKSPACE_COLOR,
 			ownerId,
 		})
 		.returning();
@@ -38,8 +41,31 @@ export async function createDefaultWorkspace(
 export async function getOwnedWorkspaceId(
 	db: WorkspaceDbLike,
 	ownerId: string,
+	preferredWorkspaceId?: string,
 ) {
 	logger.debug({ msg: "Resolving owned workspace", ownerId });
+
+	if (preferredWorkspaceId) {
+		const [preferredWorkspace] = await db
+			.select({ id: workspaces.id })
+			.from(workspaces)
+			.where(
+				and(
+					eq(workspaces.id, preferredWorkspaceId),
+					eq(workspaces.ownerId, ownerId),
+				),
+			)
+			.limit(1);
+
+		if (preferredWorkspace) {
+			logger.debug({
+				msg: "Using preferred workspace from header",
+				ownerId,
+				workspaceId: preferredWorkspaceId,
+			});
+			return preferredWorkspaceId;
+		}
+	}
 
 	const [workspace] = await db
 		.select({ id: workspaces.id })
@@ -77,11 +103,48 @@ export async function listOwnedWorkspaces(
 	db: WorkspaceDbLike,
 	ownerId: string,
 ) {
-	logger.debug({ msg: "Listing owned workspaces", ownerId });
-
 	return db
 		.select()
 		.from(workspaces)
 		.where(eq(workspaces.ownerId, ownerId))
 		.orderBy(asc(workspaces.createdAt));
+}
+
+export async function createWorkspace(
+	db: WorkspaceDbLike,
+	ownerId: string,
+	name: string,
+	color: string,
+) {
+	const trimmedName = name.trim();
+	if (!trimmedName) {
+		throw new Error("Workspace name is required");
+	}
+
+	if (!WORKSPACE_COLORS.has(color)) {
+		throw new Error("Invalid workspace color");
+	}
+
+	logger.info({ msg: "Creating workspace", ownerId, name: trimmedName, color });
+
+	const [workspace] = await db
+		.insert(workspaces)
+		.values({
+			name: trimmedName,
+			color,
+			ownerId,
+		})
+		.returning();
+
+	if (!workspace) {
+		throw new Error("Failed to create workspace");
+	}
+
+	logger.info({
+		msg: "Workspace created",
+		ownerId,
+		workspaceId: workspace.id,
+	});
+
+	return workspace;
 }

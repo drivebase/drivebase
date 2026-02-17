@@ -25,9 +25,11 @@ export async function handleUploadProxy(c: Context<AppEnv>): Promise<Response> {
 		const file = await fileService.getFile(fileId, user.userId);
 
 		const providerService = new ProviderService(db);
+		const workspaceId = c.req.header("x-workspace-id") ?? undefined;
 		const providerRecord = await providerService.getProvider(
 			file.providerId,
 			user.userId,
+			workspaceId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 

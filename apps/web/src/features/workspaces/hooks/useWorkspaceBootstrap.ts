@@ -1,7 +1,10 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
 import { useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
+import {
+	getActiveWorkspaceId,
+	setActiveWorkspaceId,
+} from "@/features/workspaces/lib/workspace";
 
 export function useWorkspaceBootstrap() {
 	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -17,18 +20,15 @@ export function useWorkspaceBootstrap() {
 			return;
 		}
 
-		const storedWorkspaceId = localStorage.getItem(
-			ACTIVE_WORKSPACE_STORAGE_KEY,
-		);
+		const storedWorkspaceId = getActiveWorkspaceId();
 		const hasStoredWorkspace = workspaces.some(
 			(workspace) => workspace.id === storedWorkspaceId,
 		);
 
 		if (!hasStoredWorkspace) {
-			localStorage.setItem(
-				ACTIVE_WORKSPACE_STORAGE_KEY,
-				workspaces[0]?.id ?? "",
-			);
+			if (workspaces[0]?.id) {
+				setActiveWorkspaceId(workspaces[0].id);
+			}
 		}
 	}, [isAuthenticated, workspacesResult.data]);
 
