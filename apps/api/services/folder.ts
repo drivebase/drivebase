@@ -11,6 +11,7 @@ import {
 	listFolders,
 } from "./folder/folder-queries";
 import { starFolder, unstarFolder } from "./folder/folder-stars";
+import { getAccessibleWorkspaceId } from "./workspace/workspace";
 
 export class FolderService {
 	constructor(private db: Database) {}
@@ -20,39 +21,123 @@ export class FolderService {
 		name: string,
 		parentId?: string,
 		providerId?: string,
+		preferredWorkspaceId?: string,
 	) {
-		return createFolder(this.db, userId, name, parentId, providerId);
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return createFolder(
+			this.db,
+			userId,
+			workspaceId,
+			name,
+			parentId,
+			providerId,
+		);
 	}
 
-	async getFolder(folderId: string, userId: string) {
-		return getFolder(this.db, folderId, userId);
+	async getFolder(
+		folderId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return getFolder(this.db, folderId, userId, workspaceId);
 	}
 
-	async listFolders(userId: string, path?: string, parentId?: string) {
-		return listFolders(this.db, userId, path, parentId);
+	async listFolders(
+		userId: string,
+		path?: string,
+		parentId?: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return listFolders(this.db, userId, workspaceId, path, parentId);
 	}
 
-	async renameFolder(folderId: string, userId: string, newName: string) {
-		return renameFolder(this.db, folderId, userId, newName);
+	async renameFolder(
+		folderId: string,
+		userId: string,
+		newName: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return renameFolder(this.db, folderId, userId, workspaceId, newName);
 	}
 
-	async moveFolder(folderId: string, userId: string, newParentId?: string) {
-		return moveFolder(this.db, folderId, userId, newParentId);
+	async moveFolder(
+		folderId: string,
+		userId: string,
+		newParentId?: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return moveFolder(this.db, folderId, userId, workspaceId, newParentId);
 	}
 
-	async deleteFolder(folderId: string, userId: string) {
-		return deleteFolder(this.db, folderId, userId);
+	async deleteFolder(
+		folderId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return deleteFolder(this.db, folderId, userId, workspaceId);
 	}
 
-	async starFolder(folderId: string, userId: string) {
-		return starFolder(this.db, folderId, userId);
+	async starFolder(
+		folderId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return starFolder(this.db, folderId, userId, workspaceId);
 	}
 
-	async unstarFolder(folderId: string, userId: string) {
-		return unstarFolder(this.db, folderId, userId);
+	async unstarFolder(
+		folderId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return unstarFolder(this.db, folderId, userId, workspaceId);
 	}
 
-	async getStarredFolders(userId: string) {
-		return getStarredFolders(this.db, userId);
+	async getStarredFolders(userId: string, preferredWorkspaceId?: string) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return getStarredFolders(this.db, userId, workspaceId);
 	}
 }

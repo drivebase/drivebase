@@ -65,15 +65,18 @@ export const fileQueries: QueryResolvers = {
 	file: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
-		return fileService.getFile(args.id, user.userId);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		return fileService.getFile(args.id, user.userId, workspaceId);
 	},
 
 	files: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.listFiles(
 			user.userId,
+			workspaceId,
 			args.folderId ?? undefined,
 			args.limit ?? undefined,
 			args.offset ?? undefined,
@@ -81,26 +84,30 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	contents: async (_parent, args, context) => {
-		requireAuth(context);
+		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
-		return fileService.getContents(args.path);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		return fileService.getContents(args.path, user.userId, workspaceId);
 	},
 
 	searchFiles: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.searchFiles(
 			user.userId,
 			args.query,
 			args.limit ?? undefined,
+			workspaceId,
 		);
 	},
 
 	starredFiles: async (_parent, _args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
-		return fileService.getStarredFiles(user.userId);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		return fileService.getStarredFiles(user.userId, workspaceId);
 	},
 
 	activeUploadSessions: async (_parent, _args, context) => {
@@ -114,6 +121,7 @@ export const fileMutations: MutationResolvers = {
 	requestUpload: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		const result = await fileService.requestUpload(
 			user.userId,
@@ -122,6 +130,7 @@ export const fileMutations: MutationResolvers = {
 			args.input.size,
 			args.input.folderId ?? undefined,
 			args.input.providerId,
+			workspaceId,
 		);
 
 		return {
@@ -135,7 +144,12 @@ export const fileMutations: MutationResolvers = {
 	requestDownload: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
-		const result = await fileService.requestDownload(args.id, user.userId);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		const result = await fileService.requestDownload(
+			args.id,
+			user.userId,
+			workspaceId,
+		);
 
 		return {
 			fileId: result.file.id,
@@ -147,58 +161,67 @@ export const fileMutations: MutationResolvers = {
 	renameFile: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		return fileService.renameFile(args.id, user.userId, args.name);
+		return fileService.renameFile(args.id, user.userId, args.name, workspaceId);
 	},
 
 	moveFile: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.moveFile(
 			args.id,
 			user.userId,
 			args.folderId ?? undefined,
+			workspaceId,
 		);
 	},
 
 	moveFileToProvider: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.moveFileToProvider(
 			args.id,
 			user.userId,
 			args.providerId,
+			workspaceId,
 		);
 	},
 
 	deleteFile: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		await fileService.deleteFile(args.id, user.userId);
+		await fileService.deleteFile(args.id, user.userId, workspaceId);
 		return true;
 	},
 
 	starFile: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		return fileService.starFile(args.id, user.userId);
+		return fileService.starFile(args.id, user.userId, workspaceId);
 	},
 
 	unstarFile: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		return fileService.unstarFile(args.id, user.userId);
+		return fileService.unstarFile(args.id, user.userId, workspaceId);
 	},
 
 	initiateChunkedUpload: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
 		const sessionManager = new UploadSessionManager(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		const { input } = args;
 
@@ -210,6 +233,7 @@ export const fileMutations: MutationResolvers = {
 			input.totalSize,
 			input.folderId ?? undefined,
 			input.providerId,
+			workspaceId,
 		);
 
 		// Create the upload session
@@ -226,7 +250,6 @@ export const fileMutations: MutationResolvers = {
 
 		// Check if provider supports direct multipart (S3)
 		const providerService = new ProviderService(context.db);
-		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		const providerRecord = await providerService.getProvider(
 			input.providerId,
 			user.userId,

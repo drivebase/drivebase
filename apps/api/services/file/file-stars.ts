@@ -7,10 +7,15 @@ import { getFile } from "./file-queries";
 /**
  * Star a file
  */
-export async function starFile(db: Database, fileId: string, userId: string) {
+export async function starFile(
+	db: Database,
+	fileId: string,
+	userId: string,
+	workspaceId: string,
+) {
 	logger.debug({ msg: "Starring file", userId, fileId });
 	try {
-		await getFile(db, fileId, userId);
+		await getFile(db, fileId, userId, workspaceId);
 
 		const [updated] = await db
 			.update(files)
@@ -35,10 +40,15 @@ export async function starFile(db: Database, fileId: string, userId: string) {
 /**
  * Unstar a file
  */
-export async function unstarFile(db: Database, fileId: string, userId: string) {
+export async function unstarFile(
+	db: Database,
+	fileId: string,
+	userId: string,
+	workspaceId: string,
+) {
 	logger.debug({ msg: "Unstarring file", userId, fileId });
 	try {
-		await getFile(db, fileId, userId);
+		await getFile(db, fileId, userId, workspaceId);
 
 		const [updated] = await db
 			.update(files)

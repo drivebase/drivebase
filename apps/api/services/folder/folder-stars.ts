@@ -10,8 +10,9 @@ export async function starFolder(
 	db: Database,
 	folderId: string,
 	userId: string,
+	workspaceId: string,
 ) {
-	await getFolder(db, folderId, userId);
+	await getFolder(db, folderId, userId, workspaceId);
 
 	const [updated] = await db
 		.update(folders)
@@ -36,8 +37,9 @@ export async function unstarFolder(
 	db: Database,
 	folderId: string,
 	userId: string,
+	workspaceId: string,
 ) {
-	await getFolder(db, folderId, userId);
+	await getFolder(db, folderId, userId, workspaceId);
 
 	const [updated] = await db
 		.update(folders)
