@@ -1,5 +1,5 @@
 {
-	"id": "2d4b9012-b7b2-4916-9e94-f4911d5d9ae6",
+	"id": "d6712e02-75c5-4746-8f6b-df3a976b7474",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -985,6 +985,216 @@
 			"checkConstraints": {},
 			"isRLSEnabled": false
 		},
+		"public.workspace_invites": {
+			"name": "workspace_invites",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"workspace_id": {
+					"name": "workspace_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"token": {
+					"name": "token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "workspace_role",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'viewer'"
+				},
+				"invited_by": {
+					"name": "invited_by",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"accepted_by": {
+					"name": "accepted_by",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"accepted_at": {
+					"name": "accepted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"revoked_at": {
+					"name": "revoked_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"workspace_invites_workspace_id_workspaces_id_fk": {
+					"name": "workspace_invites_workspace_id_workspaces_id_fk",
+					"tableFrom": "workspace_invites",
+					"tableTo": "workspaces",
+					"columnsFrom": ["workspace_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"workspace_invites_invited_by_users_id_fk": {
+					"name": "workspace_invites_invited_by_users_id_fk",
+					"tableFrom": "workspace_invites",
+					"tableTo": "users",
+					"columnsFrom": ["invited_by"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"workspace_invites_accepted_by_users_id_fk": {
+					"name": "workspace_invites_accepted_by_users_id_fk",
+					"tableFrom": "workspace_invites",
+					"tableTo": "users",
+					"columnsFrom": ["accepted_by"],
+					"columnsTo": ["id"],
+					"onDelete": "set null",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"workspace_invites_token_unique": {
+					"name": "workspace_invites_token_unique",
+					"nullsNotDistinct": false,
+					"columns": ["token"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.workspace_memberships": {
+			"name": "workspace_memberships",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"workspace_id": {
+					"name": "workspace_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "workspace_role",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'viewer'"
+				},
+				"invited_by": {
+					"name": "invited_by",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"workspace_memberships_workspace_id_workspaces_id_fk": {
+					"name": "workspace_memberships_workspace_id_workspaces_id_fk",
+					"tableFrom": "workspace_memberships",
+					"tableTo": "workspaces",
+					"columnsFrom": ["workspace_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"workspace_memberships_user_id_users_id_fk": {
+					"name": "workspace_memberships_user_id_users_id_fk",
+					"tableFrom": "workspace_memberships",
+					"tableTo": "users",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"workspace_memberships_invited_by_users_id_fk": {
+					"name": "workspace_memberships_invited_by_users_id_fk",
+					"tableFrom": "workspace_memberships",
+					"tableTo": "users",
+					"columnsFrom": ["invited_by"],
+					"columnsTo": ["id"],
+					"onDelete": "set null",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"workspace_memberships_workspace_id_user_id_unique": {
+					"name": "workspace_memberships_workspace_id_user_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["workspace_id", "user_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
 		"public.workspaces": {
 			"name": "workspaces",
 			"schema": "",
@@ -1104,6 +1314,11 @@
 			"name": "user_role",
 			"schema": "public",
 			"values": ["viewer", "editor", "admin", "owner"]
+		},
+		"public.workspace_role": {
+			"name": "workspace_role",
+			"schema": "public",
+			"values": ["owner", "admin", "editor", "viewer"]
 		}
 	},
 	"schemas": {},

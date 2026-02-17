@@ -9,6 +9,13 @@ enum WorkspaceColor {
 	SKY
 }
 
+enum WorkspaceMemberRole {
+	OWNER
+	ADMIN
+	EDITOR
+	VIEWER
+}
+
 type Workspace {
 	id: ID!
 	name: String!
@@ -18,11 +25,38 @@ type Workspace {
 	updatedAt: DateTime!
 }
 
+type WorkspaceMember {
+	userId: ID!
+	name: String!
+	email: String!
+	role: WorkspaceMemberRole!
+	joinedAt: DateTime!
+	isOwner: Boolean!
+}
+
+type WorkspaceInvite {
+	id: ID!
+	token: String!
+	role: WorkspaceMemberRole!
+	expiresAt: DateTime!
+	createdAt: DateTime!
+}
+
 extend type Query {
 	"""
 	Get current user's workspaces
 	"""
 	workspaces: [Workspace!]!
+
+	"""
+	List members for a workspace
+	"""
+	workspaceMembers(workspaceId: ID!): [WorkspaceMember!]!
+
+	"""
+	List active invites for a workspace
+	"""
+	workspaceInvites(workspaceId: ID!): [WorkspaceInvite!]!
 }
 
 input CreateWorkspaceInput {
@@ -30,9 +64,56 @@ input CreateWorkspaceInput {
 	color: WorkspaceColor!
 }
 
+input CreateWorkspaceInviteInput {
+	workspaceId: ID!
+	role: WorkspaceMemberRole!
+	expiresInDays: Int = 7
+}
+
+input UpdateWorkspaceMemberRoleInput {
+	workspaceId: ID!
+	userId: ID!
+	role: WorkspaceMemberRole!
+}
+
+input UpdateWorkspaceNameInput {
+	workspaceId: ID!
+	name: String!
+}
+
 extend type Mutation {
 	"""
 	Create a new workspace
 	"""
 	createWorkspace(input: CreateWorkspaceInput!): Workspace!
+
+	"""
+	Create workspace invite link with role
+	"""
+	createWorkspaceInvite(input: CreateWorkspaceInviteInput!): WorkspaceInvite!
+
+	"""
+	Accept workspace invite link
+	"""
+	acceptWorkspaceInvite(token: String!): Workspace!
+
+	"""
+	Update workspace member role
+	"""
+	updateWorkspaceMemberRole(input: UpdateWorkspaceMemberRoleInput!): Boolean!
+
+	"""
+	Update workspace name
+	"""
+	updateWorkspaceName(input: UpdateWorkspaceNameInput!): Workspace!
+
+	"""
+	Remove a member from workspace
+	"""
+	removeWorkspaceMember(workspaceId: ID!, userId: ID!): Boolean!
+
+	"""
+	Revoke a workspace invite link
+	"""
+	revokeWorkspaceInvite(workspaceId: ID!, inviteId: ID!): Boolean!
 }
