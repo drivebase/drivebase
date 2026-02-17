@@ -23,7 +23,8 @@ const envSchema = z.object({
 	// CORS
 	CORS_ORIGIN: z.string().default("http://localhost:3000"),
 
-	// Public base URL of this API (used to build OAuth callback URLs)
+	// Public base URL of this API (used to build OAuth + proxy URLs)
+	// Example production value: https://app.example.com
 	API_BASE_URL: z.string().url().optional(),
 });
 
