@@ -1,8 +1,9 @@
 import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useMutation } from "urql";
+import { useMutation, useQuery } from "urql";
 import { Button } from "@/components/ui/button";
+import { PROVIDERS_QUERY } from "@/features/providers/api/provider";
 import { graphql } from "@/gql";
 
 const COMPLETE_ONBOARDING_MUTATION = graphql(`
@@ -13,13 +14,36 @@ const COMPLETE_ONBOARDING_MUTATION = graphql(`
 
 interface CompletionStepProps {
 	onComplete: () => void;
+	oauth?: string;
+	providerId?: string;
 }
 
-export function CompletionStep({ onComplete }: CompletionStepProps) {
+function formatProviderType(value: string): string {
+	return value
+		.toLowerCase()
+		.split("_")
+		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+		.join(" ");
+}
+
+export function CompletionStep({
+	onComplete,
+	oauth,
+	providerId,
+}: CompletionStepProps) {
 	const [{ fetching }, completeOnboarding] = useMutation(
 		COMPLETE_ONBOARDING_MUTATION,
 	);
+	const shouldShowConnectedUi = oauth === "success" && Boolean(providerId);
+	const [{ data: connectedData }] = useQuery({
+		query: PROVIDERS_QUERY,
+		pause: !shouldShowConnectedUi,
+		requestPolicy: "network-only",
+	});
 	const [isCompleted, setIsCompleted] = useState(false);
+	const connectedProvider = providerId
+		? connectedData?.storageProviders.find((provider) => provider.id === providerId)
+		: undefined;
 
 	const handleComplete = async () => {
 		try {
@@ -53,11 +77,25 @@ export function CompletionStep({ onComplete }: CompletionStepProps) {
 			</div>
 
 			<div className="space-y-1.5">
-				<h2 className="text-2xl font-bold tracking-tight">You're all set!</h2>
+				<h2 className="text-2xl font-bold tracking-tight">
+					{connectedProvider ? "Provider Connected" : "You're all set!"}
+				</h2>
 				<p className="text-muted-foreground text-sm leading-relaxed">
-					Your Drivebase workspace is ready. Start managing your files securely.
+					{connectedProvider
+						? "Your storage account is now connected and your workspace is ready."
+						: "Your Drivebase workspace is ready. Start managing your files securely."}
 				</p>
 			</div>
+
+			{connectedProvider && (
+				<div className="w-full rounded-lg border bg-muted/30 px-4 py-3 text-left">
+					<p className="text-xs text-muted-foreground">Provider</p>
+					<p className="text-sm font-medium">{connectedProvider.name}</p>
+					<p className="text-xs text-muted-foreground mt-1">
+						{formatProviderType(connectedProvider.type)}
+					</p>
+				</div>
+			)}
 
 			<Button
 				size="lg"

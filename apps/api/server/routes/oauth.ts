@@ -8,8 +8,9 @@ import { logger } from "../../utils/logger";
 /**
  * Handle GET /webhook/callback — OAuth provider callback.
  * The provider ID is extracted from the `state` query param (set during initiateOAuth).
- * Redirects to /onboarding?connected=true if the user hasn't completed onboarding yet,
- * otherwise to /providers?connected=true.
+ * For onboarding-origin OAuth, redirects to onboarding step 3 with success status
+ * and step 2 on failure.
+ * For all other OAuth flows, keeps existing redirect behavior.
  */
 export async function handleOAuthCallback(c: Context): Promise<Response> {
 	const code = c.req.query("code");
@@ -27,10 +28,18 @@ export async function handleOAuthCallback(c: Context): Promise<Response> {
 	try {
 		const db = getDb();
 		const providerService = new ProviderService(db);
-		const updatedProvider = await providerService.handleOAuthCallback(
-			code,
-			state,
-		);
+		const { provider: updatedProvider, source } =
+			await providerService.handleOAuthCallback(code, state);
+
+		if (source === "onboarding") {
+			const params = new URLSearchParams({
+				oauth: "success",
+				step: "3",
+				providerId: updatedProvider.id,
+			});
+
+			return c.redirect(`${frontendUrl}/onboarding?${params.toString()}`, 302);
+		}
 
 		const [user] = await db
 			.select({ onboardingCompleted: users.onboardingCompleted })
@@ -46,6 +55,15 @@ export async function handleOAuthCallback(c: Context): Promise<Response> {
 		return c.redirect(`${frontendUrl}${returnPath}`, 302);
 	} catch (error) {
 		logger.error({ msg: "OAuth callback failed", error });
+		if (state.includes(":onboarding")) {
+			const params = new URLSearchParams({
+				oauth: "failed",
+				step: "2",
+				error: "oauth_failed",
+			});
+
+			return c.redirect(`${frontendUrl}/onboarding?${params.toString()}`, 302);
+		}
 		return c.redirect(`${frontendUrl}/providers?error=oauth_failed`, 302);
 	}
 }

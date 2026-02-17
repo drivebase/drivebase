@@ -68,8 +68,8 @@ export class ProviderService {
 		return createOAuthProviderCredential(this.db, userId, type, config);
 	}
 
-	async initiateOAuth(providerId: string, userId: string) {
-		return initiateOAuth(this.db, providerId, userId);
+	async initiateOAuth(providerId: string, userId: string, source?: string) {
+		return initiateOAuth(this.db, providerId, userId, source);
 	}
 
 	async handleOAuthCallback(code: string, state: string) {

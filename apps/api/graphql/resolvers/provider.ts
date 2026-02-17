@@ -111,7 +111,11 @@ export const providerMutations: MutationResolvers = {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
 
-		return providerService.initiateOAuth(args.id, user.userId);
+		return providerService.initiateOAuth(
+			args.id,
+			user.userId,
+			args.source?.toLowerCase(),
+		);
 	},
 };
 

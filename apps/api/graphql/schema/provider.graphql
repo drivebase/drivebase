@@ -21,6 +21,13 @@ enum AuthType {
 	NO_AUTH
 }
 
+"""
+Origin of OAuth initiation, used to decide callback redirect behavior.
+"""
+enum OAuthInitiator {
+	ONBOARDING
+}
+
 type StorageProvider {
 	id: ID!
 	name: String!
@@ -132,7 +139,7 @@ extend type Mutation {
 	Returns the authorization URL to redirect the user to.
 	The OAuth callback is handled via GET /webhook/callback/:id
 	"""
-	initiateProviderOAuth(id: ID!): OAuthInitResult!
+	initiateProviderOAuth(id: ID!, source: OAuthInitiator): OAuthInitResult!
 
 	"""
 	Create and save reusable OAuth app credentials for a provider
