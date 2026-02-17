@@ -29,7 +29,6 @@ export function PreferencesSettingsSection() {
 					</Trans>
 				</p>
 			</div>
-			<div className="border-t border-border" />
 			<div className="flex items-center justify-between">
 				<div className="space-y-1">
 					<Label className="text-base">
@@ -70,8 +69,6 @@ export function PreferencesSettingsSection() {
 					</SelectContent>
 				</Select>
 			</div>
-
-			<div className="border-t border-border" />
 
 			<div className="flex items-center justify-between">
 				<div className="space-y-1">

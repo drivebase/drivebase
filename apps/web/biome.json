@@ -15,6 +15,6 @@
 		}
 	},
 	"files": {
-		"includes": ["!src/locales"]
+		"includes": ["**", "!src/locales"]
 	}
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { useMutation, useQuery } from "urql";
 import {
+	CHANGE_PASSWORD_MUTATION,
 	LOGIN_MUTATION,
 	LOGOUT_MUTATION,
 	ME_QUERY,
@@ -113,4 +114,17 @@ export function useUpdateMyProfile() {
 	);
 
 	return [result, updateMyProfile] as const;
+}
+
+export function useChangePassword() {
+	const [result, mutate] = useMutation(CHANGE_PASSWORD_MUTATION);
+
+	const changePassword = useCallback(
+		async (variables: {
+			input: { currentPassword: string; newPassword: string };
+		}) => mutate(variables),
+		[mutate],
+	);
+
+	return [result, changePassword] as const;
 }
