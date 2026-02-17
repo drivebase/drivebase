@@ -9,20 +9,20 @@ import {
 } from "@/shared/api/permission";
 
 export function useSharedWithMe() {
-	const [result] = useQuery({
+	const [result, refetch] = useQuery({
 		query: SHARED_WITH_ME_QUERY,
 		requestPolicy: "cache-and-network",
 	});
-	return result;
+	return [result, refetch] as const;
 }
 
 export function useFolderPermissions(folderId: string) {
-	const [result] = useQuery({
+	const [result, refetch] = useQuery({
 		query: GET_FOLDER_PERMISSIONS_QUERY,
 		variables: { id: folderId },
 		pause: !folderId,
 	});
-	return result;
+	return [result, refetch] as const;
 }
 
 export function useGrantFolderAccess() {

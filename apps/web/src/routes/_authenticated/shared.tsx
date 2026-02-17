@@ -4,7 +4,6 @@ import { FileSystemTable } from "@/features/files/FileSystemTable";
 import { useFileActions } from "@/features/files/useFileActions";
 import { useFileOperations } from "@/features/files/hooks/useFileOperations";
 import { useSharedWithMe } from "@/features/sharing";
-import { useProviders } from "@/features/providers/hooks/useProviders";
 import type { FolderItemFragment } from "@/gql/graphql";
 
 export const Route = createFileRoute("/_authenticated/shared")({
@@ -12,8 +11,8 @@ export const Route = createFileRoute("/_authenticated/shared")({
 });
 
 function SharedWithMePage() {
+	const navigate = Route.useNavigate();
 	const { downloadFile, showDetails } = useFileActions();
-	const { data: providersData } = useProviders();
 
 	const [{ data: sharedData, fetching }, refreshShared] = useSharedWithMe();
 
@@ -29,7 +28,7 @@ function SharedWithMePage() {
 		// Navigate to the files page with the shared folder path
 		const targetFolder = folders.find((f: FolderItemFragment) => f.id === folderId);
 		if (targetFolder) {
-			window.location.href = `/files?path=${encodeURIComponent(targetFolder.virtualPath)}`;
+			navigate({ to: "/files", search: { path: targetFolder.virtualPath } });
 		}
 	};
 
@@ -64,7 +63,7 @@ function SharedWithMePage() {
 					<FileSystemTable
 						files={[]}
 						folders={folders}
-						providers={providersData?.storageProviders}
+						providers={[]}
 						onNavigate={handleNavigate}
 						onDownloadFile={downloadFile}
 						onShowFileDetails={showDetails}

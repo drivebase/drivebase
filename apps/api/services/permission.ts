@@ -5,7 +5,7 @@ import {
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { folders, permissions, users } from "@drivebase/db";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 
 export type PermissionRole = "viewer" | "editor" | "admin" | "owner";
 
@@ -223,7 +223,7 @@ export class PermissionService {
 			.select()
 			.from(permissions)
 			.where(eq(permissions.folderId, folderId))
-			.orderBy(permissions.createdAt);
+			.orderBy(asc(permissions.createdAt));
 	}
 
 	/**
@@ -240,7 +240,7 @@ export class PermissionService {
 			.where(
 				and(eq(permissions.userId, userId), eq(folders.isDeleted, false)),
 			)
-			.orderBy(permissions.createdAt);
+			.orderBy(asc(permissions.createdAt));
 
 		return userPermissions.map((p) => p.folder);
 	}

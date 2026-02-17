@@ -61,6 +61,7 @@ export function ShareDialog({
 	);
 
 	const [permissionsResult, refetchPermissions] = useFolderPermissions(folderId);
+	// TODO: Implement search/pagination for large user lists
 	const [usersResult] = useQuery({ query: USERS_QUERY, variables: { limit: 100 } });
 	const [{ fetching: granting }, grantAccess] = useGrantFolderAccess();
 	const [{ fetching: revoking }, revokeAccess] = useRevokeFolderAccess();
