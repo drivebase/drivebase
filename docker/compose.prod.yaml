@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/drivebase/drivebase:v1.10.0
+    image: ghcr.io/drivebase/drivebase:v1.11.0
     container_name: drivebase_app
     restart: unless-stopped
     environment:

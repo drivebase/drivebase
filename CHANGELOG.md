@@ -1,5 +1,19 @@
 # Changelog
 
+# [1.11.0](https://github.com/drivebase/drivebase/compare/v1.10.0...v1.11.0) (2026-02-17)
+
+
+### Bug Fixes
+
+* add onCreated prop to handle folder creation and refresh contents ([a06fb9c](https://github.com/drivebase/drivebase/commit/a06fb9c2560e0c5d67e4ba08e4af7af7b1f109fb))
+* set requestPolicy to useStarredFiles for cache-and-network strategy ([cf75e33](https://github.com/drivebase/drivebase/commit/cf75e33cc9175e642aeeffd3417894308eb1886a))
+
+
+### Features
+
+* **provider-card:** add documentation link button and refactor connect button layout ([a87c4c0](https://github.com/drivebase/drivebase/commit/a87c4c0d05bc8c06790fcf99b11ad0475b91e66d))
+* **settings:** implement settings page with general and security sections ([1313b83](https://github.com/drivebase/drivebase/commit/1313b8386204ddd3d68dafc5f292ac88de04cfb7))
+
 # [1.10.0](https://github.com/drivebase/drivebase/compare/v1.8.1...v1.10.0) (2026-02-16)
 
 
