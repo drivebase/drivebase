@@ -4,6 +4,7 @@ import type {
 	oauthProviderCredentials,
 	storageProviders,
 } from "@drivebase/db";
+import { logger } from "../utils/logger";
 import {
 	createOAuthProviderCredential,
 	listOAuthProviderCredentials,
@@ -38,6 +39,12 @@ export class ProviderService {
 		options?: { recursive?: boolean; pruneDeleted?: boolean },
 	) {
 		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		logger.debug({
+			msg: "Resolved workspace for provider sync",
+			userId,
+			workspaceId,
+			providerId,
+		});
 		return syncProvider(this.db, providerId, workspaceId, userId, options);
 	}
 
@@ -49,6 +56,13 @@ export class ProviderService {
 		oauthCredentialId?: string,
 	) {
 		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		logger.debug({
+			msg: "Resolved workspace for provider connect",
+			userId,
+			workspaceId,
+			type,
+			name,
+		});
 		return connectProvider(
 			this.db,
 			workspaceId,
@@ -74,6 +88,13 @@ export class ProviderService {
 
 	async initiateOAuth(providerId: string, userId: string, source?: string) {
 		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		logger.debug({
+			msg: "Resolved workspace for provider oauth initiation",
+			userId,
+			workspaceId,
+			providerId,
+			source,
+		});
 		return initiateOAuth(this.db, providerId, workspaceId, source);
 	}
 
@@ -83,6 +104,12 @@ export class ProviderService {
 
 	async disconnectProvider(providerId: string, userId: string) {
 		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		logger.debug({
+			msg: "Resolved workspace for provider disconnect",
+			userId,
+			workspaceId,
+			providerId,
+		});
 		return disconnectProvider(this.db, providerId, workspaceId);
 	}
 
@@ -93,6 +120,12 @@ export class ProviderService {
 		quotaUsed: number,
 	) {
 		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		logger.debug({
+			msg: "Resolved workspace for provider quota update",
+			userId,
+			workspaceId,
+			providerId,
+		});
 		return updateProviderQuota(
 			this.db,
 			providerId,
@@ -104,11 +137,22 @@ export class ProviderService {
 
 	async getProviders(userId: string) {
 		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		logger.debug({
+			msg: "Resolved workspace for provider list",
+			userId,
+			workspaceId,
+		});
 		return getProviders(this.db, workspaceId);
 	}
 
 	async getProvider(providerId: string, userId: string) {
 		const workspaceId = await getOwnedWorkspaceId(this.db, userId);
+		logger.debug({
+			msg: "Resolved workspace for provider fetch",
+			userId,
+			workspaceId,
+			providerId,
+		});
 		return getProvider(this.db, providerId, workspaceId);
 	}
 
