@@ -44,12 +44,6 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		logger.debug({
-			msg: "Resolved workspace for provider sync",
-			userId,
-			workspaceId,
-			providerId,
-		});
 		return syncProvider(this.db, providerId, workspaceId, userId, options);
 	}
 
@@ -66,13 +60,6 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		logger.debug({
-			msg: "Resolved workspace for provider connect",
-			userId,
-			workspaceId,
-			type,
-			name,
-		});
 		return connectProvider(
 			this.db,
 			workspaceId,
@@ -173,11 +160,6 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		logger.debug({
-			msg: "Resolved workspace for provider list",
-			userId,
-			workspaceId,
-		});
 		return getProviders(this.db, workspaceId);
 	}
 
