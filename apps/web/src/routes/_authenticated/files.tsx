@@ -20,6 +20,7 @@ import { UploadProgressPanel } from "@/features/files/UploadProgressPanel";
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
+import { ShareDialog } from "@/features/sharing";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 
 const searchSchema = z.object({
@@ -35,6 +36,7 @@ function FilesPage() {
 	const { path: searchPath } = Route.useSearch();
 	const navigate = Route.useNavigate();
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+	const [shareDialogFolder, setShareDialogFolder] = useState<FolderItemFragment | null>(null);
 	const { downloadFile, showDetails } = useFileActions();
 	const { data: providersData } = useProviders();
 
@@ -132,6 +134,7 @@ function FilesPage() {
 						onRenameFolder={operations.handleRenameFolder}
 						onMoveFileToProvider={operations.handleMoveFileToProvider}
 						onDeleteSelection={operations.handleDeleteSelection}
+						onShareFolder={setShareDialogFolder}
 						isLoading={contentsFetching && !contentsData}
 						showSharedColumn
 					/>
@@ -158,6 +161,15 @@ function FilesPage() {
 						upload.handleUploadQueue(upload.selectedFiles, providerId)
 					}
 				/>
+
+				{shareDialogFolder && (
+					<ShareDialog
+						isOpen={true}
+						onClose={() => setShareDialogFolder(null)}
+						folderId={shareDialogFolder.id}
+						folderName={shareDialogFolder.name}
+					/>
+				)}
 
 				<FileDropZone isDragActive={isDragActive} />
 

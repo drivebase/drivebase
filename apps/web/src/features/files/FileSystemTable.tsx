@@ -49,6 +49,7 @@ interface FileSystemTableProps {
 		files: FileItemFragment[];
 		folders: FolderItemFragment[];
 	}) => Promise<void> | void;
+	onShareFolder?: (folder: FolderItemFragment) => void;
 	isLoading?: boolean;
 	showSharedColumn?: boolean;
 	emptyStateMessage?: string;
@@ -67,6 +68,7 @@ export function FileSystemTable({
 	onRenameFolder,
 	onMoveFileToProvider,
 	onDeleteSelection,
+	onShareFolder,
 	isLoading,
 	showSharedColumn = false,
 	emptyStateMessage = "This folder is empty",
@@ -129,6 +131,7 @@ export function FileSystemTable({
 		onRenameFolder,
 		onMoveFileToProvider,
 		onDeleteSelection,
+		onShareFolder,
 	});
 
 	const table = useReactTable({

@@ -44,6 +44,7 @@ export function FileSystemRowActions({
 	onToggleFolderFavorite,
 	onMoveFileToProvider,
 	onDeleteSelection,
+	onShareFolder,
 }: FileSystemRowActionsProps) {
 	const handleDelete = async () => {
 		const confirmed = await confirmDialog(
@@ -119,9 +120,15 @@ export function FileSystemRowActions({
 					) : null}
 					<DropdownMenuSeparator />
 					<DropdownMenuLabel>Library</DropdownMenuLabel>
-					<DropdownMenuItem>
-						<Share2 size={14} className="mr-2" /> Share
-					</DropdownMenuItem>
+					{folder && onShareFolder ? (
+						<DropdownMenuItem onClick={() => onShareFolder(folder)}>
+							<Share2 size={14} className="mr-2" /> Share
+						</DropdownMenuItem>
+					) : (
+						<DropdownMenuItem disabled>
+							<Share2 size={14} className="mr-2" /> Share
+						</DropdownMenuItem>
+					)}
 					{file ? (
 						<DropdownMenuItem onClick={() => onToggleFileFavorite?.(file)}>
 							<Star size={14} className="mr-2" />

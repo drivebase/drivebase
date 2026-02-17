@@ -32,6 +32,7 @@ export function useFileSystemColumns({
 	onRenameFolder,
 	onMoveFileToProvider,
 	onDeleteSelection,
+	onShareFolder,
 }: UseFileSystemColumnsOptions): ColumnDef<RowItem>[] {
 	return useMemo<ColumnDef<RowItem>[]>(
 		() => [
@@ -210,6 +211,7 @@ export function useFileSystemColumns({
 							onToggleFolderFavorite={onToggleFolderFavorite}
 							onMoveFileToProvider={onMoveFileToProvider}
 							onDeleteSelection={onDeleteSelection}
+							onShareFolder={onShareFolder}
 						/>
 					);
 				},
@@ -225,6 +227,7 @@ export function useFileSystemColumns({
 			onShowFileDetails,
 			onToggleFileFavorite,
 			onToggleFolderFavorite,
+			onShareFolder,
 			providers,
 		],
 	);

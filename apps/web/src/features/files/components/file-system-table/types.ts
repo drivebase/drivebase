@@ -34,6 +34,7 @@ export interface FileSystemTableHandlers {
 		files: FileItemFragment[];
 		folders: FolderItemFragment[];
 	}) => Promise<void> | void;
+	onShareFolder?: (folder: FolderItemFragment) => void;
 }
 
 export const COLUMN_VISIBILITY_STORAGE_KEY = "drivebase:file-table-columns";

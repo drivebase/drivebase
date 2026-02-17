@@ -6,6 +6,7 @@ import {
 	Folder,
 	LayoutDashboard,
 	Settings,
+	Share2,
 	Star,
 	Trash2,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const navItems = [
 	{ icon: LayoutDashboard, label: msg`Dashboard`, to: "/" },
 	{ icon: Folder, label: msg`Files`, to: "/files" },
 	{ icon: Star, label: msg`Favorites`, to: "/favorites" },
+	{ icon: Share2, label: msg`Shared`, to: "/shared" },
 	{ icon: Cloud, label: msg`Providers`, to: "/providers" },
 	{ icon: Trash2, label: msg`Trash`, to: "/trash" },
 	{ icon: Settings, label: msg`Settings`, to: "/settings" },
