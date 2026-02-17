@@ -31,6 +31,7 @@ export function useFolders(parentId?: string | null, path?: string) {
 export function useStarredFolders() {
 	const [result] = useQuery({
 		query: STARRED_FOLDERS_QUERY,
+		requestPolicy: "cache-and-network",
 	});
 	return result;
 }

@@ -53,6 +53,7 @@ export function useSearchFiles(query: string, limit = 20) {
 export function useStarredFiles() {
 	const [result] = useQuery({
 		query: STARRED_FILES_QUERY,
+		requestPolicy: "cache-and-network",
 	});
 	return result;
 }
