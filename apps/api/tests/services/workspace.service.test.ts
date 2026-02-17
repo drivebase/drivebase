@@ -1,5 +1,13 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
+mock.module("../../utils/logger", () => ({
+	logger: {
+		debug: mock(),
+		info: mock(),
+		error: mock(),
+	},
+}));
+
 mock.module("@drivebase/db", () => ({
 	workspaces: {
 		id: "workspace_id",
