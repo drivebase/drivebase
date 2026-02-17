@@ -43,8 +43,6 @@ export async function getOwnedWorkspaceId(
 	ownerId: string,
 	preferredWorkspaceId?: string,
 ) {
-	logger.debug({ msg: "Resolving owned workspace", ownerId });
-
 	if (preferredWorkspaceId) {
 		const [preferredWorkspace] = await db
 			.select({ id: workspaces.id })
@@ -58,11 +56,6 @@ export async function getOwnedWorkspaceId(
 			.limit(1);
 
 		if (preferredWorkspace) {
-			logger.debug({
-				msg: "Using preferred workspace from header",
-				ownerId,
-				workspaceId: preferredWorkspaceId,
-			});
 			return preferredWorkspaceId;
 		}
 	}
