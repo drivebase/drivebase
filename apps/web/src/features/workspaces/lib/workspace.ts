@@ -5,11 +5,11 @@ export const WORKSPACE_COLORS: Array<{
 	value: WorkspaceColor;
 	className: string;
 }> = [
-	{ value: WorkspaceColor.Rose, className: "bg-rose-200" },
-	{ value: WorkspaceColor.Peach, className: "bg-orange-200" },
-	{ value: WorkspaceColor.Amber, className: "bg-amber-200" },
-	{ value: WorkspaceColor.Mint, className: "bg-emerald-200" },
-	{ value: WorkspaceColor.Sky, className: "bg-sky-200" },
+	{ value: WorkspaceColor.Rose, className: "bg-rose-200 text-black" },
+	{ value: WorkspaceColor.Peach, className: "bg-orange-200 text-black" },
+	{ value: WorkspaceColor.Amber, className: "bg-amber-200 text-black" },
+	{ value: WorkspaceColor.Mint, className: "bg-emerald-200 text-black" },
+	{ value: WorkspaceColor.Sky, className: "bg-sky-200 text-black" },
 ];
 
 const WORKSPACE_COLOR_CLASS_BY_VALUE = new Map(
@@ -20,7 +20,9 @@ export function getWorkspaceColorClass(color: string | null | undefined) {
 	const normalized = (
 		color ?? WorkspaceColor.Sky
 	).toUpperCase() as WorkspaceColor;
-	return WORKSPACE_COLOR_CLASS_BY_VALUE.get(normalized) ?? "bg-sky-200";
+	return (
+		WORKSPACE_COLOR_CLASS_BY_VALUE.get(normalized) ?? "bg-sky-200 text-black"
+	);
 }
 
 export function getActiveWorkspaceId() {
