@@ -22,14 +22,14 @@ export const providerQueries: QueryResolvers = {
 	storageProviders: async (_parent, _args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
-		const workspaceId = context.headers.get("x-workspace-id") ?? undefined;
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return providerService.getProviders(user.userId, workspaceId);
 	},
 
 	storageProvider: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
-		const workspaceId = context.headers.get("x-workspace-id") ?? undefined;
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return providerService.getProvider(args.id, user.userId, workspaceId);
 	},
 
@@ -54,7 +54,7 @@ export const providerMutations: MutationResolvers = {
 	connectStorage: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
-		const workspaceId = context.headers.get("x-workspace-id") ?? undefined;
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		// Map GraphQL enum (GOOGLE_DRIVE) to core ProviderType (google_drive)
 		const type = args.input.type.toLowerCase();
@@ -84,7 +84,7 @@ export const providerMutations: MutationResolvers = {
 	disconnectProvider: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
-		const workspaceId = context.headers.get("x-workspace-id") ?? undefined;
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		await providerService.disconnectProvider(args.id, user.userId, workspaceId);
 		return true;
@@ -93,7 +93,7 @@ export const providerMutations: MutationResolvers = {
 	syncProvider: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
-		const workspaceId = context.headers.get("x-workspace-id") ?? undefined;
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return providerService.syncProvider(args.id, user.userId, workspaceId, {
 			recursive: args.options?.recursive ?? undefined,
@@ -104,7 +104,7 @@ export const providerMutations: MutationResolvers = {
 	updateProviderQuota: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
-		const workspaceId = context.headers.get("x-workspace-id") ?? undefined;
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return providerService.updateProviderQuota(
 			args.input.id,
@@ -118,7 +118,7 @@ export const providerMutations: MutationResolvers = {
 	initiateProviderOAuth: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
-		const workspaceId = context.headers.get("x-workspace-id") ?? undefined;
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return providerService.initiateOAuth(
 			args.id,
