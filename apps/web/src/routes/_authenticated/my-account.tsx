@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Separator } from "@/components/ui/separator";
-import { AccountSettingsSection } from "@/features/settings/AccountSettingsSection";
+import { AccountSettingsSection } from "@/features/settings/sections/AccountSettingsSection";
 
 export const Route = createFileRoute("/_authenticated/my-account")({
 	component: MyAccountPage,
