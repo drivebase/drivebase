@@ -1,5 +1,21 @@
 # Changelog
 
+# [1.13.0](https://github.com/drivebase/drivebase/compare/v1.12.0...v1.13.0) (2026-02-17)
+
+
+### Bug Fixes
+
+* enforce active-workspace scoping for files/folders and tighten role-gated file actions ([e421cd5](https://github.com/drivebase/drivebase/commit/e421cd5e689b0052a74f4ed9195793af5c5e9eda))
+* safely access workspace ID from headers in file and provider resolvers ([52fd9d8](https://github.com/drivebase/drivebase/commit/52fd9d82cdc9658d7045928a9c6bd806c71781cc))
+
+
+### Features
+
+* add workspace memberships and invites ([fb33b53](https://github.com/drivebase/drivebase/commit/fb33b538f5b8d377e947cc30d8a827c9f0cdf2f1))
+* add workspaces schema and related services ([715dd97](https://github.com/drivebase/drivebase/commit/715dd97160ca32a1e9c3bcfdd93a1df898c93a63))
+* **auth:** implement change password functionality with UI ([0665b47](https://github.com/drivebase/drivebase/commit/0665b477f9e9337b8721a21d73e66a63fec280ac))
+* **workspace:** implement workspace management with queries and hooks ([f3c9158](https://github.com/drivebase/drivebase/commit/f3c91582016bb891ac3cad34da92fd9a020b8cf0))
+
 # [1.12.0](https://github.com/drivebase/drivebase/compare/v1.11.1...v1.12.0) (2026-02-17)
 
 
