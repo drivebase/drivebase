@@ -1,5 +1,6 @@
 import { FolderService } from "../../services/folder";
-import type { MutationResolvers, QueryResolvers } from "../generated/types";
+import { PermissionService } from "../../services/permission";
+import type { MutationResolvers, QueryResolvers, Resolvers } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
 
 /**
@@ -27,6 +28,12 @@ export const folderQueries: QueryResolvers = {
 		const user = requireAuth(context);
 		const folderService = new FolderService(context.db);
 		return folderService.getStarredFolders(user.userId);
+	},
+
+	sharedWithMe: async (_parent, _args, context) => {
+		const user = requireAuth(context);
+		const permissionService = new PermissionService(context.db);
+		return permissionService.getSharedWithUser(user.userId);
 	},
 };
 
@@ -81,5 +88,25 @@ export const folderMutations: MutationResolvers = {
 		const folderService = new FolderService(context.db);
 
 		return folderService.unstarFolder(args.id, user.userId);
+	},
+};
+
+/**
+ * Folder type resolvers
+ */
+export const folderResolvers: Resolvers["Folder"] = {
+	permissions: async (parent, _args, context) => {
+		const permissionService = new PermissionService(context.db);
+		const perms = await permissionService.getFolderPermissions(parent.id);
+
+		return perms.map((p) => ({
+			id: p.id,
+			folderId: p.folderId,
+			userId: p.userId,
+			role: p.role.toUpperCase() as "VIEWER" | "EDITOR" | "ADMIN" | "OWNER",
+			grantedBy: p.grantedBy,
+			createdAt: p.createdAt,
+			updatedAt: p.updatedAt,
+		}));
 	},
 };

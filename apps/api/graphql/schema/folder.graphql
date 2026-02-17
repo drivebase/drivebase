@@ -50,6 +50,11 @@ extend type Query {
 	Get starred folders
 	"""
 	starredFolders: [Folder!]!
+
+	"""
+	Get folders shared with the current user
+	"""
+	sharedWithMe: [Folder!]!
 }
 
 extend type Mutation {

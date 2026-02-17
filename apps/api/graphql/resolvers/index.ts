@@ -6,8 +6,12 @@ import {
 	fileResolvers,
 	fileSubscriptions,
 } from "./file";
-import { folderMutations, folderQueries } from "./folder";
+import { folderMutations, folderQueries, folderResolvers } from "./folder";
 import { metadataQueries } from "./metadata";
+import {
+	permissionMutations,
+	permissionResolvers,
+} from "./permission";
 import {
 	availableProviderResolvers,
 	oauthProviderCredentialResolvers,
@@ -44,14 +48,7 @@ export const resolvers: Resolvers = {
 		...providerMutations,
 		...folderMutations,
 		...fileMutations,
-
-		// Placeholder resolvers for permissions (TODO)
-		grantFolderAccess: async () => {
-			throw new Error("Not implemented");
-		},
-		revokeFolderAccess: async () => {
-			throw new Error("Not implemented");
-		},
+		...permissionMutations,
 	},
 
 	Subscription: {
@@ -66,4 +63,6 @@ export const resolvers: Resolvers = {
 	ProviderConfigField: providerConfigFieldResolvers,
 	OAuthProviderCredential: oauthProviderCredentialResolvers,
 	File: fileResolvers,
+	Folder: folderResolvers,
+	Permission: permissionResolvers,
 };
