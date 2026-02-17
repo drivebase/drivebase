@@ -1,6 +1,6 @@
 import { NotFoundError, normalizePath } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { folders } from "@drivebase/db";
+import { folders, storageProviders } from "@drivebase/db";
 import { and, eq, isNull } from "drizzle-orm";
 
 /**
@@ -10,18 +10,26 @@ export async function getFolder(
 	db: Database,
 	folderId: string,
 	_userId: string,
+	workspaceId: string,
 ) {
 	const [folder] = await db
-		.select()
+		.select({ folder: folders })
 		.from(folders)
-		.where(and(eq(folders.id, folderId), eq(folders.isDeleted, false)))
+		.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
+		.where(
+			and(
+				eq(folders.id, folderId),
+				eq(folders.isDeleted, false),
+				eq(storageProviders.workspaceId, workspaceId),
+			),
+		)
 		.limit(1);
 
-	if (!folder) {
+	if (!folder?.folder) {
 		throw new NotFoundError("Folder");
 	}
 
-	return folder;
+	return folder.folder;
 }
 
 /**
@@ -30,43 +38,75 @@ export async function getFolder(
 export async function listFolders(
 	db: Database,
 	_userId: string,
+	workspaceId: string,
 	path?: string,
 	parentId?: string,
 ) {
 	if (parentId) {
 		return db
-			.select()
+			.select({ folder: folders })
 			.from(folders)
-			.where(and(eq(folders.parentId, parentId), eq(folders.isDeleted, false)))
-			.orderBy(folders.name);
+			.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
+			.where(
+				and(
+					eq(folders.parentId, parentId),
+					eq(folders.isDeleted, false),
+					eq(storageProviders.workspaceId, workspaceId),
+				),
+			)
+			.orderBy(folders.name)
+			.then((rows) => rows.map((row) => row.folder));
 	} else if (path) {
 		const normalizedPath = normalizePath(path);
 		return db
-			.select()
+			.select({ folder: folders })
 			.from(folders)
+			.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
 			.where(
 				and(
 					eq(folders.virtualPath, normalizedPath),
 					eq(folders.isDeleted, false),
+					eq(storageProviders.workspaceId, workspaceId),
 				),
 			)
-			.orderBy(folders.name);
+			.orderBy(folders.name)
+			.then((rows) => rows.map((row) => row.folder));
 	} else {
 		return db
-			.select()
+			.select({ folder: folders })
 			.from(folders)
-			.where(and(isNull(folders.parentId), eq(folders.isDeleted, false)))
-			.orderBy(folders.name);
+			.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
+			.where(
+				and(
+					isNull(folders.parentId),
+					eq(folders.isDeleted, false),
+					eq(storageProviders.workspaceId, workspaceId),
+				),
+			)
+			.orderBy(folders.name)
+			.then((rows) => rows.map((row) => row.folder));
 	}
 }
 
 /**
  * Get starred folders
  */
-export async function getStarredFolders(db: Database, _userId: string) {
+export async function getStarredFolders(
+	db: Database,
+	_userId: string,
+	workspaceId: string,
+) {
 	return db
-		.select()
+		.select({ folder: folders })
 		.from(folders)
-		.where(and(eq(folders.starred, true), eq(folders.isDeleted, false)))
-		.orderBy(folders.name);
+		.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
+		.where(
+			and(
+				eq(folders.starred, true),
+				eq(folders.isDeleted, false),
+				eq(storageProviders.workspaceId, workspaceId),
+			),
+		)
+		.orderBy(folders.name)
+		.then((rows) => rows.map((row) => row.folder));
 }

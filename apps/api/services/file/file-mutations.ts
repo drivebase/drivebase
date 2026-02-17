@@ -21,11 +21,12 @@ export async function renameFile(
 	fileId: string,
 	userId: string,
 	newName: string,
+	workspaceId: string,
 ) {
 	logger.debug({ msg: "Renaming file", userId, fileId, newName });
 
 	try {
-		const file = await getFile(db, fileId, userId);
+		const file = await getFile(db, fileId, userId, workspaceId);
 
 		const sanitizedName = sanitizeFilename(newName);
 
@@ -52,6 +53,7 @@ export async function renameFile(
 		const providerRecord = await providerService.getProvider(
 			file.providerId,
 			userId,
+			workspaceId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 
@@ -103,19 +105,24 @@ export async function moveFile(
 	db: Database,
 	fileId: string,
 	userId: string,
+	workspaceId: string,
 	newFolderId?: string,
 ) {
 	logger.debug({ msg: "Moving file", userId, fileId, newFolderId });
 
 	try {
-		const file = await getFile(db, fileId, userId);
+		const file = await getFile(db, fileId, userId, workspaceId);
 
 		let newFolder = null;
 		let newVirtualPath: string;
 
 		if (newFolderId) {
 			const folderService = new FolderService(db);
-			newFolder = await folderService.getFolder(newFolderId, userId);
+			newFolder = await folderService.getFolder(
+				newFolderId,
+				userId,
+				workspaceId,
+			);
 			newVirtualPath = joinPath(newFolder.virtualPath, file.name);
 		} else {
 			newVirtualPath = joinPath("/", file.name);
@@ -170,16 +177,22 @@ export async function moveFile(
 /**
  * Delete a file (soft delete)
  */
-export async function deleteFile(db: Database, fileId: string, userId: string) {
+export async function deleteFile(
+	db: Database,
+	fileId: string,
+	userId: string,
+	workspaceId: string,
+) {
 	logger.debug({ msg: "Deleting file", userId, fileId });
 
 	try {
-		const file = await getFile(db, fileId, userId);
+		const file = await getFile(db, fileId, userId, workspaceId);
 
 		const providerService = new ProviderService(db);
 		const providerRecord = await providerService.getProvider(
 			file.providerId,
 			userId,
+			workspaceId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 

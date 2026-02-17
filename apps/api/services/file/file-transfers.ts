@@ -20,6 +20,7 @@ import { getFile } from "./file-queries";
 export async function requestUpload(
 	db: Database,
 	userId: string,
+	workspaceId: string,
 	name: string,
 	mimeType: string,
 	size: number,
@@ -43,7 +44,7 @@ export async function requestUpload(
 
 		if (folderId) {
 			const folderService = new FolderService(db);
-			folder = await folderService.getFolder(folderId, userId);
+			folder = await folderService.getFolder(folderId, userId, workspaceId);
 			virtualPath = joinPath(folder.virtualPath, sanitizedName);
 		} else {
 			virtualPath = joinPath("/", sanitizedName);
@@ -63,6 +64,7 @@ export async function requestUpload(
 		const providerRecord = await providerService.getProvider(
 			providerId,
 			userId,
+			workspaceId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 
@@ -147,16 +149,18 @@ export async function requestDownload(
 	db: Database,
 	fileId: string,
 	userId: string,
+	workspaceId: string,
 ) {
 	logger.debug({ msg: "Requesting download", userId, fileId });
 
 	try {
-		const file = await getFile(db, fileId, userId);
+		const file = await getFile(db, fileId, userId, workspaceId);
 
 		const providerService = new ProviderService(db);
 		const providerRecord = await providerService.getProvider(
 			file.providerId,
 			userId,
+			workspaceId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 
@@ -201,15 +205,17 @@ export async function downloadFile(
 	db: Database,
 	fileId: string,
 	userId: string,
+	workspaceId: string,
 ): Promise<ReadableStream> {
 	logger.debug({ msg: "Downloading file stream", userId, fileId });
 	try {
-		const file = await getFile(db, fileId, userId);
+		const file = await getFile(db, fileId, userId, workspaceId);
 
 		const providerService = new ProviderService(db);
 		const providerRecord = await providerService.getProvider(
 			file.providerId,
 			userId,
+			workspaceId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 
@@ -234,16 +240,18 @@ export async function getFileMetadata(
 	db: Database,
 	fileId: string,
 	userId: string,
+	workspaceId: string,
 ) {
 	logger.debug({ msg: "Getting file metadata", userId, fileId });
 
 	try {
-		const file = await getFile(db, fileId, userId);
+		const file = await getFile(db, fileId, userId, workspaceId);
 
 		const providerService = new ProviderService(db);
 		const providerRecord = await providerService.getProvider(
 			file.providerId,
 			userId,
+			workspaceId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 
@@ -270,6 +278,7 @@ export async function moveFileToProvider(
 	fileId: string,
 	userId: string,
 	targetProviderId: string,
+	workspaceId: string,
 ) {
 	logger.debug({
 		msg: "Moving file to provider",
@@ -278,7 +287,7 @@ export async function moveFileToProvider(
 		targetProviderId,
 	});
 
-	const file = await getFile(db, fileId, userId);
+	const file = await getFile(db, fileId, userId, workspaceId);
 
 	if (file.providerId === targetProviderId) {
 		throw new ValidationError("File is already on this provider");
@@ -289,6 +298,7 @@ export async function moveFileToProvider(
 	const sourceRecord = await providerService.getProvider(
 		file.providerId,
 		userId,
+		workspaceId,
 	);
 	const sourceProvider =
 		await providerService.getProviderInstance(sourceRecord);
@@ -296,6 +306,7 @@ export async function moveFileToProvider(
 	const targetRecord = await providerService.getProvider(
 		targetProviderId,
 		userId,
+		workspaceId,
 	);
 	const targetProvider =
 		await providerService.getProviderInstance(targetRecord);
