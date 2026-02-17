@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1](https://github.com/drivebase/drivebase/compare/v1.11.0...v1.11.1) (2026-02-17)
+
+
+### Bug Fixes
+
+* update import path for AccountSettingsSection in my-account route ([bc8006a](https://github.com/drivebase/drivebase/commit/bc8006a76180860959adcb87692fdb9fddc520e0))
+
 # [1.11.0](https://github.com/drivebase/drivebase/compare/v1.10.0...v1.11.0) (2026-02-17)
 
 
