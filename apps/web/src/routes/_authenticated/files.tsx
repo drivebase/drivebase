@@ -2,6 +2,7 @@ import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import { CreateFolderDialog } from "@/features/files/CreateFolderDialog";
 import { FileDropZone } from "@/features/files/components/FileDropZone";
 import { FilesToolbar } from "@/features/files/components/FilesToolbar";
@@ -20,6 +21,8 @@ import { UploadProgressPanel } from "@/features/files/UploadProgressPanel";
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
+import { can, getActiveWorkspaceId } from "@/features/workspaces";
+import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 
 const searchSchema = z.object({
@@ -37,6 +40,17 @@ function FilesPage() {
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const { downloadFile, showDetails } = useFileActions();
 	const { data: providersData } = useProviders();
+	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
+	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
+	const [membersResult] = useWorkspaceMembers(
+		activeWorkspaceId,
+		!activeWorkspaceId,
+	);
+	const currentWorkspaceRole =
+		membersResult.data?.workspaceMembers.find(
+			(member) => member.userId === currentUserId,
+		)?.role ?? null;
+	const canWriteFiles = can(currentWorkspaceRole, "files.write");
 
 	const currentPath = searchPath || "/";
 
@@ -109,11 +123,22 @@ function FilesPage() {
 				<FilesToolbar
 					currentPath={currentPath}
 					breadcrumbs={breadcrumbs}
+					canWriteFiles={canWriteFiles}
 					isUploading={upload.isUploading}
 					isLoading={contentsFetching}
 					onBreadcrumbClick={handleBreadcrumbClick}
-					onUploadClick={upload.handleUploadClick}
-					onNewFolder={() => setIsCreateDialogOpen(true)}
+					onUploadClick={() => {
+						if (!canWriteFiles) {
+							return;
+						}
+						upload.handleUploadClick();
+					}}
+					onNewFolder={() => {
+						if (!canWriteFiles) {
+							return;
+						}
+						setIsCreateDialogOpen(true);
+					}}
 					fileInputRef={upload.fileInputRef}
 					onFileChange={upload.handleFileChange}
 				/>
@@ -126,26 +151,40 @@ function FilesPage() {
 						onNavigate={handleNavigate}
 						onDownloadFile={downloadFile}
 						onShowFileDetails={showDetails}
-						onToggleFileFavorite={operations.handleToggleFileFavorite}
-						onToggleFolderFavorite={operations.handleToggleFolderFavorite}
-						onRenameFile={operations.handleRenameFile}
-						onRenameFolder={operations.handleRenameFolder}
-						onMoveFileToProvider={operations.handleMoveFileToProvider}
-						onDeleteSelection={operations.handleDeleteSelection}
+						onToggleFileFavorite={
+							canWriteFiles ? operations.handleToggleFileFavorite : undefined
+						}
+						onToggleFolderFavorite={
+							canWriteFiles ? operations.handleToggleFolderFavorite : undefined
+						}
+						onRenameFile={
+							canWriteFiles ? operations.handleRenameFile : undefined
+						}
+						onRenameFolder={
+							canWriteFiles ? operations.handleRenameFolder : undefined
+						}
+						onMoveFileToProvider={
+							canWriteFiles ? operations.handleMoveFileToProvider : undefined
+						}
+						onDeleteSelection={
+							canWriteFiles ? operations.handleDeleteSelection : undefined
+						}
 						isLoading={contentsFetching && !contentsData}
 						showSharedColumn
 					/>
 				</div>
 
-				<CreateFolderDialog
-					isOpen={isCreateDialogOpen}
-					onClose={() => setIsCreateDialogOpen(false)}
-					parentId={currentFolder?.id}
-					onCreated={(folder) => {
-						folderList.addItem(folder as FolderItemFragment);
-						refreshContents({ requestPolicy: "network-only" });
-					}}
-				/>
+				{canWriteFiles ? (
+					<CreateFolderDialog
+						isOpen={isCreateDialogOpen}
+						onClose={() => setIsCreateDialogOpen(false)}
+						parentId={currentFolder?.id}
+						onCreated={(folder) => {
+							folderList.addItem(folder as FolderItemFragment);
+							refreshContents({ requestPolicy: "network-only" });
+						}}
+					/>
+				) : null}
 
 				<UploadProviderDialog
 					isOpen={upload.isUploadDialogOpen}

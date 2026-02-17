@@ -19,6 +19,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import { AvailableProviderCard } from "@/features/providers/AvailableProviderCard";
 import {
 	AVAILABLE_PROVIDERS_QUERY,
@@ -33,6 +34,8 @@ import { useProviderSync } from "@/features/providers/hooks/useProviderSync";
 import { ProviderInfoPanel } from "@/features/providers/ProviderInfoPanel";
 import { QuotaSettingsDialog } from "@/features/providers/QuotaSettingsDialog";
 import { SyncProviderDialog } from "@/features/providers/SyncProviderDialog";
+import { can, getActiveWorkspaceId } from "@/features/workspaces";
+import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { AvailableProvider, StorageProvider } from "@/gql/graphql";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
@@ -47,7 +50,18 @@ export const Route = createFileRoute("/_authenticated/providers")({
 
 function ProvidersPage() {
 	const setRightPanelContent = useRightPanelStore((state) => state.setContent);
+	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
 	const { connected } = useSearch({ from: "/_authenticated/providers" });
+	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
+	const [membersResult] = useWorkspaceMembers(
+		activeWorkspaceId,
+		!activeWorkspaceId,
+	);
+	const currentWorkspaceRole =
+		membersResult.data?.workspaceMembers.find(
+			(member) => member.userId === currentUserId,
+		)?.role ?? null;
+	const canManageProviders = can(currentWorkspaceRole, "providers.manage");
 	const [{ data: availableData, fetching: availableFetching }] = useQuery({
 		query: AVAILABLE_PROVIDERS_QUERY,
 	});
@@ -84,6 +98,9 @@ function ProvidersPage() {
 	}, [connected, refresh]);
 
 	const handleOpenProviderInfo = (provider: StorageProvider) => {
+		if (!canManageProviders) {
+			return;
+		}
 		setRightPanelContent(<ProviderInfoPanel providerId={provider.id} />);
 	};
 
@@ -147,6 +164,7 @@ function ProvidersPage() {
 							<ConnectedProviderCard
 								key={provider.id}
 								provider={provider}
+								canManageProviders={canManageProviders}
 								onDisconnect={disconnect.setDisconnectId}
 								onQuota={quota.setSettingsProvider}
 								onInfo={handleOpenProviderInfo}
@@ -184,6 +202,7 @@ function ProvidersPage() {
 							<AvailableProviderCard
 								key={provider.id}
 								provider={provider}
+								canManageProviders={canManageProviders}
 								onConnect={connect.setSelectedProvider}
 							/>
 						))}
@@ -215,7 +234,7 @@ function ProvidersPage() {
 				</div>
 			</div>
 
-			{connect.selectedProvider && (
+			{canManageProviders && connect.selectedProvider && (
 				<ConnectProviderDialog
 					provider={connect.selectedProvider}
 					isOpen={!!connect.selectedProvider}

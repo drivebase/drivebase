@@ -8,6 +8,7 @@ import { ProviderIcon } from "./ProviderIcon";
 interface AvailableProviderCardProps {
 	provider: AvailableProvider;
 	onConnect: (provider: AvailableProvider) => void;
+	canManageProviders: boolean;
 }
 
 function getProviderDocsUrl(providerId: string): string {
@@ -18,6 +19,7 @@ function getProviderDocsUrl(providerId: string): string {
 export function AvailableProviderCard({
 	provider,
 	onConnect,
+	canManageProviders,
 }: AvailableProviderCardProps) {
 	return (
 		<Card className="group relative overflow-hidden transition-all flex flex-col items-center text-center p-6 gap-4">
@@ -48,16 +50,18 @@ export function AvailableProviderCard({
 				</p>
 			</div>
 
-			<div className="w-full">
-				<Button
-					variant="outline"
-					className="w-full"
-					onClick={() => onConnect(provider)}
-				>
-					<Plus className="h-4 w-4 mr-2" />
-					Connect
-				</Button>
-			</div>
+			{canManageProviders ? (
+				<div className="w-full">
+					<Button
+						variant="outline"
+						className="w-full"
+						onClick={() => onConnect(provider)}
+					>
+						<Plus className="h-4 w-4 mr-2" />
+						Connect
+					</Button>
+				</div>
+			) : null}
 		</Card>
 	);
 }

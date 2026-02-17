@@ -93,6 +93,91 @@ export async function getOwnedWorkspaceId(
 	return createdWorkspace.id;
 }
 
+export async function getAccessibleWorkspaceId(
+	db: WorkspaceDbLike,
+	userId: string,
+	preferredWorkspaceId?: string,
+) {
+	if (preferredWorkspaceId) {
+		const [ownedPreferredWorkspace] = await db
+			.select({ id: workspaces.id })
+			.from(workspaces)
+			.where(
+				and(
+					eq(workspaces.id, preferredWorkspaceId),
+					eq(workspaces.ownerId, userId),
+				),
+			)
+			.limit(1);
+
+		if (ownedPreferredWorkspace) {
+			return preferredWorkspaceId;
+		}
+
+		const [memberPreferredWorkspace] = await db
+			.select({ id: workspaceMemberships.workspaceId })
+			.from(workspaceMemberships)
+			.where(
+				and(
+					eq(workspaceMemberships.workspaceId, preferredWorkspaceId),
+					eq(workspaceMemberships.userId, userId),
+				),
+			)
+			.limit(1);
+
+		if (memberPreferredWorkspace) {
+			return preferredWorkspaceId;
+		}
+	}
+
+	const [ownedWorkspace] = await db
+		.select({ id: workspaces.id })
+		.from(workspaces)
+		.where(eq(workspaces.ownerId, userId))
+		.orderBy(asc(workspaces.createdAt))
+		.limit(1);
+
+	if (ownedWorkspace) {
+		logger.debug({
+			msg: "Using owned workspace",
+			userId,
+			workspaceId: ownedWorkspace.id,
+		});
+		return ownedWorkspace.id;
+	}
+
+	const [memberWorkspace] = await db
+		.select({ id: workspaceMemberships.workspaceId })
+		.from(workspaceMemberships)
+		.where(eq(workspaceMemberships.userId, userId))
+		.orderBy(asc(workspaceMemberships.createdAt))
+		.limit(1);
+
+	if (memberWorkspace) {
+		logger.debug({
+			msg: "Using member workspace",
+			userId,
+			workspaceId: memberWorkspace.id,
+		});
+		return memberWorkspace.id;
+	}
+
+	logger.info({
+		msg: "No accessible workspace found, creating default workspace",
+		userId,
+	});
+
+	const createdWorkspace = await createDefaultWorkspace(db, userId);
+
+	logger.info({
+		msg: "Workspace auto-created during accessible resolution",
+		userId,
+		workspaceId: createdWorkspace.id,
+	});
+
+	return createdWorkspace.id;
+}
+
 export async function listOwnedWorkspaces(
 	db: WorkspaceDbLike,
 	ownerId: string,

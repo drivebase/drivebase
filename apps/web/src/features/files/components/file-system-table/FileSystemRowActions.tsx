@@ -45,7 +45,18 @@ export function FileSystemRowActions({
 	onMoveFileToProvider,
 	onDeleteSelection,
 }: FileSystemRowActionsProps) {
+	const canRename = file ? !!onRenameFile : !!onRenameFolder;
+	const canMove = !!file && !!onMoveFileToProvider;
+	const canToggleFavorite = file
+		? !!onToggleFileFavorite
+		: !!onToggleFolderFavorite;
+	const canShowDetails = !!file && !!onShowFileDetails;
+	const canDelete = !!onDeleteSelection;
+
 	const handleDelete = async () => {
+		if (!canDelete) {
+			return;
+		}
 		const confirmed = await confirmDialog(
 			"Delete Item",
 			"This action cannot be undone.",
@@ -79,16 +90,22 @@ export function FileSystemRowActions({
 							<DropdownMenuSeparator />
 						</>
 					) : null}
-					<DropdownMenuLabel>Organize</DropdownMenuLabel>
-					<DropdownMenuItem
-						onClick={() => {
-							if (file) onRenameFile?.(file);
-							if (folder) onRenameFolder?.(folder);
-						}}
-					>
-						<Pencil size={14} className="mr-2" /> Rename
-					</DropdownMenuItem>
-					{file && providers.length > 0 ? (
+					{canRename || canMove ? (
+						<>
+							<DropdownMenuLabel>Organize</DropdownMenuLabel>
+							{canRename ? (
+								<DropdownMenuItem
+									onClick={() => {
+										if (file) onRenameFile?.(file);
+										if (folder) onRenameFolder?.(folder);
+									}}
+								>
+									<Pencil size={14} className="mr-2" /> Rename
+								</DropdownMenuItem>
+							) : null}
+						</>
+					) : null}
+					{canMove && file && providers.length > 0 ? (
 						<DropdownMenuSub>
 							<DropdownMenuSubTrigger>
 								<Move size={14} className="mr-2" /> Move to
@@ -117,30 +134,34 @@ export function FileSystemRowActions({
 							</DropdownMenuSubContent>
 						</DropdownMenuSub>
 					) : null}
-					<DropdownMenuSeparator />
+					{canRename || canMove ? <DropdownMenuSeparator /> : null}
 					<DropdownMenuLabel>Library</DropdownMenuLabel>
 					<DropdownMenuItem>
 						<Share2 size={14} className="mr-2" /> Share
 					</DropdownMenuItem>
-					{file ? (
+					{file && canToggleFavorite ? (
 						<DropdownMenuItem onClick={() => onToggleFileFavorite?.(file)}>
 							<Star size={14} className="mr-2" />
 							{file.starred ? "Remove from Favorites" : "Add to Favorites"}
 						</DropdownMenuItem>
 					) : null}
-					{folder ? (
+					{folder && canToggleFavorite ? (
 						<DropdownMenuItem onClick={() => onToggleFolderFavorite?.(folder)}>
 							<Star size={14} className="mr-2" />
 							{folder.starred ? "Remove from Favorites" : "Add to Favorites"}
 						</DropdownMenuItem>
 					) : null}
-					<DropdownMenuItem onClick={() => file && onShowFileDetails?.(file)}>
-						<Info size={14} className="mr-2" /> Details
-					</DropdownMenuItem>
-					<DropdownMenuSeparator />
-					<DropdownMenuItem variant="destructive" onClick={handleDelete}>
-						<Trash size={14} className="mr-2" /> Delete
-					</DropdownMenuItem>
+					{canShowDetails ? (
+						<DropdownMenuItem onClick={() => file && onShowFileDetails?.(file)}>
+							<Info size={14} className="mr-2" /> Details
+						</DropdownMenuItem>
+					) : null}
+					{canDelete ? <DropdownMenuSeparator /> : null}
+					{canDelete ? (
+						<DropdownMenuItem variant="destructive" onClick={handleDelete}>
+							<Trash size={14} className="mr-2" /> Delete
+						</DropdownMenuItem>
+					) : null}
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</div>
