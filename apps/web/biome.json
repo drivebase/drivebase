@@ -6,5 +6,15 @@
 		"parser": {
 			"tailwindDirectives": true
 		}
+	},
+	"linter": {
+		"rules": {
+			"suspicious": {
+				"useBiomeIgnoreFolder": "error"
+			}
+		}
+	},
+	"files": {
+		"includes": ["!src/locales"]
 	}
 }
