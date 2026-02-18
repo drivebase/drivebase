@@ -78,7 +78,7 @@ export function Hero() {
               Get Started
             </Link>
             <Link
-              href="https://github.com/monawwar/drivebase"
+              href="https://github.com/drivebase/drivebase"
               target="_blank"
               className="text-sm font-semibold leading-6 text-white hover:text-gray-300 flex items-center gap-2 group"
             >
