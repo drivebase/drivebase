@@ -122,6 +122,13 @@ Drivebase supports the following cloud providers:
 - [ ] OneDrive
 
 
+## Support
+
+Have questions or need help? Here's how you can reach us:
+
+- [Discord](https://discord.gg/zy3XyWcU6D)
+- [Telegram](https://t.me/+fWEMYD3gp61lYWZl)
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
