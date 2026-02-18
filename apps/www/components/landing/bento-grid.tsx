@@ -66,6 +66,14 @@ const features = [
     color: "bg-red-500/10 text-red-500",
   },
   {
+    title: "Cloud Transfers",
+    description:
+      "Move files between cloud providers seamlessly in the background.",
+    icon: ArrowRightLeft,
+    className: "col-span-1",
+    color: "bg-gray-500/10 text-gray-500",
+  },
+  {
     title: "Smart Search",
     description:
       "Instant, powerful search across all your storage providers simultaneously.",
@@ -80,15 +88,6 @@ const features = [
     icon: RefreshCw,
     className: "col-span-1",
     color: "bg-emerald-500/10 text-emerald-500",
-  },
-  {
-    title: "Background Transfers",
-    description:
-      "Move files between cloud providers seamlessly in the background.",
-    icon: ArrowRightLeft,
-    className: "col-span-1",
-    color: "bg-gray-500/10 text-gray-500",
-    comingSoon: true,
   },
   {
     title: "No Vendor Lock-in",
