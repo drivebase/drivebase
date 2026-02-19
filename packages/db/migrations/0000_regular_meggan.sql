@@ -18,6 +18,21 @@ CREATE TABLE "activities" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "file_rules" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"priority" integer NOT NULL,
+	"enabled" boolean DEFAULT true NOT NULL,
+	"conditions" jsonb NOT NULL,
+	"destination_provider_id" text NOT NULL,
+	"destination_folder_id" text,
+	"workspace_id" text NOT NULL,
+	"created_by" text NOT NULL,
+	"is_deleted" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "files" (
 	"id" text PRIMARY KEY NOT NULL,
 	"virtual_path" text NOT NULL,
@@ -173,6 +188,10 @@ ALTER TABLE "activities" ADD CONSTRAINT "activities_user_id_users_id_fk" FOREIGN
 ALTER TABLE "activities" ADD CONSTRAINT "activities_file_id_files_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."files"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "activities" ADD CONSTRAINT "activities_folder_id_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "activities" ADD CONSTRAINT "activities_provider_id_storage_providers_id_fk" FOREIGN KEY ("provider_id") REFERENCES "public"."storage_providers"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "file_rules" ADD CONSTRAINT "file_rules_destination_provider_id_storage_providers_id_fk" FOREIGN KEY ("destination_provider_id") REFERENCES "public"."storage_providers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "file_rules" ADD CONSTRAINT "file_rules_destination_folder_id_folders_id_fk" FOREIGN KEY ("destination_folder_id") REFERENCES "public"."folders"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "file_rules" ADD CONSTRAINT "file_rules_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "file_rules" ADD CONSTRAINT "file_rules_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "files" ADD CONSTRAINT "files_provider_id_storage_providers_id_fk" FOREIGN KEY ("provider_id") REFERENCES "public"."storage_providers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "files" ADD CONSTRAINT "files_folder_id_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "files" ADD CONSTRAINT "files_uploaded_by_users_id_fk" FOREIGN KEY ("uploaded_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
