@@ -16,7 +16,7 @@ function json(data: unknown, status = 200): Response {
 	});
 }
 
-Bun.serve({
+const server = Bun.serve({
 	port: PORT,
 	async fetch(request) {
 		const url = new URL(request.url);
@@ -66,3 +66,12 @@ Bun.serve({
 });
 
 console.log(`Updater sidecar listening on port ${PORT}`);
+
+function shutdown() {
+	console.log("Shutting down...");
+	server.stop(true);
+	process.exit(0);
+}
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
