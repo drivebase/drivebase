@@ -4,7 +4,8 @@
 			"Bash(bunx tsc:*)",
 			"Bash(bun run:*)",
 			"Bash(wc:*)",
-			"Bash(bun add:*)"
+			"Bash(bun add:*)",
+			"Bash(bun install:*)"
 		]
 	}
 }

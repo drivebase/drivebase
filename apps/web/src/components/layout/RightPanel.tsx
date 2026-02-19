@@ -101,7 +101,11 @@ function DefaultAccountView() {
 								</p>
 							)}
 							<p className="text-xs text-muted-foreground mt-2">
-								{new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+								{new Date(post.date).toLocaleDateString("en-US", {
+									month: "short",
+									day: "numeric",
+									year: "numeric",
+								})}
 							</p>
 						</a>
 					))}

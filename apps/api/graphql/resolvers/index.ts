@@ -7,7 +7,7 @@ import {
 	fileSubscriptions,
 } from "./file";
 import { folderMutations, folderQueries } from "./folder";
-import { metadataQueries } from "./metadata";
+import { metadataMutations, metadataQueries } from "./metadata";
 import {
 	availableProviderResolvers,
 	oauthProviderCredentialResolvers,
@@ -53,6 +53,7 @@ export const resolvers: Resolvers = {
 		...folderMutations,
 		...fileMutations,
 		...workspaceMutations,
+		...metadataMutations,
 
 		// Placeholder resolvers for permissions (TODO)
 		grantFolderAccess: async () => {

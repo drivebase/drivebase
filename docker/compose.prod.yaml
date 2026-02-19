@@ -13,6 +13,9 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
       API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
       SKIP_DB_MIGRATIONS: ${SKIP_DB_MIGRATIONS:-false}
+      UPDATER_URL: http://updater:4500
+      UPDATER_SECRET: >-
+        ${UPDATER_SECRET:-default-updater-secret-change-in-production}
     depends_on:
       db:
         condition: service_healthy
@@ -53,5 +56,16 @@ services:
       retries: 10
     ports:
       - '6379:6379'
+  updater:
+    image: ghcr.io/drivebase/updater:latest
+    container_name: drivebase_updater
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      UPDATER_SECRET: >-
+        ${UPDATER_SECRET:-default-updater-secret-change-in-production}
+      APP_CONTAINER_NAME: drivebase_app
+      APP_IMAGE: ghcr.io/drivebase/drivebase
 volumes:
   postgres_data: null
