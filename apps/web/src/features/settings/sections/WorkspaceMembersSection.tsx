@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,9 +44,9 @@ export function WorkspaceMembersSection(props: WorkspaceMembersSectionProps) {
 
 	return (
 		<div className="space-y-3">
-			<h4 className="font-medium">Members</h4>
+			<h4 className="font-medium"><Trans>Members</Trans></h4>
 			<p className="text-sm text-muted-foreground">
-				Members in this workspace.
+				<Trans>Members in this workspace.</Trans>
 			</p>
 			<div className="border rounded-md divide-y">
 				{members.map((member) => (

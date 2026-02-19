@@ -1,0 +1,281 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-02-19 15:49+0530\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: es\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:14
+msgid "Account"
+msgstr "Cuenta"
+
+#: src/components/layout/RightPanel.tsx:64
+msgid "Activity"
+msgstr "Actividad"
+
+#: src/components/layout/Header.tsx:111
+#: src/config/pageTitles.ts:6
+msgid "All Files"
+msgstr "Todos los archivos"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:29
+msgid "Appearance"
+msgstr "Apariencia"
+
+#: src/components/layout/Header.tsx:135
+msgid "Audio"
+msgstr "Audio"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:89
+msgid "Change password"
+msgstr "Cambiar contraseña"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:54
+msgid "Change Password"
+msgstr "Cambiar Contraseña"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:44
+msgid "Choose light, dark, or system theme"
+msgstr "Elige tema claro, oscuro o del sistema"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:85
+msgid "Choose your preferred language"
+msgstr "Elige tu idioma preferido"
+
+#: src/components/layout/RightPanel.tsx:97
+msgid "Close panel"
+msgstr "Cerrar panel"
+
+#: src/routes/_authenticated.tsx:72
+msgid "Connection failed"
+msgstr "Conexión fallida"
+
+#: src/components/layout/Sidebar.tsx:136
+msgid "Create workspace"
+msgstr "Crear espacio de trabajo"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:62
+msgid "Current password"
+msgstr "Contraseña actual"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:32
+msgid "Customize the appearance of the application. Automatically switch between day and night themes."
+msgstr "Personaliza la apariencia de la aplicación. Cambia automáticamente entre temas diurnos y nocturnos."
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:66
+msgid "Dark"
+msgstr "Oscuro"
+
+#: src/components/layout/Sidebar.tsx:35
+#: src/config/pageTitles.ts:5
+#: src/config/pageTitles.ts:30
+msgid "Dashboard"
+msgstr "Panel de control"
+
+#: src/components/layout/Header.tsx:117
+msgid "Documents"
+msgstr "Documentos"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:98
+msgid "Email"
+msgstr "Correo electrónico"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:51
+msgid "Failed to update profile"
+msgstr "Error al actualizar el perfil"
+
+#: src/components/layout/Sidebar.tsx:37
+#: src/config/pageTitles.ts:7
+msgid "Favorites"
+msgstr "Favoritos"
+
+#: src/components/layout/Sidebar.tsx:36
+msgid "Files"
+msgstr "Archivos"
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:9
+msgid "General"
+msgstr "General"
+
+#: src/components/layout/Header.tsx:123
+msgid "Images"
+msgstr "Imágenes"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:82
+msgid "Language"
+msgstr "Idioma"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:60
+msgid "Light"
+msgstr "Claro"
+
+#: src/routes/_authenticated.tsx:42
+msgid "Loading your account..."
+msgstr "Cargando tu cuenta..."
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:47
+msgid "Members"
+msgstr "Miembros"
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:49
+msgid "Members in this workspace."
+msgstr "Miembros en este espacio de trabajo."
+
+#: src/components/layout/RightPanel.tsx:54
+#: src/config/pageTitles.ts:11
+msgid "My Account"
+msgstr "Mi cuenta"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:79
+#: src/features/settings/sections/WorkspaceNameSection.tsx:26
+msgid "Name"
+msgstr "Nombre"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:32
+msgid "Name is required"
+msgstr "El nombre es obligatorio"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:74
+msgid "New password"
+msgstr "Nueva contraseña"
+
+#: src/components/layout/RightPanel.tsx:69
+msgid "No recent activity"
+msgstr "Sin actividad reciente"
+
+#: src/components/layout/Header.tsx:148
+msgid "No results found."
+msgstr "No se encontraron resultados."
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:48
+msgid "Profile updated"
+msgstr "Perfil actualizado"
+
+#: src/components/layout/Sidebar.tsx:38
+#: src/config/pageTitles.ts:8
+msgid "Providers"
+msgstr "Proveedores"
+
+#: src/routes/_authenticated.tsx:76
+msgid "Retry"
+msgstr "Reintentar"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:105
+msgid "Role"
+msgstr "Rol"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:89
+#: src/features/settings/sections/WorkspaceNameSection.tsx:34
+msgid "Save"
+msgstr "Guardar"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:89
+#: src/features/settings/sections/WorkspaceNameSection.tsx:34
+msgid "Saving..."
+msgstr "Guardando..."
+
+#: src/components/layout/Header.tsx:92
+msgid "Search files..."
+msgstr "Buscar archivos..."
+
+#: src/components/layout/Header.tsx:146
+msgid "Searching..."
+msgstr "Buscando..."
+
+#: src/routes/__root.tsx:63
+msgid "Server may be unreachable"
+msgstr "El servidor puede estar inaccesible"
+
+#: src/routes/_authenticated.tsx:60
+msgid "Server Unreachable"
+msgstr "Servidor inaccesible"
+
+#: src/components/layout/Sidebar.tsx:40
+#: src/config/pageTitles.ts:10
+msgid "Settings"
+msgstr "Configuración"
+
+#: src/features/settings/GeneralSettingsView.tsx:127
+msgid "Sign out"
+msgstr "Cerrar sesión"
+
+#: src/routes/__root.tsx:43
+msgid "Something went wrong while loading the app."
+msgstr "Algo salió mal al cargar la aplicación."
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:72
+msgid "System"
+msgstr "Sistema"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:41
+msgid "Theme"
+msgstr "Tema"
+
+#: src/components/layout/Sidebar.tsx:39
+#: src/config/pageTitles.ts:9
+msgid "Trash"
+msgstr "Papelera"
+
+#: src/routes/__root.tsx:67
+msgid "Try again"
+msgstr "Intentar de nuevo"
+
+#: src/components/layout/Header.tsx:144
+msgid "Type to search files"
+msgstr "Escribe para buscar archivos"
+
+#: src/routes/_authenticated.tsx:63
+msgid "Unable to connect to the API right now. Check the server and try again."
+msgstr "No se puede conectar a la API en este momento. Verifica el servidor e intenta de nuevo."
+
+#: src/routes/__root.tsx:56
+msgid "Unable to load Drivebase"
+msgstr "No se puede cargar Drivebase"
+
+#: src/features/settings/GeneralSettingsView.tsx:102
+msgid "Unable to sign out from server. Signing out locally."
+msgstr "No se puede cerrar sesión desde el servidor. Cerrando sesión localmente."
+
+#: src/components/layout/RightPanel.tsx:43
+msgid "Update available"
+msgstr "Actualización disponible"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:57
+msgid "Update your account password."
+msgstr "Actualiza la contraseña de tu cuenta."
+
+#: src/features/settings/sections/WorkspaceNameSection.tsx:22
+msgid "Update your workspace display name."
+msgstr "Actualiza el nombre visible de tu espacio de trabajo."
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:87
+msgid "Updating..."
+msgstr "Actualizando..."
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:19
+msgid "Users"
+msgstr "Usuarios"
+
+#: src/components/layout/Header.tsx:129
+msgid "Videos"
+msgstr "Videos"
+
+#: src/components/layout/Sidebar.tsx:113
+msgid "Workspace"
+msgstr "Espacio de trabajo"
+
+#: src/features/settings/sections/WorkspaceNameSection.tsx:20
+msgid "Workspace name"
+msgstr "Nombre del espacio de trabajo"
+
+#: src/components/layout/Sidebar.tsx:118
+msgid "Workspaces"
+msgstr "Espacios de trabajo"
