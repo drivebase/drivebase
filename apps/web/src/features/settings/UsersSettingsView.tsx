@@ -1,25 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { WorkspaceActiveInvitesSection } from "@/features/settings/sections/WorkspaceActiveInvitesSection";
 import { WorkspaceInviteCreateSection } from "@/features/settings/sections/WorkspaceInviteCreateSection";
 import { WorkspaceMembersSection } from "@/features/settings/sections/WorkspaceMembersSection";
-import { WorkspaceNameSection } from "@/features/settings/sections/WorkspaceNameSection";
 import {
 	getActiveWorkspaceId,
 	useCreateWorkspaceInvite,
 	useRemoveWorkspaceMember,
 	useRevokeWorkspaceInvite,
 	useUpdateWorkspaceMemberRole,
-	useUpdateWorkspaceName,
 	useWorkspaceInvites,
 	useWorkspaceMembers,
 	useWorkspaces,
 } from "@/features/workspaces";
 import { WorkspaceMemberRole } from "@/gql/graphql";
 
-export function WorkspaceSettingsView() {
-	const [workspacesResult, reexecuteWorkspaces] = useWorkspaces(false);
+export function UsersSettingsView() {
+	const [workspacesResult] = useWorkspaces(false);
 	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
 	const activeWorkspaceId = getActiveWorkspaceId();
 
@@ -68,8 +66,6 @@ export function WorkspaceSettingsView() {
 		(invitesResult.fetching || workspaceInvites.length > 0);
 	const [, createInvite] = useCreateWorkspaceInvite();
 	const [, updateRole] = useUpdateWorkspaceMemberRole();
-	const [updateWorkspaceNameResult, updateWorkspaceName] =
-		useUpdateWorkspaceName();
 	const [, removeMember] = useRemoveWorkspaceMember();
 	const [, revokeInvite] = useRevokeWorkspaceInvite();
 
@@ -78,11 +74,6 @@ export function WorkspaceSettingsView() {
 	);
 	const [expiresInDays, setExpiresInDays] = useState("7");
 	const [generatedInviteLink, setGeneratedInviteLink] = useState("");
-	const [workspaceName, setWorkspaceName] = useState("");
-
-	useEffect(() => {
-		setWorkspaceName(activeWorkspace?.name ?? "");
-	}, [activeWorkspace?.name]);
 
 	const handleCreateInvite = async () => {
 		if (!workspaceId || !canManageWorkspace) {
@@ -178,37 +169,10 @@ export function WorkspaceSettingsView() {
 		reexecuteInvites({ requestPolicy: "network-only" });
 	};
 
-	const handleUpdateWorkspaceName = async () => {
-		if (!workspaceId || !canManageWorkspace) {
-			return;
-		}
-
-		const trimmedName = workspaceName.trim();
-		if (!trimmedName) {
-			toast.error("Workspace name is required");
-			return;
-		}
-
-		const result = await updateWorkspaceName({
-			input: {
-				workspaceId,
-				name: trimmedName,
-			},
-		});
-
-		if (result.error || !result.data?.updateWorkspaceName) {
-			toast.error(result.error?.message ?? "Failed to update workspace name");
-			return;
-		}
-
-		toast.success("Workspace name updated");
-		reexecuteWorkspaces({ requestPolicy: "network-only" });
-	};
-
 	if (!activeWorkspace) {
 		return (
 			<div className="space-y-2">
-				<h3 className="text-lg font-medium">Workspace</h3>
+				<h3 className="text-lg font-medium">Users</h3>
 				<p className="text-sm text-muted-foreground">No workspace selected.</p>
 			</div>
 		);
@@ -216,14 +180,6 @@ export function WorkspaceSettingsView() {
 
 	return (
 		<div className="space-y-8">
-			<WorkspaceNameSection
-				name={workspaceName}
-				canEdit={canManageWorkspace}
-				isSaving={updateWorkspaceNameResult.fetching}
-				onNameChange={setWorkspaceName}
-				onSave={handleUpdateWorkspaceName}
-			/>
-
 			{canManageWorkspace ? (
 				<WorkspaceInviteCreateSection
 					inviteRole={inviteRole}

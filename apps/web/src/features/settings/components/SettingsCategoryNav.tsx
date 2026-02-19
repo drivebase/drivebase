@@ -14,9 +14,9 @@ const categories = [
 		label: <Trans>Security</Trans>,
 	},
 	{
-		to: "/settings/workspace",
+		to: "/settings/users",
 		icon: Users,
-		label: <Trans>Workspace</Trans>,
+		label: <Trans>Users</Trans>,
 	},
 ] as const;
 
