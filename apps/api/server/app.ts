@@ -31,6 +31,7 @@ export function createApp(): Hono<AppEnv> {
 			credentials: true,
 			allowMethods: ["POST", "GET", "OPTIONS"],
 			allowHeaders: ["Content-Type", "Authorization", "x-workspace-id"],
+			exposeHeaders: ["Content-Disposition"],
 		}),
 	);
 
