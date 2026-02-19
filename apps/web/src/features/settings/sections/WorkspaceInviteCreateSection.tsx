@@ -9,6 +9,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WorkspaceMemberRole } from "@/gql/graphql";
 
 const ASSIGNABLE_ROLES = [
@@ -19,10 +20,10 @@ const ASSIGNABLE_ROLES = [
 
 interface WorkspaceInviteCreateSectionProps {
 	inviteRole: WorkspaceMemberRole;
-	expiresInDays: string;
+	expiresInDays: number;
 	generatedInviteLink: string;
 	onInviteRoleChange: (role: WorkspaceMemberRole) => void;
-	onExpiresInDaysChange: (value: string) => void;
+	onExpiresInDaysChange: (value: number) => void;
 	onCreateInvite: () => void;
 	onCopyInviteLink: (link: string) => void;
 }
@@ -69,15 +70,18 @@ export function WorkspaceInviteCreateSection(
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="space-y-2 min-w-44">
-					<Label>Expires in days</Label>
-					<Input
-						value={expiresInDays}
-						onChange={(event) => onExpiresInDaysChange(event.target.value)}
-						type="number"
-						min={1}
-						max={30}
-					/>
+				<div className="space-y-2">
+					<Label>Expires in</Label>
+					<Tabs
+						value={expiresInDays.toString()}
+						onValueChange={(value) => onExpiresInDaysChange(Number(value))}
+					>
+						<TabsList>
+							<TabsTrigger value="1">1 Day</TabsTrigger>
+							<TabsTrigger value="7">7 Days</TabsTrigger>
+							<TabsTrigger value="14">14 Days</TabsTrigger>
+						</TabsList>
+					</Tabs>
 				</div>
 			</div>
 			<Button onClick={onCreateInvite}>
