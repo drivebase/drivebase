@@ -44,7 +44,9 @@ export function WorkspaceMembersSection(props: WorkspaceMembersSectionProps) {
 
 	return (
 		<div className="space-y-3">
-			<h4 className="font-medium"><Trans>Members</Trans></h4>
+			<h4 className="font-medium">
+				<Trans>Members</Trans>
+			</h4>
 			<p className="text-sm text-muted-foreground">
 				<Trans>Members in this workspace.</Trans>
 			</p>
