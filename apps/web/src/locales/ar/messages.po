@@ -21,6 +21,10 @@ msgstr "الحساب"
 msgid "Activity"
 msgstr "النشاط"
 
+#: src/features/settings/components/SettingsCategoryNav.tsx:24
+msgid "Advanced"
+msgstr ""
+
 #: src/components/layout/Header.tsx:111
 #: src/config/pageTitles.ts:6
 msgid "All Files"
@@ -88,6 +92,23 @@ msgstr "المستندات"
 msgid "Email"
 msgstr "البريد الإلكتروني"
 
+#: src/features/settings/sections/ExportSection.tsx:82
+msgid "Encryption password"
+msgstr ""
+
+#: src/features/settings/sections/ExportSection.tsx:37
+#: src/features/settings/sections/ExportSection.tsx:107
+msgid "Export workspace"
+msgstr ""
+
+#: src/features/settings/sections/ExportSection.tsx:40
+msgid "Export your workspace data including files, folders, and optionally provider configurations."
+msgstr ""
+
+#: src/features/settings/sections/ExportSection.tsx:103
+msgid "Exporting..."
+msgstr ""
+
 #: src/features/settings/sections/AccountSettingsSection.tsx:51
 msgid "Failed to update profile"
 msgstr "فشل تحديث الملف الشخصي"
@@ -108,6 +129,14 @@ msgstr "عام"
 #: src/components/layout/Header.tsx:123
 msgid "Images"
 msgstr "الصور"
+
+#: src/features/settings/sections/ExportSection.tsx:58
+msgid "Include provider configurations"
+msgstr ""
+
+#: src/features/settings/sections/ExportSection.tsx:75
+msgid "Include sensitive credentials (requires password)"
+msgstr ""
 
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:82
 msgid "Language"
@@ -218,6 +247,10 @@ msgstr "النظام"
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:41
 msgid "Theme"
 msgstr "المظهر"
+
+#: src/features/settings/sections/ExportSection.tsx:93
+msgid "This password will be used to encrypt your export file. Keep it safe, as you'll need it to import the data."
+msgstr ""
 
 #: src/components/layout/Sidebar.tsx:39
 #: src/config/pageTitles.ts:9
