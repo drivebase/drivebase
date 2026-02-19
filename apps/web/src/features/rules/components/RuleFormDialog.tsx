@@ -72,6 +72,7 @@ export function RuleFormDialog({
 	const [, createRule] = useCreateFileRule();
 	const [, updateRule] = useUpdateFileRule();
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: open resets the form when dialog opens
 	useEffect(() => {
 		if (rule) {
 			setName(rule.name);

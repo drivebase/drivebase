@@ -74,8 +74,7 @@ export function RuleForm({
 		const hasEmptyValue = conditions.groups.some((g) =>
 			g.conditions.some(
 				(c) =>
-					c.value === "" ||
-					(typeof c.value === "number" && c.field !== "size"),
+					c.value === "" || (typeof c.value === "number" && c.field !== "size"),
 			),
 		);
 		if (hasEmptyValue) {
@@ -83,7 +82,12 @@ export function RuleForm({
 			return;
 		}
 
-		await onSubmit({ name, destinationProviderId, destinationFolderId, conditions });
+		await onSubmit({
+			name,
+			destinationProviderId,
+			destinationFolderId,
+			conditions,
+		});
 	}, [name, destinationProviderId, destinationFolderId, conditions, onSubmit]);
 
 	return (
