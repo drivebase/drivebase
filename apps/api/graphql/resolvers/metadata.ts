@@ -10,7 +10,7 @@ function updaterHeaders(): Record<string, string> {
 		"Content-Type": "application/json",
 	};
 	if (UPDATER_SECRET) {
-		headers["Authorization"] = `Bearer ${UPDATER_SECRET}`;
+		headers.Authorization = `Bearer ${UPDATER_SECRET}`;
 	}
 	return headers;
 }
