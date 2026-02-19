@@ -4,7 +4,7 @@ import { SettingsCategoryNav } from "@/features/settings/components/SettingsCate
 export const Route = createFileRoute("/_authenticated/settings")({
 	beforeLoad: ({ location }) => {
 		if (location.pathname === "/settings") {
-			throw redirect({ to: "/settings/general", replace: true });
+			throw redirect({ to: "/settings/account", replace: true });
 		}
 	},
 	component: SettingsPage,
