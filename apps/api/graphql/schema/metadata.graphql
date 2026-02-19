@@ -5,9 +5,31 @@ type AppMetadata {
 	version: String!
 }
 
+"""
+Status of an app update operation
+"""
+type UpdateStatus {
+	status: String!
+	message: String
+	currentVersion: String
+	targetVersion: String
+}
+
 extend type Query {
 	"""
 	Metadata about the running application
 	"""
 	appMetadata: AppMetadata!
+
+	"""
+	Current status of the app updater
+	"""
+	updateStatus: UpdateStatus!
+}
+
+extend type Mutation {
+	"""
+	Trigger an app update to the specified version (admin/owner only)
+	"""
+	triggerAppUpdate(version: String): UpdateStatus!
 }

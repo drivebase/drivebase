@@ -1,0 +1,12 @@
+{
+	"name": "@drivebase/updater",
+	"version": "1.0.0",
+	"private": true,
+	"dependencies": {
+		"dockerode": "^4.0.4"
+	},
+	"devDependencies": {
+		"@types/dockerode": "^3.3.34",
+		"bun-types": "latest"
+	}
+}

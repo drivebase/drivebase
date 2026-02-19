@@ -121,3 +121,33 @@ jobs:
           # Remove architecture-specific tags
           docker buildx imagetools rm $REGISTRY/$IMAGE_NAME:$VERSION-amd64 || true
           docker buildx imagetools rm $REGISTRY/$IMAGE_NAME:$VERSION-arm64 || true
+
+  build-updater:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push updater image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/updater
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ env.REGISTRY }}/drivebase/updater:latest
+          cache-from: type=gha,scope=updater
+          cache-to: type=gha,mode=max,scope=updater
+          provenance: false
