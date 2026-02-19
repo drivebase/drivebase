@@ -14,9 +14,9 @@ export function WorkspaceNameSection(props: WorkspaceNameSectionProps) {
 	const { name, canEdit, isSaving, onNameChange, onSave } = props;
 
 	return (
-		<div className="space-y-4">
-			<div className="space-y-1">
-				<h4 className="font-medium">Workspace name</h4>
+		<div className="space-y-6">
+			<div>
+				<h3 className="text-lg font-medium">Workspace name</h3>
 				<p className="text-sm text-muted-foreground">
 					Update your workspace display name.
 				</p>

@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { AccountSettingsSection } from "@/features/settings/sections/AccountSettingsSection";
 import { PreferencesSettingsSection } from "@/features/settings/sections/PreferencesSettingsSection";
 import { WorkspaceNameSection } from "@/features/settings/sections/WorkspaceNameSection";
 import {
@@ -109,8 +108,6 @@ export function GeneralSettingsView() {
 
 	return (
 		<div className="space-y-8">
-			<AccountSettingsSection />
-			<div className="border-t border-border" />
 			{activeWorkspace ? (
 				<>
 					<WorkspaceNameSection

@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/macro";
 import { Link } from "@tanstack/react-router";
-import { Shield, SlidersHorizontal, Users } from "lucide-react";
+import { SlidersHorizontal, User, Users } from "lucide-react";
 
 const categories = [
 	{
@@ -9,9 +9,9 @@ const categories = [
 		label: <Trans>General</Trans>,
 	},
 	{
-		to: "/settings/security",
-		icon: Shield,
-		label: <Trans>Security</Trans>,
+		to: "/settings/account",
+		icon: User,
+		label: <Trans>Account</Trans>,
 	},
 	{
 		to: "/settings/users",
