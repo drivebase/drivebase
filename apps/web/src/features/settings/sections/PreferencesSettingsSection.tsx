@@ -12,6 +12,12 @@ import {
 import { locales } from "@/lib/i18n";
 import { useLocaleStore } from "@/shared/store/localeStore";
 
+const languageFlags: Record<string, string> = {
+	en: "🇺🇸",
+	es: "🇪🇸",
+	ar: "🇸🇦",
+};
+
 export function PreferencesSettingsSection() {
 	const { theme, setTheme } = useTheme();
 	const { locale, setLocale } = useLocaleStore();
@@ -87,7 +93,7 @@ export function PreferencesSettingsSection() {
 						{Object.entries(locales).map(([code, name]) => (
 							<SelectItem key={code} value={code}>
 								<span className="flex items-center gap-2">
-									<span>{code === "en" ? "🇺🇸" : "🇪🇸"}</span>
+									<span>{languageFlags[code]}</span>
 									{name}
 								</span>
 							</SelectItem>

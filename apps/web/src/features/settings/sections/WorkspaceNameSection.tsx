@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,13 +17,13 @@ export function WorkspaceNameSection(props: WorkspaceNameSectionProps) {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h3 className="text-lg font-medium">Workspace name</h3>
+				<h3 className="text-lg font-medium"><Trans>Workspace name</Trans></h3>
 				<p className="text-sm text-muted-foreground">
-					Update your workspace display name.
+					<Trans>Update your workspace display name.</Trans>
 				</p>
 			</div>
 			<div className="space-y-2 max-w-md">
-				<Label>Name</Label>
+				<Label><Trans>Name</Trans></Label>
 				<div className="flex gap-2">
 					<Input
 						value={name}
@@ -30,7 +31,7 @@ export function WorkspaceNameSection(props: WorkspaceNameSectionProps) {
 						disabled={!canEdit || isSaving}
 					/>
 					<Button onClick={onSave} disabled={!canEdit || isSaving}>
-						{isSaving ? "Saving..." : "Save"}
+						{isSaving ? <Trans>Saving...</Trans> : <Trans>Save</Trans>}
 					</Button>
 				</div>
 			</div>

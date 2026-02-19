@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { Mail, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -28,7 +29,7 @@ export function AccountSettingsSection() {
 	const handleSaveProfile = async () => {
 		const trimmed = name.trim();
 		if (!trimmed) {
-			toast.error("Name is required");
+			toast.error(<Trans>Name is required</Trans>);
 			return;
 		}
 
@@ -44,10 +45,10 @@ export function AccountSettingsSection() {
 				throw new Error(result.error.message);
 			}
 
-			toast.success("Profile updated");
+			toast.success(<Trans>Profile updated</Trans>);
 		} catch (error) {
 			const message =
-				error instanceof Error ? error.message : "Failed to update profile";
+				error instanceof Error ? error.message : <Trans>Failed to update profile</Trans>;
 			toast.error(message);
 		} finally {
 			setIsSaving(false);
@@ -75,17 +76,17 @@ export function AccountSettingsSection() {
 			</div>
 
 			<div className="space-y-2">
-				<Label htmlFor="account-name">Name</Label>
-				<div className="flex items-center gap-3">
-					<Input
-						id="account-name"
-						value={name}
-						onChange={(event) => setName(event.target.value)}
-						placeholder="Enter your name"
-						className="h-10 text-sm"
-					/>
-					<Button onClick={handleSaveProfile} disabled={isSaving}>
-						{isSaving ? "Saving..." : "Save"}
+					<Label htmlFor="account-name"><Trans>Name</Trans></Label>
+					<div className="flex items-center gap-3">
+						<Input
+							id="account-name"
+							value={name}
+							onChange={(event) => setName(event.target.value)}
+							placeholder="Enter your name"
+							className="h-10 text-sm"
+						/>
+						<Button onClick={handleSaveProfile} disabled={isSaving}>
+							{isSaving ? <Trans>Saving...</Trans> : <Trans>Save</Trans>}
 					</Button>
 				</div>
 			</div>
@@ -94,14 +95,14 @@ export function AccountSettingsSection() {
 				<div className="flex items-center justify-between">
 					<span className="text-muted-foreground flex items-center gap-2">
 						<Mail size={16} />
-						Email
-					</span>
-					<span>{user.email}</span>
-				</div>
-				<div className="flex items-center justify-between">
-					<span className="text-muted-foreground flex items-center gap-2">
-						<Shield size={16} />
-						Role
+							<Trans>Email</Trans>
+						</span>
+						<span>{user.email}</span>
+					</div>
+					<div className="flex items-center justify-between">
+						<span className="text-muted-foreground flex items-center gap-2">
+							<Shield size={16} />
+							<Trans>Role</Trans>
 					</span>
 					<span>{user.role}</span>
 				</div>

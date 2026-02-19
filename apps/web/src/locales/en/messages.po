@@ -1,0 +1,281 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-02-19 15:49+0530\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:14
+msgid "Account"
+msgstr "Account"
+
+#: src/components/layout/RightPanel.tsx:64
+msgid "Activity"
+msgstr "Activity"
+
+#: src/components/layout/Header.tsx:111
+#: src/config/pageTitles.ts:6
+msgid "All Files"
+msgstr "All Files"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:29
+msgid "Appearance"
+msgstr "Appearance"
+
+#: src/components/layout/Header.tsx:135
+msgid "Audio"
+msgstr "Audio"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:89
+msgid "Change password"
+msgstr "Change password"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:54
+msgid "Change Password"
+msgstr "Change Password"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:44
+msgid "Choose light, dark, or system theme"
+msgstr "Choose light, dark, or system theme"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:85
+msgid "Choose your preferred language"
+msgstr "Choose your preferred language"
+
+#: src/components/layout/RightPanel.tsx:97
+msgid "Close panel"
+msgstr "Close panel"
+
+#: src/routes/_authenticated.tsx:72
+msgid "Connection failed"
+msgstr "Connection failed"
+
+#: src/components/layout/Sidebar.tsx:136
+msgid "Create workspace"
+msgstr "Create workspace"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:62
+msgid "Current password"
+msgstr "Current password"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:32
+msgid "Customize the appearance of the application. Automatically switch between day and night themes."
+msgstr "Customize the appearance of the application. Automatically switch between day and night themes."
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:66
+msgid "Dark"
+msgstr "Dark"
+
+#: src/components/layout/Sidebar.tsx:35
+#: src/config/pageTitles.ts:5
+#: src/config/pageTitles.ts:30
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: src/components/layout/Header.tsx:117
+msgid "Documents"
+msgstr "Documents"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:98
+msgid "Email"
+msgstr "Email"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:51
+msgid "Failed to update profile"
+msgstr "Failed to update profile"
+
+#: src/components/layout/Sidebar.tsx:37
+#: src/config/pageTitles.ts:7
+msgid "Favorites"
+msgstr "Favorites"
+
+#: src/components/layout/Sidebar.tsx:36
+msgid "Files"
+msgstr "Files"
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:9
+msgid "General"
+msgstr "General"
+
+#: src/components/layout/Header.tsx:123
+msgid "Images"
+msgstr "Images"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:82
+msgid "Language"
+msgstr "Language"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:60
+msgid "Light"
+msgstr "Light"
+
+#: src/routes/_authenticated.tsx:42
+msgid "Loading your account..."
+msgstr "Loading your account..."
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:47
+msgid "Members"
+msgstr "Members"
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:49
+msgid "Members in this workspace."
+msgstr "Members in this workspace."
+
+#: src/components/layout/RightPanel.tsx:54
+#: src/config/pageTitles.ts:11
+msgid "My Account"
+msgstr "My Account"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:79
+#: src/features/settings/sections/WorkspaceNameSection.tsx:26
+msgid "Name"
+msgstr "Name"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:32
+msgid "Name is required"
+msgstr "Name is required"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:74
+msgid "New password"
+msgstr "New password"
+
+#: src/components/layout/RightPanel.tsx:69
+msgid "No recent activity"
+msgstr "No recent activity"
+
+#: src/components/layout/Header.tsx:148
+msgid "No results found."
+msgstr "No results found."
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:48
+msgid "Profile updated"
+msgstr "Profile updated"
+
+#: src/components/layout/Sidebar.tsx:38
+#: src/config/pageTitles.ts:8
+msgid "Providers"
+msgstr "Providers"
+
+#: src/routes/_authenticated.tsx:76
+msgid "Retry"
+msgstr "Retry"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:105
+msgid "Role"
+msgstr "Role"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:89
+#: src/features/settings/sections/WorkspaceNameSection.tsx:34
+msgid "Save"
+msgstr "Save"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:89
+#: src/features/settings/sections/WorkspaceNameSection.tsx:34
+msgid "Saving..."
+msgstr "Saving..."
+
+#: src/components/layout/Header.tsx:92
+msgid "Search files..."
+msgstr "Search files..."
+
+#: src/components/layout/Header.tsx:146
+msgid "Searching..."
+msgstr "Searching..."
+
+#: src/routes/__root.tsx:63
+msgid "Server may be unreachable"
+msgstr "Server may be unreachable"
+
+#: src/routes/_authenticated.tsx:60
+msgid "Server Unreachable"
+msgstr "Server Unreachable"
+
+#: src/components/layout/Sidebar.tsx:40
+#: src/config/pageTitles.ts:10
+msgid "Settings"
+msgstr "Settings"
+
+#: src/features/settings/GeneralSettingsView.tsx:127
+msgid "Sign out"
+msgstr "Sign out"
+
+#: src/routes/__root.tsx:43
+msgid "Something went wrong while loading the app."
+msgstr "Something went wrong while loading the app."
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:72
+msgid "System"
+msgstr "System"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:41
+msgid "Theme"
+msgstr "Theme"
+
+#: src/components/layout/Sidebar.tsx:39
+#: src/config/pageTitles.ts:9
+msgid "Trash"
+msgstr "Trash"
+
+#: src/routes/__root.tsx:67
+msgid "Try again"
+msgstr "Try again"
+
+#: src/components/layout/Header.tsx:144
+msgid "Type to search files"
+msgstr "Type to search files"
+
+#: src/routes/_authenticated.tsx:63
+msgid "Unable to connect to the API right now. Check the server and try again."
+msgstr "Unable to connect to the API right now. Check the server and try again."
+
+#: src/routes/__root.tsx:56
+msgid "Unable to load Drivebase"
+msgstr "Unable to load Drivebase"
+
+#: src/features/settings/GeneralSettingsView.tsx:102
+msgid "Unable to sign out from server. Signing out locally."
+msgstr "Unable to sign out from server. Signing out locally."
+
+#: src/components/layout/RightPanel.tsx:43
+msgid "Update available"
+msgstr "Update available"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:57
+msgid "Update your account password."
+msgstr "Update your account password."
+
+#: src/features/settings/sections/WorkspaceNameSection.tsx:22
+msgid "Update your workspace display name."
+msgstr "Update your workspace display name."
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:87
+msgid "Updating..."
+msgstr "Updating..."
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:19
+msgid "Users"
+msgstr "Users"
+
+#: src/components/layout/Header.tsx:129
+msgid "Videos"
+msgstr "Videos"
+
+#: src/components/layout/Sidebar.tsx:113
+msgid "Workspace"
+msgstr "Workspace"
+
+#: src/features/settings/sections/WorkspaceNameSection.tsx:20
+msgid "Workspace name"
+msgstr "Workspace name"
+
+#: src/components/layout/Sidebar.tsx:118
+msgid "Workspaces"
+msgstr "Workspaces"

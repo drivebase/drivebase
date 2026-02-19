@@ -3,9 +3,19 @@ import { i18n } from "@lingui/core";
 export const locales = {
 	en: "English",
 	es: "Español",
+	ar: "العربية",
 };
 
 export const defaultLocale = "en";
+
+export const rtlLocales = ["ar"];
+
+/**
+ * Check if a locale uses RTL (right-to-left) direction
+ */
+export function isRTL(locale: string): boolean {
+	return rtlLocales.includes(locale);
+}
 
 /**
  * Load locale messages dynamically

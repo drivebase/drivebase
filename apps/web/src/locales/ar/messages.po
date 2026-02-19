@@ -1,0 +1,281 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-02-19 15:49+0530\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: ar\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:14
+msgid "Account"
+msgstr "الحساب"
+
+#: src/components/layout/RightPanel.tsx:64
+msgid "Activity"
+msgstr "النشاط"
+
+#: src/components/layout/Header.tsx:111
+#: src/config/pageTitles.ts:6
+msgid "All Files"
+msgstr "جميع الملفات"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:29
+msgid "Appearance"
+msgstr "المظهر"
+
+#: src/components/layout/Header.tsx:135
+msgid "Audio"
+msgstr "صوتيات"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:89
+msgid "Change password"
+msgstr "تغيير كلمة المرور"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:54
+msgid "Change Password"
+msgstr "تغيير كلمة المرور"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:44
+msgid "Choose light, dark, or system theme"
+msgstr "اختر المظهر الفاتح أو الداكن أو مظهر النظام"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:85
+msgid "Choose your preferred language"
+msgstr "اختر لغتك المفضلة"
+
+#: src/components/layout/RightPanel.tsx:97
+msgid "Close panel"
+msgstr "إغلاق اللوحة"
+
+#: src/routes/_authenticated.tsx:72
+msgid "Connection failed"
+msgstr "فشل الاتصال"
+
+#: src/components/layout/Sidebar.tsx:136
+msgid "Create workspace"
+msgstr "إنشاء مساحة عمل"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:62
+msgid "Current password"
+msgstr "كلمة المرور الحالية"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:32
+msgid "Customize the appearance of the application. Automatically switch between day and night themes."
+msgstr "خصص مظهر التطبيق. التبديل تلقائيًا بين المظاهر النهارية والليلية."
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:66
+msgid "Dark"
+msgstr "داكن"
+
+#: src/components/layout/Sidebar.tsx:35
+#: src/config/pageTitles.ts:5
+#: src/config/pageTitles.ts:30
+msgid "Dashboard"
+msgstr "لوحة التحكم"
+
+#: src/components/layout/Header.tsx:117
+msgid "Documents"
+msgstr "المستندات"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:98
+msgid "Email"
+msgstr "البريد الإلكتروني"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:51
+msgid "Failed to update profile"
+msgstr "فشل تحديث الملف الشخصي"
+
+#: src/components/layout/Sidebar.tsx:37
+#: src/config/pageTitles.ts:7
+msgid "Favorites"
+msgstr "المفضلة"
+
+#: src/components/layout/Sidebar.tsx:36
+msgid "Files"
+msgstr "الملفات"
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:9
+msgid "General"
+msgstr "عام"
+
+#: src/components/layout/Header.tsx:123
+msgid "Images"
+msgstr "الصور"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:82
+msgid "Language"
+msgstr "اللغة"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:60
+msgid "Light"
+msgstr "فاتح"
+
+#: src/routes/_authenticated.tsx:42
+msgid "Loading your account..."
+msgstr "جارٍ تحميل حسابك..."
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:47
+msgid "Members"
+msgstr "الأعضاء"
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:49
+msgid "Members in this workspace."
+msgstr "الأعضاء في هذه مساحة العمل."
+
+#: src/components/layout/RightPanel.tsx:54
+#: src/config/pageTitles.ts:11
+msgid "My Account"
+msgstr "حسابي"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:79
+#: src/features/settings/sections/WorkspaceNameSection.tsx:26
+msgid "Name"
+msgstr "الاسم"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:32
+msgid "Name is required"
+msgstr "الاسم مطلوب"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:74
+msgid "New password"
+msgstr "كلمة المرور الجديدة"
+
+#: src/components/layout/RightPanel.tsx:69
+msgid "No recent activity"
+msgstr "لا يوجد نشاط حديث"
+
+#: src/components/layout/Header.tsx:148
+msgid "No results found."
+msgstr "لم يتم العثور على نتائج."
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:48
+msgid "Profile updated"
+msgstr "تم تحديث الملف الشخصي"
+
+#: src/components/layout/Sidebar.tsx:38
+#: src/config/pageTitles.ts:8
+msgid "Providers"
+msgstr "مزودو الخدمة"
+
+#: src/routes/_authenticated.tsx:76
+msgid "Retry"
+msgstr "إعادة المحاولة"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:105
+msgid "Role"
+msgstr "الدور"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:89
+#: src/features/settings/sections/WorkspaceNameSection.tsx:34
+msgid "Save"
+msgstr "حفظ"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:89
+#: src/features/settings/sections/WorkspaceNameSection.tsx:34
+msgid "Saving..."
+msgstr "جارٍ الحفظ..."
+
+#: src/components/layout/Header.tsx:92
+msgid "Search files..."
+msgstr "البحث عن الملفات..."
+
+#: src/components/layout/Header.tsx:146
+msgid "Searching..."
+msgstr "جارٍ البحث..."
+
+#: src/routes/__root.tsx:63
+msgid "Server may be unreachable"
+msgstr "قد يكون الخادم غير متاح"
+
+#: src/routes/_authenticated.tsx:60
+msgid "Server Unreachable"
+msgstr "الخادم غير متاح"
+
+#: src/components/layout/Sidebar.tsx:40
+#: src/config/pageTitles.ts:10
+msgid "Settings"
+msgstr "الإعدادات"
+
+#: src/features/settings/GeneralSettingsView.tsx:127
+msgid "Sign out"
+msgstr "تسجيل الخروج"
+
+#: src/routes/__root.tsx:43
+msgid "Something went wrong while loading the app."
+msgstr "حدث خطأ أثناء تحميل التطبيق."
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:72
+msgid "System"
+msgstr "النظام"
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:41
+msgid "Theme"
+msgstr "المظهر"
+
+#: src/components/layout/Sidebar.tsx:39
+#: src/config/pageTitles.ts:9
+msgid "Trash"
+msgstr "سلة المحذوفات"
+
+#: src/routes/__root.tsx:67
+msgid "Try again"
+msgstr "حاول مرة أخرى"
+
+#: src/components/layout/Header.tsx:144
+msgid "Type to search files"
+msgstr "اكتب للبحث عن الملفات"
+
+#: src/routes/_authenticated.tsx:63
+msgid "Unable to connect to the API right now. Check the server and try again."
+msgstr "غير قادر على الاتصال بالـ API في الوقت الحالي. تحقق من الخادم وحاول مرة أخرى."
+
+#: src/routes/__root.tsx:56
+msgid "Unable to load Drivebase"
+msgstr "غير قادر على تحميل Drivebase"
+
+#: src/features/settings/GeneralSettingsView.tsx:102
+msgid "Unable to sign out from server. Signing out locally."
+msgstr "غير قادر على تسجيل الخروج من الخادم. جارٍ تسجيل الخروج محليًا."
+
+#: src/components/layout/RightPanel.tsx:43
+msgid "Update available"
+msgstr "تحديث متاح"
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:57
+msgid "Update your account password."
+msgstr "تحديث كلمة مرور حسابك."
+
+#: src/features/settings/sections/WorkspaceNameSection.tsx:22
+msgid "Update your workspace display name."
+msgstr "تحديث اسم عرض مساحة العمل."
+
+#: src/features/settings/sections/ChangePasswordSection.tsx:87
+msgid "Updating..."
+msgstr "جارٍ التحديث..."
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:19
+msgid "Users"
+msgstr "المستخدمون"
+
+#: src/components/layout/Header.tsx:129
+msgid "Videos"
+msgstr "الفيديوهات"
+
+#: src/components/layout/Sidebar.tsx:113
+msgid "Workspace"
+msgstr "مساحة العمل"
+
+#: src/features/settings/sections/WorkspaceNameSection.tsx:20
+msgid "Workspace name"
+msgstr "اسم مساحة العمل"
+
+#: src/components/layout/Sidebar.tsx:118
+msgid "Workspaces"
+msgstr "مساحات العمل"

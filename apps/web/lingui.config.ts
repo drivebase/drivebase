@@ -1,8 +1,7 @@
 import { defineConfig } from "@lingui/cli";
-import { formatter } from "@lingui/format-json";
 
 export default defineConfig({
-	locales: ["en", "es"],
+	locales: ["en", "es", "ar"],
 	sourceLocale: "en",
 	catalogs: [
 		{
@@ -11,6 +10,5 @@ export default defineConfig({
 			exclude: ["src/gql/**/*", "**/node_modules/**"],
 		},
 	],
-	format: formatter({ style: "lingui" }),
 	compileNamespace: "ts",
 });
