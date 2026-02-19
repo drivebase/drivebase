@@ -48,7 +48,11 @@ export function AccountSettingsSection() {
 			toast.success(<Trans>Profile updated</Trans>);
 		} catch (error) {
 			const message =
-				error instanceof Error ? error.message : <Trans>Failed to update profile</Trans>;
+				error instanceof Error ? (
+					error.message
+				) : (
+					<Trans>Failed to update profile</Trans>
+				);
 			toast.error(message);
 		} finally {
 			setIsSaving(false);
@@ -76,17 +80,19 @@ export function AccountSettingsSection() {
 			</div>
 
 			<div className="space-y-2 max-w-md">
-					<Label htmlFor="account-name"><Trans>Name</Trans></Label>
-					<div className="flex items-center gap-3">
-						<Input
-							id="account-name"
-							value={name}
-							onChange={(event) => setName(event.target.value)}
-							placeholder="Enter your name"
-							className="h-10 text-sm"
-						/>
-						<Button onClick={handleSaveProfile} disabled={isSaving}>
-							{isSaving ? <Trans>Saving...</Trans> : <Trans>Save</Trans>}
+				<Label htmlFor="account-name">
+					<Trans>Name</Trans>
+				</Label>
+				<div className="flex items-center gap-3">
+					<Input
+						id="account-name"
+						value={name}
+						onChange={(event) => setName(event.target.value)}
+						placeholder="Enter your name"
+						className="h-10 text-sm"
+					/>
+					<Button onClick={handleSaveProfile} disabled={isSaving}>
+						{isSaving ? <Trans>Saving...</Trans> : <Trans>Save</Trans>}
 					</Button>
 				</div>
 			</div>
@@ -95,14 +101,14 @@ export function AccountSettingsSection() {
 				<div className="flex items-center justify-between">
 					<span className="text-muted-foreground flex items-center gap-2">
 						<Mail size={16} />
-							<Trans>Email</Trans>
-						</span>
-						<span>{user.email}</span>
-					</div>
-					<div className="flex items-center justify-between">
-						<span className="text-muted-foreground flex items-center gap-2">
-							<Shield size={16} />
-							<Trans>Role</Trans>
+						<Trans>Email</Trans>
+					</span>
+					<span>{user.email}</span>
+				</div>
+				<div className="flex items-center justify-between">
+					<span className="text-muted-foreground flex items-center gap-2">
+						<Shield size={16} />
+						<Trans>Role</Trans>
 					</span>
 					<span>{user.role}</span>
 				</div>
