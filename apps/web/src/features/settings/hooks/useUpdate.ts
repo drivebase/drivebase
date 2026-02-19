@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "urql";
-import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 import {
 	TRIGGER_APP_UPDATE_MUTATION,
 	UPDATE_STATUS_QUERY,
 } from "@/shared/api/metadata";
+import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 
 type UpdatePhase = "idle" | "updating" | "success" | "error";
 

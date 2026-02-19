@@ -1,7 +1,7 @@
 import { Trans } from "@lingui/react/macro";
-import { RefreshCw, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AlertCircle, CheckCircle, Loader2, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useUpdate } from "../hooks/useUpdate";
 
 export function UpdateSection() {
