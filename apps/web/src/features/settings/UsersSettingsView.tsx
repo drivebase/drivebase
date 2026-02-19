@@ -72,7 +72,7 @@ export function UsersSettingsView() {
 	const [inviteRole, setInviteRole] = useState<WorkspaceMemberRole>(
 		WorkspaceMemberRole.Viewer,
 	);
-	const [expiresInDays, setExpiresInDays] = useState("7");
+	const [expiresInDays, setExpiresInDays] = useState(7);
 	const [generatedInviteLink, setGeneratedInviteLink] = useState("");
 
 	const handleCreateInvite = async () => {
@@ -80,17 +80,11 @@ export function UsersSettingsView() {
 			return;
 		}
 
-		const days = Number.parseInt(expiresInDays, 10);
-		if (Number.isNaN(days)) {
-			toast.error("Expiration days must be a number");
-			return;
-		}
-
 		const result = await createInvite({
 			input: {
 				workspaceId,
 				role: inviteRole,
-				expiresInDays: days,
+				expiresInDays,
 			},
 		});
 
