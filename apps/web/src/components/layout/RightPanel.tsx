@@ -4,6 +4,7 @@ import { Rss, Settings2, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 import { useRecentUpdates } from "@/shared/hooks/useRecentUpdates";
@@ -68,9 +69,15 @@ function DefaultAccountView() {
 				</div>
 				<div className="space-y-3">
 					{isLoading && (
-						<div className="text-sm text-muted-foreground text-center py-8">
-							<Trans>Loading...</Trans>
-						</div>
+						<>
+							{Array.from({ length: 3 }).map((_, i) => (
+								<div key={i} className="space-y-2 py-1">
+									<Skeleton className="h-4 w-full" />
+									<Skeleton className="h-3 w-4/5" />
+									<Skeleton className="h-3 w-1/3" />
+								</div>
+							))}
+						</>
 					)}
 					{!isLoading && posts.length === 0 && (
 						<div className="text-sm text-muted-foreground text-center py-8">
@@ -83,7 +90,7 @@ function DefaultAccountView() {
 							href={post.url}
 							target="_blank"
 							rel="noreferrer noopener"
-							className="block rounded-lg border p-3 hover:bg-muted transition-colors"
+							className="block rounded-lg p-3 hover:bg-muted transition-colors"
 						>
 							<p className="text-sm font-medium leading-snug line-clamp-2">
 								{post.title}
@@ -94,7 +101,7 @@ function DefaultAccountView() {
 								</p>
 							)}
 							<p className="text-xs text-muted-foreground mt-2">
-								{new Date(post.date).toLocaleDateString()}
+								{new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
 							</p>
 						</a>
 					))}
