@@ -75,7 +75,7 @@ export function AccountSettingsSection() {
 				</div>
 			</div>
 
-			<div className="space-y-2">
+			<div className="space-y-2 max-w-md">
 					<Label htmlFor="account-name"><Trans>Name</Trans></Label>
 					<div className="flex items-center gap-3">
 						<Input

@@ -57,7 +57,7 @@ export function ChangePasswordSection() {
 					<Trans>Update your account password.</Trans>
 				</p>
 			</div>
-			<div className="space-y-2">
+			<div className="space-y-2 max-w-md">
 				<Label htmlFor="current-password">
 					<Trans>Current password</Trans>
 				</Label>
@@ -69,7 +69,7 @@ export function ChangePasswordSection() {
 					placeholder="Enter current password"
 				/>
 			</div>
-			<div className="space-y-2">
+			<div className="space-y-2 max-w-md">
 				<Label htmlFor="new-password">
 					<Trans>New password</Trans>
 				</Label>

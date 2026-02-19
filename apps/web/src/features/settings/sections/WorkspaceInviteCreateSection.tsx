@@ -85,7 +85,7 @@ export function WorkspaceInviteCreateSection(
 				Generate invite link
 			</Button>
 			{generatedInviteLink ? (
-				<div className="flex gap-2 items-center">
+				<div className="flex gap-2 items-center max-w-md">
 					<Input value={generatedInviteLink} readOnly />
 					<Button
 						variant="outline"
