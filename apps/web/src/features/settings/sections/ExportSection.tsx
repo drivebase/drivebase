@@ -37,7 +37,10 @@ export function ExportSection(props: ExportSectionProps) {
 					<Trans>Export workspace</Trans>
 				</h3>
 				<p className="text-sm text-muted-foreground">
-					<Trans>Export your workspace data including files, folders, and optionally provider configurations.</Trans>
+					<Trans>
+						Export your workspace data including files, folders, and optionally
+						provider configurations.
+					</Trans>
 				</p>
 			</div>
 
@@ -46,9 +49,7 @@ export function ExportSection(props: ExportSectionProps) {
 					<Checkbox
 						id="includeProviders"
 						checked={includeProviders}
-						onCheckedChange={(checked) =>
-							setIncludeProviders(checked === true)
-						}
+						onCheckedChange={(checked) => setIncludeProviders(checked === true)}
 						disabled={isExporting}
 					/>
 					<Label
@@ -63,9 +64,7 @@ export function ExportSection(props: ExportSectionProps) {
 					<Checkbox
 						id="includeSecrets"
 						checked={includeSecrets}
-						onCheckedChange={(checked) =>
-							setIncludeSecrets(checked === true)
-						}
+						onCheckedChange={(checked) => setIncludeSecrets(checked === true)}
 						disabled={isExporting}
 					/>
 					<Label
@@ -90,7 +89,10 @@ export function ExportSection(props: ExportSectionProps) {
 							disabled={isExporting}
 						/>
 						<p className="text-xs text-muted-foreground">
-							<Trans>This password will be used to encrypt your export file. Keep it safe, as you'll need it to import the data.</Trans>
+							<Trans>
+								This password will be used to encrypt your export file. Keep it
+								safe, as you'll need it to import the data.
+							</Trans>
 						</p>
 					</div>
 				)}

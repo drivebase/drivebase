@@ -17,13 +17,17 @@ export function WorkspaceNameSection(props: WorkspaceNameSectionProps) {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h3 className="text-lg font-medium"><Trans>Workspace name</Trans></h3>
+				<h3 className="text-lg font-medium">
+					<Trans>Workspace name</Trans>
+				</h3>
 				<p className="text-sm text-muted-foreground">
 					<Trans>Update your workspace display name.</Trans>
 				</p>
 			</div>
 			<div className="space-y-2 max-w-md">
-				<Label><Trans>Name</Trans></Label>
+				<Label>
+					<Trans>Name</Trans>
+				</Label>
 				<div className="flex gap-2">
 					<Input
 						value={name}
