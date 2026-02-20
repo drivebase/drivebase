@@ -24,6 +24,11 @@ export const VAULT_CONTENTS_QUERY = graphql(`
         mimeType
         size
         providerId
+        provider {
+          id
+          name
+          type
+        }
         folderId
         isDeleted
         starred
