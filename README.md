@@ -1,11 +1,23 @@
-<img width="2048" height="1164" alt="connect any storage" src="https://github.com/user-attachments/assets/ab20522f-6fed-45fa-a700-6756bc61997e" />
+<img width="2167" height="1281" alt="drivebase-banner" src="https://github.com/user-attachments/assets/3efd4f99-6b98-462a-867a-cf805e212c86" />
 
-<p align="center"><a href="https://t.me/+fWEMYD3gp61lYWZl">Telegram</a> · <a href="https://drivebase.one/docs">Documentation</a> · <a href="https://discord.gg/zy3XyWcU6D">Discord</a></p>
 
-Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
+<p align="center">
+  <a href="https://t.me/+fWEMYD3gp61lYWZl">
+    <img src="https://img.shields.io/badge/Telegram-Join%20Chat-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram">
+  </a> · 
+  <a href="https://drivebase.one/docs">
+    <img src="https://img.shields.io/badge/Documentation-red?style=for-the-badge" alt="Documentation" />
+  </a> · 
+  <a href="https://discord.gg/zy3XyWcU6D">
+    <img src="https://img.shields.io/discord/1472108078592688149?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2" alt="Discord">
+  </a>
+</p>
+
+Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. It includes Vault for end-to-end encrypted uploads and Smart Uploads for rule-based routing across providers. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
+
+<a href="https://drivebase.one/features/vault">Vault</a> · <a href="https://drivebase.one/features/smart-upload">Smart Upload</a> · <a href="https://drivebase.one/features/team-collaboration">Collaboration</a>
 
 ---
-
 
 <!-- [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?template=https://github.com/drivebase/drivebase)
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/drivebase/drivebase) -->
