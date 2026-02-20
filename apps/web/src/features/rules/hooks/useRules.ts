@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "urql";
 import {
 	CREATE_FILE_RULE_MUTATION,
 	DELETE_FILE_RULE_MUTATION,
+	FILE_RULE_QUERY,
 	FILE_RULES_QUERY,
 	REORDER_FILE_RULES_MUTATION,
 	UPDATE_FILE_RULE_MUTATION,
@@ -10,6 +11,14 @@ import {
 export function useFileRules() {
 	const [result, reexecute] = useQuery({
 		query: FILE_RULES_QUERY,
+	});
+	return [result, reexecute] as const;
+}
+
+export function useFileRule(id: string) {
+	const [result, reexecute] = useQuery({
+		query: FILE_RULE_QUERY,
+		variables: { id },
 	});
 	return [result, reexecute] as const;
 }
