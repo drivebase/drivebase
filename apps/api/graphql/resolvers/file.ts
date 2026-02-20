@@ -262,17 +262,7 @@ export const fileMutations: MutationResolvers = {
 
 		if (provider instanceof S3Provider && provider.supportsChunkedUpload) {
 			// For S3, initiate native multipart and generate presigned part URLs
-			const folder = input.folderId
-				? await context.db
-						.select()
-						.from(folders)
-						.where(eq(folders.id, input.folderId))
-						.limit(1)
-						.then((r) => r[0])
-				: null;
-
-			const parentId =
-				folder?.remoteId ?? providerRecord.rootFolderId ?? undefined;
+			const parentId = providerRecord.rootFolderId ?? undefined;
 
 			const multipart = await provider.initiateMultipartUpload({
 				name: input.name,

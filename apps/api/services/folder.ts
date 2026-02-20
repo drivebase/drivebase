@@ -20,7 +20,6 @@ export class FolderService {
 		userId: string,
 		name: string,
 		parentId?: string,
-		providerId?: string,
 		preferredWorkspaceId?: string,
 	) {
 		const workspaceId = await getAccessibleWorkspaceId(
@@ -28,14 +27,7 @@ export class FolderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		return createFolder(
-			this.db,
-			userId,
-			workspaceId,
-			name,
-			parentId,
-			providerId,
-		);
+		return createFolder(this.db, userId, workspaceId, name, parentId);
 	}
 
 	async getFolder(

@@ -6,11 +6,14 @@ import {
 	timestamp,
 } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
-import { storageProviders } from "./providers";
 import { users } from "./users";
+import { workspaces } from "./workspaces";
 
 /**
  * Folders table
+ *
+ * Folders are virtual/organizational and independent from providers.
+ * Only files get uploaded to providers.
  */
 export const folders = pgTable("folders", {
 	id: text("id")
@@ -18,10 +21,9 @@ export const folders = pgTable("folders", {
 		.$defaultFn(() => createId()),
 	virtualPath: text("virtual_path").notNull().unique(),
 	name: text("name").notNull(),
-	remoteId: text("remote_id"),
-	providerId: text("provider_id").references(() => storageProviders.id, {
-		onDelete: "set null",
-	}),
+	workspaceId: text("workspace_id")
+		.notNull()
+		.references(() => workspaces.id, { onDelete: "cascade" }),
 	parentId: text("parent_id").references((): AnyPgColumn => folders.id, {
 		onDelete: "cascade",
 	}),

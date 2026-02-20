@@ -43,8 +43,7 @@ export const FolderFragment = graphql(`
     id
     virtualPath
     name
-    remoteId
-    providerId
+    workspaceId
     parentId
     createdBy
     isDeleted

@@ -88,8 +88,7 @@ export async function requestUpload(
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 
-		const parentId =
-			folder?.remoteId ?? providerRecord.rootFolderId ?? undefined;
+		const parentId = providerRecord.rootFolderId ?? undefined;
 
 		const uploadResponse = await provider.requestUpload({
 			name: sanitizedName,
