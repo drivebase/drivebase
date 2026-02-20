@@ -1,5 +1,36 @@
 # Changelog
 
+# [2.0.0](https://github.com/drivebase/drivebase/compare/v1.13.0...v2.0.0) (2026-02-20)
+
+
+### Bug Fixes
+
+* add provider details to VAULT_CONTENTS_QUERY ([eabccb8](https://github.com/drivebase/drivebase/commit/eabccb8a1ecd2efd3792bcf5260acefced25147b))
+* correct header assignment and import order in update hooks ([7333828](https://github.com/drivebase/drivebase/commit/73338280179073c7a79a9999bf2b51cb60b68238))
+* **release:** add releaseName to GitHub configuration ([0ef48e2](https://github.com/drivebase/drivebase/commit/0ef48e27b2b4f89733fab4c079bac3d5c9d61f42))
+* remove remoteId and providerId fields to clarify the organizational nature of folders ([7b6af66](https://github.com/drivebase/drivebase/commit/7b6af66ea80cb90cff75d2a4eb8dba1f7535c9da))
+* remove unused var and reorder ([dc4c963](https://github.com/drivebase/drivebase/commit/dc4c963f92f66c6302c27b6be8a88e1175c2056b))
+* store server instance for proper shutdown handling ([9405e5c](https://github.com/drivebase/drivebase/commit/9405e5c1b539c94be128af09d051ae232c61c442))
+* tsr generate ([1809553](https://github.com/drivebase/drivebase/commit/18095531a8cf7ee2fed4a73ec327266f38abc70c))
+* update descriptions in WelcomeStep for clarity ([37d34fb](https://github.com/drivebase/drivebase/commit/37d34fb8a97f97513e598b8a23b6a957c5b91cea))
+* update GitHub link in Hero component to point to the correct repository ([7b9a699](https://github.com/drivebase/drivebase/commit/7b9a69988d13b64d2702b51ab3dbe5255be17c4c))
+* **web:** migrate Trans imports to @lingui/react/macro ([7bef628](https://github.com/drivebase/drivebase/commit/7bef628157e03918d76f86eb01b271d2755c2bdc))
+
+
+### Features
+
+* add commit message generation prompt ([b2200a0](https://github.com/drivebase/drivebase/commit/b2200a05eae2fbe0c7e380ac2cb25bde5d250b56))
+* add destination path handling for uploads and update upload hook options ([2e4b66e](https://github.com/drivebase/drivebase/commit/2e4b66ebf8326d29c405223426c5cc75315c4aec))
+* add new pages for Vault, Smart Upload, Cloud Transfers, and Team Collaboration ([772d0ab](https://github.com/drivebase/drivebase/commit/772d0abdcb41759875b1420319ca1ce048698cb4))
+* add recent updates feature with API integration and loading state ([327382a](https://github.com/drivebase/drivebase/commit/327382ab83d4a9778a9b0cb8194f0bf67b5fc965))
+* add tab selection for invite expiration and standardize settings input widths ([5217e64](https://github.com/drivebase/drivebase/commit/5217e647aca6f67e52c7b94dfa30a7e57fa6290a))
+* add updater service for application updates ([efefd39](https://github.com/drivebase/drivebase/commit/efefd39726a7fac09b43274d53f090df991e3232))
+* create separate users section ([360c5ca](https://github.com/drivebase/drivebase/commit/360c5ca3a088673a12d75795ae1aa7224bf40b51))
+* file upload rules ([592ad47](https://github.com/drivebase/drivebase/commit/592ad47e0c97b3d84f9f37be1321094415a2d59f))
+* **i18n:** add Arabic language with RTL support and migrate to PO format ([921b7a9](https://github.com/drivebase/drivebase/commit/921b7a988794a95f944a1b9fef8d6c65c09455bb))
+* implement vault ([8484c60](https://github.com/drivebase/drivebase/commit/8484c606d23722755ec6ab1356d7c1c876754a16))
+* implement workspace export functionality with encryption options ([3204187](https://github.com/drivebase/drivebase/commit/3204187abe4ac367fb924184d304fc8bdc1b1adc))
+
 # [1.13.0](https://github.com/drivebase/drivebase/compare/v1.12.0...v1.13.0) (2026-02-17)
 
 
