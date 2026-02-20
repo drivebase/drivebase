@@ -1,5 +1,4 @@
 // Components
-export { VaultFileBrowser } from "./components/VaultFileBrowser";
 export { VaultSetupWizard } from "./components/VaultSetupWizard";
 export { VaultUnlockPrompt } from "./components/VaultUnlockPrompt";
 
