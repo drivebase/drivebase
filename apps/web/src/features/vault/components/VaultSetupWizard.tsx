@@ -152,8 +152,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 			<div className="space-y-1.5">
 				<h1 className="text-2xl font-bold tracking-tight">Secure Vault</h1>
 				<p className="text-muted-foreground text-sm leading-relaxed">
-					Your vault uses end-to-end encryption. Only you can access your files
-					— not even Drivebase can read them.
+					Your vault uses end-to-end encryption. Only you can access your files.
 				</p>
 			</div>
 
@@ -164,7 +163,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 						color: "text-emerald-500",
 						bg: "bg-emerald-500/10",
 						title: "End-to-end encrypted",
-						desc: "Files are encrypted on your device before upload. The server never sees plaintext.",
+						desc: "Files are encrypted on your device before upload. The storage provider never sees the content.",
 					},
 					{
 						icon: Lock,
