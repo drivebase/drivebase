@@ -13,7 +13,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { PROVIDERS_QUERY } from "@/features/providers/api/provider";
 import { RULE_FOLDERS_QUERY } from "../api/rule";
 import {

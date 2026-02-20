@@ -18,9 +18,7 @@ function EditRulePage() {
 	};
 
 	if (result.fetching) {
-		return (
-			<div className="text-sm text-muted-foreground">Loading rule...</div>
-		);
+		return <div className="text-sm text-muted-foreground">Loading rule...</div>;
 	}
 
 	if (result.error || !result.data?.fileRule) {

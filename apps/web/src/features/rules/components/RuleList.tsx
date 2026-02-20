@@ -5,7 +5,6 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -20,7 +19,6 @@ import {
 	useDeleteFileRule,
 	useFileRules,
 	useReorderFileRules,
-	useUpdateFileRule,
 } from "../hooks/useRules";
 
 type FileRule = GetFileRulesQuery["fileRules"][number];
@@ -47,7 +45,6 @@ function conditionSummary(conditions: FileRule["conditions"]): string {
 export function RuleList() {
 	const [rulesResult, reexecuteRules] = useFileRules();
 	const [, deleteRule] = useDeleteFileRule();
-	const [, updateRule] = useUpdateFileRule();
 	const [, reorderRules] = useReorderFileRules();
 	const navigate = useNavigate();
 
@@ -74,17 +71,6 @@ export function RuleList() {
 			return;
 		}
 		toast.success("Rule deleted");
-		reexecuteRules({ requestPolicy: "network-only" });
-	};
-
-	const handleToggleEnabled = async (rule: FileRule) => {
-		const result = await updateRule({
-			id: rule.id,
-			input: { enabled: !rule.enabled },
-		});
-		if (result.error) {
-			toast.error(result.error.message);
-		}
 		reexecuteRules({ requestPolicy: "network-only" });
 	};
 
