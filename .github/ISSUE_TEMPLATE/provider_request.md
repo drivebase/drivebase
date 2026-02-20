@@ -2,7 +2,9 @@
 name: Storage provider request
 about: Request a new storage provider integration
 title: '[PROVIDER] '
-labels: 'type: provider request', 'status: needs triage'
+labels:
+    - 'type: provider request'
+    - 'status: needs-triage'
 assignees: 'mxvsh'
 ---
 
