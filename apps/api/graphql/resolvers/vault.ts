@@ -1,10 +1,10 @@
 import { S3Provider } from "@drivebase/s3";
+import { getRedis } from "../../redis/client";
+import { UploadSessionManager } from "../../services/file/upload-session";
+import { ProviderService } from "../../services/provider";
+import { VaultService } from "../../services/vault";
 import type { MutationResolvers, QueryResolvers } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
-import { ProviderService } from "../../services/provider";
-import { UploadSessionManager } from "../../services/file/upload-session";
-import { VaultService } from "../../services/vault";
-import { getRedis } from "../../redis/client";
 
 export const vaultQueries: QueryResolvers = {
 	myVault: async (_parent, _args, context) => {
@@ -47,7 +47,7 @@ export const vaultMutations: MutationResolvers = {
 		const vaultService = new VaultService(context.db);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		const providerService = new ProviderService(context.db);
+		const _providerService = new ProviderService(context.db);
 		const resolvedWorkspaceId = workspaceId
 			? workspaceId
 			: await (async () => {

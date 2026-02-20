@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createBackup } from "@/features/vault/lib/crypto";
 import { useMyVault } from "@/features/vault/hooks/useVault";
 import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
+import { createBackup } from "@/features/vault/lib/crypto";
 import { useVaultStore } from "@/features/vault/store/vaultStore";
 
 export function VaultKeySection() {
@@ -31,7 +31,9 @@ export function VaultKeySection() {
 	const [changeError, setChangeError] = useState("");
 
 	useEffect(() => {
-		getFingerprint().then(setFingerprint).catch(() => null);
+		getFingerprint()
+			.then(setFingerprint)
+			.catch(() => null);
 	}, [getFingerprint]);
 
 	const handleDownloadBackup = useCallback(() => {
@@ -192,10 +194,7 @@ export function VaultKeySection() {
 					</div>
 
 					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setIsChangeOpen(false)}
-						>
+						<Button variant="outline" onClick={() => setIsChangeOpen(false)}>
 							Cancel
 						</Button>
 						<Button

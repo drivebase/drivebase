@@ -7,7 +7,7 @@ import {
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { files, folders, vaults } from "@drivebase/db";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { getPublicApiBaseUrl } from "../config/url";
 import { logger } from "../utils/logger";
 import { ProviderService } from "./provider";

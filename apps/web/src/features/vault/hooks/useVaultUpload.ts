@@ -3,14 +3,14 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useMutation } from "urql";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
 import { COMPLETE_S3_MULTIPART } from "@/features/files/api/upload-session";
-import { encryptChunk } from "@/features/vault/lib/crypto";
+import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
 import {
 	useInitiateVaultChunkedUpload,
 	useRequestVaultUpload,
 } from "@/features/vault/hooks/useVault";
 import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
+import { encryptChunk } from "@/features/vault/lib/crypto";
 
 const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
 const DEFAULT_CHUNK_SIZE = 50 * 1024 * 1024; // 50MB (plaintext chunk size)

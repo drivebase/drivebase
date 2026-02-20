@@ -1,5 +1,9 @@
 import { useCallback } from "react";
 import {
+	useChangeVaultPassphrase,
+	useSetupVault,
+} from "@/features/vault/hooks/useVault";
+import {
 	base64ToSalt,
 	createBackup,
 	decryptFile,
@@ -20,10 +24,6 @@ import {
 	type VaultBackup,
 } from "@/features/vault/lib/crypto";
 import { useVaultStore } from "@/features/vault/store/vaultStore";
-import {
-	useChangeVaultPassphrase,
-	useSetupVault,
-} from "@/features/vault/hooks/useVault";
 
 export function useVaultCrypto() {
 	const store = useVaultStore();
