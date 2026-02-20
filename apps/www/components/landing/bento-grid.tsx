@@ -2,17 +2,16 @@
 
 import {
   ArrowRightLeft,
-  Box,
-  Code,
+  ArrowUpRight,
   Layers,
-  RefreshCw,
   Route,
   Search,
-  Unlock,
+  ShieldCheck,
   Users,
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
+import Link from "next/link";
 import { cn } from "@/lib/cn";
 
 const features = [
@@ -25,21 +24,22 @@ const features = [
     color: "bg-yellow-500/10 text-yellow-500",
   },
   {
+    title: "Vault",
+    description:
+      "Protect sensitive files with end-to-end encrypted storage inside Drivebase.",
+    icon: ShieldCheck,
+    href: "/features/vault",
+    className: "col-span-1",
+    color: "bg-violet-500/10 text-violet-400",
+  },
+  {
     title: "Smart Upload",
     description:
       "Auto-route files by type or size. E.g. send PDFs to S3 and Images to Google Drive.",
     icon: Route,
+    href: "/features/smart-upload",
     className: "col-span-1",
     color: "bg-indigo-500/10 text-indigo-500",
-    comingSoon: true,
-  },
-  {
-    title: "Docker Ready",
-    description:
-      "Deploy anywhere with a single Docker command. Kubernetes friendly.",
-    icon: Box,
-    className: "col-span-1",
-    color: "bg-purple-500/10 text-purple-500",
   },
   {
     title: "Multi-Cloud Support",
@@ -50,18 +50,20 @@ const features = [
     color: "bg-blue-500/10 text-blue-500",
   },
   {
-    title: "API First",
+    title: "Users Management",
     description:
-      "Full GraphQL API for all operations. Integrate Drivebase into your own apps.",
-    icon: Code,
+      "Manage workspace members, roles, and access controls from one place.",
+    icon: Users,
+    href: "/features/team-collaboration",
     className: "col-span-1",
-    color: "bg-cyan-500/10 text-cyan-500",
+    color: "bg-sky-500/10 text-sky-500",
   },
   {
     title: "Team Collaboration",
     description:
       "Share folders and files with your team. Granular permissions and access control.",
     icon: Users,
+    href: "/features/team-collaboration",
     className: "col-span-1",
     color: "bg-red-500/10 text-red-500",
   },
@@ -70,6 +72,7 @@ const features = [
     description:
       "Move files between cloud providers seamlessly in the background.",
     icon: ArrowRightLeft,
+    href: "/features/cloud-transfers",
     className: "col-span-1",
     color: "bg-gray-500/10 text-gray-500",
   },
@@ -80,22 +83,6 @@ const features = [
     icon: Search,
     className: "col-span-1",
     color: "bg-orange-500/10 text-orange-500",
-  },
-  {
-    title: "Auto-Sync",
-    description:
-      "Keep your files in sync across all devices and cloud providers automatically.",
-    icon: RefreshCw,
-    className: "col-span-1",
-    color: "bg-emerald-500/10 text-emerald-500",
-  },
-  {
-    title: "No Vendor Lock-in",
-    description:
-      "Switch providers at any time. Move your data freely between any storage backend.",
-    icon: Unlock,
-    className: "col-span-1 md:col-span-2",
-    color: "bg-pink-500/10 text-pink-500",
   },
 ];
 
@@ -149,6 +136,13 @@ export function BentoGrid() {
                 feature.className,
               )}
             >
+              {feature.href && (
+                <Link
+                  href={feature.href}
+                  className="absolute inset-0 z-10"
+                  aria-label={`Open ${feature.title}`}
+                />
+              )}
               <div className="absolute inset-0 -z-10 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
               <div className="flex flex-col justify-between h-full">
@@ -161,10 +155,10 @@ export function BentoGrid() {
                   >
                     <feature.icon className="size-6" />
                   </div>
-                  {feature.comingSoon && (
-                    <span className="inline-flex items-center rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-xs font-medium text-indigo-400 ring-1 ring-inset ring-indigo-500/20">
-                      Coming Soon
-                    </span>
+                  {feature.href && (
+                    <div className="relative z-20 rounded-full bg-white/5 p-1.5 text-indigo-300/90 ring-1 ring-white/10">
+                      <ArrowUpRight className="size-4" />
+                    </div>
                   )}
                 </div>
 
