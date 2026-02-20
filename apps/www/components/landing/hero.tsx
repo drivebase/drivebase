@@ -61,8 +61,9 @@ export function Hero() {
             className="mt-6 text-lg leading-8 text-gray-400 max-w-2xl mx-auto"
           >
             Unify your file storage across S3, Google Drive, and Local Storage.
-            Secure, open-source, and designed for modern applications. Stop
-            worrying about vendor lock-in.
+            Use Vault for end-to-end encrypted uploads. Secure, open-source, and
+            designed for modern applications. Stop worrying about vendor
+            lock-in.
           </motion.p>
 
           <motion.div
