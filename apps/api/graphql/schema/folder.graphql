@@ -5,8 +5,7 @@ type Folder {
 	id: ID!
 	virtualPath: String!
 	name: String!
-	remoteId: String
-	providerId: ID
+	workspaceId: ID!
 	parentId: ID
 	createdBy: ID!
 	isDeleted: Boolean!
@@ -87,5 +86,4 @@ extend type Mutation {
 input CreateFolderInput {
 	name: String!
 	parentId: ID
-	providerId: ID
 }
