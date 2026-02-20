@@ -20,6 +20,7 @@ import {
 import { fileRuleResolvers, ruleMutations, ruleQueries } from "./rule";
 import { scalarResolvers } from "./scalars";
 import { userMutations, userQueries, userResolvers } from "./user";
+import { vaultMutations, vaultQueries } from "./vault";
 import {
 	workspaceInviteResolvers,
 	workspaceMemberResolvers,
@@ -43,6 +44,7 @@ export const resolvers: Resolvers = {
 		...ruleQueries,
 		...metadataQueries,
 		...workspaceQueries,
+		...vaultQueries,
 
 		// Placeholder resolvers for unimplemented features
 		activities: async () => [],
@@ -57,6 +59,7 @@ export const resolvers: Resolvers = {
 		...workspaceMutations,
 		...ruleMutations,
 		...metadataMutations,
+		...vaultMutations,
 
 		// Placeholder resolvers for permissions (TODO)
 		grantFolderAccess: async () => {

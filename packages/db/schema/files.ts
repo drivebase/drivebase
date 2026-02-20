@@ -1,8 +1,16 @@
-import { bigint, boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+	bigint,
+	boolean,
+	integer,
+	pgTable,
+	text,
+	timestamp,
+} from "drizzle-orm/pg-core";
 import { createId } from "../utils";
 import { folders } from "./folders";
 import { storageProviders } from "./providers";
 import { users } from "./users";
+import { vaults } from "./vaults";
 
 /**
  * Files table
@@ -26,6 +34,12 @@ export const files = pgTable("files", {
 	uploadedBy: text("uploaded_by")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
+	vaultId: text("vault_id").references(() => vaults.id, {
+		onDelete: "cascade",
+	}),
+	isEncrypted: boolean("is_encrypted").notNull().default(false),
+	encryptedFileKey: text("encrypted_file_key"),
+	encryptedChunkSize: integer("encrypted_chunk_size"),
 	isDeleted: boolean("is_deleted").notNull().default(false),
 	starred: boolean("starred").notNull().default(false),
 	createdAt: timestamp("created_at", { withTimezone: true })

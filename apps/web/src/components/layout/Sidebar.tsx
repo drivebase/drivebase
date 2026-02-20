@@ -5,6 +5,7 @@ import {
 	Cloud,
 	Folder,
 	LayoutDashboard,
+	Lock,
 	Settings,
 	Star,
 	Trash2,
@@ -37,6 +38,7 @@ const navItems = [
 	{ icon: Star, label: msg`Favorites`, to: "/favorites" },
 	{ icon: Cloud, label: msg`Providers`, to: "/providers" },
 	{ icon: Trash2, label: msg`Trash`, to: "/trash" },
+	{ icon: Lock, label: msg`Vault`, to: "/vault" },
 	{ icon: Settings, label: msg`Settings`, to: "/settings" },
 ];
 
