@@ -85,6 +85,9 @@ jobs:
       - name: Biome check
         run: bunx biome check .
 
+      - name: Generate types
+        run: bun --filter web generate
+
       - name: Type check
         run: bunx turbo run check-types
 

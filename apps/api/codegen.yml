@@ -27,5 +27,6 @@ generates:
         OAuthProviderCredential: "@drivebase/db#OAuthProviderCredential as DbOAuthProviderCredential"
         Permission: "@drivebase/db#Permission as DbPermission"
         Activity: "@drivebase/db#Activity as DbActivity"
+        FileRule: "@drivebase/db#FileRule as DbFileRule"
       # Use type imports
       useTypeImports: true

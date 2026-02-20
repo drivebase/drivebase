@@ -68,17 +68,15 @@ function DefaultAccountView() {
 					</h3>
 				</div>
 				<div className="space-y-3">
-					{isLoading && (
-						<>
-							{Array.from({ length: 3 }).map((_, i) => (
-								<div key={i} className="space-y-2 py-1">
-									<Skeleton className="h-4 w-full" />
-									<Skeleton className="h-3 w-4/5" />
-									<Skeleton className="h-3 w-1/3" />
-								</div>
-							))}
-						</>
-					)}
+					{isLoading &&
+						Array.from({ length: 3 }).map((_, i) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: skeleton items have no stable id
+							<div key={i} className="space-y-2 py-1">
+								<Skeleton className="h-4 w-full" />
+								<Skeleton className="h-3 w-4/5" />
+								<Skeleton className="h-3 w-1/3" />
+							</div>
+						))}
 					{!isLoading && posts.length === 0 && (
 						<div className="text-sm text-muted-foreground text-center py-8">
 							<Trans>No updates yet</Trans>

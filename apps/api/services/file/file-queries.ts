@@ -169,44 +169,36 @@ export async function getContents(
 				.orderBy(files.name)
 				.then((rows) => rows.map((row) => row.file)),
 			db
-				.select({ folder: folders })
+				.select()
 				.from(folders)
-				.innerJoin(
-					storageProviders,
-					eq(storageProviders.id, folders.providerId),
-				)
 				.where(
 					and(
 						isNull(folders.parentId),
 						eq(folders.isDeleted, false),
-						eq(storageProviders.workspaceId, workspaceId),
+						eq(folders.workspaceId, workspaceId),
 					),
 				)
-				.orderBy(folders.name)
-				.then((rows) => rows.map((row) => row.folder)),
+				.orderBy(folders.name),
 		]);
 
 		return { files: fileList, folders: folderList, folder: null };
 	}
 
-	const [folder] = await db
-		.select({ folder: folders })
+	const [targetFolder] = await db
+		.select()
 		.from(folders)
-		.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
 		.where(
 			and(
 				eq(folders.virtualPath, normalizedPath),
 				eq(folders.isDeleted, false),
-				eq(storageProviders.workspaceId, workspaceId),
+				eq(folders.workspaceId, workspaceId),
 			),
 		)
 		.limit(1);
 
-	if (!folder?.folder) {
+	if (!targetFolder) {
 		return { files: [], folders: [], folder: null };
 	}
-
-	const targetFolder = folder.folder;
 
 	const [fileList, folderList] = await Promise.all([
 		db
@@ -223,18 +215,16 @@ export async function getContents(
 			.orderBy(files.name)
 			.then((rows) => rows.map((row) => row.file)),
 		db
-			.select({ folder: folders })
+			.select()
 			.from(folders)
-			.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
 			.where(
 				and(
 					eq(folders.parentId, targetFolder.id),
 					eq(folders.isDeleted, false),
-					eq(storageProviders.workspaceId, workspaceId),
+					eq(folders.workspaceId, workspaceId),
 				),
 			)
-			.orderBy(folders.name)
-			.then((rows) => rows.map((row) => row.folder)),
+			.orderBy(folders.name),
 	]);
 
 	return { files: fileList, folders: folderList, folder: targetFolder };

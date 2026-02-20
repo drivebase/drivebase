@@ -40,3 +40,6 @@ export function parseBytes(str: string): number {
 
 	return Math.round(value * multiplier);
 }
+
+// Rule matching utilities
+export * from "./rule-matcher";

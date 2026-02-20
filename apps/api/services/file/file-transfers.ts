@@ -11,6 +11,7 @@ import { getPublicApiBaseUrl } from "../../config/url";
 import { logger } from "../../utils/logger";
 import { FolderService } from "../folder";
 import { ProviderService } from "../provider";
+import { evaluateRules } from "../rules";
 import { getFile } from "./file-queries";
 
 /**
@@ -38,6 +39,25 @@ export async function requestUpload(
 
 	try {
 		const sanitizedName = sanitizeFilename(name);
+
+		// Evaluate file placement rules — may override provider/folder
+		const matchedRule = await evaluateRules(db, workspaceId, {
+			name: sanitizedName,
+			mimeType,
+			size,
+		});
+
+		if (matchedRule) {
+			logger.debug({
+				msg: "File placement rule matched",
+				ruleId: matchedRule.id,
+				ruleName: matchedRule.name,
+				originalProviderId: providerId,
+				newProviderId: matchedRule.destinationProviderId,
+			});
+			providerId = matchedRule.destinationProviderId;
+			folderId = matchedRule.destinationFolderId ?? undefined;
+		}
 
 		let folder = null;
 		let virtualPath: string;
@@ -68,8 +88,7 @@ export async function requestUpload(
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 
-		const parentId =
-			folder?.remoteId ?? providerRecord.rootFolderId ?? undefined;
+		const parentId = providerRecord.rootFolderId ?? undefined;
 
 		const uploadResponse = await provider.requestUpload({
 			name: sanitizedName,

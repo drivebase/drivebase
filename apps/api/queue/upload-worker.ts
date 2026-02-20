@@ -86,22 +86,7 @@ export function startUploadWorker(): Worker<UploadJobData> {
 				) {
 					// Native chunked upload path (Google Drive, etc.)
 					// S3 direct multipart is handled client-side — this path is for proxy providers
-					const folder = session.folderId
-						? await db
-								.select()
-								.from((await import("@drivebase/db")).folders)
-								.where(
-									eq(
-										(await import("@drivebase/db")).folders.id,
-										session.folderId,
-									),
-								)
-								.limit(1)
-								.then((r) => r[0])
-						: null;
-
-					const parentId =
-						folder?.remoteId ?? providerRecord.rootFolderId ?? undefined;
+					const parentId = providerRecord.rootFolderId ?? undefined;
 
 					const multipart = await provider.initiateMultipartUpload({
 						name: fileName,

@@ -16,6 +16,7 @@
 	},
 	"dependencies": {
 		"@drivebase/core": "workspace:*",
+		"@drivebase/utils": "workspace:*",
 		"dotenv": "^17.2.4",
 		"drizzle-orm": "^0.45.1",
 		"nanoid": "^5.0.9",
