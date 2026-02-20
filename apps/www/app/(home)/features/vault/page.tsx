@@ -1,5 +1,12 @@
 import { KeyRound, Lock, ShieldCheck, UserRoundCheck } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Vault - Drivebase",
+  description:
+    "Vault provides end-to-end encrypted file storage in Drivebase for sensitive uploads and secure access.",
+};
 
 export default function VaultPage() {
   return (
