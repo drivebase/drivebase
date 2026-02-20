@@ -8,6 +8,7 @@ export const pageTitles: Record<string, MessageDescriptor> = {
 	"/providers": msg`Providers`,
 	"/trash": msg`Trash`,
 	"/settings": msg`Settings`,
+	"/vault": msg`Vault`,
 	"/my-account": msg`My Account`,
 };
 

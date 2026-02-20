@@ -5,7 +5,7 @@ import { and, desc, eq, isNull, like } from "drizzle-orm";
 import { logger } from "../../utils/logger";
 
 /**
- * Get file by ID
+ * Get file by ID (excludes vault files)
  */
 export async function getFile(
 	db: Database,
@@ -21,6 +21,7 @@ export async function getFile(
 			and(
 				eq(files.id, fileId),
 				eq(files.isDeleted, false),
+				isNull(files.vaultId),
 				eq(storageProviders.workspaceId, workspaceId),
 			),
 		)
@@ -34,7 +35,7 @@ export async function getFile(
 }
 
 /**
- * List files in a folder
+ * List files in a folder (excludes vault files)
  */
 export async function listFiles(
 	db: Database,
@@ -66,6 +67,7 @@ export async function listFiles(
 						and(
 							eq(files.folderId, folderId),
 							eq(files.isDeleted, false),
+							isNull(files.vaultId),
 							eq(storageProviders.workspaceId, workspaceId),
 						),
 					)
@@ -84,6 +86,7 @@ export async function listFiles(
 						and(
 							isNull(files.folderId),
 							eq(files.isDeleted, false),
+							isNull(files.vaultId),
 							eq(storageProviders.workspaceId, workspaceId),
 						),
 					)
@@ -106,7 +109,7 @@ export async function listFiles(
 }
 
 /**
- * Search files by name
+ * Search files by name (excludes vault files)
  */
 export async function searchFiles(
 	db: Database,
@@ -127,6 +130,7 @@ export async function searchFiles(
 				and(
 					like(files.name, searchPattern),
 					eq(files.isDeleted, false),
+					isNull(files.vaultId),
 					eq(storageProviders.workspaceId, workspaceId),
 				),
 			)
@@ -140,7 +144,7 @@ export async function searchFiles(
 }
 
 /**
- * Get files and folders at a virtual path.
+ * Get files and folders at a virtual path (excludes vault files and vault folders).
  * path = "/" returns root-level content (no parent folder).
  * path = "/docs" returns content inside the "docs" folder.
  */
@@ -163,6 +167,7 @@ export async function getContents(
 					and(
 						isNull(files.folderId),
 						eq(files.isDeleted, false),
+						isNull(files.vaultId),
 						eq(storageProviders.workspaceId, workspaceId),
 					),
 				)
@@ -175,6 +180,7 @@ export async function getContents(
 					and(
 						isNull(folders.parentId),
 						eq(folders.isDeleted, false),
+						isNull(folders.vaultId),
 						eq(folders.workspaceId, workspaceId),
 					),
 				)
@@ -191,6 +197,7 @@ export async function getContents(
 			and(
 				eq(folders.virtualPath, normalizedPath),
 				eq(folders.isDeleted, false),
+				isNull(folders.vaultId),
 				eq(folders.workspaceId, workspaceId),
 			),
 		)
@@ -209,6 +216,7 @@ export async function getContents(
 				and(
 					eq(files.folderId, targetFolder.id),
 					eq(files.isDeleted, false),
+					isNull(files.vaultId),
 					eq(storageProviders.workspaceId, workspaceId),
 				),
 			)
@@ -221,6 +229,7 @@ export async function getContents(
 				and(
 					eq(folders.parentId, targetFolder.id),
 					eq(folders.isDeleted, false),
+					isNull(folders.vaultId),
 					eq(folders.workspaceId, workspaceId),
 				),
 			)
@@ -231,7 +240,7 @@ export async function getContents(
 }
 
 /**
- * Get starred files
+ * Get starred files (excludes vault files)
  */
 export async function getStarredFiles(
 	db: Database,
@@ -246,6 +255,7 @@ export async function getStarredFiles(
 			and(
 				eq(files.starred, true),
 				eq(files.isDeleted, false),
+				isNull(files.vaultId),
 				eq(storageProviders.workspaceId, workspaceId),
 			),
 		)

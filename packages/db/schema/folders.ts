@@ -7,6 +7,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
 import { users } from "./users";
+import { vaults } from "./vaults";
 import { workspaces } from "./workspaces";
 
 /**
@@ -30,6 +31,9 @@ export const folders = pgTable("folders", {
 	createdBy: text("created_by")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
+	vaultId: text("vault_id").references(() => vaults.id, {
+		onDelete: "cascade",
+	}),
 	isDeleted: boolean("is_deleted").notNull().default(false),
 	starred: boolean("starred").notNull().default(false),
 	createdAt: timestamp("created_at", { withTimezone: true })

@@ -29,7 +29,7 @@ export function createApp(): Hono<AppEnv> {
 				return env.CORS_ORIGIN;
 			},
 			credentials: true,
-			allowMethods: ["POST", "GET", "OPTIONS"],
+			allowMethods: ["POST", "GET", "PUT", "OPTIONS"],
 			allowHeaders: ["Content-Type", "Authorization", "x-workspace-id"],
 			exposeHeaders: ["Content-Disposition"],
 		}),

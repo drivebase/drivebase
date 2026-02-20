@@ -1,0 +1,72 @@
+---
+title: Vault (E2EE)
+description: End-to-End Encrypted Storage in Drivebase
+---
+
+The **Vault** is a private, per-user encrypted file storage area inside Drivebase. Because Drivebase is a self-hosted solution, it's important to understand how your data is protected from the server infrastructure itself.
+
+In the Vault, all files are encrypted **client-side** (on your device) *before* they are uploaded to the Drivebase server. The server stores only ciphertext and encrypted key material — it **never** sees the plaintext file content or your raw private key. The server merely acts as a proxy, securely transferring the encrypted data to your configured storage provider (Local, S3, etc.).
+
+Even as the administrator of your own Drivebase instance, you cannot access files stored in a user's vault without their passphrase.
+
+---
+
+## Security Architecture
+
+### Zero-Knowledge Design
+Drivebase employs a zero-knowledge architecture for the Vault. The server stores only encrypted key material and ciphertext. It cannot decrypt any vault file.
+
+### Key Hierarchy
+Your Vault is secured by a Passphrase-derived Key Encryption Key (KEK).
+1. The **KEK** is derived from your Passphrase using PBKDF2 (310,000 iterations, SHA-256, random 16-byte salt). This KEK is never stored.
+2. The KEK encrypts your **Private Key** (AES-GCM 256-bit). The encrypted private key is stored in the database.
+3. Your **Public Key** (P-256 ECDH) is used to generate an **Encrypted File Key** (ECIES) for every file you upload.
+4. The File Key encrypts the actual **File Content** (AES-GCM 256-bit) before it leaves your device.
+
+### Session Security & Non-extractable Keys
+After you enter your passphrase to unlock the Vault, the decrypted P-256 private key is imported into your browser's Web Crypto API with `extractable: false`. This means the raw key cannot be exported or leaked by malicious scripts.
+
+Furthermore, the decrypted key lives **only in volatile memory**. Closing or refreshing the browser tab clears it instantly, requiring you to re-enter your passphrase to access the Vault again.
+
+---
+
+## User Workflows
+
+### Vault Setup
+When accessing the Vault for the first time, you will be guided through a setup wizard:
+1. **Explanation:** Understanding the implications of End-to-End Encryption.
+2. **Passphrase Creation:** Choosing a strong, memorable passphrase.
+3. **Backup Key:** Downloading a JSON backup file.
+
+### Recovery & Backups
+Because the server does not know your passphrase or possess your private key, **a lost passphrase cannot be reset by the server administrator.** 
+
+During setup, you are prompted to download a Backup JSON file. This file contains your encrypted key material. If you forget your passphrase, you can restore access to your Vault using this backup file and the password you set for it.
+
+### Locking/Unlocking
+The Vault remains unlocked only while the browser tab is open. This "in-memory" session ensures that if you walk away from your device and the browser is closed, your Vault is immediately secured.
+
+---
+
+## Technical Implementation
+
+### Encryption Algorithms
+| Purpose | Algorithm |
+|---------|-----------|
+| KEK derivation | PBKDF2, SHA-256, 310,000 iterations |
+| Asymmetric keypair | P-256 ECDH (Web Crypto API) |
+| Private key encryption | AES-GCM 256-bit |
+| File key wrapping | ECIES: ephemeral P-256 + HKDF-SHA-256 + AES-GCM |
+| File encryption | AES-GCM 256-bit, random 12-byte IV |
+
+### Chunked File Encryption
+For large files (greater than 50 MB), the file is split into 50 MB plaintext chunks before encryption. Each chunk is encrypted with the same per-file AES-GCM key but with a deterministic IV based on the chunk index. 
+This means no per-chunk IV needs to be stored separately — the server only needs to know the original chunk size to reconstruct IVs during decryption. 
+
+### Storage Proxying
+Once the chunks are encrypted locally on your device, they are sent to the Drivebase server. The server acts as a proxy, moving these encrypted chunks to the final destination (your configured Storage Provider) without ever possessing the decryption keys.
+
+### Vault Isolation
+Vault files are completely isolated from regular files. 
+- **Database:** Standard file queries explicitly exclude rows associated with a Vault. 
+- **UI:** Vault files never appear in regular file views. They are strictly contained within the dedicated `/vault` route.

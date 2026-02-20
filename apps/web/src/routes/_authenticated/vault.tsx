@@ -1,0 +1,313 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { FileDropZone } from "@/features/files/components/FileDropZone";
+import { FilesToolbar } from "@/features/files/components/FilesToolbar";
+import { FileSystemTable } from "@/features/files/FileSystemTable";
+import { useBreadcrumbs } from "@/features/files/hooks/useBreadcrumbs";
+import { useFileDrop } from "@/features/files/hooks/useFileDrop";
+import { UploadProgressPanel } from "@/features/files/UploadProgressPanel";
+import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
+import { useProviders } from "@/features/providers/hooks/useProviders";
+import { VaultSetupWizard } from "@/features/vault/components/VaultSetupWizard";
+import { VaultUnlockPrompt } from "@/features/vault/components/VaultUnlockPrompt";
+import {
+	useCreateVaultFolder,
+	useMyVault,
+	useVaultContents,
+} from "@/features/vault/hooks/useVault";
+import { useVaultFileActions } from "@/features/vault/hooks/useVaultFileActions";
+import { useVaultUpload } from "@/features/vault/hooks/useVaultUpload";
+import { useVaultStore } from "@/features/vault/store/vaultStore";
+import type {
+	FileItemFragment,
+	FolderItemFragment,
+	StorageProvider,
+} from "@/gql/graphql";
+import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
+import { promptDialog } from "@/shared/lib/promptDialog";
+
+const searchSchema = z.object({
+	path: z.string().optional().catch(undefined),
+});
+
+export const Route = createFileRoute("/_authenticated/vault")({
+	validateSearch: (search) => searchSchema.parse(search),
+	component: VaultPage,
+});
+
+function VaultPage() {
+	const { path: searchPath } = Route.useSearch();
+	const { isUnlocked } = useVaultStore();
+	const [{ data, fetching }] = useMyVault();
+	const currentPath = searchPath ?? "/";
+
+	if (fetching) {
+		return (
+			<div className="flex items-center justify-center h-full">
+				<div className="text-muted-foreground text-sm">Loading...</div>
+			</div>
+		);
+	}
+
+	if (!data?.myVault) {
+		return (
+			<div className="flex items-center justify-center h-full">
+				<VaultSetupWizard onComplete={() => window.location.reload()} />
+			</div>
+		);
+	}
+
+	if (!isUnlocked) {
+		return (
+			<div className="flex items-center justify-center h-full">
+				<VaultUnlockPrompt onUnlocked={() => {}} />
+			</div>
+		);
+	}
+
+	return <VaultBrowser currentPath={currentPath} />;
+}
+
+function VaultBrowser({ currentPath }: { currentPath: string }) {
+	const navigate = Route.useNavigate();
+	const { user } = useAuthStore();
+	const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+	const [newFolderName, setNewFolderName] = useState("");
+	const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+	const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+	const { data: providersData } = useProviders();
+	const activeProviders = (providersData?.storageProviders.filter(
+		(p) => p.isActive,
+	) ?? []) as StorageProvider[];
+
+	const [{ data: contentsData, fetching: contentsFetching }, refreshContents] =
+		useVaultContents(currentPath);
+
+	const currentFolder = contentsData?.vaultContents?.folder as
+		| FolderItemFragment
+		| undefined;
+
+	const fileList = useOptimisticList<FileItemFragment>(
+		contentsData?.vaultContents?.files as FileItemFragment[] | undefined,
+	);
+	const folderList = useOptimisticList<FolderItemFragment>(
+		contentsData?.vaultContents?.folders as FolderItemFragment[] | undefined,
+	);
+
+	const refresh = () => refreshContents({ requestPolicy: "network-only" });
+
+	const { uploadFiles, uploadQueue, isUploading, clearQueue } = useVaultUpload({
+		currentFolderId: currentFolder?.id,
+		onUploadComplete: refresh,
+	});
+
+	const { downloadFile, renameFile, deleteFile, toggleStar } =
+		useVaultFileActions(refresh);
+
+	const [, createVaultFolder] = useCreateVaultFolder();
+
+	const breadcrumbs = useBreadcrumbs(currentPath, currentFolder);
+
+	const handleFilesSelected = (files: File[]) => {
+		if (!files.length) return;
+		if (activeProviders.length === 0) {
+			toast.error("No storage providers connected");
+			return;
+		}
+		if (activeProviders.length === 1 && activeProviders[0]) {
+			uploadFiles(files, activeProviders[0].id);
+		} else {
+			setSelectedFiles(files);
+			setIsUploadDialogOpen(true);
+		}
+	};
+
+	const { isDragActive, dragHandlers } = useFileDrop({
+		onDrop: handleFilesSelected,
+	});
+
+	// Strip vault path prefix so the URL stays clean (e.g. /docs not /vault/{userId}/docs)
+	const vaultPathPrefix = `/vault/${user?.id}`;
+	const handleNavigate = (folderId: string) => {
+		const targetFolder = folderList.items.find((f) => f.id === folderId);
+		if (targetFolder) {
+			const displayPath = targetFolder.virtualPath.startsWith(vaultPathPrefix)
+				? targetFolder.virtualPath.slice(vaultPathPrefix.length) || "/"
+				: targetFolder.virtualPath;
+			navigate({ search: { path: displayPath } });
+		}
+	};
+
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = Array.from(e.target.files ?? []);
+		handleFilesSelected(files);
+		if (fileInputRef.current) fileInputRef.current.value = "";
+	};
+
+	const handleRenameFile = async (file: FileItemFragment) => {
+		const newName = await promptDialog("Rename File", `Rename "${file.name}"`, {
+			defaultValue: file.name,
+			placeholder: "Enter new name",
+			submitLabel: "Rename",
+		});
+		if (!newName || newName === file.name) return;
+		fileList.updateItem(file.id, { name: newName });
+		const ok = await renameFile(file.id, newName);
+		if (!ok) fileList.resetItem(file.id);
+	};
+
+	const handleDeleteSelection = async (selection: {
+		files: FileItemFragment[];
+		folders: FolderItemFragment[];
+	}) => {
+		for (const file of selection.files) {
+			fileList.setItems((prev) => prev.filter((f) => f.id !== file.id));
+			await deleteFile(file.id);
+		}
+		if (selection.folders.length > 0) {
+			toast.info("Folder deletion is not yet supported in vault");
+		}
+	};
+
+	const handleToggleFileFavorite = (file: FileItemFragment) => {
+		const currentStarred =
+			fileList.items.find((f) => f.id === file.id)?.starred ?? file.starred;
+		fileList.updateItem(file.id, { starred: !currentStarred });
+		toggleStar(file.id, currentStarred).then((ok) => {
+			if (!ok) fileList.resetItem(file.id);
+		});
+	};
+
+	const handleCreateFolder = async () => {
+		if (!newFolderName.trim()) return;
+		setIsCreatingFolder(true);
+		try {
+			const result = await createVaultFolder({
+				name: newFolderName.trim(),
+				parentId: currentFolder?.id,
+			});
+			if (result.error) throw new Error(result.error.message);
+			setIsCreateFolderOpen(false);
+			setNewFolderName("");
+			refresh();
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to create folder",
+			);
+		} finally {
+			setIsCreatingFolder(false);
+		}
+	};
+
+	return (
+		<div className="p-8 flex flex-col gap-6 h-full relative" {...dragHandlers}>
+			<FilesToolbar
+				currentPath={currentPath}
+				breadcrumbs={breadcrumbs}
+				canWriteFiles={true}
+				isUploading={isUploading}
+				isLoading={contentsFetching}
+				onBreadcrumbClick={(path) => navigate({ search: { path } })}
+				onUploadClick={() => fileInputRef.current?.click()}
+				onNewFolder={() => setIsCreateFolderOpen(true)}
+				fileInputRef={fileInputRef}
+				onFileChange={handleFileChange}
+			/>
+
+			<div className="flex-1 overflow-y-auto">
+				<FileSystemTable
+					files={fileList.items}
+					folders={folderList.items}
+					providers={providersData?.storageProviders}
+					onNavigate={handleNavigate}
+					onDownloadFile={downloadFile}
+					onToggleFileFavorite={handleToggleFileFavorite}
+					onRenameFile={handleRenameFile}
+					onDeleteSelection={handleDeleteSelection}
+					isLoading={contentsFetching && !contentsData}
+					emptyStateMessage="Your vault is empty. Upload files to store them encrypted."
+				/>
+			</div>
+
+			<Dialog
+				open={isCreateFolderOpen}
+				onOpenChange={(open) => !open && setIsCreateFolderOpen(false)}
+			>
+				<DialogContent className="sm:max-w-[425px]">
+					<DialogHeader>
+						<DialogTitle>Create Folder</DialogTitle>
+					</DialogHeader>
+					<div className="grid gap-4 py-4">
+						<div className="grid gap-2">
+							<Label htmlFor="vault-folder-name">Folder Name</Label>
+							<Input
+								id="vault-folder-name"
+								value={newFolderName}
+								onChange={(e) => setNewFolderName(e.target.value)}
+								placeholder="New Folder"
+								autoFocus
+								onKeyDown={(e) => {
+									if (e.key === "Enter") handleCreateFolder();
+								}}
+							/>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="ghost"
+							onClick={() => setIsCreateFolderOpen(false)}
+							disabled={isCreatingFolder}
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={handleCreateFolder}
+							disabled={isCreatingFolder || !newFolderName.trim()}
+						>
+							{isCreatingFolder ? "Creating..." : "Create Folder"}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			<UploadProviderDialog
+				isOpen={isUploadDialogOpen}
+				onClose={() => setIsUploadDialogOpen(false)}
+				providers={activeProviders}
+				fileName={selectedFiles[0]?.name}
+				fileMimeType={selectedFiles[0]?.type}
+				fileSize={selectedFiles[0]?.size}
+				onSelectProvider={(providerId) => {
+					setIsUploadDialogOpen(false);
+					uploadFiles(selectedFiles, providerId);
+				}}
+			/>
+
+			<FileDropZone isDragActive={isDragActive} />
+
+			<UploadProgressPanel
+				items={uploadQueue}
+				onClose={clearQueue}
+				onCancel={() => {}}
+				onRetry={() => {}}
+			/>
+		</div>
+	);
+}
