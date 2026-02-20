@@ -9,7 +9,129 @@ import {
 } from "@/features/files/hooks/useFiles";
 import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
 import { useProviders } from "@/features/providers/hooks/useProviders";
+import { useFileRules } from "@/features/rules/hooks/useRules";
 import type { StorageProvider } from "@/gql/graphql";
+
+// ---------------------------------------------------------------------------
+// Client-side rule matching (mirrors apps/api/services/rules/rule-engine.ts)
+// ---------------------------------------------------------------------------
+
+type RuleConditionField = "mimeType" | "extension" | "size" | "name";
+
+type RuleConditionOperator =
+	| "equals"
+	| "notEquals"
+	| "contains"
+	| "startsWith"
+	| "endsWith"
+	| "in"
+	| "greaterThan"
+	| "lessThan"
+	| "greaterThanOrEqual"
+	| "lessThanOrEqual";
+
+interface RuleCondition {
+	field: RuleConditionField;
+	operator: RuleConditionOperator;
+	value: string | number | string[];
+}
+
+interface RuleConditionGroup {
+	conditions: RuleCondition[];
+}
+
+interface RuleConditionGroups {
+	groups: RuleConditionGroup[];
+}
+
+function extractExtension(filename: string): string {
+	const lastDot = filename.lastIndexOf(".");
+	if (lastDot === -1 || lastDot === filename.length - 1) return "";
+	return filename.slice(lastDot + 1).toLowerCase();
+}
+
+function matchString(
+	actual: string,
+	operator: RuleConditionOperator,
+	value: string | number | string[],
+): boolean {
+	const normalized = actual.toLowerCase();
+	switch (operator) {
+		case "equals":
+			return normalized === String(value).toLowerCase();
+		case "notEquals":
+			return normalized !== String(value).toLowerCase();
+		case "contains":
+			return normalized.includes(String(value).toLowerCase());
+		case "startsWith":
+			return normalized.startsWith(String(value).toLowerCase());
+		case "endsWith":
+			return normalized.endsWith(String(value).toLowerCase());
+		case "in": {
+			const values = Array.isArray(value) ? value : String(value).split(",");
+			return values.some((v) => normalized === v.trim().toLowerCase());
+		}
+		default:
+			return false;
+	}
+}
+
+function matchNumeric(
+	actual: number,
+	operator: RuleConditionOperator,
+	value: string | number | string[],
+): boolean {
+	const numValue = Number(value);
+	if (Number.isNaN(numValue)) return false;
+	switch (operator) {
+		case "equals":
+			return actual === numValue;
+		case "notEquals":
+			return actual !== numValue;
+		case "greaterThan":
+			return actual > numValue;
+		case "lessThan":
+			return actual < numValue;
+		case "greaterThanOrEqual":
+			return actual >= numValue;
+		case "lessThanOrEqual":
+			return actual <= numValue;
+		default:
+			return false;
+	}
+}
+
+function matchesCondition(
+	condition: RuleCondition,
+	file: { name: string; mimeType: string; size: number },
+): boolean {
+	const { field, operator, value } = condition;
+	switch (field) {
+		case "extension":
+			return matchString(extractExtension(file.name), operator, value);
+		case "mimeType":
+			return matchString(file.mimeType, operator, value);
+		case "name":
+			return matchString(file.name, operator, value);
+		case "size":
+			return matchNumeric(file.size, operator, value);
+		default:
+			return false;
+	}
+}
+
+function fileMatchesRuleConditions(
+	conditions: RuleConditionGroups,
+	file: { name: string; mimeType: string; size: number },
+): boolean {
+	const { groups } = conditions;
+	if (!groups || groups.length === 0) return false;
+	return groups.some(
+		(group) =>
+			group.conditions.length > 0 &&
+			group.conditions.every((c) => matchesCondition(c, file)),
+	);
+}
 
 const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
 
@@ -24,6 +146,7 @@ export function useUpload({
 }: UseUploadOptions) {
 	const { token } = useAuthStore();
 	const { data: providersData } = useProviders();
+	const [rulesResult] = useFileRules();
 	const [, requestUpload] = useRequestUpload();
 	const [, deleteFile] = useDeleteFile();
 
@@ -36,6 +159,17 @@ export function useUpload({
 	const activeProviders = useMemo(() => {
 		return providersData?.storageProviders.filter((p) => p.isActive) || [];
 	}, [providersData]);
+
+	const activeProviderIds = useMemo(
+		() => new Set(activeProviders.map((p) => p.id)),
+		[activeProviders],
+	);
+
+	const enabledRules = useMemo(() => {
+		return (rulesResult.data?.fileRules ?? [])
+			.filter((r) => r.enabled)
+			.sort((a, b) => a.priority - b.priority);
+	}, [rulesResult.data]);
 
 	const updateQueueItem = useCallback(
 		(id: string, patch: Partial<UploadQueueItem>) => {
@@ -196,8 +330,28 @@ export function useUpload({
 		if (activeProviders.length === 1) {
 			handleUploadQueue(incomingFiles, activeProviders[0].id);
 		} else if (activeProviders.length > 1) {
-			setSelectedFiles(incomingFiles);
-			setIsUploadDialogOpen(true);
+			// Skip the provider dialog if every file is covered by a matching rule
+			// whose destination provider is currently active.
+			const allFilesHaveRule = incomingFiles.every((file) =>
+				enabledRules.some(
+					(rule) =>
+						activeProviderIds.has(rule.destinationProviderId) &&
+						fileMatchesRuleConditions(rule.conditions as RuleConditionGroups, {
+							name: file.name,
+							mimeType: file.type,
+							size: file.size,
+						}),
+				),
+			);
+
+			if (allFilesHaveRule) {
+				// The backend will apply the matching rule and route each file to
+				// the correct provider; pass the first active provider as a placeholder.
+				handleUploadQueue(incomingFiles, activeProviders[0].id);
+			} else {
+				setSelectedFiles(incomingFiles);
+				setIsUploadDialogOpen(true);
+			}
 		} else {
 			toast.error(
 				"No active storage providers found. Please connect a provider first.",
