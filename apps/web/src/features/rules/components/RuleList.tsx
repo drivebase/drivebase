@@ -1,7 +1,7 @@
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,6 @@ import {
 	useReorderFileRules,
 	useUpdateFileRule,
 } from "../hooks/useRules";
-import { RuleFormDialog } from "./RuleFormDialog";
 
 type FileRule = GetFileRulesQuery["fileRules"][number];
 
@@ -50,9 +49,6 @@ export function RuleList() {
 	const [, deleteRule] = useDeleteFileRule();
 	const [, updateRule] = useUpdateFileRule();
 	const [, reorderRules] = useReorderFileRules();
-
-	const [editDialogOpen, setEditDialogOpen] = useState(false);
-	const [editingRule, setEditingRule] = useState<FileRule | null>(null);
 	const navigate = useNavigate();
 
 	const rules = rulesResult.data?.fileRules ?? [];
@@ -62,8 +58,7 @@ export function RuleList() {
 	};
 
 	const handleEdit = (rule: FileRule) => {
-		setEditingRule(rule);
-		setEditDialogOpen(true);
+		navigate({ to: "/settings/rules/$ruleId", params: { ruleId: rule.id } });
 	};
 
 	const handleDelete = async (rule: FileRule) => {
@@ -115,16 +110,12 @@ export function RuleList() {
 		[rules, reorderRules, reexecuteRules],
 	);
 
-	const handleSuccess = () => {
-		reexecuteRules({ requestPolicy: "network-only" });
-	};
-
 	return (
 		<div>
 			<div className="flex items-center justify-between mb-4">
 				<div>
 					<h3 className="text-lg font-medium">
-						<Trans>File Placement Rules</Trans>
+						<Trans>Rules</Trans>
 					</h3>
 					<p className="text-sm text-muted-foreground">
 						<Trans>
@@ -150,7 +141,7 @@ export function RuleList() {
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead className="w-12">
+								<TableHead className="w-20">
 									<Trans>Order</Trans>
 								</TableHead>
 								<TableHead>
@@ -161,9 +152,6 @@ export function RuleList() {
 								</TableHead>
 								<TableHead>
 									<Trans>Destination</Trans>
-								</TableHead>
-								<TableHead className="w-20">
-									<Trans>Enabled</Trans>
 								</TableHead>
 								<TableHead className="w-24 text-right">
 									<Trans>Actions</Trans>
@@ -213,12 +201,6 @@ export function RuleList() {
 											)}
 										</div>
 									</TableCell>
-									<TableCell>
-										<Switch
-											checked={rule.enabled}
-											onCheckedChange={() => handleToggleEnabled(rule)}
-										/>
-									</TableCell>
 									<TableCell className="text-right">
 										<div className="flex justify-end gap-1">
 											<Button
@@ -245,13 +227,6 @@ export function RuleList() {
 					</Table>
 				</div>
 			)}
-
-			<RuleFormDialog
-				open={editDialogOpen}
-				onOpenChange={setEditDialogOpen}
-				rule={editingRule}
-				onSuccess={handleSuccess}
-			/>
 		</div>
 	);
 }

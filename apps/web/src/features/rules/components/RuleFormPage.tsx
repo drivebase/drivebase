@@ -2,33 +2,55 @@ import { Trans } from "@lingui/react/macro";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useCreateFileRule } from "../hooks/useRules";
+import type { GetFileRulesQuery } from "@/gql/graphql";
+import { useCreateFileRule, useUpdateFileRule } from "../hooks/useRules";
+import type { RuleConditionGroups } from "./ConditionGroupEditor";
 import { RuleForm, type RuleFormValues } from "./RuleForm";
 
+type FileRule = GetFileRulesQuery["fileRules"][number];
+
 interface RuleFormPageProps {
+	rule?: FileRule | null;
 	onSuccess: () => void;
 	onCancel: () => void;
 }
 
-export function RuleFormPage({ onSuccess, onCancel }: RuleFormPageProps) {
+export function RuleFormPage({ rule, onSuccess, onCancel }: RuleFormPageProps) {
+	const isEditing = Boolean(rule);
 	const [, createRule] = useCreateFileRule();
+	const [, updateRule] = useUpdateFileRule();
 
 	const handleSubmit = async (values: RuleFormValues) => {
-		const result = await createRule({
-			input: {
-				...values,
-				enabled: true,
-			},
-		});
-
-		if (result.error) {
-			toast.error(result.error.message);
-			return;
+		if (isEditing && rule) {
+			const result = await updateRule({
+				id: rule.id,
+				input: values,
+			});
+			if (result.error) {
+				toast.error(result.error.message);
+				return;
+			}
+			toast.success("Rule updated");
+		} else {
+			const result = await createRule({ input: values });
+			if (result.error) {
+				toast.error(result.error.message);
+				return;
+			}
+			toast.success("Rule created");
 		}
-
-		toast.success("Rule created");
 		onSuccess();
 	};
+
+	const initialValues: Partial<RuleFormValues> | undefined = rule
+		? {
+				name: rule.name,
+				enabled: rule.enabled,
+				destinationProviderId: rule.destinationProviderId,
+				destinationFolderId: rule.destinationFolderId ?? null,
+				conditions: rule.conditions as RuleConditionGroups,
+			}
+		: undefined;
 
 	return (
 		<div className="space-y-6">
@@ -38,7 +60,7 @@ export function RuleFormPage({ onSuccess, onCancel }: RuleFormPageProps) {
 				</Button>
 				<div>
 					<h2 className="text-xl font-semibold">
-						<Trans>Create Rule</Trans>
+						{isEditing ? <Trans>Edit Rule</Trans> : <Trans>Create Rule</Trans>}
 					</h2>
 					<p className="text-sm text-muted-foreground">
 						<Trans>
@@ -49,9 +71,12 @@ export function RuleFormPage({ onSuccess, onCancel }: RuleFormPageProps) {
 			</div>
 
 			<RuleForm
+				initialValues={initialValues}
 				onSubmit={handleSubmit}
 				onCancel={onCancel}
-				submitLabel={<Trans>Create Rule</Trans>}
+				submitLabel={
+					isEditing ? <Trans>Save Changes</Trans> : <Trans>Create Rule</Trans>
+				}
 			/>
 		</div>
 	);
