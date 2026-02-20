@@ -75,6 +75,7 @@ function FilesPage() {
 
 	const upload = useUpload({
 		currentFolderId: currentFolder?.id,
+		currentFolderPath: currentFolder?.virtualPath,
 		onUploadComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 

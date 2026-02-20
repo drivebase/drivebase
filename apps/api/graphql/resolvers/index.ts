@@ -17,6 +17,7 @@ import {
 	providerSubscriptions,
 	storageProviderResolvers,
 } from "./provider";
+import { fileRuleResolvers, ruleMutations, ruleQueries } from "./rule";
 import { scalarResolvers } from "./scalars";
 import { userMutations, userQueries, userResolvers } from "./user";
 import {
@@ -39,6 +40,7 @@ export const resolvers: Resolvers = {
 		...providerQueries,
 		...folderQueries,
 		...fileQueries,
+		...ruleQueries,
 		...metadataQueries,
 		...workspaceQueries,
 
@@ -53,6 +55,7 @@ export const resolvers: Resolvers = {
 		...folderMutations,
 		...fileMutations,
 		...workspaceMutations,
+		...ruleMutations,
 		...metadataMutations,
 
 		// Placeholder resolvers for permissions (TODO)
@@ -76,6 +79,7 @@ export const resolvers: Resolvers = {
 	ProviderConfigField: providerConfigFieldResolvers,
 	OAuthProviderCredential: oauthProviderCredentialResolvers,
 	File: fileResolvers,
+	FileRule: fileRuleResolvers,
 	Workspace: workspaceResolvers,
 	WorkspaceMember: workspaceMemberResolvers,
 	WorkspaceInvite: workspaceInviteResolvers,

@@ -44,7 +44,6 @@ export const folderMutations: MutationResolvers = {
 			user.userId,
 			args.input.name,
 			args.input.parentId ?? undefined,
-			args.input.providerId ?? undefined,
 			workspaceId,
 		);
 	},

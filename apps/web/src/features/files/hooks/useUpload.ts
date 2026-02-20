@@ -1,3 +1,4 @@
+import { matchesRule, type RuleConditionGroups } from "@drivebase/utils";
 import axios from "axios";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -9,21 +10,25 @@ import {
 } from "@/features/files/hooks/useFiles";
 import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
 import { useProviders } from "@/features/providers/hooks/useProviders";
+import { useFileRules } from "@/features/rules/hooks/useRules";
 import type { StorageProvider } from "@/gql/graphql";
 
 const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
 
 interface UseUploadOptions {
 	currentFolderId: string | undefined;
+	currentFolderPath: string | undefined;
 	onUploadComplete: () => void;
 }
 
 export function useUpload({
 	currentFolderId,
+	currentFolderPath,
 	onUploadComplete,
 }: UseUploadOptions) {
 	const { token } = useAuthStore();
 	const { data: providersData } = useProviders();
+	const [rulesResult] = useFileRules();
 	const [, requestUpload] = useRequestUpload();
 	const [, deleteFile] = useDeleteFile();
 
@@ -36,6 +41,17 @@ export function useUpload({
 	const activeProviders = useMemo(() => {
 		return providersData?.storageProviders.filter((p) => p.isActive) || [];
 	}, [providersData]);
+
+	const activeProviderIds = useMemo(
+		() => new Set(activeProviders.map((p) => p.id)),
+		[activeProviders],
+	);
+
+	const enabledRules = useMemo(() => {
+		return (rulesResult.data?.fileRules ?? [])
+			.filter((r) => r.enabled)
+			.sort((a, b) => a.priority - b.priority);
+	}, [rulesResult.data]);
 
 	const updateQueueItem = useCallback(
 		(id: string, patch: Partial<UploadQueueItem>) => {
@@ -50,6 +66,28 @@ export function useUpload({
 	const { uploadChunked, cancelSession, retrySession } = useChunkedUpload({
 		onProgress: updateQueueItem,
 	});
+
+	/**
+	 * Find the destination folder path for a file.
+	 * Priority: matching rule's destinationFolder > current browsed folder.
+	 */
+	const getDestinationPath = (file: File): string | undefined => {
+		for (const rule of enabledRules) {
+			if (
+				activeProviderIds.has(rule.destinationProviderId) &&
+				matchesRule(rule.conditions as RuleConditionGroups, {
+					name: file.name,
+					mimeType: file.type,
+					size: file.size,
+				})
+			) {
+				if (rule.destinationFolder?.virtualPath) {
+					return rule.destinationFolder.virtualPath;
+				}
+			}
+		}
+		return currentFolderPath;
+	};
 
 	const uploadSingleFile = async (
 		file: File,
@@ -169,6 +207,7 @@ export function useUpload({
 			size: file.size,
 			progress: 0,
 			status: "queued",
+			destinationPath: getDestinationPath(file),
 		}));
 		setUploadQueue((prev) => [...prev, ...queueItems]);
 
@@ -196,8 +235,28 @@ export function useUpload({
 		if (activeProviders.length === 1) {
 			handleUploadQueue(incomingFiles, activeProviders[0].id);
 		} else if (activeProviders.length > 1) {
-			setSelectedFiles(incomingFiles);
-			setIsUploadDialogOpen(true);
+			// Skip the provider dialog if every file is covered by a matching rule
+			// whose destination provider is currently active.
+			const allFilesHaveRule = incomingFiles.every((file) =>
+				enabledRules.some(
+					(rule) =>
+						activeProviderIds.has(rule.destinationProviderId) &&
+						matchesRule(rule.conditions as RuleConditionGroups, {
+							name: file.name,
+							mimeType: file.type,
+							size: file.size,
+						}),
+				),
+			);
+
+			if (allFilesHaveRule) {
+				// The backend will apply the matching rule and route each file to
+				// the correct provider; pass the first active provider as a placeholder.
+				handleUploadQueue(incomingFiles, activeProviders[0].id);
+			} else {
+				setSelectedFiles(incomingFiles);
+				setIsUploadDialogOpen(true);
+			}
 		} else {
 			toast.error(
 				"No active storage providers found. Please connect a provider first.",

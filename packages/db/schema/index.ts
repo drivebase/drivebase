@@ -3,6 +3,7 @@
  */
 
 export * from "./activities";
+export * from "./file-rules";
 export * from "./files";
 export * from "./folders";
 export * from "./permissions";

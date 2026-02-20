@@ -16,5 +16,17 @@
 	},
 	"files": {
 		"includes": ["**", "!src/locales"]
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["src/features/rules/components/ConditionGroupEditor.tsx"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noArrayIndexKey": "off"
+					}
+				}
+			}
+		}
+	]
 }

@@ -43,7 +43,6 @@ export async function syncProvider(
 	const provider = await getProviderInstance(providerRecord);
 
 	const seenFileRemoteIds: string[] = [];
-	const seenFolderRemoteIds: string[] = [];
 	let processedCount = 0;
 
 	// Helper to sync a folder recursively
@@ -61,36 +60,31 @@ export async function syncProvider(
 				limit: 100,
 			});
 
-			// Process Folders
+			// Process Folders - folders are DB-only, matched by virtualPath
 			for (const folder of listResult.folders) {
-				// Clean name to avoid path issues
 				const cleanName = folder.name.replace(/\//g, "-");
 				const virtualPath = `${parentPath}${cleanName}/`;
 
-				seenFolderRemoteIds.push(folder.remoteId);
-
-				// Check if folder exists by remoteId
+				// Check if folder exists by virtualPath
 				let [dbFolder] = await db
 					.select()
 					.from(folders)
 					.where(
 						and(
-							eq(folders.remoteId, folder.remoteId),
-							eq(folders.providerId, providerId),
+							eq(folders.virtualPath, virtualPath),
+							eq(folders.workspaceId, workspaceId),
 						),
 					)
 					.limit(1);
 
 				if (!dbFolder) {
-					// Create new folder
 					try {
 						[dbFolder] = await db
 							.insert(folders)
 							.values({
 								name: cleanName,
 								virtualPath,
-								remoteId: folder.remoteId,
-								providerId,
+								workspaceId,
 								parentId: parentDbId,
 								createdBy: userId,
 								updatedAt: folder.modifiedAt,
@@ -102,13 +96,11 @@ export async function syncProvider(
 						continue;
 					}
 				} else {
-					// Update existing folder
 					try {
 						[dbFolder] = await db
 							.update(folders)
 							.set({
 								name: cleanName,
-								virtualPath,
 								parentId: parentDbId,
 								updatedAt: folder.modifiedAt,
 								isDeleted: false,
@@ -142,7 +134,6 @@ export async function syncProvider(
 
 				seenFileRemoteIds.push(file.remoteId);
 
-				// Upsert file
 				try {
 					const [existingFile] = await db
 						.select()
@@ -206,8 +197,8 @@ export async function syncProvider(
 	try {
 		await syncFolder(providerRecord.rootFolderId || undefined, null, "/");
 
-		// Prune deleted files/folders if requested
-		if (pruneDeleted) {
+		// Prune deleted files if requested (only files are tied to providers)
+		if (pruneDeleted && seenFileRemoteIds.length > 0) {
 			pubSub.publish("providerSyncProgress", providerId, {
 				providerId,
 				processed: processedCount,
@@ -215,29 +206,15 @@ export async function syncProvider(
 				message: "Pruning deleted items...",
 			});
 
-			if (seenFileRemoteIds.length > 0) {
-				await db
-					.update(files)
-					.set({ isDeleted: true })
-					.where(
-						and(
-							eq(files.providerId, providerId),
-							notInArray(files.remoteId, seenFileRemoteIds),
-						),
-					);
-			}
-
-			if (seenFolderRemoteIds.length > 0) {
-				await db
-					.update(folders)
-					.set({ isDeleted: true })
-					.where(
-						and(
-							eq(folders.providerId, providerId),
-							notInArray(folders.remoteId, seenFolderRemoteIds),
-						),
-					);
-			}
+			await db
+				.update(files)
+				.set({ isDeleted: true })
+				.where(
+					and(
+						eq(files.providerId, providerId),
+						notInArray(files.remoteId, seenFileRemoteIds),
+					),
+				);
 		}
 
 		const quota = await provider.getQuota();

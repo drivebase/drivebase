@@ -21,10 +21,8 @@ interface ExportPayload {
 		id: string;
 		virtualPath: string;
 		name: string;
-		remoteId: string | null;
 		parentId: string | null;
 		starred: boolean;
-		providerId: string | null;
 		createdAt: string;
 	}>;
 	files: Array<{
@@ -70,42 +68,29 @@ export async function buildExportPayload(
 		throw new Error("Workspace not found");
 	}
 
-	// Get provider IDs for this workspace to filter files/folders
+	// Get providers for this workspace
 	const providerRows = await db
 		.select()
 		.from(storageProviders)
 		.where(eq(storageProviders.workspaceId, workspaceId));
 
-	const providerIds = providerRows.map((p) => p.id);
-
-	// Query non-deleted folders belonging to workspace providers
-	const folderRows =
-		providerIds.length > 0
-			? await db
-					.select({
-						id: folders.id,
-						virtualPath: folders.virtualPath,
-						name: folders.name,
-						remoteId: folders.remoteId,
-						parentId: folders.parentId,
-						starred: folders.starred,
-						providerId: folders.providerId,
-						createdAt: folders.createdAt,
-					})
-					.from(folders)
-					.innerJoin(
-						storageProviders,
-						eq(folders.providerId, storageProviders.id),
-					)
-					.where(
-						and(
-							eq(storageProviders.workspaceId, workspaceId),
-							eq(folders.isDeleted, false),
-						),
-					)
-			: [];
+	// Query non-deleted folders belonging to this workspace
+	const folderRows = await db
+		.select({
+			id: folders.id,
+			virtualPath: folders.virtualPath,
+			name: folders.name,
+			parentId: folders.parentId,
+			starred: folders.starred,
+			createdAt: folders.createdAt,
+		})
+		.from(folders)
+		.where(
+			and(eq(folders.workspaceId, workspaceId), eq(folders.isDeleted, false)),
+		);
 
 	// Query non-deleted files belonging to workspace providers
+	const providerIds = providerRows.map((p) => p.id);
 	const fileRows =
 		providerIds.length > 0
 			? await db

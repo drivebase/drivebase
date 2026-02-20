@@ -1,0 +1,66 @@
+"""
+File placement rules for automatic file routing on upload
+"""
+type FileRule {
+	id: ID!
+	name: String!
+	priority: Int!
+	enabled: Boolean!
+	conditions: JSON!
+	destinationProviderId: ID!
+	destinationFolderId: ID
+	destinationProvider: StorageProvider!
+	destinationFolder: Folder
+	createdAt: DateTime!
+	updatedAt: DateTime!
+}
+
+extend type Query {
+	"""
+	List all file rules for the current workspace
+	"""
+	fileRules: [FileRule!]!
+
+	"""
+	Get a single file rule by ID
+	"""
+	fileRule(id: ID!): FileRule!
+}
+
+input CreateFileRuleInput {
+	name: String!
+	conditions: JSON!
+	destinationProviderId: ID!
+	destinationFolderId: ID
+	enabled: Boolean
+}
+
+input UpdateFileRuleInput {
+	name: String
+	conditions: JSON
+	destinationProviderId: ID
+	destinationFolderId: ID
+	enabled: Boolean
+}
+
+extend type Mutation {
+	"""
+	Create a new file placement rule
+	"""
+	createFileRule(input: CreateFileRuleInput!): FileRule!
+
+	"""
+	Update an existing file placement rule
+	"""
+	updateFileRule(id: ID!, input: UpdateFileRuleInput!): FileRule!
+
+	"""
+	Delete a file placement rule (soft delete)
+	"""
+	deleteFileRule(id: ID!): Boolean!
+
+	"""
+	Reorder file rules by providing ordered list of rule IDs
+	"""
+	reorderFileRules(orderedIds: [ID!]!): [FileRule!]!
+}
