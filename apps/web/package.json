@@ -10,7 +10,7 @@
 		"format": "biome format",
 		"lint": "biome lint",
 		"check": "biome check",
-		"generate": "bun run codegen && bunx tsr generate",
+		"generate": "bun run codegen && bunx tsr generate .",
 		"check-types": "tsc --noEmit",
 		"codegen": "bunx graphql-codegen",
 		"i18n:extract": "lingui extract",
