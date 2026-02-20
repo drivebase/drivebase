@@ -1,5 +1,12 @@
 import { Shield, UserSquare2, Users } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Team Collaboration - Drivebase",
+  description:
+    "Team Collaboration helps teams share files, manage workspace access, and apply granular permissions in Drivebase.",
+};
 
 export default function TeamCollaborationPage() {
   return (

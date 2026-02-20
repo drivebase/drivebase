@@ -1,5 +1,12 @@
 import { FileStack, Route, SlidersHorizontal } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Smart Upload - Drivebase",
+  description:
+    "Smart Upload routes files automatically based on rules so each upload lands in the right storage provider.",
+};
 
 export default function SmartUploadPage() {
   return (

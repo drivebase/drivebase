@@ -1,5 +1,12 @@
 import { ArrowRightLeft, Cloud, TimerReset } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Cloud Transfers - Drivebase",
+  description:
+    "Cloud Transfers moves files between storage providers from one workflow, without manual download and re-upload steps.",
+};
 
 export default function CloudTransfersPage() {
   return (
