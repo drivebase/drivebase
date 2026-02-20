@@ -27,7 +27,7 @@ export function VaultUnlockPrompt({ onUnlocked }: VaultUnlockPromptProps) {
 		try {
 			await unlockVault(passphrase);
 			onUnlocked();
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Incorrect passphrase. Please try again.");
 		} finally {
 			setIsLoading(false);
@@ -45,7 +45,7 @@ export function VaultUnlockPrompt({ onUnlocked }: VaultUnlockPromptProps) {
 			try {
 				await restoreFromBackup(file, restorePassphrase);
 				onUnlocked();
-			} catch (error) {
+			} catch (_error) {
 				toast.error(
 					"Failed to restore from backup. Check your passphrase and backup file.",
 				);

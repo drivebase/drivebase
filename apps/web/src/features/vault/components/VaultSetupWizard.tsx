@@ -71,9 +71,12 @@ export function VaultSetupWizard({ onComplete }: VaultSetupWizardProps) {
 
 	const passphraseStrength = useCallback((p: string) => {
 		if (p.length === 0) return null;
-		if (p.length < 8) return { label: "Too short", color: "bg-red-500", width: "w-1/4" };
-		if (p.length < 12) return { label: "Weak", color: "bg-orange-500", width: "w-2/4" };
-		if (p.length < 16) return { label: "Good", color: "bg-yellow-500", width: "w-3/4" };
+		if (p.length < 8)
+			return { label: "Too short", color: "bg-red-500", width: "w-1/4" };
+		if (p.length < 12)
+			return { label: "Weak", color: "bg-orange-500", width: "w-2/4" };
+		if (p.length < 16)
+			return { label: "Good", color: "bg-yellow-500", width: "w-3/4" };
 		return { label: "Strong", color: "bg-green-500", width: "w-full" };
 	}, []);
 
@@ -275,9 +278,7 @@ function PassphraseStep({
 					/>
 				</div>
 
-				{error && (
-					<p className="text-sm text-destructive">{error}</p>
-				)}
+				{error && <p className="text-sm text-destructive">{error}</p>}
 			</div>
 
 			<Button
@@ -298,7 +299,11 @@ interface BackupStepProps {
 	onComplete: () => void;
 }
 
-function BackupStep({ backupDownloaded, onDownload, onComplete }: BackupStepProps) {
+function BackupStep({
+	backupDownloaded,
+	onDownload,
+	onComplete,
+}: BackupStepProps) {
 	return (
 		<div className="space-y-6 flex-1 flex flex-col">
 			<div className="space-y-1.5">

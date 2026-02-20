@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
 import {
 	useDeleteVaultFile,
 	useRenameVaultFile,
@@ -9,6 +8,7 @@ import {
 	useStarVaultFile,
 	useUnstarVaultFile,
 } from "@/features/vault/hooks/useVault";
+import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
 
 interface VaultFile {
 	id: string;
@@ -77,7 +77,7 @@ export function useVaultFileActions(onRefresh?: () => void) {
 				toast.error(`Failed to download ${file.name}: ${message}`);
 			}
 		},
-		[requestVaultDownload, decryptDownload],
+		[requestVaultDownload, decryptDownload, token],
 	);
 
 	/**
