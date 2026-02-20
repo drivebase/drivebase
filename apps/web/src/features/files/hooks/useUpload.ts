@@ -17,11 +17,13 @@ const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
 
 interface UseUploadOptions {
 	currentFolderId: string | undefined;
+	currentFolderPath: string | undefined;
 	onUploadComplete: () => void;
 }
 
 export function useUpload({
 	currentFolderId,
+	currentFolderPath,
 	onUploadComplete,
 }: UseUploadOptions) {
 	const { token } = useAuthStore();
@@ -64,6 +66,28 @@ export function useUpload({
 	const { uploadChunked, cancelSession, retrySession } = useChunkedUpload({
 		onProgress: updateQueueItem,
 	});
+
+	/**
+	 * Find the destination folder path for a file.
+	 * Priority: matching rule's destinationFolder > current browsed folder.
+	 */
+	const getDestinationPath = (file: File): string | undefined => {
+		for (const rule of enabledRules) {
+			if (
+				activeProviderIds.has(rule.destinationProviderId) &&
+				matchesRule(rule.conditions as RuleConditionGroups, {
+					name: file.name,
+					mimeType: file.type,
+					size: file.size,
+				})
+			) {
+				if (rule.destinationFolder?.virtualPath) {
+					return rule.destinationFolder.virtualPath;
+				}
+			}
+		}
+		return currentFolderPath;
+	};
 
 	const uploadSingleFile = async (
 		file: File,
@@ -183,6 +207,7 @@ export function useUpload({
 			size: file.size,
 			progress: 0,
 			status: "queued",
+			destinationPath: getDestinationPath(file),
 		}));
 		setUploadQueue((prev) => [...prev, ...queueItems]);
 

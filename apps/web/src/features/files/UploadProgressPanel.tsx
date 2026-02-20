@@ -1,4 +1,5 @@
 import { CheckCircle2, Loader2, RefreshCw, X, XCircle } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
@@ -21,6 +22,7 @@ export interface UploadQueueItem {
 	phase?: "client_to_server" | "server_to_provider";
 	canCancel?: boolean;
 	canRetry?: boolean;
+	destinationPath?: string;
 }
 
 interface UploadProgressPanelProps {
@@ -156,7 +158,20 @@ export function UploadProgressPanel({
 						<Progress value={item.progress} className="h-1.5" />
 						<div className="flex items-center justify-between">
 							<div className="text-xs text-muted-foreground">
-								{getStatusText(item)}
+								{item.status === "success" && item.destinationPath ? (
+									<>
+										Uploaded to{" "}
+										<Link
+											to="/files"
+											search={{ path: item.destinationPath }}
+											className="text-primary underline underline-offset-2 hover:text-primary/80"
+										>
+											{item.destinationPath}
+										</Link>
+									</>
+								) : (
+									getStatusText(item)
+								)}
 							</div>
 							{getPhaseLabel(item) ? (
 								<div className="text-xs text-muted-foreground italic">
