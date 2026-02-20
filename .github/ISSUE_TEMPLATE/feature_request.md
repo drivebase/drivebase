@@ -2,14 +2,11 @@
 name: Feature request
 about: Suggest an idea
 title: ''
-labels: enhancement
-assignees: ''
+labels: 
+    - 'type: feature'
+    - 'status: needs triage'
+assignees: 'mxvsh'
 ---
 
-**What problem does this solve?**
+**Summary**
 
-
-**What should happen?**
-
-
-**Anything else?**
