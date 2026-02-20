@@ -1,0 +1,124 @@
+"""
+E2EE Vault — private encrypted file storage per user.
+The server stores only encrypted key material; plaintext never leaves the client.
+"""
+type Vault {
+	id: ID!
+	userId: ID!
+	publicKey: String!
+	encryptedPrivateKey: String!
+	kekSalt: String!
+	createdAt: DateTime!
+	updatedAt: DateTime!
+}
+
+type VaultUploadResponse {
+	fileId: ID!
+	uploadUrl: String
+	uploadFields: JSON
+	useDirectUpload: Boolean!
+}
+
+type VaultDownloadResponse {
+	fileId: ID!
+	downloadUrl: String
+	useDirectDownload: Boolean!
+	encryptedFileKey: String!
+}
+
+extend type Query {
+	"""
+	Get the current user's vault (null if not set up yet)
+	"""
+	myVault: Vault
+
+	"""
+	Get files and folders inside the vault at a given path
+	"""
+	vaultContents(path: String!): PathContents!
+}
+
+extend type Mutation {
+	"""
+	Create the vault with client-generated key material
+	"""
+	setupVault(input: SetupVaultInput!): Vault!
+
+	"""
+	Re-encrypt private key with a new passphrase-derived KEK
+	"""
+	changeVaultPassphrase(input: ChangeVaultPassphraseInput!): Vault!
+
+	"""
+	Request an upload slot for an encrypted file inside the vault
+	"""
+	requestVaultUpload(input: RequestVaultUploadInput!): VaultUploadResponse!
+
+	"""
+	Get a download URL plus the encrypted file key for decryption
+	"""
+	requestVaultDownload(id: ID!): VaultDownloadResponse!
+
+	"""
+	Create a folder inside the vault
+	"""
+	createVaultFolder(name: String!, parentId: ID): Folder!
+
+	"""
+	Delete a vault file (soft delete)
+	"""
+	deleteVaultFile(id: ID!): Boolean!
+
+	"""
+	Rename a vault file
+	"""
+	renameVaultFile(id: ID!, name: String!): File!
+
+	"""
+	Star a vault file
+	"""
+	starVaultFile(id: ID!): File!
+
+	"""
+	Unstar a vault file
+	"""
+	unstarVaultFile(id: ID!): File!
+
+	"""
+	Initiate a chunked upload for a large encrypted file
+	"""
+	initiateVaultChunkedUpload(
+		input: InitiateVaultChunkedUploadInput!
+	): ChunkedUploadSession!
+}
+
+input SetupVaultInput {
+	publicKey: String!
+	encryptedPrivateKey: String!
+	kekSalt: String!
+}
+
+input ChangeVaultPassphraseInput {
+	encryptedPrivateKey: String!
+	kekSalt: String!
+}
+
+input RequestVaultUploadInput {
+	name: String!
+	mimeType: String!
+	size: Float!
+	folderId: ID
+	providerId: ID!
+	encryptedFileKey: String!
+}
+
+input InitiateVaultChunkedUploadInput {
+	name: String!
+	mimeType: String!
+	totalSize: Float!
+	chunkSize: Float
+	folderId: ID
+	providerId: ID!
+	encryptedFileKey: String!
+	encryptedChunkSize: Int
+}
