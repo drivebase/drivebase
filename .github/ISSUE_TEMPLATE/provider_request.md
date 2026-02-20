@@ -2,8 +2,10 @@
 name: Storage provider request
 about: Request a new storage provider integration
 title: '[PROVIDER] '
-labels: enhancement, provider
-assignees: ''
+labels:
+    - 'type: provider request'
+    - 'status: needs triage'
+assignees: 'mxvsh'
 ---
 
 **Which provider?**

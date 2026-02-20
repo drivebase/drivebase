@@ -3,7 +3,7 @@ name: Bug report
 about: Something isn't working
 title: ''
 labels: 'status: needs-triage'
-assignees: ''
+assignees: 'mxvsh'
 ---
 
 **What happened?**
