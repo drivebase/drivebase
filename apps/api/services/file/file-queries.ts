@@ -35,6 +35,35 @@ export async function getFile(
 }
 
 /**
+ * Get file by ID for proxy upload/download — includes vault files.
+ * Used by the upload/download proxy handlers which serve both regular and vault files.
+ */
+export async function getFileForProxy(
+	db: Database,
+	fileId: string,
+	workspaceId: string,
+) {
+	const [file] = await db
+		.select()
+		.from(files)
+		.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
+		.where(
+			and(
+				eq(files.id, fileId),
+				eq(files.isDeleted, false),
+				eq(storageProviders.workspaceId, workspaceId),
+			),
+		)
+		.limit(1);
+
+	if (!file?.files) {
+		throw new NotFoundError("File");
+	}
+
+	return file.files;
+}
+
+/**
  * List files in a folder (excludes vault files)
  */
 export async function listFiles(

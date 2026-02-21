@@ -22,10 +22,14 @@ export async function handleUploadProxy(c: Context<AppEnv>): Promise<Response> {
 	try {
 		const db = getDb();
 		const fileService = new FileService(db);
-		const file = await fileService.getFile(fileId, user.userId);
+		const workspaceId = c.req.header("x-workspace-id") ?? undefined;
+		const file = await fileService.getFileForProxy(
+			fileId,
+			user.userId,
+			workspaceId,
+		);
 
 		const providerService = new ProviderService(db);
-		const workspaceId = c.req.header("x-workspace-id") ?? undefined;
 		const providerRecord = await providerService.getProvider(
 			file.providerId,
 			user.userId,

@@ -3,6 +3,7 @@ import { deleteFile, moveFile, renameFile } from "./file/file-mutations";
 import {
 	getContents,
 	getFile,
+	getFileForProxy,
 	getStarredFiles,
 	listFiles,
 	searchFiles,
@@ -53,6 +54,19 @@ export class FileService {
 			preferredWorkspaceId,
 		);
 		return getFile(this.db, fileId, userId, workspaceId);
+	}
+
+	async getFileForProxy(
+		fileId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return getFileForProxy(this.db, fileId, workspaceId);
 	}
 
 	async listFiles(
