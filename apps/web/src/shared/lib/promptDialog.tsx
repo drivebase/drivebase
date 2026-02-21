@@ -17,6 +17,7 @@ type PromptState = {
 	defaultValue: string;
 	placeholder: string;
 	submitLabel: string;
+	inputType: string;
 	resolve: ((value: string | null) => void) | null;
 };
 
@@ -27,6 +28,7 @@ const initialState: PromptState = {
 	defaultValue: "",
 	placeholder: "",
 	submitLabel: "Submit",
+	inputType: "text",
 	resolve: null,
 };
 
@@ -44,6 +46,7 @@ export function promptDialog(
 		defaultValue?: string;
 		placeholder?: string;
 		submitLabel?: string;
+		inputType?: string;
 	},
 ): Promise<string | null> {
 	return new Promise((resolve) => {
@@ -58,6 +61,7 @@ export function promptDialog(
 				defaultValue: options?.defaultValue ?? "",
 				placeholder: options?.placeholder ?? "",
 				submitLabel: options?.submitLabel ?? "Submit",
+				inputType: options?.inputType ?? "text",
 			},
 			resolve,
 		);
@@ -115,6 +119,7 @@ export function PromptDialogHost() {
 					<div className="py-4">
 						<Input
 							ref={inputRef}
+							type={state.inputType}
 							value={value}
 							onChange={(e) => setValue(e.target.value)}
 							placeholder={state.placeholder}
