@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/drivebase/drivebase/compare/v2.1.0...v2.1.1) (2026-02-21)
+
+
+### Bug Fixes
+
+* update trigger logic with latestGithubTag ([7e583d0](https://github.com/drivebase/drivebase/commit/7e583d071735fb00bc7f34ee414c0d274bbad456))
+
 # [2.1.0](https://github.com/drivebase/drivebase/compare/v2.0.0...v2.1.0) (2026-02-21)
 
 
