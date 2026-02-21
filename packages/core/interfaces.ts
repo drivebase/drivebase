@@ -196,6 +196,13 @@ export interface IStorageProvider {
 	getFolderMetadata(remoteId: string): Promise<FolderMetadata>;
 
 	/**
+	 * Find a folder by name in a parent directory.
+	 * Used to avoid creating duplicate root folders on reconnect.
+	 * @returns Remote ID of the folder if found, null otherwise
+	 */
+	findFolder?(name: string, parentId?: string): Promise<string | null>;
+
+	/**
 	 * Cleanup resources
 	 */
 	cleanup(): Promise<void>;
