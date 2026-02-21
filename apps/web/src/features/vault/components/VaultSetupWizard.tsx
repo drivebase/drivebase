@@ -180,7 +180,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 						color: "text-amber-500",
 						bg: "bg-amber-500/10",
 						title: "Backup your key",
-						desc: "Save your backup key. If you forget your passphrase, your files cannot be recovered.",
+						desc: "Save your backup file. If you forget your passphrase, you can restore access using the backup file alone.",
 					},
 				].map(({ icon: Icon, color, bg, title, desc }) => (
 					<div
@@ -309,16 +309,16 @@ function BackupStep({
 			<div className="space-y-1.5">
 				<h1 className="text-2xl font-bold tracking-tight">Save Backup Key</h1>
 				<p className="text-muted-foreground text-sm leading-relaxed">
-					Download your backup key and store it safely. Without it, you cannot
-					recover your vault if you forget your passphrase.
+					This file is your only recovery key. Anyone with it can restore access
+					to your vault — keep it safe.
 				</p>
 			</div>
 
 			<div className="flex-1 flex flex-col gap-4">
 				<div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
 					<p className="text-sm text-amber-700 dark:text-amber-400 font-medium">
-						Warning: If you lose your passphrase and backup key, your encrypted
-						files are permanently unrecoverable.
+						Warning: If you lose this backup file, your encrypted files are
+						permanently unrecoverable.
 					</p>
 				</div>
 

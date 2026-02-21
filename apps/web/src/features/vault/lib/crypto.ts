@@ -356,40 +356,124 @@ export async function getKeyFingerprint(
 // ── Backup / Restore ──────────────────────────────────────────────────────────
 
 export interface VaultBackup {
-	version: 1;
+	version: 2;
 	publicKey: JsonWebKey;
 	encryptedPrivateKey: string;
 	kekSalt: string;
+	recoveryKey: string;
+	recoveryEncryptedPrivateKey: string;
 	createdAt: string;
 }
 
 /**
- * Serialise vault key material to a JSON backup object.
+ * Generate a random 32-byte recovery key, returned as Base64.
+ */
+export function generateRecoveryKey(): string {
+	return bufferToBase64(randomBytes(32));
+}
+
+/**
+ * Encrypt the private key using a raw recovery key (base64-encoded 32 bytes).
+ * The recovery key is imported as AES-GCM-256 raw material.
+ */
+export async function encryptPrivateKeyWithRecoveryKey(
+	privateKey: CryptoKey,
+	recoveryKeyB64: string,
+): Promise<string> {
+	const keyBytes = base64ToBuffer(recoveryKeyB64) as Uint8Array<ArrayBuffer>;
+	const aesKey = await crypto.subtle.importKey(
+		"raw",
+		keyBytes,
+		{ name: "AES-GCM", length: AES_KEY_LENGTH },
+		false,
+		["encrypt"],
+	);
+
+	const jwk = await crypto.subtle.exportKey("jwk", privateKey);
+	const plaintext = new TextEncoder().encode(JSON.stringify(jwk));
+	const iv = randomBytes(IV_LENGTH);
+
+	const ciphertext = await crypto.subtle.encrypt(
+		{ name: "AES-GCM", iv },
+		aesKey,
+		plaintext,
+	);
+
+	const result = new Uint8Array(iv.byteLength + ciphertext.byteLength);
+	result.set(iv, 0);
+	result.set(new Uint8Array(ciphertext), iv.byteLength);
+	return bufferToBase64(result);
+}
+
+/**
+ * Decrypt the private key using a raw recovery key (base64-encoded 32 bytes).
+ */
+export async function decryptPrivateKeyWithRecoveryKey(
+	encryptedData: string,
+	recoveryKeyB64: string,
+): Promise<CryptoKey> {
+	const keyBytes = base64ToBuffer(recoveryKeyB64) as Uint8Array<ArrayBuffer>;
+	const aesKey = await crypto.subtle.importKey(
+		"raw",
+		keyBytes,
+		{ name: "AES-GCM", length: AES_KEY_LENGTH },
+		false,
+		["decrypt"],
+	);
+
+	const data = base64ToBuffer(encryptedData);
+	const iv = data.slice(0, IV_LENGTH);
+	const ciphertext = data.slice(IV_LENGTH);
+
+	const plaintext = await crypto.subtle.decrypt(
+		{ name: "AES-GCM", iv },
+		aesKey,
+		ciphertext,
+	);
+
+	const jwk: JsonWebKey = JSON.parse(new TextDecoder().decode(plaintext));
+	return crypto.subtle.importKey(
+		"jwk",
+		jwk,
+		{ name: "ECDH", namedCurve: "P-256" },
+		false,
+		["deriveKey"],
+	);
+}
+
+/**
+ * Serialise vault key material to a JSON backup object (v2).
  */
 export function createBackup(
 	publicKey: JsonWebKey,
 	encryptedPrivateKey: string,
 	kekSalt: string,
+	recoveryKey: string,
+	recoveryEncryptedPrivateKey: string,
 ): VaultBackup {
 	return {
-		version: 1,
+		version: 2,
 		publicKey,
 		encryptedPrivateKey,
 		kekSalt,
+		recoveryKey,
+		recoveryEncryptedPrivateKey,
 		createdAt: new Date().toISOString(),
 	};
 }
 
 /**
- * Parse and validate a backup JSON blob.
+ * Parse and validate a backup JSON blob (v2 only).
  */
 export function parseBackup(json: string): VaultBackup {
 	const obj = JSON.parse(json) as Partial<VaultBackup>;
 	if (
-		obj.version !== 1 ||
+		obj.version !== 2 ||
 		!obj.publicKey ||
 		!obj.encryptedPrivateKey ||
-		!obj.kekSalt
+		!obj.kekSalt ||
+		!obj.recoveryKey ||
+		!obj.recoveryEncryptedPrivateKey
 	) {
 		throw new Error("Invalid backup file format");
 	}
