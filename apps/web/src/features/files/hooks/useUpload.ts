@@ -11,6 +11,7 @@ import {
 import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
 import { useProviders } from "@/features/providers/hooks/useProviders";
 import { useFileRules } from "@/features/rules/hooks/useRules";
+import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
 import type { StorageProvider } from "@/gql/graphql";
 
 const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
@@ -151,6 +152,7 @@ export function useUpload({
 				await axios.post(uploadUrl, formData, { onUploadProgress });
 			} else {
 				const method = useDirectUpload ? "PUT" : "POST";
+				const workspaceId = localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY);
 				await axios({
 					method,
 					url: uploadUrl,
@@ -159,6 +161,9 @@ export function useUpload({
 						"Content-Type": file.type,
 						...(!useDirectUpload && token
 							? { Authorization: `Bearer ${token}` }
+							: {}),
+						...(!useDirectUpload && workspaceId
+							? { "x-workspace-id": workspaceId }
 							: {}),
 					},
 					onUploadProgress,
