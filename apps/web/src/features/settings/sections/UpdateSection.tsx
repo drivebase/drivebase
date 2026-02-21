@@ -8,6 +8,7 @@ export function UpdateSection() {
 	const {
 		currentVersion,
 		latestGithubVersion,
+		latestGithubTag,
 		isUpdateAvailable,
 		isChecking,
 		phase,
@@ -88,7 +89,7 @@ export function UpdateSection() {
 				)}
 
 				<Button
-					onClick={() => triggerUpdate(latestGithubVersion ?? undefined)}
+					onClick={() => triggerUpdate(latestGithubTag ?? undefined)}
 					disabled={!isUpdateAvailable || isInProgress || isSuccess}
 				>
 					{isInProgress ? (

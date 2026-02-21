@@ -3,10 +3,12 @@
 	"version": "1.0.0",
 	"private": true,
 	"dependencies": {
-		"dockerode": "^4.0.4"
+		"dockerode": "^4.0.4",
+		"pino": "^10.3.1"
 	},
 	"devDependencies": {
 		"@types/dockerode": "^3.3.34",
+		"@types/pino": "^7.0.5",
 		"bun-types": "latest"
 	}
 }

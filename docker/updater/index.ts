@@ -1,4 +1,4 @@
-import { getStatus, performUpdate } from "./updater";
+import { getStatus, logger, performUpdate } from "./updater";
 
 const UPDATER_SECRET = process.env.UPDATER_SECRET;
 const PORT = Number(process.env.PORT) || 4500;
@@ -28,6 +28,7 @@ const server = Bun.serve({
 
 		// All other endpoints require auth
 		if (!authorize(request)) {
+			logger.warn({ path: url.pathname }, "Unauthorized request");
 			return json({ error: "Unauthorized" }, 401);
 		}
 
@@ -40,6 +41,7 @@ const server = Bun.serve({
 		if (request.method === "POST" && url.pathname === "/update") {
 			const status = getStatus();
 			if (status.status === "pulling" || status.status === "restarting") {
+				logger.warn({ status: status.status }, "Update already in progress");
 				return json({ error: "Update already in progress", ...status }, 409);
 			}
 
@@ -53,22 +55,28 @@ const server = Bun.serve({
 				// No body or invalid JSON — use default (latest)
 			}
 
+			logger.info(
+				{ targetVersion: targetVersion ?? "latest" },
+				"Update triggered",
+			);
+
 			// Fire and forget — the update runs in the background
-			performUpdate(targetVersion).catch(() => {
-				// Error state is captured in getStatus()
+			performUpdate(targetVersion).catch((err: unknown) => {
+				logger.error({ err }, "Background update failed");
 			});
 
 			return json(getStatus());
 		}
 
+		logger.warn({ method: request.method, path: url.pathname }, "Not found");
 		return json({ error: "Not found" }, 404);
 	},
 });
 
-console.log(`Updater sidecar listening on port ${PORT}`);
+logger.info({ port: PORT }, "Updater sidecar listening");
 
 function shutdown() {
-	console.log("Shutting down...");
+	logger.info("Shutting down");
 	server.stop(true);
 	process.exit(0);
 }

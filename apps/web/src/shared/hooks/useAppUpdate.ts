@@ -18,6 +18,8 @@ export function useAppUpdate() {
 	const [latestGithubVersion, setLatestGithubVersion] = useState<string | null>(
 		null,
 	);
+	// Raw tag from GitHub (e.g. "v2.1.0", "beta") — used as-is when triggering updates
+	const [latestGithubTag, setLatestGithubTag] = useState<string | null>(null);
 	const [isCheckingLatest, setIsCheckingLatest] = useState(false);
 
 	const currentVersion = data?.appMetadata?.version ?? null;
@@ -52,12 +54,14 @@ export function useAppUpdate() {
 					tag_name?: string;
 					name?: string;
 				};
-				const latest = normalizeVersion(payload.tag_name || payload.name || "");
+				const rawTag = payload.tag_name || payload.name || "";
+				const latest = normalizeVersion(rawTag);
 				if (!latest || cancelled) {
 					return;
 				}
 
 				setLatestGithubVersion(latest);
+				setLatestGithubTag(rawTag);
 				localStorage.setItem(LATEST_GITHUB_VERSION_KEY, latest);
 				localStorage.setItem(LOCAL_VERSION_KEY, currentNormalized);
 
@@ -96,6 +100,7 @@ export function useAppUpdate() {
 	return {
 		currentVersion,
 		latestGithubVersion,
+		latestGithubTag,
 		isChecking: fetching || isCheckingLatest,
 		isUpdateAvailable,
 		githubRepo,
