@@ -1,5 +1,23 @@
 # Changelog
 
+# [2.1.0](https://github.com/drivebase/drivebase/compare/v2.0.0...v2.1.0) (2026-02-21)
+
+
+### Bug Fixes
+
+* add an extractable parameter to both decrypt functions ([34bc7c6](https://github.com/drivebase/drivebase/commit/34bc7c67320566dc5083332a35e9468eb1cd73a7))
+* add inputType support to prompt dialog ([52e6e19](https://github.com/drivebase/drivebase/commit/52e6e19430ce017996404c6bd76aa437f3615425))
+* backup recovery key functionality ([5c3cf32](https://github.com/drivebase/drivebase/commit/5c3cf32986c4c1f8a7254871cbc6a55a8692dd8d))
+* complete missing translations ([a0b3b99](https://github.com/drivebase/drivebase/commit/a0b3b99fb2af54382e89fce61b164c5ea9ba4e58))
+* enhance backup download process with passphrase prompt and error handling ([a083215](https://github.com/drivebase/drivebase/commit/a0832153ee49a107fdaf62e294fbe9355d2d669a))
+* exclude vault files from regular file queries ([aa00e58](https://github.com/drivebase/drivebase/commit/aa00e5892211b95ebb15befe313a53c0c54ab44b))
+* proxy download functionality for files ([289b26a](https://github.com/drivebase/drivebase/commit/289b26a66ff8b7f96e3accdcf64f126ccc6726f8))
+* remove unlock requirement for backup download and passphrase change ([082e695](https://github.com/drivebase/drivebase/commit/082e695633de312f169bd9bf7fb6c2f6ee7624b0))
+* sanitize error message in login form ([c25a02b](https://github.com/drivebase/drivebase/commit/c25a02bf2f4443d7ead50152bea6f8b6db767bfa))
+* update .gitignore to include I18n generated files ([68e5e63](https://github.com/drivebase/drivebase/commit/68e5e6310fb37b9658cf4b3b9af47a3ed224cb85))
+* update lint-staged config to correctly ignore message files ([f92ed24](https://github.com/drivebase/drivebase/commit/f92ed24cefd5f666c4ed0f9dd7ef7048322d1bfe))
+* update passphrase fields during vault setup process ([e94393f](https://github.com/drivebase/drivebase/commit/e94393fd01351fde346992302cff41c4f60779ba))
+
 # [2.0.0](https://github.com/drivebase/drivebase/compare/v1.13.0...v2.0.0) (2026-02-20)
 
 
