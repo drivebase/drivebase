@@ -295,6 +295,25 @@ export class TelegramProvider implements IStorageProvider {
 		}
 	}
 
+	/**
+	 * Find a folder (channel) by name
+	 */
+	async findFolder(name: string, _parentId?: string): Promise<string | null> {
+		const client = this.ensureInitialized();
+
+		try {
+			const dialogs = await client.getDialogs({});
+			for (const dialog of dialogs) {
+				if (dialog.isChannel && dialog.title === name && dialog.entity) {
+					return String(dialog.entity.id);
+				}
+			}
+			return null;
+		} catch {
+			return null;
+		}
+	}
+
 	async createFolder(options: CreateFolderOptions): Promise<string> {
 		const client = this.ensureInitialized();
 

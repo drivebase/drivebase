@@ -320,6 +320,29 @@ export class GoogleDriveProvider implements IStorageProvider {
 	}
 
 	/**
+	 * Find a folder by name in a parent directory
+	 */
+	async findFolder(name: string, parentId?: string): Promise<string | null> {
+		const drive = this.ensureInitialized();
+
+		try {
+			const parent = parentId ?? "root";
+			const q = `name = '${name.replace(/'/g, "\\'")}' and mimeType = 'application/vnd.google-apps.folder' and '${parent}' in parents and trashed = false`;
+
+			const response = await drive.files.list({
+				q,
+				fields: "files(id)",
+				pageSize: 1,
+			});
+
+			const folderId = response.data.files?.[0]?.id;
+			return folderId ?? null;
+		} catch {
+			return null;
+		}
+	}
+
+	/**
 	 * Create a folder in Google Drive
 	 */
 	async createFolder(options: CreateFolderOptions): Promise<string> {
