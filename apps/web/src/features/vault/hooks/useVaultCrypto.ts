@@ -173,6 +173,7 @@ export function useVaultCrypto() {
 			const privateKey = await decryptPrivateKey(
 				store.encryptedPrivateKey,
 				oldKek,
+				true,
 			);
 
 			// Re-encrypt with new passphrase
@@ -204,6 +205,43 @@ export function useVaultCrypto() {
 	);
 
 	/**
+	 * Decrypt the private key with the given passphrase, generate a fresh
+	 * recovery key, and return a valid v2 VaultBackup ready to download.
+	 */
+	const generateBackup = useCallback(
+		async (passphrase: string): Promise<VaultBackup> => {
+			if (!store.encryptedPrivateKey || !store.kekSalt || !store.publicKey) {
+				throw new Error("No vault key material found.");
+			}
+
+			const salt = base64ToSalt(store.kekSalt);
+			const kek = await deriveKEK(passphrase, salt);
+			// Throws if passphrase is wrong
+			const privateKey = await decryptPrivateKey(
+				store.encryptedPrivateKey,
+				kek,
+				true,
+			);
+
+			const recoveryKey = generateRecoveryKey();
+			const recoveryEncryptedPrivKey = await encryptPrivateKeyWithRecoveryKey(
+				privateKey,
+				recoveryKey,
+			);
+
+			const publicKeyJwk: JsonWebKey = JSON.parse(store.publicKey);
+			return createBackup(
+				publicKeyJwk,
+				store.encryptedPrivateKey,
+				store.kekSalt,
+				recoveryKey,
+				recoveryEncryptedPrivKey,
+			);
+		},
+		[store],
+	);
+
+	/**
 	 * Trigger browser download of a JSON backup file.
 	 */
 	const downloadBackup = useCallback((backup: VaultBackup) => {
@@ -230,6 +268,7 @@ export function useVaultCrypto() {
 			const privateKey = await decryptPrivateKeyWithRecoveryKey(
 				backup.recoveryEncryptedPrivateKey,
 				backup.recoveryKey,
+				true,
 			);
 
 			// Re-encrypt with the new passphrase
@@ -277,6 +316,7 @@ export function useVaultCrypto() {
 		encryptForUpload,
 		decryptDownload,
 		changePassphrase,
+		generateBackup,
 		downloadBackup,
 		restoreFromBackup,
 		getFingerprint,
