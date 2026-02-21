@@ -12,7 +12,7 @@ import { logger } from "../../utils/logger";
 import { FolderService } from "../folder";
 import { ProviderService } from "../provider";
 import { evaluateRules } from "../rules";
-import { getFile } from "./file-queries";
+import { getFile, getFileForProxy } from "./file-queries";
 
 /**
  * Request file upload
@@ -244,6 +244,41 @@ export async function downloadFile(
 	} catch (error) {
 		logger.error({
 			msg: "Download file stream failed",
+			userId,
+			fileId,
+			error,
+		});
+		throw error;
+	}
+}
+
+/**
+ * Download file stream for proxy handler — includes vault files.
+ */
+export async function downloadFileForProxy(
+	db: Database,
+	fileId: string,
+	userId: string,
+	workspaceId: string,
+): Promise<ReadableStream> {
+	logger.debug({ msg: "Downloading file stream (proxy)", userId, fileId });
+	try {
+		const file = await getFileForProxy(db, fileId, workspaceId);
+
+		const providerService = new ProviderService(db);
+		const providerRecord = await providerService.getProvider(
+			file.providerId,
+			userId,
+			workspaceId,
+		);
+		const provider = await providerService.getProviderInstance(providerRecord);
+
+		const stream = await provider.downloadFile(file.remoteId);
+
+		return stream;
+	} catch (error) {
+		logger.error({
+			msg: "Download file stream (proxy) failed",
 			userId,
 			fileId,
 			error,

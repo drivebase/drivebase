@@ -11,6 +11,7 @@ import {
 import { starFile, unstarFile } from "./file/file-stars";
 import {
 	downloadFile,
+	downloadFileForProxy,
 	getFileMetadata,
 	moveFileToProvider,
 	requestDownload,
@@ -122,6 +123,19 @@ export class FileService {
 			preferredWorkspaceId,
 		);
 		return downloadFile(this.db, fileId, userId, workspaceId);
+	}
+
+	async downloadFileForProxy(
+		fileId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	): Promise<ReadableStream> {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return downloadFileForProxy(this.db, fileId, userId, workspaceId);
 	}
 
 	async renameFile(
