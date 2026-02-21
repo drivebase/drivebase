@@ -1,6 +1,6 @@
 # Vault — End-to-End Encrypted Storage
 
-The Vault is a private, per-user encrypted file storage area inside Drivebase. All files are encrypted **client-side** before upload. The server stores only ciphertext and encrypted key material — it never sees plaintext file content or the user's raw private key.
+The Vault is a private, per-user encrypted file area. Files are encrypted client-side before they are sent to the selected storage provider, so providers only receive ciphertext, not plaintext.
 
 ---
 
@@ -247,7 +247,7 @@ Composes the crypto library, vault store, and GraphQL mutations into high-level 
 
 ## Key Security Properties
 
-- **Zero-knowledge server**: The server stores only ciphertext. It cannot decrypt any vault file.
+- **Zero-knowledge model**: Files are encrypted before they are sent to the storage provider, so providers receive ciphertext instead of plaintext.
 - **Passphrase-derived KEK**: The encryption key for the private key is derived from the passphrase and never stored. Forgetting the passphrase = losing access (unless backup is used).
 - **Non-extractable private key**: After decryption, the P-256 private key is imported with `extractable: false` so it cannot be exported from the Web Crypto API.
 - **Tab-close eviction**: The decrypted `CryptoKey` lives only in Zustand memory. Closing or refreshing the tab clears it, requiring re-entry of the passphrase.

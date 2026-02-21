@@ -30,8 +30,8 @@ export default function VaultPage() {
           <Lock className="size-6 text-indigo-400" />
           <h2 className="mt-4 text-xl font-semibold">Private by design</h2>
           <p className="mt-3 text-sm leading-7 text-gray-400">
-            Files are encrypted before they leave the browser, so the backend
-            only handles ciphertext.
+            Files are encrypted before they leave the browser, so storage
+            providers only receive encrypted files.
           </p>
         </article>
         <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">

@@ -14,7 +14,7 @@ Even as the administrator of your own Drivebase instance, you cannot access file
 ## Security Architecture
 
 ### Zero-Knowledge Design
-Drivebase employs a zero-knowledge architecture for the Vault. Vault file ciphertext is stored at your configured storage provider, while Drivebase stores encrypted key material and metadata needed to route access. Neither can decrypt vault content without the user's passphrase-derived keys held client-side.
+Drivebase uses a zero-knowledge architecture for Vault. Files are encrypted before they are sent to your storage provider, so providers only receive encrypted data (ciphertext), not plaintext.
 
 ### Key Hierarchy
 Your Vault is secured by a Passphrase-derived Key Encryption Key (KEK).
