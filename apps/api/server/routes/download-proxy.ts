@@ -22,14 +22,23 @@ export async function handleDownloadProxy(
 	try {
 		const db = getDb();
 		const fileService = new FileService(db);
-		const file = await fileService.getFile(fileId, user.userId);
+		const workspaceId = c.req.header("x-workspace-id") ?? undefined;
+		const file = await fileService.getFileForProxy(
+			fileId,
+			user.userId,
+			workspaceId,
+		);
 
 		logger.debug({
 			msg: "Streaming download from provider",
 			fileId,
 			providerId: file.providerId,
 		});
-		const stream = await fileService.downloadFile(fileId, user.userId);
+		const stream = await fileService.downloadFileForProxy(
+			fileId,
+			user.userId,
+			workspaceId,
+		);
 
 		const encodedName = encodeURIComponent(file.name);
 		return new Response(stream, {
