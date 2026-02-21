@@ -27,6 +27,15 @@ Passphrase
   Encrypted File Content ─── stored in storage provider (S3, local, etc.)
 ```
 
+A separate **recovery key** path also encrypts the private key independently of the passphrase. This is embedded in the backup file and never sent to the server:
+
+```
+random 32 bytes (recovery key)
+    │
+    ▼ imported as raw AES-GCM-256 key
+  Recovery-Encrypted Private Key ─── backup file only, never sent to server
+```
+
 ### Algorithms
 
 | Purpose | Algorithm |
@@ -34,6 +43,8 @@ Passphrase
 | KEK derivation | PBKDF2, SHA-256, 310,000 iterations |
 | Asymmetric keypair | P-256 ECDH (Web Crypto API) |
 | Private key encryption | AES-GCM 256-bit, random 12-byte IV |
+| Recovery key generation | 32 cryptographically random bytes (Web Crypto `getRandomValues`) |
+| Recovery key encryption | AES-GCM 256-bit, raw key import, random 12-byte IV |
 | File key wrapping | ECIES: ephemeral P-256 + HKDF-SHA-256 + AES-GCM |
 | File encryption | AES-GCM 256-bit, random 12-byte IV |
 | Chunk encryption | AES-GCM 256-bit, **deterministic** 12-byte IV (big-endian chunk index) |
@@ -138,6 +149,9 @@ deriveKEK(passphrase: string, salt: Uint8Array): Promise<CryptoKey>
 generateKeyPair(): Promise<CryptoKeyPair>
 encryptPrivateKey(privateKey: CryptoKey, kek: CryptoKey): Promise<string>
 decryptPrivateKey(encryptedData: string, kek: CryptoKey): Promise<CryptoKey>
+generateRecoveryKey(): string                                    // Base64(32 random bytes)
+encryptPrivateKeyWithRecoveryKey(privateKey: CryptoKey, recoveryKeyB64: string): Promise<string>
+decryptPrivateKeyWithRecoveryKey(encryptedData: string, recoveryKeyB64: string): Promise<CryptoKey>
 generateFileKey(): Promise<CryptoKey>
 encryptFileKey(fileKey: CryptoKey, recipientPublicKey: CryptoKey): Promise<string>
 decryptFileKey(encryptedFileKey: string, privateKey: CryptoKey): Promise<CryptoKey>
@@ -147,8 +161,8 @@ encryptChunk(chunk: ArrayBuffer, fileKey: CryptoKey, chunkIndex: number): Promis
 decryptChunk(encryptedChunk: ArrayBuffer, fileKey: CryptoKey, chunkIndex: number): Promise<ArrayBuffer>
 getKeyFingerprint(publicKey: JsonWebKey): Promise<string>
 generateSalt(): Uint8Array<ArrayBuffer>
-createBackup(publicKey, encryptedPrivateKey, kekSalt): string   // JSON
-parseBackup(json: string): BackupData
+createBackup(publicKey, encryptedPrivateKey, kekSalt, recoveryKey, recoveryEncryptedPrivateKey): VaultBackup
+parseBackup(json: string): VaultBackup
 ```
 
 ### Vault Store (`apps/web/src/features/vault/store/vaultStore.ts`)
@@ -171,14 +185,14 @@ Derived:
 
 Composes the crypto library, vault store, and GraphQL mutations into high-level operations:
 
-- `setupVault(passphrase)` — generate keypair → derive KEK → encrypt private key → call `setupVault` mutation → unlock store in memory
+- `setupVault(passphrase)` — generate keypair → derive KEK → encrypt private key → generate recovery key → encrypt private key with recovery key → call `setupVault` mutation → unlock store in memory → return backup object
 - `unlockVault(passphrase)` — derive KEK from stored salt → decrypt stored private key → store `CryptoKey` in memory
 - `lockVault()` — clear `decryptedPrivateKey` from memory
 - `encryptForUpload(file)` — generate fileKey → encrypt file → ECIES-wrap fileKey → return `{ encryptedBlob, encryptedFileKey }`
 - `decryptDownload(encryptedData, encryptedFileKey)` — ECIES-unwrap fileKey → decrypt file → return `ArrayBuffer`
 - `changePassphrase(currentPassphrase, newPassphrase)` — decrypt private key with current passphrase → re-encrypt with new passphrase → call mutation
-- `downloadBackup()` — serialize key material to JSON, trigger browser download
-- `restoreFromBackup(file, passphrase)` — parse JSON → verify by decrypting private key → store in Zustand + call `setupVault` mutation
+- `downloadBackup(backup)` — serialize backup to JSON, trigger browser download
+- `restoreFromBackup(file, newPassphrase)` — parse JSON → decrypt private key using embedded recovery key (no old passphrase needed) → re-encrypt with newPassphrase → call `setupVault` mutation → unlock store
 - `getFingerprint()` — SHA-256 fingerprint of public key (first 32 hex chars)
 
 ### Upload Flow
@@ -217,7 +231,10 @@ Composes the crypto library, vault store, and GraphQL mutations into high-level 
   │
   ├── myVault exists, !isUnlocked ──► VaultUnlockPrompt
   │                                     Passphrase input → unlockVault()
-  │                                     OR: Restore from backup JSON file
+  │                                     OR: Restore from backup key:
+  │                                       1. Upload backup JSON (validated client-side)
+  │                                       2. Set a new passphrase
+  │                                       3. Submit → decrypt via recovery key → re-encrypt → unlock
   │
   └── isUnlocked ────────────────────► VaultFileBrowser
                                         File/folder table (encrypted uploads/downloads)
@@ -234,5 +251,6 @@ Composes the crypto library, vault store, and GraphQL mutations into high-level 
 - **Passphrase-derived KEK**: The encryption key for the private key is derived from the passphrase and never stored. Forgetting the passphrase = losing access (unless backup is used).
 - **Non-extractable private key**: After decryption, the P-256 private key is imported with `extractable: false` so it cannot be exported from the Web Crypto API.
 - **Tab-close eviction**: The decrypted `CryptoKey` lives only in Zustand memory. Closing or refreshing the tab clears it, requiring re-entry of the passphrase.
-- **Backup/restore**: Users can download a backup JSON containing encrypted key material (re-encrypted with a passphrase of their choice). Restoring requires the backup passphrase.
+- **Recovery key backup**: The backup file contains a random 32-byte recovery key alongside the recovery-encrypted private key. Restoring requires only the backup file — no original passphrase. The user sets a new passphrase on restore. The recovery key is never sent to the server.
+- **Passphrase-change resilience**: Changing the passphrase does not invalidate existing backup files, because the recovery key is independent of the passphrase.
 - **Vault isolation**: Vault files never appear in regular file views — all standard file queries explicitly exclude rows with a non-null `vaultId`.
