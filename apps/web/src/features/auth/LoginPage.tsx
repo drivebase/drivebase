@@ -42,7 +42,7 @@ export function LoginPage() {
 		if (result.data?.login) {
 			navigate({ to: "/" });
 		} else if (result.error) {
-			setFormError(result.error.message);
+			setFormError(result.error.message.replace(/^\[GraphQL\]\s*/, ""));
 		}
 	}
 
