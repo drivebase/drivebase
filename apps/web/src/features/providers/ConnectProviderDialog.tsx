@@ -132,7 +132,7 @@ export function ConnectProviderDialog({
 				</DialogHeader>
 				<form onSubmit={submit} className="space-y-4">
 					{isOAuthProvider && (
-						<div className="grid grid-cols-2 gap-2 rounded-md border p-1">
+						<div className="grid grid-cols-2 gap-2  border p-1">
 							<Button
 								type="button"
 								variant={mode === "new" ? "default" : "ghost"}

@@ -41,7 +41,7 @@ export function DroppableBreadcrumb({
 		<div
 			ref={setNodeRef}
 			className={cn(
-				"rounded-md transition-all duration-150",
+				" transition-all duration-150",
 				isOver &&
 					!isCurrentPage &&
 					"ring-2 ring-primary bg-primary/10 scale-105",

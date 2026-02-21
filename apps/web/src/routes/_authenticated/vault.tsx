@@ -216,7 +216,7 @@ function VaultBrowser({ currentPath }: { currentPath: string }) {
 	};
 
 	return (
-		<div className="p-8 flex flex-col gap-6 h-full relative" {...dragHandlers}>
+		<div className="px-8 flex flex-col gap-6 h-full relative" {...dragHandlers}>
 			<FilesToolbar
 				currentPath={currentPath}
 				breadcrumbs={breadcrumbs}

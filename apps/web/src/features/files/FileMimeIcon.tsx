@@ -18,7 +18,7 @@ interface FileMimeIconProps {
 export function FileMimeIcon({ mimeType, className }: FileMimeIconProps) {
 	const kind = getFileKind(mimeType);
 
-	const base = "w-8 h-8 rounded-lg flex items-center justify-center";
+	const base = "w-8 h-8  flex items-center justify-center";
 
 	if (kind === "image") {
 		return (

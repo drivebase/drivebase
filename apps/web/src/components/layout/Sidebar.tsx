@@ -1,4 +1,4 @@
-import { msg } from "@lingui/macro";
+import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
@@ -37,7 +37,6 @@ const navItems = [
 	{ icon: Folder, label: msg`Files`, to: "/files" },
 	{ icon: Star, label: msg`Favorites`, to: "/favorites" },
 	{ icon: Cloud, label: msg`Providers`, to: "/providers" },
-	{ icon: Trash2, label: msg`Trash`, to: "/trash" },
 	{ icon: Lock, label: msg`Vault`, to: "/vault" },
 	{ icon: Settings, label: msg`Settings`, to: "/settings" },
 ];
@@ -67,18 +66,18 @@ export function Sidebar() {
 	}
 
 	return (
-		<div className="h-full w-20 flex flex-col items-center py-8 gap-10 shrink-0">
+		<div className="h-full w-20 flex flex-col items-center py-5 gap-6 shrink-0 border-r">
 			<div className="flex items-center justify-center text-primary">
 				<img src="/drivebase.svg" alt="Logo" className="w-12 h-12" />
 			</div>
 			<TooltipProvider>
-				<nav className="flex flex-col items-center gap-6 w-full flex-1">
+				<nav className="flex flex-col items-center gap-3 w-full flex-1">
 					{navItems.map((item) => (
 						<Tooltip key={item.to} delayDuration={0}>
 							<TooltipTrigger asChild>
 								<Link
 									to={item.to}
-									className="w-12 h-12 rounded-xl transition-all duration-200 flex items-center justify-center shrink-0"
+									className="w-12 h-12  transition-all duration-200 flex items-center justify-center shrink-0"
 									activeProps={{
 										className: "bg-primary/10 text-primary",
 									}}
@@ -103,7 +102,7 @@ export function Sidebar() {
 							<DropdownMenuTrigger asChild>
 								<button
 									type="button"
-									className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-semibold border border-border/60 ${getWorkspaceColorClass(
+									className={`w-12 h-12  flex items-center justify-center text-sm font-semibold border border-border/60 ${getWorkspaceColorClass(
 										activeWorkspace?.color,
 									)}`}
 								>
@@ -116,7 +115,7 @@ export function Sidebar() {
 						</TooltipContent>
 					</Tooltip>
 
-					<DropdownMenuContent align="end" className="min-w-52">
+					<DropdownMenuContent align="start" className="min-w-52">
 						<DropdownMenuLabel>{i18n._(msg`Workspaces`)}</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						{workspaces.map((workspace) => (
@@ -125,7 +124,7 @@ export function Sidebar() {
 								onClick={() => handleSwitchWorkspace(workspace.id)}
 							>
 								<div
-									className={`w-3 h-3 rounded-sm mr-2 ${getWorkspaceColorClass(workspace.color)}`}
+									className={`w-3 h-3  mr-2 ${getWorkspaceColorClass(workspace.color)}`}
 								/>
 								<span className="flex-1 truncate">{workspace.name}</span>
 								{workspace.id === activeWorkspace?.id ? "✓" : null}

@@ -86,7 +86,7 @@ export function useFileSystemColumns({
 								onClick={() => onNavigate?.(folder.id)}
 								className="font-medium flex items-center gap-3 text-left hover:underline min-w-0"
 							>
-								<div className="w-8 h-8 shrink-0 rounded-lg bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+								<div className="w-8 h-8 shrink-0  bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
 									<FolderIcon size={16} />
 								</div>
 								<span className="truncate">{folder.name}</span>
@@ -152,18 +152,6 @@ export function useFileSystemColumns({
 					row.original.kind === "file"
 						? formatFileTypeLabel(row.original.file.mimeType)
 						: "Folder",
-			},
-			{
-				id: "shared",
-				size: 20,
-				minSize: 20,
-				header: "Shared",
-				enableHiding: true,
-				cell: () => (
-					<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
-						Private
-					</span>
-				),
 			},
 			{
 				id: "updatedAt",

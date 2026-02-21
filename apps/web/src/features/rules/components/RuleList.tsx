@@ -117,13 +117,13 @@ export function RuleList() {
 			</div>
 
 			{rules.length === 0 ? (
-				<div className="rounded-md border border-dashed p-8 text-center text-muted-foreground">
+				<div className=" border border-dashed p-8 text-center text-muted-foreground">
 					<Trans>
 						No rules yet. Create a rule to automatically route files on upload.
 					</Trans>
 				</div>
 			) : (
-				<div className="rounded-md border">
+				<div className=" border">
 					<Table>
 						<TableHeader>
 							<TableRow>

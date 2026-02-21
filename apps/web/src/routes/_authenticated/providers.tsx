@@ -112,9 +112,9 @@ function ProvidersPage() {
 	const isLoading = availableFetching || connectedFetching;
 
 	return (
-		<div className="p-8 flex flex-col gap-8 h-full overflow-y-auto">
+		<div className="px-8 flex flex-col gap-8 h-full overflow-y-auto">
 			{displayError && (
-				<div className="bg-destructive/15 text-destructive p-4 rounded-lg flex items-center gap-2">
+				<div className="bg-destructive/15 text-destructive p-4  flex items-center gap-2">
 					<AlertTriangle className="h-5 w-5" />
 					<span>{displayError}</span>
 					<Button
@@ -139,9 +139,9 @@ function ProvidersPage() {
 				{isLoading && connectedProviders.length === 0 ? (
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 						{[1, 2].map((i) => (
-							<div key={i} className="border rounded-lg p-6 space-y-4">
+							<div key={i} className="border  p-6 space-y-4">
 								<div className="flex items-center gap-4">
-									<Skeleton className="h-10 w-10 rounded-md" />
+									<Skeleton className="h-10 w-10 " />
 									<div className="space-y-2">
 										<Skeleton className="h-4 w-32" />
 										<Skeleton className="h-3 w-20" />
@@ -152,7 +152,7 @@ function ProvidersPage() {
 						))}
 					</div>
 				) : connectedProviders.length === 0 ? (
-					<div className="text-center py-12 bg-muted/30 border border-dashed rounded-xl">
+					<div className="text-center py-12 bg-muted/30 border border-dashed ">
 						<h3 className="font-semibold text-lg">No providers connected</h3>
 						<p className="text-muted-foreground max-w-sm mx-auto mt-1 mb-6">
 							Connect a storage provider below to start managing your files.
@@ -193,7 +193,7 @@ function ProvidersPage() {
 				{isLoading && availableProviders.length === 0 ? (
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 						{[1, 2, 3].map((i) => (
-							<Skeleton key={i} className="h-48 w-full rounded-xl" />
+							<Skeleton key={i} className="h-48 w-full " />
 						))}
 					</div>
 				) : (

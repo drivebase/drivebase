@@ -51,14 +51,10 @@ export function FolderCard({
 	return (
 		<Card
 			onClick={onClick}
-			className="p-4 flex flex-col gap-4 border-none bg-muted/50 hover:bg-muted transition-colors cursor-pointer rounded-2xl min-w-[160px]"
+			className="p-4 flex flex-col gap-4 border-none bg-muted/50 hover:bg-muted transition-colors cursor-pointer  min-w-[160px]"
 		>
 			<div
-				className={cn(
-					"w-10 h-10 rounded-xl flex items-center justify-center",
-					bg,
-					color,
-				)}
+				className={cn("w-10 h-10  flex items-center justify-center", bg, color)}
 			>
 				<Icon size={20} />
 			</div>

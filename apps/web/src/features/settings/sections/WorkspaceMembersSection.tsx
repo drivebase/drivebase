@@ -50,7 +50,7 @@ export function WorkspaceMembersSection(props: WorkspaceMembersSectionProps) {
 			<p className="text-sm text-muted-foreground">
 				<Trans>Members in this workspace.</Trans>
 			</p>
-			<div className="border rounded-md divide-y">
+			<div className="border  divide-y">
 				{members.map((member) => (
 					<div
 						key={member.userId}

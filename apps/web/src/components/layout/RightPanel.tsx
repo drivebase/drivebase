@@ -88,7 +88,7 @@ function DefaultAccountView() {
 							href={post.url}
 							target="_blank"
 							rel="noreferrer noopener"
-							className="block rounded-lg p-3 hover:bg-muted transition-colors"
+							className="block  p-3 hover:bg-muted transition-colors"
 						>
 							<p className="text-sm font-medium leading-snug line-clamp-2">
 								{post.title}
@@ -121,7 +121,7 @@ export function RightPanel() {
 	if (!user) return null;
 
 	return (
-		<div className="w-80 p-6 flex flex-col gap-8 shrink-0 relative">
+		<div className="w-80 py-6 flex flex-col gap-8 shrink-0 relative">
 			{content ? (
 				<>
 					<div className="flex items-center justify-end">
