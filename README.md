@@ -1,13 +1,13 @@
-<img width="2167" height="1281" alt="drivebase-banner" src="https://github.com/user-attachments/assets/3efd4f99-6b98-462a-867a-cf805e212c86" />
+<img width="2167" height="1579" alt="drivebase-banner" src="https://github.com/user-attachments/assets/8fababdb-ac49-424e-8b22-935f8c64e73f" />
 
 
 <p align="center">
   <a href="https://t.me/+fWEMYD3gp61lYWZl">
     <img src="https://img.shields.io/badge/Telegram-Join%20Chat-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram">
-  </a> · 
+  </a> 
   <a href="https://drivebase.one/docs">
     <img src="https://img.shields.io/badge/Documentation-red?style=for-the-badge" alt="Documentation" />
-  </a> · 
+  </a> 
   <a href="https://discord.gg/zy3XyWcU6D">
     <img src="https://img.shields.io/discord/1472108078592688149?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2" alt="Discord">
   </a>
@@ -19,16 +19,11 @@ Drivebase is a next-generation cloud-agnostic file management application that e
 
 ---
 
-<!-- [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?template=https://github.com/drivebase/drivebase)
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/drivebase/drivebase) -->
-
-
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
 - [Getting Started](#getting-started)
 - [Quickstart (Recommended)](#quickstart-recommended)
-- [Docker Compose](#docker-compose)
 - [Manual Installation](#manual-installation)
   - [Prerequisites](#prerequisites)
   - [Steps](#steps)
