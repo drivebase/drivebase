@@ -277,12 +277,9 @@ export function useVaultCrypto() {
 			const newEncryptedPrivKey = await encryptPrivateKey(privateKey, newKek);
 			const newKekSalt = saltToBase64(newSalt);
 
-			const publicKeyStr = JSON.stringify(backup.publicKey);
-
-			// Persist to server and store
-			const result = await executeSetupVault({
+			// Persist to server — vault already exists, so update the passphrase fields
+			const result = await executeChangePassphrase({
 				input: {
-					publicKey: publicKeyStr,
 					encryptedPrivateKey: newEncryptedPrivKey,
 					kekSalt: newKekSalt,
 				},
@@ -292,10 +289,11 @@ export function useVaultCrypto() {
 				throw new Error(result.error.message);
 			}
 
+			const publicKeyStr = JSON.stringify(backup.publicKey);
 			store.setKeyMaterial(publicKeyStr, newEncryptedPrivKey, newKekSalt);
 			store.unlock(privateKey);
 		},
-		[executeSetupVault, store],
+		[executeChangePassphrase, store],
 	);
 
 	/**
