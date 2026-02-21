@@ -1,5 +1,5 @@
 import { Check, Download, Lock, ShieldCheck } from "lucide-react";
-import { Fragment, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,12 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
 import type { VaultBackup } from "@/features/vault/lib/crypto";
-
-const STEPS = [
-	{ id: 1, label: "Welcome" },
-	{ id: 2, label: "Passphrase" },
-	{ id: 3, label: "Backup" },
-];
 
 interface VaultSetupWizardProps {
 	onComplete: () => void;
@@ -84,41 +78,6 @@ export function VaultSetupWizard({ onComplete }: VaultSetupWizardProps) {
 
 	return (
 		<div className="w-full max-w-md">
-			{/* Step indicator */}
-			<div className="flex items-center justify-center mb-6">
-				{STEPS.map((s, i) => (
-					<Fragment key={s.id}>
-						<div className="flex flex-col items-center gap-1.5">
-							<div
-								className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300 ${
-									step > s.id
-										? "bg-primary text-primary-foreground"
-										: step === s.id
-											? "bg-primary text-primary-foreground ring-4 ring-primary/20"
-											: "bg-muted text-muted-foreground"
-								}`}
-							>
-								{step > s.id ? <Check className="w-3.5 h-3.5" /> : s.id}
-							</div>
-							<span
-								className={`text-[10px] font-medium uppercase tracking-wider transition-colors ${
-									step >= s.id ? "text-primary" : "text-muted-foreground"
-								}`}
-							>
-								{s.label}
-							</span>
-						</div>
-						{i < STEPS.length - 1 && (
-							<div
-								className={`w-20 h-px mx-3 mb-[22px] transition-colors duration-300 ${
-									step > s.id ? "bg-primary" : "bg-border"
-								}`}
-							/>
-						)}
-					</Fragment>
-				))}
-			</div>
-
 			<Card className="shadow-xl border-border/50">
 				<CardContent className="px-8 py-8 min-h-[420px] flex flex-col">
 					{step === 1 && <WelcomeStep onNext={() => setStep(2)} />}
