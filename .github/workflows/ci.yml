@@ -131,6 +131,17 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
+      - name: Extract version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=development" >> $GITHUB_OUTPUT
+            echo "IS_RELEASE=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -147,7 +158,9 @@ jobs:
           context: ./docker/updater
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ env.REGISTRY }}/drivebase/updater:latest
+          tags: |
+            ${{ env.REGISTRY }}/drivebase/updater:${{ steps.version.outputs.VERSION }}
+            ${{ steps.version.outputs.IS_RELEASE == 'true' && format('{0}/drivebase/updater:latest', env.REGISTRY) || '' }}
           cache-from: type=gha,scope=updater
           cache-to: type=gha,mode=max,scope=updater
           provenance: false
