@@ -9,6 +9,7 @@ import {
 	UPLOAD_PROGRESS_SUBSCRIPTION,
 } from "@/features/files/api/upload-session";
 import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
+import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
 
 const DEFAULT_CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_RETRIES = 3;
@@ -143,6 +144,9 @@ export function useChunkedUpload(callbacks: ChunkedUploadCallbacks) {
 
 				for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
 					try {
+						const workspaceId = localStorage.getItem(
+							ACTIVE_WORKSPACE_STORAGE_KEY,
+						);
 						const response = await fetch(
 							`${apiUrl}/api/upload/chunk?sessionId=${sessionId}&chunkIndex=${i}`,
 							{
@@ -150,6 +154,7 @@ export function useChunkedUpload(callbacks: ChunkedUploadCallbacks) {
 								headers: {
 									"Content-Type": "application/octet-stream",
 									...(token ? { Authorization: `Bearer ${token}` } : {}),
+									...(workspaceId ? { "x-workspace-id": workspaceId } : {}),
 								},
 								body: chunk,
 							},

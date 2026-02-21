@@ -75,7 +75,10 @@ export async function handleUploadProxy(c: Context<AppEnv>): Promise<Response> {
 		try {
 			if (fileId) {
 				const db = getDb();
-				await db.delete(files).where(eq(files.id, fileId));
+				await db
+					.update(files)
+					.set({ isDeleted: true, updatedAt: new Date() })
+					.where(eq(files.id, fileId));
 			}
 		} catch (cleanupError) {
 			logger.error({
