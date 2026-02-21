@@ -4,5 +4,6 @@
  */
 export default {
 	"*.ts": "biome format --write",
+	"*.tsx": "biome format --write",
 	"**/?(*.)messages.ts": [],
 };
