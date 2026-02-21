@@ -1,11 +1,11 @@
 ---
 title: Vault (E2EE)
-description: End-to-End Encrypted Storage Through Drivebase
+description: End-to-End Encrypted Storage
 ---
 
 The **Vault** is a private, per-user encrypted file area accessed through Drivebase. Because Drivebase is a self-hosted solution, it's important to understand how your data is protected from the server infrastructure itself.
 
-In the Vault, all files are encrypted **client-side** (on your device) *before* they are sent to the Drivebase API and proxied to your configured storage provider (Local, S3, etc.). The storage provider receives only ciphertext, while Drivebase handles encrypted payloads and encrypted key material only.
+In the Vault, all files are encrypted **client-side** (on your device) before they are sent to your storage provider. Providers like Google Drive, S3, and Dropbox receive encrypted files (ciphertext), not plaintext.
 
 Even as the administrator of your own Drivebase instance, you cannot access files stored in a user's vault without their passphrase.
 
@@ -63,8 +63,8 @@ The Vault remains unlocked only while the browser tab is open. This "in-memory" 
 For large files (greater than 50 MB), the file is split into 50 MB plaintext chunks before encryption. Each chunk is encrypted with the same per-file AES-GCM key but with a deterministic IV based on the chunk index. 
 This means no per-chunk IV needs to be stored separately. Drivebase records the original chunk size as metadata so the client can deterministically reconstruct IVs during decryption.
 
-### Storage Proxying
-Once chunks are encrypted locally on your device, they are sent through the Drivebase API. Drivebase proxies encrypted payloads to the final destination (your configured storage provider) and does not decrypt them in transit.
+### Provider Visibility
+Files are encrypted before they are sent to your storage provider, so providers only see encrypted file data.
 
 ### Vault Isolation
 Vault files are completely isolated from regular files. 

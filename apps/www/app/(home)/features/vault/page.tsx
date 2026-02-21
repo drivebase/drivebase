@@ -5,7 +5,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Vault - Drivebase",
   description:
-    "Vault provides end-to-end encrypted file storage through Drivebase, with encrypted uploads proxied to your configured storage provider.",
+    "Vault encrypts files in your browser before sending them to storage providers like Google Drive, S3, and Dropbox.",
 };
 
 export default function VaultPage() {
@@ -19,10 +19,9 @@ export default function VaultPage() {
           Vault keeps your private files protected by default
         </h1>
         <p className="mt-6 max-w-3xl text-lg leading-8 text-gray-400">
-          Vault is a dedicated encrypted area accessed through Drivebase for
-          sensitive files. Encryption happens in the browser before transfer,
-          and Drivebase proxies encrypted payloads to your configured storage
-          provider.
+          Vault is a dedicated encrypted area for sensitive files. Encryption
+          happens in the browser before files are sent to your storage provider,
+          so providers only see encrypted files.
         </p>
       </section>
 
