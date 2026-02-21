@@ -260,6 +260,28 @@ export class DropboxProvider implements IStorageProvider {
 	}
 
 	/**
+	 * Find a folder by name in a parent directory
+	 */
+	async findFolder(name: string, parentId?: string): Promise<string | null> {
+		const parentPath = parentId ?? "";
+		const folderPath = `${parentPath}/${name}`.toLowerCase();
+
+		try {
+			const result = await this.callApi<{
+				".tag": string;
+				path_lower?: string;
+			}>("/files/get_metadata", { path: folderPath });
+
+			if (result[".tag"] === "folder" && result.path_lower) {
+				return result.path_lower;
+			}
+			return null;
+		} catch {
+			return null;
+		}
+	}
+
+	/**
 	 * Create a folder in Dropbox
 	 */
 	async createFolder(options: CreateFolderOptions): Promise<string> {
