@@ -91,7 +91,7 @@ export function UploadProgressPanel({
 	const failedCount = items.filter((item) => item.status === "error").length;
 
 	return (
-		<div className="fixed right-6 bottom-6 z-50 w-[420px] rounded-xl border bg-background shadow-2xl">
+		<div className="fixed right-6 bottom-6 z-50 w-[420px]  border bg-background shadow-2xl">
 			<div className="flex items-center justify-between px-4 py-3 border-b">
 				<div className="text-sm font-semibold">Uploads</div>
 				<div className="flex items-center gap-3">
@@ -108,7 +108,7 @@ export function UploadProgressPanel({
 			</div>
 			<div className="max-h-80 overflow-y-auto p-3 space-y-3">
 				{items.map((item) => (
-					<div key={item.id} className="rounded-lg space-y-2">
+					<div key={item.id} className=" space-y-2">
 						<div className="flex items-start justify-between gap-2">
 							<div className="min-w-0">
 								<div className="text-sm font-medium truncate">{item.name}</div>

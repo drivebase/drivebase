@@ -61,7 +61,7 @@ export function RegisterPage() {
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 					{formError && (
-						<div className="p-3 text-sm font-medium text-destructive bg-destructive/10 rounded-md border border-destructive/20 text-center animate-in fade-in slide-in-from-top-2">
+						<div className="p-3 text-sm font-medium text-destructive bg-destructive/10  border border-destructive/20 text-center animate-in fade-in slide-in-from-top-2">
 							{formError}
 						</div>
 					)}

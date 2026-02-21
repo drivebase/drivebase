@@ -44,7 +44,7 @@ export function UploadProviderDialog({
 						Choose where this file should be uploaded.
 					</DialogDescription>
 				</DialogHeader>
-				<div className="flex items-start gap-2 rounded-md border bg-muted/30 px-3 py-2">
+				<div className="flex items-start gap-2  border bg-muted/30 px-3 py-2">
 					<FileText className="mt-0.5 h-4 w-4 text-muted-foreground" />
 					<div className="min-w-0">
 						<div className="truncate text-sm font-medium">
@@ -71,10 +71,10 @@ export function UploadProviderDialog({
 								)}
 								onClick={() => onSelectProvider(provider.id)}
 							>
-								<div className="w-full rounded-lg border border-transparent p-4">
+								<div className="w-full  border border-transparent p-4">
 									<div className="flex items-center justify-between gap-3">
 										<div className="flex items-center gap-3">
-											<div className="rounded-md bg-muted p-2">
+											<div className=" bg-muted p-2">
 												<ProviderIcon
 													type={provider.type}
 													className="h-5 w-5"

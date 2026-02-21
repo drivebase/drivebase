@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/my-account")({
 
 function MyAccountPage() {
 	return (
-		<div className="p-8 max-w-2xl space-y-8">
+		<div className="px-8 max-w-2xl space-y-8">
 			<AccountSettingsSection />
 			<Separator />
 		</div>

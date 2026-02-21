@@ -43,6 +43,7 @@
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0",
 		"react-hook-form": "^7.71.1",
+		"shadcn": "^3.8.5",
 		"sonner": "^2.0.7",
 		"tailwind-merge": "^3.4.0",
 		"tailwindcss": "^4.0.6",

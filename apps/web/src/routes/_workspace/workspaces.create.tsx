@@ -82,7 +82,7 @@ function CreateWorkspacePage() {
 							className="space-y-6 flex-1"
 						>
 							{formError && (
-								<div className="p-3 text-sm font-medium text-destructive bg-destructive/10 rounded-md border border-destructive/20 text-center">
+								<div className="p-3 text-sm font-medium text-destructive bg-destructive/10  border border-destructive/20 text-center">
 									{formError}
 								</div>
 							)}
@@ -122,7 +122,7 @@ function CreateWorkspacePage() {
 															key={color.value}
 															type="button"
 															onClick={() => field.onChange(color.value)}
-															className={`w-10 h-10 rounded-lg border flex items-center justify-center ${color.className} ${
+															className={`w-10 h-10  border flex items-center justify-center ${color.className} ${
 																isSelected
 																	? "ring-2 ring-primary border-primary"
 																	: "border-border"

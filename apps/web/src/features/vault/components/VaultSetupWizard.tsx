@@ -144,10 +144,10 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 				].map(({ icon: Icon, color, bg, title, desc }) => (
 					<div
 						key={title}
-						className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-muted/30"
+						className="flex items-start gap-3 p-3  border border-border/60 bg-muted/30"
 					>
 						<div
-							className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${bg}`}
+							className={`w-8 h-8  flex items-center justify-center flex-shrink-0 ${bg}`}
 						>
 							<Icon className={`w-4 h-4 ${color}`} />
 						</div>
@@ -212,9 +212,9 @@ function PassphraseStep({
 					/>
 					{strength && (
 						<div className="space-y-1">
-							<div className="h-1.5 bg-muted rounded-full overflow-hidden">
+							<div className="h-1.5 bg-muted  overflow-hidden">
 								<div
-									className={`h-full rounded-full transition-all ${strength.color} ${strength.width}`}
+									className={`h-full  transition-all ${strength.color} ${strength.width}`}
 								/>
 							</div>
 							<p className="text-xs text-muted-foreground">{strength.label}</p>
@@ -274,7 +274,7 @@ function BackupStep({
 			</div>
 
 			<div className="flex-1 flex flex-col gap-4">
-				<div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
+				<div className="p-4  border border-amber-500/30 bg-amber-500/10">
 					<p className="text-sm text-amber-700 dark:text-amber-400 font-medium">
 						Warning: If you lose this backup file, your encrypted files are
 						permanently unrecoverable.
