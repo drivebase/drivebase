@@ -26,3 +26,7 @@ yarn-error.log*
 next-env.d.ts
 .open-next
 .wrangler
+
+# sitemap
+public/sitemap*
+public/robots.txt
