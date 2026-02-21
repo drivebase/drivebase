@@ -111,13 +111,20 @@ export async function handleOAuthCallback(
 		callbackUrl,
 	);
 
-	// Initialize provider with the new tokens to create the root folder
+	// Initialize provider with the new tokens to find or create the root folder
 	const provider = registration.factory();
 	await provider.initialize(updatedConfig);
 
-	const rootFolderId = await provider.createFolder({
-		name: "Drivebase",
-	});
+	let rootFolderId: string;
+	const existingFolderId = await provider.findFolder?.("Drivebase");
+
+	if (existingFolderId) {
+		rootFolderId = existingFolderId;
+	} else {
+		rootFolderId = await provider.createFolder({
+			name: "Drivebase",
+		});
+	}
 
 	const quota = await provider.getQuota();
 
