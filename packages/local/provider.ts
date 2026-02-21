@@ -56,6 +56,17 @@ export class LocalProvider implements IStorageProvider {
 		}
 
 		const resolvedRootPath = resolve(parsed.data.rootPath);
+		const parentDir = dirname(resolvedRootPath);
+
+		try {
+			await stat(parentDir);
+		} catch {
+			throw new ProviderError(
+				"local",
+				`Parent directory does not exist: ${parentDir}`,
+			);
+		}
+
 		await mkdir(resolvedRootPath, { recursive: true });
 
 		this.config = parsed.data;
