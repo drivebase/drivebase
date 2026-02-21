@@ -13,16 +13,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useMyVault } from "@/features/vault/hooks/useVault";
 import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
-import { createBackup } from "@/features/vault/lib/crypto";
 import { useVaultStore } from "@/features/vault/store/vaultStore";
+import { promptDialog } from "@/shared/lib/promptDialog";
 
 export function VaultKeySection() {
 	const [{ data }] = useMyVault();
 	const { isUnlocked } = useVaultStore();
-	const { getFingerprint, changePassphrase, downloadBackup } = useVaultCrypto();
-	const { publicKey, encryptedPrivateKey, kekSalt } = useVaultStore();
+	const { getFingerprint, changePassphrase, generateBackup, downloadBackup } =
+		useVaultCrypto();
 
 	const [fingerprint, setFingerprint] = useState<string | null>(null);
+
+	// Change passphrase dialog
 	const [isChangeOpen, setIsChangeOpen] = useState(false);
 	const [currentPassphrase, setCurrentPassphrase] = useState("");
 	const [newPassphrase, setNewPassphrase] = useState("");
@@ -36,15 +38,26 @@ export function VaultKeySection() {
 			.catch(() => null);
 	}, [getFingerprint]);
 
-	const handleDownloadBackup = useCallback(() => {
-		if (!publicKey || !encryptedPrivateKey || !kekSalt) {
-			toast.error("Vault key material not available");
-			return;
+	const handleDownloadBackup = useCallback(async () => {
+		const passphrase = await promptDialog(
+			"Download Backup Key",
+			"Enter your passphrase to generate and download your vault backup key. Store it somewhere safe — anyone with this file can restore access to your vault.",
+			{
+				placeholder: "Enter your vault passphrase",
+				submitLabel: "Download",
+				inputType: "password",
+			},
+		);
+
+		if (!passphrase) return;
+
+		try {
+			const backup = await generateBackup(passphrase);
+			downloadBackup(backup);
+		} catch (_error) {
+			toast.error("Incorrect passphrase. Please try again.");
 		}
-		const jwk: JsonWebKey = JSON.parse(publicKey);
-		const backup = createBackup(jwk, encryptedPrivateKey, kekSalt);
-		downloadBackup(backup);
-	}, [publicKey, encryptedPrivateKey, kekSalt, downloadBackup]);
+	}, [generateBackup, downloadBackup]);
 
 	const handleChangePassphrase = useCallback(async () => {
 		setChangeError("");
@@ -120,7 +133,7 @@ export function VaultKeySection() {
 						size="sm"
 						className="gap-2"
 						onClick={handleDownloadBackup}
-						disabled={!publicKey}
+						disabled={!isUnlocked}
 					>
 						<Download className="w-4 h-4" />
 						Download Backup Key
@@ -137,6 +150,7 @@ export function VaultKeySection() {
 				</div>
 			</div>
 
+			{/* Change Passphrase dialog */}
 			<Dialog
 				open={isChangeOpen}
 				onOpenChange={(open) => {

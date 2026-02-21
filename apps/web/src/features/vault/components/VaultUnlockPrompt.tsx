@@ -64,9 +64,11 @@ export function VaultUnlockPrompt({ onUnlocked }: VaultUnlockPromptProps) {
 		try {
 			await restoreFromBackup(selectedFile, newPassphrase);
 			onUnlocked();
-		} catch (_error) {
+		} catch (error) {
 			toast.error(
-				"Invalid backup file. Make sure you're using a Drivebase vault backup.",
+				error instanceof Error && error.message
+					? error.message
+					: "Restore failed. The backup file may be corrupted.",
 			);
 		} finally {
 			setIsLoading(false);
