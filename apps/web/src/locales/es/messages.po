@@ -17,13 +17,33 @@ msgstr ""
 msgid "Account"
 msgstr "Cuenta"
 
-#: src/components/layout/RightPanel.tsx:64
-msgid "Activity"
-msgstr "Actividad"
+#: src/features/rules/components/RuleList.tsx:143
+msgid "Actions"
+msgstr "Acciones"
 
-#: src/features/settings/components/SettingsCategoryNav.tsx:24
+#: src/components/layout/RightPanel.tsx:64
+#~ msgid "Activity"
+#~ msgstr "Actividad"
+
+#: src/features/rules/components/ConditionGroupEditor.tsx:123
+msgid "Add condition"
+msgstr "Añadir condición"
+
+#: src/features/rules/components/ConditionGroupEditor.tsx:131
+msgid "Add OR group"
+msgstr "Añadir grupo OR"
+
+#: src/features/rules/components/RuleList.tsx:115
+msgid "Add Rule"
+msgstr "Añadir Regla"
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:29
 msgid "Advanced"
-msgstr ""
+msgstr "Avanzado"
+
+#: src/features/rules/components/ConditionGroupEditor.tsx:90
+msgid "All conditions must match (AND)"
+msgstr "Todas las condiciones deben coincidir (Y)"
 
 #: src/components/layout/Header.tsx:111
 #: src/config/pageTitles.ts:6
@@ -37,6 +57,18 @@ msgstr "Apariencia"
 #: src/components/layout/Header.tsx:135
 msgid "Audio"
 msgstr "Audio"
+
+#: src/features/rules/components/RuleFormPage.tsx:66
+msgid "Automatically route uploaded files based on conditions."
+msgstr "Enrutar automáticamente los archivos cargados según las condiciones."
+
+#: src/features/rules/components/RuleList.tsx:107
+msgid "Automatically route uploaded files to specific providers and folders based on file attributes."
+msgstr "Enrutar automáticamente los archivos cargados a proveedores y carpetas específicos según los atributos del archivo."
+
+#: src/features/rules/components/RuleForm.tsx:209
+msgid "Cancel"
+msgstr "Cancelar"
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:89
 msgid "Change password"
@@ -54,21 +86,35 @@ msgstr "Elige tema claro, oscuro o del sistema"
 msgid "Choose your preferred language"
 msgstr "Elige tu idioma preferido"
 
-#: src/components/layout/RightPanel.tsx:97
+#: src/components/layout/RightPanel.tsx:136
 msgid "Close panel"
 msgstr "Cerrar panel"
+
+#: src/features/rules/components/RuleForm.tsx:189
+#: src/features/rules/components/RuleList.tsx:137
+msgid "Conditions"
+msgstr "Condiciones"
 
 #: src/routes/_authenticated.tsx:72
 msgid "Connection failed"
 msgstr "Conexión fallida"
 
-#: src/components/layout/Sidebar.tsx:136
+#: src/features/rules/components/RuleFormPage.tsx:63
+#: src/features/rules/components/RuleFormPage.tsx:78
+msgid "Create Rule"
+msgstr "Crear Regla"
+
+#: src/components/layout/Sidebar.tsx:138
 msgid "Create workspace"
 msgstr "Crear espacio de trabajo"
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:62
 msgid "Current password"
 msgstr "Contraseña actual"
+
+#: src/features/settings/sections/UpdateSection.tsx:46
+msgid "Current version"
+msgstr "Versión actual"
 
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:32
 msgid "Customize the appearance of the application. Automatically switch between day and night themes."
@@ -78,49 +124,73 @@ msgstr "Personaliza la apariencia de la aplicación. Cambia automáticamente ent
 msgid "Dark"
 msgstr "Oscuro"
 
-#: src/components/layout/Sidebar.tsx:35
+#: src/components/layout/Sidebar.tsx:36
 #: src/config/pageTitles.ts:5
-#: src/config/pageTitles.ts:30
+#: src/config/pageTitles.ts:31
 msgid "Dashboard"
 msgstr "Panel de control"
+
+#: src/features/rules/components/RuleList.tsx:140
+msgid "Destination"
+msgstr "Destino"
+
+#: src/features/rules/components/RuleForm.tsx:162
+msgid "Destination Folder (optional)"
+msgstr "Carpeta de destino (opcional)"
+
+#: src/features/rules/components/RuleForm.tsx:138
+msgid "Destination Provider"
+msgstr "Proveedor de destino"
 
 #: src/components/layout/Header.tsx:117
 msgid "Documents"
 msgstr "Documentos"
 
-#: src/features/settings/sections/AccountSettingsSection.tsx:98
+#: src/features/rules/components/RuleFormPage.tsx:63
+msgid "Edit Rule"
+msgstr "Editar Regla"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:104
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: src/features/settings/sections/ExportSection.tsx:82
+#: src/features/rules/components/RuleForm.tsx:132
+msgid "Enabled"
+msgstr "Habilitado"
+
+#: src/features/settings/sections/ExportSection.tsx:81
 msgid "Encryption password"
-msgstr ""
+msgstr "Contraseña de cifrado"
 
 #: src/features/settings/sections/ExportSection.tsx:37
-#: src/features/settings/sections/ExportSection.tsx:107
+#: src/features/settings/sections/ExportSection.tsx:109
 msgid "Export workspace"
-msgstr ""
+msgstr "Exportar espacio de trabajo"
 
 #: src/features/settings/sections/ExportSection.tsx:40
 msgid "Export your workspace data including files, folders, and optionally provider configurations."
-msgstr ""
+msgstr "Exporta los datos de tu espacio de trabajo incluyendo archivos, carpetas, y opcionalmente configuraciones de proveedores."
 
-#: src/features/settings/sections/ExportSection.tsx:103
+#: src/features/settings/sections/ExportSection.tsx:105
 msgid "Exporting..."
-msgstr ""
+msgstr "Exportando..."
 
-#: src/features/settings/sections/AccountSettingsSection.tsx:51
+#: src/features/settings/sections/AccountSettingsSection.tsx:54
 msgid "Failed to update profile"
 msgstr "Error al actualizar el perfil"
 
-#: src/components/layout/Sidebar.tsx:37
+#: src/components/layout/Sidebar.tsx:38
 #: src/config/pageTitles.ts:7
 msgid "Favorites"
 msgstr "Favoritos"
 
-#: src/components/layout/Sidebar.tsx:36
+#: src/components/layout/Sidebar.tsx:37
 msgid "Files"
 msgstr "Archivos"
+
+#: src/features/rules/components/RuleForm.tsx:192
+msgid "Files matching these conditions will be routed to the destination. Groups are combined with OR; conditions within a group are combined with AND."
+msgstr "Los archivos que cumplan estas condiciones se enrutarán al destino. Los grupos se combinan con O; las condiciones dentro de un grupo se combinan con Y."
 
 #: src/features/settings/components/SettingsCategoryNav.tsx:9
 msgid "General"
@@ -130,17 +200,21 @@ msgstr "General"
 msgid "Images"
 msgstr "Imágenes"
 
-#: src/features/settings/sections/ExportSection.tsx:58
+#: src/features/settings/sections/ExportSection.tsx:59
 msgid "Include provider configurations"
-msgstr ""
+msgstr "Incluir configuraciones de proveedores"
 
-#: src/features/settings/sections/ExportSection.tsx:75
+#: src/features/settings/sections/ExportSection.tsx:74
 msgid "Include sensitive credentials (requires password)"
-msgstr ""
+msgstr "Incluir credenciales sensibles (requiere contraseña)"
 
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:82
 msgid "Language"
 msgstr "Idioma"
+
+#: src/features/settings/sections/UpdateSection.tsx:55
+msgid "Latest version"
+msgstr "Última versión"
 
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:60
 msgid "Light"
@@ -150,21 +224,27 @@ msgstr "Claro"
 msgid "Loading your account..."
 msgstr "Cargando tu cuenta..."
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:47
+#: src/features/settings/sections/UpdateSection.tsx:39
+msgid "Manage application updates."
+msgstr "Gestionar actualizaciones de la aplicación."
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:48
 msgid "Members"
 msgstr "Miembros"
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:49
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:51
 msgid "Members in this workspace."
 msgstr "Miembros en este espacio de trabajo."
 
-#: src/components/layout/RightPanel.tsx:54
-#: src/config/pageTitles.ts:11
+#: src/components/layout/RightPanel.tsx:57
+#: src/config/pageTitles.ts:12
 msgid "My Account"
 msgstr "Mi cuenta"
 
-#: src/features/settings/sections/AccountSettingsSection.tsx:79
-#: src/features/settings/sections/WorkspaceNameSection.tsx:26
+#: src/features/rules/components/RuleForm.tsx:115
+#: src/features/rules/components/RuleList.tsx:134
+#: src/features/settings/sections/AccountSettingsSection.tsx:84
+#: src/features/settings/sections/WorkspaceNameSection.tsx:29
 msgid "Name"
 msgstr "Nombre"
 
@@ -177,37 +257,79 @@ msgid "New password"
 msgstr "Nueva contraseña"
 
 #: src/components/layout/RightPanel.tsx:69
-msgid "No recent activity"
-msgstr "Sin actividad reciente"
+#~ msgid "No recent activity"
+#~ msgstr "Sin actividad reciente"
 
 #: src/components/layout/Header.tsx:148
 msgid "No results found."
 msgstr "No se encontraron resultados."
 
+#: src/features/rules/components/RuleList.tsx:121
+msgid "No rules yet. Create a rule to automatically route files on upload."
+msgstr "Sin reglas aún. Crea una regla para enrutar automáticamente los archivos al cargarlos."
+
+#: src/components/layout/RightPanel.tsx:82
+msgid "No updates yet"
+msgstr "Sin actualizaciones todavía"
+
+#: src/features/rules/components/ConditionGroupEditor.tsx:81
+msgid "OR"
+msgstr "O"
+
+#: src/features/rules/components/RuleList.tsx:131
+msgid "Order"
+msgstr "Orden"
+
 #: src/features/settings/sections/AccountSettingsSection.tsx:48
 msgid "Profile updated"
 msgstr "Perfil actualizado"
 
-#: src/components/layout/Sidebar.tsx:38
+#: src/components/layout/Sidebar.tsx:39
 #: src/config/pageTitles.ts:8
 msgid "Providers"
 msgstr "Proveedores"
+
+#: src/components/layout/RightPanel.tsx:67
+msgid "Recent Updates"
+msgstr "Actualizaciones Recientes"
+
+#: src/features/rules/components/ConditionEditor.tsx:142
+msgid "Remove condition"
+msgstr "Eliminar condición"
+
+#: src/features/rules/components/ConditionGroupEditor.tsx:100
+msgid "Remove group"
+msgstr "Eliminar grupo"
 
 #: src/routes/_authenticated.tsx:76
 msgid "Retry"
 msgstr "Reintentar"
 
-#: src/features/settings/sections/AccountSettingsSection.tsx:105
+#: src/features/settings/sections/AccountSettingsSection.tsx:111
 msgid "Role"
 msgstr "Rol"
 
-#: src/features/settings/sections/AccountSettingsSection.tsx:89
-#: src/features/settings/sections/WorkspaceNameSection.tsx:34
+#: src/features/rules/components/RuleForm.tsx:176
+msgid "Root (no folder)"
+msgstr "Raíz (sin carpeta)"
+
+#: src/features/rules/components/RuleList.tsx:104
+#: src/features/settings/components/SettingsCategoryNav.tsx:24
+msgid "Rules"
+msgstr "Reglas"
+
+#: src/features/rules/components/RuleForm.tsx:206
+#: src/features/settings/sections/AccountSettingsSection.tsx:95
+#: src/features/settings/sections/WorkspaceNameSection.tsx:38
 msgid "Save"
 msgstr "Guardar"
 
-#: src/features/settings/sections/AccountSettingsSection.tsx:89
-#: src/features/settings/sections/WorkspaceNameSection.tsx:34
+#: src/features/rules/components/RuleFormPage.tsx:78
+msgid "Save Changes"
+msgstr "Guardar Cambios"
+
+#: src/features/settings/sections/AccountSettingsSection.tsx:95
+#: src/features/settings/sections/WorkspaceNameSection.tsx:38
 msgid "Saving..."
 msgstr "Guardando..."
 
@@ -227,7 +349,7 @@ msgstr "El servidor puede estar inaccesible"
 msgid "Server Unreachable"
 msgstr "Servidor inaccesible"
 
-#: src/components/layout/Sidebar.tsx:40
+#: src/components/layout/Sidebar.tsx:42
 #: src/config/pageTitles.ts:10
 msgid "Settings"
 msgstr "Configuración"
@@ -248,11 +370,11 @@ msgstr "Sistema"
 msgid "Theme"
 msgstr "Tema"
 
-#: src/features/settings/sections/ExportSection.tsx:93
+#: src/features/settings/sections/ExportSection.tsx:92
 msgid "This password will be used to encrypt your export file. Keep it safe, as you'll need it to import the data."
-msgstr ""
+msgstr "Esta contraseña se utilizará para cifrar tu archivo de exportación. Mantenla segura, ya que la necesitarás para importar los datos."
 
-#: src/components/layout/Sidebar.tsx:39
+#: src/components/layout/Sidebar.tsx:40
 #: src/config/pageTitles.ts:9
 msgid "Trash"
 msgstr "Papelera"
@@ -277,19 +399,33 @@ msgstr "No se puede cargar Drivebase"
 msgid "Unable to sign out from server. Signing out locally."
 msgstr "No se puede cerrar sesión desde el servidor. Cerrando sesión localmente."
 
-#: src/components/layout/RightPanel.tsx:43
+#: src/components/layout/RightPanel.tsx:46
+#: src/features/settings/sections/UpdateSection.tsx:63
 msgid "Update available"
 msgstr "Actualización disponible"
+
+#: src/features/settings/sections/UpdateSection.tsx:102
+msgid "Update now"
+msgstr "Actualizar ahora"
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:57
 msgid "Update your account password."
 msgstr "Actualiza la contraseña de tu cuenta."
 
-#: src/features/settings/sections/WorkspaceNameSection.tsx:22
+#: src/features/settings/sections/WorkspaceNameSection.tsx:24
 msgid "Update your workspace display name."
 msgstr "Actualiza el nombre visible de tu espacio de trabajo."
 
+#: src/features/settings/sections/UpdateSection.tsx:72
+msgid "Updated! The app will reload shortly."
+msgstr "¡Actualizado! La aplicación se recargará en breve."
+
+#: src/features/settings/sections/UpdateSection.tsx:36
+msgid "Updates"
+msgstr "Actualizaciones"
+
 #: src/features/settings/sections/ChangePasswordSection.tsx:87
+#: src/features/settings/sections/UpdateSection.tsx:97
 msgid "Updating..."
 msgstr "Actualizando..."
 
@@ -297,18 +433,23 @@ msgstr "Actualizando..."
 msgid "Users"
 msgstr "Usuarios"
 
+#: src/components/layout/Sidebar.tsx:41
+#: src/config/pageTitles.ts:11
+msgid "Vault"
+msgstr "Bóveda"
+
 #: src/components/layout/Header.tsx:129
 msgid "Videos"
 msgstr "Videos"
 
-#: src/components/layout/Sidebar.tsx:113
+#: src/components/layout/Sidebar.tsx:115
 msgid "Workspace"
 msgstr "Espacio de trabajo"
 
-#: src/features/settings/sections/WorkspaceNameSection.tsx:20
+#: src/features/settings/sections/WorkspaceNameSection.tsx:21
 msgid "Workspace name"
 msgstr "Nombre del espacio de trabajo"
 
-#: src/components/layout/Sidebar.tsx:118
+#: src/components/layout/Sidebar.tsx:120
 msgid "Workspaces"
 msgstr "Espacios de trabajo"
