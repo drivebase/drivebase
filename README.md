@@ -52,27 +52,7 @@ curl -fsSL https://drivebase.one/install | bash
 
 <img width="600" alt="Group" src="https://github.com/user-attachments/assets/19e11300-83e1-4e8b-a31e-17be9e2f81c9" />
 
-You will need to update the `.env.local` file with your own values for PostgreSQL, Redis, and other required values.
-
-
-## Docker Compose
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/drivebase/drivebase.git
-cd drivebase
-```
-
-2. Update `.env.local` with required values:
-
-3. Start Postgres + Redis (if not already running):
-
-```bash
-docker compose -f docker/compose.dev.yaml up -d
-```
-
-4. Open:
+After you start the containers, open:
 
 - App: `http://localhost:3000`
 - GraphQL: `http://localhost:3000/graphql`
