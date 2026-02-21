@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
+import { parseBackup } from "@/features/vault/lib/crypto";
 
 interface VaultUnlockPromptProps {
 	onUnlocked: () => void;
@@ -16,7 +17,9 @@ export function VaultUnlockPrompt({ onUnlocked }: VaultUnlockPromptProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [showRestore, setShowRestore] = useState(false);
 	const backupInputRef = useRef<HTMLInputElement>(null);
-	const [restorePassphrase, setRestorePassphrase] = useState("");
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [newPassphrase, setNewPassphrase] = useState("");
+	const [confirmPassphrase, setConfirmPassphrase] = useState("");
 
 	const { unlockVault, restoreFromBackup } = useVaultCrypto();
 
@@ -34,27 +37,54 @@ export function VaultUnlockPrompt({ onUnlocked }: VaultUnlockPromptProps) {
 		}
 	}, [passphrase, unlockVault, onUnlocked]);
 
-	const handleRestoreBackup = useCallback(
-		async (file: File) => {
-			if (!restorePassphrase) {
-				toast.error("Please enter your passphrase first");
-				return;
-			}
-
-			setIsLoading(true);
-			try {
-				await restoreFromBackup(file, restorePassphrase);
-				onUnlocked();
-			} catch (_error) {
+	const handleFileSelect = useCallback((file: File) => {
+		// Validate the backup file immediately on selection
+		file
+			.text()
+			.then((text) => {
+				parseBackup(text);
+				setSelectedFile(file);
+			})
+			.catch(() => {
 				toast.error(
-					"Failed to restore from backup. Check your passphrase and backup file.",
+					"Invalid backup file. Make sure you're using a Drivebase vault backup.",
 				);
-			} finally {
-				setIsLoading(false);
-			}
-		},
-		[restorePassphrase, restoreFromBackup, onUnlocked],
-	);
+			});
+	}, []);
+
+	const handleRestoreBackup = useCallback(async () => {
+		if (!selectedFile || !newPassphrase) return;
+
+		if (newPassphrase !== confirmPassphrase) {
+			toast.error("Passphrases do not match");
+			return;
+		}
+
+		setIsLoading(true);
+		try {
+			await restoreFromBackup(selectedFile, newPassphrase);
+			onUnlocked();
+		} catch (_error) {
+			toast.error(
+				"Invalid backup file. Make sure you're using a Drivebase vault backup.",
+			);
+		} finally {
+			setIsLoading(false);
+		}
+	}, [
+		selectedFile,
+		newPassphrase,
+		confirmPassphrase,
+		restoreFromBackup,
+		onUnlocked,
+	]);
+
+	const handleBackToUnlock = useCallback(() => {
+		setShowRestore(false);
+		setSelectedFile(null);
+		setNewPassphrase("");
+		setConfirmPassphrase("");
+	}, []);
 
 	return (
 		<div className="w-full max-w-sm">
@@ -110,17 +140,6 @@ export function VaultUnlockPrompt({ onUnlocked }: VaultUnlockPromptProps) {
 						</div>
 					) : (
 						<div className="space-y-4">
-							<div className="space-y-2">
-								<Label htmlFor="restore-passphrase">Passphrase</Label>
-								<Input
-									id="restore-passphrase"
-									type="password"
-									value={restorePassphrase}
-									onChange={(e) => setRestorePassphrase(e.target.value)}
-									placeholder="Enter the passphrase used when backing up"
-								/>
-							</div>
-
 							<input
 								ref={backupInputRef}
 								type="file"
@@ -128,7 +147,9 @@ export function VaultUnlockPrompt({ onUnlocked }: VaultUnlockPromptProps) {
 								className="hidden"
 								onChange={(e) => {
 									const file = e.target.files?.[0];
-									if (file) handleRestoreBackup(file);
+									if (file) handleFileSelect(file);
+									// Reset so same file can be re-selected if needed
+									e.target.value = "";
 								}}
 							/>
 
@@ -137,17 +158,58 @@ export function VaultUnlockPrompt({ onUnlocked }: VaultUnlockPromptProps) {
 								variant="outline"
 								className="w-full gap-2"
 								onClick={() => backupInputRef.current?.click()}
-								disabled={isLoading || !restorePassphrase}
+								disabled={isLoading}
 							>
 								<Upload className="w-4 h-4" />
-								Select Backup File
+								{selectedFile ? selectedFile.name : "Upload Backup File"}
 							</Button>
+
+							{selectedFile && (
+								<>
+									<div className="space-y-2">
+										<Label htmlFor="new-passphrase">Set new passphrase</Label>
+										<Input
+											id="new-passphrase"
+											type="password"
+											value={newPassphrase}
+											onChange={(e) => setNewPassphrase(e.target.value)}
+											placeholder="Enter a new passphrase"
+											autoFocus
+										/>
+									</div>
+
+									<div className="space-y-2">
+										<Label htmlFor="confirm-passphrase">
+											Confirm passphrase
+										</Label>
+										<Input
+											id="confirm-passphrase"
+											type="password"
+											value={confirmPassphrase}
+											onChange={(e) => setConfirmPassphrase(e.target.value)}
+											placeholder="Repeat your new passphrase"
+											onKeyDown={(e) => {
+												if (e.key === "Enter") handleRestoreBackup();
+											}}
+										/>
+									</div>
+
+									<Button
+										size="lg"
+										className="w-full"
+										onClick={handleRestoreBackup}
+										disabled={isLoading || !newPassphrase || !confirmPassphrase}
+									>
+										{isLoading ? "Restoring..." : "Restore"}
+									</Button>
+								</>
+							)}
 
 							<div className="text-center">
 								<button
 									type="button"
 									className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4"
-									onClick={() => setShowRestore(false)}
+									onClick={handleBackToUnlock}
 								>
 									Back to passphrase unlock
 								</button>
