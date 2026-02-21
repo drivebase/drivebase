@@ -9,13 +9,16 @@ import {
 	decryptFile,
 	decryptFileKey,
 	decryptPrivateKey,
+	decryptPrivateKeyWithRecoveryKey,
 	deriveKEK,
 	encryptFile,
 	encryptFileKey,
 	encryptPrivateKey,
+	encryptPrivateKeyWithRecoveryKey,
 	exportPublicKeyAsJwk,
 	generateFileKey,
 	generateKeyPair,
+	generateRecoveryKey,
 	generateSalt,
 	getKeyFingerprint,
 	importPublicKey,
@@ -45,6 +48,12 @@ export function useVaultCrypto() {
 			const publicKeyStr = JSON.stringify(publicKeyJwk);
 			const kekSaltStr = saltToBase64(salt);
 
+			const recoveryKey = generateRecoveryKey();
+			const recoveryEncryptedPrivKey = await encryptPrivateKeyWithRecoveryKey(
+				privateKey,
+				recoveryKey,
+			);
+
 			const result = await executeSetupVault({
 				input: {
 					publicKey: publicKeyStr,
@@ -61,7 +70,13 @@ export function useVaultCrypto() {
 			store.setKeyMaterial(publicKeyStr, encryptedPrivKey, kekSaltStr);
 			store.unlock(privateKey);
 
-			return createBackup(publicKeyJwk, encryptedPrivKey, kekSaltStr);
+			return createBackup(
+				publicKeyJwk,
+				encryptedPrivKey,
+				kekSaltStr,
+				recoveryKey,
+				recoveryEncryptedPrivKey,
+			);
 		},
 		[executeSetupVault, store],
 	);
@@ -203,22 +218,25 @@ export function useVaultCrypto() {
 	}, []);
 
 	/**
-	 * Restore vault from a backup JSON file.
-	 * Verifies passphrase works before persisting.
+	 * Restore vault from a backup JSON file using the embedded recovery key.
+	 * Sets a new passphrase — does NOT require the old passphrase.
 	 */
 	const restoreFromBackup = useCallback(
-		async (file: File, passphrase: string) => {
+		async (file: File, newPassphrase: string) => {
 			const text = await file.text();
 			const backup = parseBackup(text);
 
-			// Verify passphrase works
-			const salt = base64ToSalt(backup.kekSalt);
-			const kek = await deriveKEK(passphrase, salt);
-			// Will throw if passphrase is wrong
-			const privateKey = await decryptPrivateKey(
-				backup.encryptedPrivateKey,
-				kek,
+			// Decrypt private key using the recovery key embedded in the backup
+			const privateKey = await decryptPrivateKeyWithRecoveryKey(
+				backup.recoveryEncryptedPrivateKey,
+				backup.recoveryKey,
 			);
+
+			// Re-encrypt with the new passphrase
+			const newSalt = generateSalt();
+			const newKek = await deriveKEK(newPassphrase, newSalt);
+			const newEncryptedPrivKey = await encryptPrivateKey(privateKey, newKek);
+			const newKekSalt = saltToBase64(newSalt);
 
 			const publicKeyStr = JSON.stringify(backup.publicKey);
 
@@ -226,8 +244,8 @@ export function useVaultCrypto() {
 			const result = await executeSetupVault({
 				input: {
 					publicKey: publicKeyStr,
-					encryptedPrivateKey: backup.encryptedPrivateKey,
-					kekSalt: backup.kekSalt,
+					encryptedPrivateKey: newEncryptedPrivKey,
+					kekSalt: newKekSalt,
 				},
 			});
 
@@ -235,11 +253,7 @@ export function useVaultCrypto() {
 				throw new Error(result.error.message);
 			}
 
-			store.setKeyMaterial(
-				publicKeyStr,
-				backup.encryptedPrivateKey,
-				backup.kekSalt,
-			);
+			store.setKeyMaterial(publicKeyStr, newEncryptedPrivKey, newKekSalt);
 			store.unlock(privateKey);
 		},
 		[executeSetupVault, store],
