@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.2](https://github.com/drivebase/drivebase/compare/v2.1.1...v2.1.2) (2026-02-21)
+
+
+### Bug Fixes
+
+* update handleOAuthCallback to avoid duplicate root folders ([8ca5626](https://github.com/drivebase/drivebase/commit/8ca5626b5c978551b6ffc5f81b8ceca021b1e686))
+* validate parent directory existence during initialization ([ed935bf](https://github.com/drivebase/drivebase/commit/ed935bf6a52cdf97bd20cb49a1c2c7e6f25f5d89))
+
 ## [2.1.1](https://github.com/drivebase/drivebase/compare/v2.1.0...v2.1.1) (2026-02-21)
 
 
