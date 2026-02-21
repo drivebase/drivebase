@@ -101,12 +101,14 @@ export async function encryptPrivateKey(
 }
 
 /**
- * Decrypt the private key. Returns a non-extractable ECDH key.
+ * Decrypt the private key. Returns a non-extractable ECDH key by default.
+ * Pass extractable=true when the key needs to be re-exported (e.g. re-encryption).
  * Throws if the passphrase (and thus KEK) is wrong.
  */
 export async function decryptPrivateKey(
 	encryptedData: string,
 	kek: CryptoKey,
+	extractable = false,
 ): Promise<CryptoKey> {
 	const data = base64ToBuffer(encryptedData);
 	const iv = data.slice(0, IV_LENGTH);
@@ -124,7 +126,7 @@ export async function decryptPrivateKey(
 		"jwk",
 		jwk,
 		{ name: "ECDH", namedCurve: "P-256" },
-		false,
+		extractable,
 		["deriveKey"],
 	);
 }
@@ -407,10 +409,12 @@ export async function encryptPrivateKeyWithRecoveryKey(
 
 /**
  * Decrypt the private key using a raw recovery key (base64-encoded 32 bytes).
+ * Pass extractable=true when the key needs to be re-exported (e.g. re-encryption).
  */
 export async function decryptPrivateKeyWithRecoveryKey(
 	encryptedData: string,
 	recoveryKeyB64: string,
+	extractable = false,
 ): Promise<CryptoKey> {
 	const keyBytes = base64ToBuffer(recoveryKeyB64) as Uint8Array<ArrayBuffer>;
 	const aesKey = await crypto.subtle.importKey(
@@ -436,7 +440,7 @@ export async function decryptPrivateKeyWithRecoveryKey(
 		"jwk",
 		jwk,
 		{ name: "ECDH", namedCurve: "P-256" },
-		false,
+		extractable,
 		["deriveKey"],
 	);
 }
