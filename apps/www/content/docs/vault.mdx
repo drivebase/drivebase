@@ -1,11 +1,11 @@
 ---
 title: Vault (E2EE)
-description: End-to-End Encrypted Storage in Drivebase
+description: End-to-End Encrypted Storage Through Drivebase
 ---
 
-The **Vault** is a private, per-user encrypted file storage area inside Drivebase. Because Drivebase is a self-hosted solution, it's important to understand how your data is protected from the server infrastructure itself.
+The **Vault** is a private, per-user encrypted file area accessed through Drivebase. Because Drivebase is a self-hosted solution, it's important to understand how your data is protected from the server infrastructure itself.
 
-In the Vault, all files are encrypted **client-side** (on your device) *before* they are uploaded to the Drivebase server. The server stores only ciphertext and encrypted key material — it **never** sees the plaintext file content or your raw private key. The server merely acts as a proxy, securely transferring the encrypted data to your configured storage provider (Local, S3, etc.).
+In the Vault, all files are encrypted **client-side** (on your device) *before* they are sent to the Drivebase API and proxied to your configured storage provider (Local, S3, etc.). The storage provider receives only ciphertext, while Drivebase handles encrypted payloads and encrypted key material only.
 
 Even as the administrator of your own Drivebase instance, you cannot access files stored in a user's vault without their passphrase.
 
@@ -14,14 +14,14 @@ Even as the administrator of your own Drivebase instance, you cannot access file
 ## Security Architecture
 
 ### Zero-Knowledge Design
-Drivebase employs a zero-knowledge architecture for the Vault. The server stores only encrypted key material and ciphertext. It cannot decrypt any vault file.
+Drivebase employs a zero-knowledge architecture for the Vault. Vault file ciphertext is stored at your configured storage provider, while Drivebase stores encrypted key material and metadata needed to route access. Neither can decrypt vault content without the user's passphrase-derived keys held client-side.
 
 ### Key Hierarchy
 Your Vault is secured by a Passphrase-derived Key Encryption Key (KEK).
 1. The **KEK** is derived from your Passphrase using PBKDF2 (310,000 iterations, SHA-256, random 16-byte salt). This KEK is never stored.
 2. The KEK encrypts your **Private Key** (AES-GCM 256-bit). The encrypted private key is stored in the database.
 3. Your **Public Key** (P-256 ECDH) is used to generate an **Encrypted File Key** (ECIES) for every file you upload.
-4. The File Key encrypts the actual **File Content** (AES-GCM 256-bit) before it leaves your device.
+4. The File Key encrypts the actual **File Content** (AES-GCM 256-bit) before it leaves your device for the provider upload path.
 
 ### Session Security & Non-extractable Keys
 After you enter your passphrase to unlock the Vault, the decrypted P-256 private key is imported into your browser's Web Crypto API with `extractable: false`. This means the raw key cannot be exported or leaked by malicious scripts.
@@ -61,10 +61,10 @@ The Vault remains unlocked only while the browser tab is open. This "in-memory" 
 
 ### Chunked File Encryption
 For large files (greater than 50 MB), the file is split into 50 MB plaintext chunks before encryption. Each chunk is encrypted with the same per-file AES-GCM key but with a deterministic IV based on the chunk index. 
-This means no per-chunk IV needs to be stored separately — the server only needs to know the original chunk size to reconstruct IVs during decryption. 
+This means no per-chunk IV needs to be stored separately. Drivebase records the original chunk size as metadata so the client can deterministically reconstruct IVs during decryption.
 
 ### Storage Proxying
-Once the chunks are encrypted locally on your device, they are sent to the Drivebase server. The server acts as a proxy, moving these encrypted chunks to the final destination (your configured Storage Provider) without ever possessing the decryption keys.
+Once chunks are encrypted locally on your device, they are sent through the Drivebase API. Drivebase proxies encrypted payloads to the final destination (your configured storage provider) and does not decrypt them in transit.
 
 ### Vault Isolation
 Vault files are completely isolated from regular files. 
