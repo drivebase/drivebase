@@ -1,4 +1,4 @@
-import { Download, Key, Lock } from "lucide-react";
+import { Download, Key } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,12 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useMyVault } from "@/features/vault/hooks/useVault";
 import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
-import { useVaultStore } from "@/features/vault/store/vaultStore";
 import { promptDialog } from "@/shared/lib/promptDialog";
 
 export function VaultKeySection() {
 	const [{ data }] = useMyVault();
-	const { isUnlocked } = useVaultStore();
 	const { getFingerprint, changePassphrase, generateBackup, downloadBackup } =
 		useVaultCrypto();
 
@@ -120,20 +118,12 @@ export function VaultKeySection() {
 					</div>
 				)}
 
-				{!isUnlocked && (
-					<div className="flex items-center gap-2 text-sm text-muted-foreground">
-						<Lock className="w-4 h-4" />
-						Unlock your vault to manage keys
-					</div>
-				)}
-
 				<div className="flex gap-2">
 					<Button
 						variant="outline"
 						size="sm"
 						className="gap-2"
 						onClick={handleDownloadBackup}
-						disabled={!isUnlocked}
 					>
 						<Download className="w-4 h-4" />
 						Download Backup Key
@@ -143,7 +133,6 @@ export function VaultKeySection() {
 						variant="outline"
 						size="sm"
 						onClick={() => setIsChangeOpen(true)}
-						disabled={!isUnlocked}
 					>
 						Change Passphrase
 					</Button>
