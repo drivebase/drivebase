@@ -21,6 +21,7 @@
 		"@drivebase/ftp": "workspace:*",
 		"@drivebase/google-drive": "workspace:*",
 		"@drivebase/local": "workspace:*",
+		"@drivebase/nextcloud": "workspace:*",
 		"@drivebase/s3": "workspace:*",
 		"@drivebase/telegram": "workspace:*",
 		"@drivebase/webdav": "workspace:*",

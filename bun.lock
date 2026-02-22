@@ -27,6 +27,7 @@
         "@drivebase/ftp": "workspace:*",
         "@drivebase/google-drive": "workspace:*",
         "@drivebase/local": "workspace:*",
+        "@drivebase/nextcloud": "workspace:*",
         "@drivebase/s3": "workspace:*",
         "@drivebase/telegram": "workspace:*",
         "@drivebase/webdav": "workspace:*",
@@ -204,6 +205,20 @@
     },
     "packages/local": {
       "name": "@drivebase/local",
+      "version": "0.1.0",
+      "dependencies": {
+        "@drivebase/core": "workspace:*",
+        "zod": "^3.22.4",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/nextcloud": {
+      "name": "@drivebase/nextcloud",
       "version": "0.1.0",
       "dependencies": {
         "@drivebase/core": "workspace:*",
@@ -541,6 +556,8 @@
     "@drivebase/google-drive": ["@drivebase/google-drive@workspace:packages/google-drive"],
 
     "@drivebase/local": ["@drivebase/local@workspace:packages/local"],
+
+    "@drivebase/nextcloud": ["@drivebase/nextcloud@workspace:packages/nextcloud"],
 
     "@drivebase/s3": ["@drivebase/s3@workspace:packages/s3"],
 

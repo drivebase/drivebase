@@ -123,6 +123,7 @@ export const AVAILABLE_PROVIDERS_QUERY = graphql(`
       name
       description
       authType
+      usesPollingAuth
       configFields {
         name
         label
@@ -131,6 +132,23 @@ export const AVAILABLE_PROVIDERS_QUERY = graphql(`
         isIdentifier
         description
         placeholder
+      }
+    }
+  }
+`);
+
+export const POLL_PROVIDER_AUTH_MUTATION = graphql(`
+  mutation PollProviderAuth($id: ID!) {
+    pollProviderAuth(id: $id) {
+      status
+      provider {
+        id
+        name
+        type
+        authType
+        isActive
+        quotaUsed
+        quotaTotal
       }
     }
   }

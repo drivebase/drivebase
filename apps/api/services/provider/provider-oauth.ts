@@ -66,7 +66,113 @@ export async function initiateOAuth(
 	// Encode provider ID + random CSRF token into state
 	const state = `${providerId}:${crypto.randomUUID()}:${normalizeOAuthSource(source)}`;
 	const callbackUrl = buildCallbackUrl();
-	return registration.initiateOAuth(config, callbackUrl, state);
+	const result = await registration.initiateOAuth(config, callbackUrl, state);
+
+	// If the provider returned config updates (e.g. poll tokens for Login Flow),
+	// persist them into the provider's encrypted config immediately.
+	if (result.configUpdates) {
+		const updatedConfig = { ...config, ...result.configUpdates };
+		const encryptedConfig = encryptConfig(updatedConfig, sensitiveFields);
+		await db
+			.update(storageProviders)
+			.set({ encryptedConfig, updatedAt: new Date() })
+			.where(eq(storageProviders.id, providerId));
+	}
+
+	return { authorizationUrl: result.authorizationUrl, state: result.state };
+}
+
+/**
+ * Poll-based OAuth authentication for providers that don't redirect back.
+ * The provider's pollOAuth() is called with the stored config.
+ * If it returns non-null, the provider is activated (root folder created, quota fetched).
+ *
+ * Returns { status: "pending" } if the user hasn't authenticated yet,
+ * or the activated provider record on success.
+ */
+export async function pollProviderAuth(
+	db: Database,
+	providerId: string,
+	workspaceId: string,
+): Promise<
+	| { status: "pending"; provider?: undefined }
+	| { status: "success"; provider: typeof storageProviders.$inferSelect }
+> {
+	const providerRecord = await getProvider(db, providerId, workspaceId);
+
+	const registration = getProviderRegistration(providerRecord.type);
+
+	if (!registration.pollOAuth) {
+		throw new ProviderError(
+			providerRecord.type,
+			"This provider does not support poll-based authentication",
+		);
+	}
+
+	const sensitiveFields = getSensitiveFields(providerRecord.type);
+	const config = decryptConfig(providerRecord.encryptedConfig, sensitiveFields);
+
+	const updatedConfig = await registration.pollOAuth(config);
+
+	if (!updatedConfig) {
+		return { status: "pending" };
+	}
+
+	// Credentials received — activate the provider (same logic as handleOAuthCallback)
+	const provider = registration.factory();
+	await provider.initialize(updatedConfig);
+
+	let rootFolderId: string;
+	const existingFolderId = await provider.findFolder?.("Drivebase");
+
+	if (existingFolderId) {
+		rootFolderId = existingFolderId;
+	} else {
+		rootFolderId = await provider.createFolder({
+			name: "Drivebase",
+		});
+	}
+
+	const quota = await provider.getQuota();
+
+	let accountEmail: string | null = null;
+	let accountName: string | null = null;
+	const maybeAccountInfo = (
+		provider as {
+			getAccountInfo?: () => Promise<{ email?: string; name?: string }>;
+		}
+	).getAccountInfo;
+	if (maybeAccountInfo) {
+		const accountInfo = await maybeAccountInfo.call(provider);
+		accountEmail = accountInfo.email ?? null;
+		accountName = accountInfo.name ?? null;
+	}
+
+	await provider.cleanup();
+
+	const encryptedConfig = encryptConfig(updatedConfig, sensitiveFields);
+
+	const [updated] = await db
+		.update(storageProviders)
+		.set({
+			encryptedConfig,
+			isActive: true,
+			accountEmail,
+			accountName,
+			rootFolderId,
+			quotaTotal: quota.total ?? null,
+			quotaUsed: quota.used,
+			lastSyncAt: new Date(),
+			updatedAt: new Date(),
+		})
+		.where(eq(storageProviders.id, providerId))
+		.returning();
+
+	if (!updated) {
+		throw new Error("Failed to update provider after poll-based auth");
+	}
+
+	return { status: "success", provider: updated };
 }
 
 /**

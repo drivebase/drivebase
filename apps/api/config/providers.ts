@@ -15,6 +15,10 @@ import {
 	TelegramSensitiveFields,
 	telegramRegistration,
 } from "@drivebase/telegram";
+import {
+	NextcloudSensitiveFields,
+	nextcloudRegistration,
+} from "@drivebase/nextcloud";
 import { WebDAVSensitiveFields, webdavRegistration } from "@drivebase/webdav";
 import type { Hono } from "hono";
 import type { AppEnv } from "../server/app";
@@ -32,6 +36,7 @@ export const providerRegistry: Record<string, ProviderRegistration> = {
 	[ProviderType.FTP]: ftpRegistration,
 	[ProviderType.WEBDAV]: webdavRegistration,
 	[ProviderType.TELEGRAM]: telegramRegistration,
+	[ProviderType.NEXTCLOUD]: nextcloudRegistration,
 };
 
 /**
@@ -45,6 +50,7 @@ export const providerSensitiveFields: Record<string, readonly string[]> = {
 	[ProviderType.FTP]: FTPSensitiveFields,
 	[ProviderType.WEBDAV]: WebDAVSensitiveFields,
 	[ProviderType.TELEGRAM]: TelegramSensitiveFields,
+	[ProviderType.NEXTCLOUD]: NextcloudSensitiveFields,
 };
 
 /**
@@ -74,6 +80,7 @@ export function getAvailableProviders() {
 		name: getProviderName(id),
 		description: reg.description,
 		authType: reg.authType,
+		usesPollingAuth: !!reg.pollOAuth,
 		configFields: reg.configFields,
 	}));
 }
@@ -94,6 +101,8 @@ function getProviderName(type: string): string {
 			return "WebDAV";
 		case ProviderType.TELEGRAM:
 			return "Telegram";
+		case ProviderType.NEXTCLOUD:
+			return "Nextcloud";
 		default:
 			return type;
 	}
