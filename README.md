@@ -47,10 +47,7 @@ curl -fsSL https://drivebase.one/install | bash
 
 <img width="600" alt="Group" src="https://github.com/user-attachments/assets/19e11300-83e1-4e8b-a31e-17be9e2f81c9" />
 
-After you start the containers, open:
-
-- App: `http://localhost:3000`
-- GraphQL: `http://localhost:3000/graphql`
+After you start the containers, open [http://localhost:3000](http://localhost:3000) in your browser to access the Drivebase dashboard.
 
 Login with the default credentials:
 - Email: `admin@drivebase.local`
@@ -95,7 +92,7 @@ bun run dev
 5. Open:
 
 - App: `http://localhost:3000`
-- GraphQL: `http://localhost:3000/graphql`
+- GraphQL: `http://localhost:4000/graphql`
 
 ## Supported Providers
 
