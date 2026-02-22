@@ -17,12 +17,13 @@
     "faq/index",
     "---Storage Providers---",
     "storage-providers/overview",
-    "storage-providers/local",
-    "storage-providers/s3",
     "storage-providers/google-drive",
+    "storage-providers/s3",
+    "storage-providers/local",
+    "storage-providers/telegram",
+    "storage-providers/nexcloud",
     "storage-providers/dropbox",
     "storage-providers/ftp",
-    "storage-providers/webdav",
-    "storage-providers/telegram"
+    "storage-providers/webdav"
   ]
 }

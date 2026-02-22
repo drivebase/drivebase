@@ -9,6 +9,7 @@ enum ProviderType {
 	FTP
 	WEBDAV
 	TELEGRAM
+	NEXTCLOUD
 }
 
 """
@@ -75,6 +76,10 @@ type AvailableProvider {
 	name: String!
 	description: String!
 	authType: AuthType!
+	"""
+	Whether this provider uses poll-based auth (popup + poll instead of redirect)
+	"""
+	usesPollingAuth: Boolean!
 	configFields: [ProviderConfigField!]!
 }
 
@@ -147,6 +152,13 @@ extend type Mutation {
 	createOAuthProviderCredential(
 		input: CreateOAuthProviderCredentialInput!
 	): OAuthProviderCredential!
+
+	"""
+	Poll-based auth for providers that don't redirect back (e.g. Login Flow v2).
+	Returns pending status or the activated provider on success.
+	The frontend calls this repeatedly after opening the auth popup.
+	"""
+	pollProviderAuth(id: ID!): PollProviderAuthResult!
 }
 
 input UpdateProviderQuotaInput {
@@ -165,6 +177,20 @@ input ConnectStorageInput {
 input CreateOAuthProviderCredentialInput {
 	type: ProviderType!
 	config: JSON!
+}
+
+"""
+Result of polling a provider's auth flow
+"""
+type PollProviderAuthResult {
+	"""
+	Whether auth is still pending or completed successfully
+	"""
+	status: String!
+	"""
+	The activated provider (only present when status is success)
+	"""
+	provider: StorageProvider
 }
 
 type SyncProgress {

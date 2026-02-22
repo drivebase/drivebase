@@ -1,5 +1,5 @@
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { type FieldValues, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "urql";
@@ -23,6 +23,7 @@ const AVAILABLE_PROVIDERS_QUERY = graphql(`
 			name
 			description
 			authType
+			usesPollingAuth
 			configFields {
 				name
 				label
@@ -30,6 +31,20 @@ const AVAILABLE_PROVIDERS_QUERY = graphql(`
 				required
 				description
 				placeholder
+			}
+		}
+	}
+`);
+
+const POLL_PROVIDER_AUTH_MUTATION = graphql(`
+	mutation PollProviderAuthOnboarding($id: ID!) {
+		pollProviderAuth(id: $id) {
+			status
+			provider {
+				id
+				name
+				type
+				isActive
 			}
 		}
 	}
@@ -83,6 +98,7 @@ export function ProviderStep({
 	error,
 }: ProviderStepProps) {
 	const [selectedProviderId, setSelectedProviderId] = useState<string>("");
+	const [isPolling, setIsPolling] = useState(false);
 	const [{ data, fetching }] = useQuery({ query: AVAILABLE_PROVIDERS_QUERY });
 	const hasOAuthCallbackResult = oauth === "success" || oauth === "failed";
 	const [{ data: connectedData, fetching: fetchingConnected }] = useQuery({
@@ -95,6 +111,30 @@ export function ProviderStep({
 	const [{ fetching: initializingOAuth }, initiateOAuth] = useMutation(
 		INITIATE_OAUTH_MUTATION,
 	);
+	const [, pollProviderAuth] = useMutation(POLL_PROVIDER_AUTH_MUTATION);
+
+	const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const popupRef = useRef<Window | null>(null);
+
+	const stopPolling = useCallback(() => {
+		if (pollIntervalRef.current) {
+			clearInterval(pollIntervalRef.current);
+			pollIntervalRef.current = null;
+		}
+		if (popupRef.current && !popupRef.current.closed) {
+			popupRef.current.close();
+		}
+		popupRef.current = null;
+		setIsPolling(false);
+	}, []);
+
+	useEffect(() => {
+		return () => {
+			if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+			if (popupRef.current && !popupRef.current.closed)
+				popupRef.current.close();
+		};
+	}, []);
 
 	const {
 		register,
@@ -116,6 +156,39 @@ export function ProviderStep({
 		error === "oauth_failed"
 			? "Authorization failed. Please try connecting your provider again."
 			: "Authorization failed. Please try again.";
+
+	const startPollingAuth = useCallback(
+		(pollingProviderId: string, authorizationUrl: string) => {
+			const popup = window.open(
+				authorizationUrl,
+				"drivebase_auth",
+				"width=600,height=700,menubar=no,toolbar=no,location=yes",
+			);
+			popupRef.current = popup;
+			setIsPolling(true);
+
+			pollIntervalRef.current = setInterval(async () => {
+				if (popup?.closed) {
+					stopPolling();
+					toast.error("Authentication window was closed.");
+					return;
+				}
+
+				try {
+					const result = await pollProviderAuth({ id: pollingProviderId });
+					if (result.data?.pollProviderAuth.status === "success") {
+						stopPolling();
+						toast.success("Storage connected successfully!");
+						onNext();
+					}
+				} catch {
+					stopPolling();
+					toast.error("Authentication failed.");
+				}
+			}, 2000);
+		},
+		[pollProviderAuth, onNext, stopPolling],
+	);
 
 	const onSubmit = async (formData: FieldValues) => {
 		if (!selectedProvider) return;
@@ -146,11 +219,18 @@ export function ProviderStep({
 					id: provider.id,
 					source: OAuthInitiator.Onboarding,
 				});
-				if (oauthResult.data?.initiateProviderOAuth.authorizationUrl) {
-					// Persist current step so the wizard can restore it if navigation is interrupted.
-					localStorage.setItem("onboarding_step", "2");
-					window.location.href =
-						oauthResult.data.initiateProviderOAuth.authorizationUrl;
+				const authUrl =
+					oauthResult.data?.initiateProviderOAuth.authorizationUrl;
+
+				if (authUrl) {
+					if (selectedProvider.usesPollingAuth) {
+						// Poll-based flow: open popup and poll
+						startPollingAuth(provider.id, authUrl);
+					} else {
+						// Standard OAuth: redirect the whole page
+						localStorage.setItem("onboarding_step", "2");
+						window.location.href = authUrl;
+					}
 				}
 			} else {
 				toast.success("Storage connected successfully!");
@@ -279,14 +359,16 @@ export function ProviderStep({
 							<Button
 								type="submit"
 								className="w-full"
-								disabled={connecting || initializingOAuth}
+								disabled={connecting || initializingOAuth || isPolling}
 							>
-								{(connecting || initializingOAuth) && (
+								{(connecting || initializingOAuth || isPolling) && (
 									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
 								)}
-								{selectedProvider.authType === "OAUTH"
-									? "Connect & Authorize"
-									: "Connect Storage"}
+								{isPolling
+									? "Waiting for authorization..."
+									: selectedProvider.authType === "OAUTH"
+										? "Connect & Authorize"
+										: "Connect Storage"}
 							</Button>
 						</form>
 					)}

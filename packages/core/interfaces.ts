@@ -268,6 +268,11 @@ export interface OAuthInitResult {
 	authorizationUrl: string;
 	/** Opaque state value to validate the callback */
 	state: string;
+	/**
+	 * Optional config updates to persist immediately (e.g. poll tokens for Login Flow v2).
+	 * The API will merge these into the provider's encrypted config after initiation.
+	 */
+	configUpdates?: ProviderConfig;
 }
 
 /**
@@ -326,6 +331,13 @@ export interface ProviderRegistration {
 		code: string,
 		callbackUrl: string,
 	) => Promise<ProviderConfig>;
+	/**
+	 * Poll-based auth for providers that don't redirect back (e.g. Nextcloud Login Flow v2).
+	 * Called repeatedly by the API until it returns a non-null updated config.
+	 * The stored config contains provider-specific poll tokens set during initiateOAuth.
+	 * @returns Updated config with credentials when user has authenticated, null if still pending.
+	 */
+	pollOAuth?: (config: ProviderConfig) => Promise<ProviderConfig | null>;
 	/**
 	 * Optional Hono sub-app for provider-specific REST routes.
 	 * Typed as `unknown` to avoid Hono dependency in core.
