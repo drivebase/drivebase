@@ -21,6 +21,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - drivebase_data:/app/data
     ports:
       - '3000:3000'
 
@@ -73,3 +75,4 @@ services:
 
 volumes:
   postgres_data: null
+  drivebase_data: null

@@ -26,6 +26,12 @@ const envSchema = z.object({
 	// Public base URL of this API (used to build OAuth + proxy URLs)
 	// Example production value: https://app.example.com
 	API_BASE_URL: z.string().url().optional(),
+
+	// Telemetry — set to "false" to opt out of anonymous usage data
+	DRIVEBASE_TELEMETRY: z.string().default("true"),
+
+	// Path to writable data directory (used for instance ID persistence)
+	DATA_DIR: z.string().default("/app/data"),
 });
 
 /**

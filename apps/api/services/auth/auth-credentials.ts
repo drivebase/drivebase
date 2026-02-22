@@ -10,6 +10,7 @@ import { checkRateLimit, RateLimits } from "../../redis/rate-limit";
 import { createSession } from "../../redis/session";
 import { createToken } from "../../utils/jwt";
 import { logger } from "../../utils/logger";
+import { telemetry } from "../../posthog";
 import {
 	hashPassword,
 	validatePassword,
@@ -114,6 +115,8 @@ export async function register(
 		hasToken: !!result.token,
 	});
 
+	telemetry.capture("user_registered", { role });
+
 	return result;
 }
 
@@ -197,6 +200,8 @@ export async function login(
 		email: result.user.email,
 		hasToken: !!result.token,
 	});
+
+	telemetry.capture("user_login", { success: true });
 
 	return result;
 }

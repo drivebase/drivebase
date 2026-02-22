@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { env } from "./config/env";
+import { isFirstRun, telemetry } from "./posthog";
 import { mountPluginRoutes } from "./config/providers";
 import { closeUploadQueue } from "./queue/upload-queue";
 import { startUploadWorker, stopUploadWorker } from "./queue/upload-worker";
@@ -23,6 +24,17 @@ try {
 }
 
 logger.info(`Drivebase v${appVersion}`);
+
+if (isFirstRun && env.NODE_ENV === "production") {
+	const grey = "\x1b[90m";
+	const reset = "\x1b[0m";
+	console.log(`
+${grey}  Drivebase collects anonymous usage telemetry to help improve the product.
+  No personal data, file names, or file content is ever collected.
+  To opt out, set: DRIVEBASE_TELEMETRY=false
+  Learn more:      https://drivebase.dev/docs/telemetry${reset}
+`);
+}
 
 /**
  * Initialize application (create default user if needed)
@@ -57,6 +69,8 @@ startUploadWorker();
 
 logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
 
+telemetry.capture("server_started", { version: appVersion, env: env.NODE_ENV });
+
 // Graceful shutdown
 let isShuttingDown = false;
 
@@ -70,6 +84,8 @@ async function shutdown() {
 	server.stop();
 	await stopUploadWorker();
 	await closeUploadQueue();
+	telemetry.capture("server_shutdown");
+	await telemetry.shutdown();
 	process.exit(0);
 }
 

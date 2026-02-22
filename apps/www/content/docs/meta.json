@@ -13,6 +13,7 @@
     "---Advanced---",
     "deployment/index",
     "api/index",
+    "telemetry",
     "contributing/index",
     "faq/index",
     "---Storage Providers---",

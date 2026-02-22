@@ -3,6 +3,7 @@ import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders } from "@drivebase/db";
 import { and, eq, notInArray } from "drizzle-orm";
 import { pubSub } from "../../graphql/pubsub";
+import { telemetry } from "../../posthog";
 import { getProviderInstance } from "./provider-queries";
 
 /**
@@ -31,6 +32,8 @@ export async function syncProvider(
 	if (!providerRecord) {
 		throw new NotFoundError("Provider");
 	}
+
+	const syncStartTime = Date.now();
 
 	// Notify start
 	pubSub.publish("providerSyncProgress", providerId, {
@@ -239,6 +242,11 @@ export async function syncProvider(
 			processed: processedCount,
 			status: "completed",
 			message: "Sync completed successfully",
+		});
+
+		telemetry.capture("provider_sync_completed", {
+			type: providerRecord.type,
+			duration_ms: Date.now() - syncStartTime,
 		});
 
 		await provider.cleanup();

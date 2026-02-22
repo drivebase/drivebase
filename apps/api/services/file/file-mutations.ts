@@ -9,6 +9,7 @@ import type { Database } from "@drivebase/db";
 import { files, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 import { logger } from "../../utils/logger";
+import { telemetry } from "../../posthog";
 import { FolderService } from "../folder";
 import { ProviderService } from "../provider";
 import { getFile } from "./file-queries";
@@ -222,6 +223,7 @@ export async function deleteFile(
 			.where(eq(files.id, fileId));
 
 		logger.debug({ msg: "File deleted", fileId });
+		telemetry.capture("file_deleted");
 	} catch (error) {
 		logger.error({ msg: "Delete file failed", userId, fileId, error });
 		throw error;
