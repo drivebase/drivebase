@@ -79,7 +79,7 @@ export function VaultSetupWizard({ onComplete }: VaultSetupWizardProps) {
 	return (
 		<div className="w-full max-w-md">
 			<Card className="shadow-xl border-border/50">
-				<CardContent className="px-8 py-8 min-h-[420px] flex flex-col">
+				<CardContent className="px-8 py-8 min-h-105 flex flex-col">
 					{step === 1 && <WelcomeStep onNext={() => setStep(2)} />}
 					{step === 2 && (
 						<PassphraseStep
@@ -147,7 +147,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 						className="flex items-start gap-3 p-3  border border-border/60 bg-muted/30"
 					>
 						<div
-							className={`w-8 h-8  flex items-center justify-center flex-shrink-0 ${bg}`}
+							className={`w-8 h-8  flex items-center justify-center shrink-0 ${bg}`}
 						>
 							<Icon className={`w-4 h-4 ${color}`} />
 						</div>
