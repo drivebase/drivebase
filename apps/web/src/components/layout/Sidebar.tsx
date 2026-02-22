@@ -111,7 +111,7 @@ export function Sidebar() {
 
 	return (
 		<div className="h-full w-20 flex flex-col items-center py-5 gap-6 shrink-0 border-r">
-			<div className="flex items-center justify-center text-primary">
+			<div className="flex items-center justify-center text-primary h-10">
 				<img src="/drivebase.svg" alt="Logo" className="w-12 h-12" />
 			</div>
 			<TooltipProvider>
