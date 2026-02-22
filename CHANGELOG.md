@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.4](https://github.com/drivebase/drivebase/compare/v2.1.3...v2.1.4) (2026-02-22)
+
+
+### Bug Fixes
+
+* include workspace ID in file and folder queries ([bdd2b3d](https://github.com/drivebase/drivebase/commit/bdd2b3d9cf4a0d8e730a93c439545663ad992c95))
+* remove unique constraint from virtualPath in files and folders tables ([d87a655](https://github.com/drivebase/drivebase/commit/d87a655a417e8f11edf6159dad2ac15104f3da0d))
+
 ## [2.1.3](https://github.com/drivebase/drivebase/compare/v2.1.2...v2.1.3) (2026-02-21)
 
 
