@@ -52,6 +52,10 @@ After you start the containers, open:
 - App: `http://localhost:3000`
 - GraphQL: `http://localhost:3000/graphql`
 
+Login with the default credentials:
+- Email: `admin@drivebase.local`
+- Password: `admin123`
+
 ## Manual Installation
 
 If you prefer to run the application manually without Docker Compose, you can follow the steps below.
