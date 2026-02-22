@@ -14,7 +14,11 @@ import {
 	disconnectProvider,
 	updateProviderQuota,
 } from "./provider/provider-lifecycle";
-import { handleOAuthCallback, initiateOAuth } from "./provider/provider-oauth";
+import {
+	handleOAuthCallback,
+	initiateOAuth,
+	pollProviderAuth,
+} from "./provider/provider-oauth";
 import {
 	getProvider,
 	getProviderInstance,
@@ -106,6 +110,19 @@ export class ProviderService {
 
 	async handleOAuthCallback(code: string, state: string) {
 		return handleOAuthCallback(this.db, code, state);
+	}
+
+	async pollProviderAuth(
+		providerId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return pollProviderAuth(this.db, providerId, workspaceId);
 	}
 
 	async disconnectProvider(

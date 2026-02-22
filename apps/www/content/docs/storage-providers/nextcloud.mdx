@@ -1,0 +1,39 @@
+---
+title: Nextcloud
+description: Connect Nextcloud accounts using Login Flow v2
+---
+
+Connect your Nextcloud instance to Drivebase for unified file management. Authentication uses Nextcloud's Login Flow v2, which securely generates an app-specific password without exposing your real credentials.
+
+## Prerequisites
+
+You need a running Nextcloud instance (version 19 or later) with a user account.
+
+No developer console setup or API key creation is required — Login Flow v2 handles everything automatically.
+
+## Connecting in Drivebase
+
+1. Navigate to the **Providers** page.
+2. Click **Connect Provider** and select **Nextcloud**.
+3. Enter your Nextcloud server URL (e.g., `https://cloud.example.com`).
+4. Click **Connect** — your browser will open the Nextcloud login page.
+5. Log in to your Nextcloud account and grant access.
+6. Drivebase will automatically receive an app password and complete the connection.
+
+<Callout type="info">
+The app password is encrypted at rest in the Drivebase database. Your real Nextcloud password is never stored. You can revoke the app password from **Nextcloud Settings > Security > Devices & sessions** at any time.
+</Callout>
+
+## How It Works
+
+- **Authentication**: Uses Nextcloud Login Flow v2, which creates a dedicated app password for Drivebase.
+- **File Operations**: All uploads and downloads go through the Drivebase API proxy via WebDAV — there are no presigned URLs.
+- **Chunked Uploads**: Large files use Nextcloud's chunked upload v2 protocol for reliable transfers.
+- **Quota**: Storage quota is fetched via the WebDAV quota properties.
+- **Account Info**: Display name and email are retrieved from the Nextcloud OCS API.
+
+## Notes
+
+- Files are identified by their WebDAV path (e.g., `/Drivebase/document.pdf`).
+- Drivebase creates a `Drivebase` folder in your Nextcloud root to store managed files.
+- Two-factor authentication is fully supported since Login Flow v2 handles auth through the browser.

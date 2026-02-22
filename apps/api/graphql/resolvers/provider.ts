@@ -127,6 +127,14 @@ export const providerMutations: MutationResolvers = {
 			workspaceId,
 		);
 	},
+
+	pollProviderAuth: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		return providerService.pollProviderAuth(args.id, user.userId, workspaceId);
+	},
 };
 
 export const providerSubscriptions: SubscriptionResolvers = {

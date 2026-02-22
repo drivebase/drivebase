@@ -44,6 +44,8 @@ export enum ProviderType {
 	WEBDAV = "webdav",
 	/** Telegram cloud storage via Saved Messages */
 	TELEGRAM = "telegram",
+	/** Nextcloud cloud storage with Login Flow v2 */
+	NEXTCLOUD = "nextcloud",
 }
 
 /**
