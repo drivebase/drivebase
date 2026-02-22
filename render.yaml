@@ -2,7 +2,7 @@ services:
   - type: web
     name: drivebase
     image:
-      url: ghcr.io/drivebase/drivebase:v2.2.1
+      url: ghcr.io/drivebase/drivebase:v2.3.0
     plan: free
     autoDeploy: true
 
