@@ -97,7 +97,7 @@ export function AccountSettingsSection() {
 				</div>
 			</div>
 
-			<div className="space-y-4 text-sm">
+			<div className="space-y-4 text-sm max-w-md">
 				<div className="flex items-center justify-between">
 					<span className="text-muted-foreground flex items-center gap-2">
 						<Mail size={16} />
