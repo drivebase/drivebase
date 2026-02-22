@@ -6,7 +6,7 @@ import {
 	ValidationError,
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { files } from "@drivebase/db";
+import { files, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 import { logger } from "../../utils/logger";
 import { FolderService } from "../folder";
@@ -38,10 +38,15 @@ export async function renameFile(
 		const newVirtualPath = joinPath(parentPath, sanitizedName);
 
 		const [existing] = await db
-			.select()
+			.select({ id: files.id })
 			.from(files)
+			.innerJoin(storageProviders, eq(files.providerId, storageProviders.id))
 			.where(
-				and(eq(files.virtualPath, newVirtualPath), eq(files.isDeleted, false)),
+				and(
+					eq(files.virtualPath, newVirtualPath),
+					eq(storageProviders.workspaceId, workspaceId),
+					eq(files.isDeleted, false),
+				),
 			)
 			.limit(1);
 
@@ -129,10 +134,15 @@ export async function moveFile(
 		}
 
 		const [existing] = await db
-			.select()
+			.select({ id: files.id })
 			.from(files)
+			.innerJoin(storageProviders, eq(files.providerId, storageProviders.id))
 			.where(
-				and(eq(files.virtualPath, newVirtualPath), eq(files.isDeleted, false)),
+				and(
+					eq(files.virtualPath, newVirtualPath),
+					eq(storageProviders.workspaceId, workspaceId),
+					eq(files.isDeleted, false),
+				),
 			)
 			.limit(1);
 
