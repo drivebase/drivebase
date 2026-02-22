@@ -1,3 +1,4 @@
+import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -7,6 +8,7 @@ import {
 	InfoIcon,
 	LayoutDashboard,
 	Lock,
+	type LucideIcon,
 	Settings,
 	Star,
 } from "lucide-react";
@@ -33,14 +35,54 @@ import {
 } from "@/features/workspaces";
 import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 
-const navItems = [
+type NavItem = {
+	icon: LucideIcon;
+	label: MessageDescriptor;
+	to: string;
+};
+
+const topNavItems: NavItem[] = [
 	{ icon: LayoutDashboard, label: msg`Dashboard`, to: "/" },
 	{ icon: Folder, label: msg`Files`, to: "/files" },
 	{ icon: Star, label: msg`Favorites`, to: "/favorites" },
 	{ icon: Cloud, label: msg`Providers`, to: "/providers" },
+];
+
+const bottomNavItems: NavItem[] = [
 	{ icon: Lock, label: msg`Vault`, to: "/vault" },
 	{ icon: Settings, label: msg`Settings`, to: "/settings" },
 ];
+
+type SidebarItemProps = {
+	icon: LucideIcon;
+	label: string;
+	to: string;
+};
+
+function SidebarItem({ icon: Icon, label, to }: SidebarItemProps) {
+	return (
+		<Tooltip delayDuration={0}>
+			<TooltipTrigger asChild>
+				<Link
+					to={to}
+					className="w-12 h-12 transition-all duration-200 flex items-center justify-center shrink-0"
+					activeProps={{
+						className: "bg-primary/10 text-primary",
+					}}
+					inactiveProps={{
+						className:
+							"text-muted-foreground hover:text-foreground hover:bg-muted/50",
+					}}
+				>
+					<Icon size={24} />
+				</Link>
+			</TooltipTrigger>
+			<TooltipContent side="right">
+				<p>{label}</p>
+			</TooltipContent>
+		</Tooltip>
+	);
+}
 
 export function Sidebar() {
 	const { i18n } = useLingui();
@@ -74,30 +116,14 @@ export function Sidebar() {
 			</div>
 			<TooltipProvider>
 				<nav className="flex flex-col items-center gap-1.5 w-full flex-1">
-					{navItems.map((item) => {
-						return (
-							<Tooltip key={item.to} delayDuration={0}>
-								<TooltipTrigger asChild>
-									<Link
-										to={item.to}
-										className="w-12 h-12  transition-all duration-200 flex items-center justify-center shrink-0"
-										activeProps={{
-											className: "bg-primary/10 text-primary",
-										}}
-										inactiveProps={{
-											className:
-												"text-muted-foreground hover:text-foreground hover:bg-muted/50",
-										}}
-									>
-										<item.icon size={24} />
-									</Link>
-								</TooltipTrigger>
-								<TooltipContent side="right">
-									<p>{i18n._(item.label)}</p>
-								</TooltipContent>
-							</Tooltip>
-						);
-					})}
+					{topNavItems.map((item) => (
+						<SidebarItem
+							key={item.to}
+							icon={item.icon}
+							label={i18n._(item.label)}
+							to={item.to}
+						/>
+					))}
 				</nav>
 
 				{isUpdateAvailable && (
@@ -107,7 +133,7 @@ export function Sidebar() {
 								href={`https://github.com/${githubRepo}/releases/latest`}
 								target="_blank"
 								rel="noreferrer noopener"
-								className="w-12 h-12  flex items-center justify-center text-sm font-semibold"
+								className="w-12 h-12 flex items-center justify-center text-sm font-semibold"
 							>
 								<InfoIcon />
 							</a>
@@ -122,13 +148,24 @@ export function Sidebar() {
 					</Tooltip>
 				)}
 
+				<nav className="flex flex-col items-center gap-1.5 w-full">
+					{bottomNavItems.map((item) => (
+						<SidebarItem
+							key={item.to}
+							icon={item.icon}
+							label={i18n._(item.label)}
+							to={item.to}
+						/>
+					))}
+				</nav>
+
 				<DropdownMenu>
 					<Tooltip delayDuration={0}>
 						<TooltipTrigger asChild>
 							<DropdownMenuTrigger asChild>
 								<button
 									type="button"
-									className={`w-12 h-12  flex items-center justify-center text-sm font-semibold border border-border/60 ${getWorkspaceColorClass(
+									className={`w-12 h-12 flex items-center justify-center text-sm font-semibold border border-border/60 ${getWorkspaceColorClass(
 										activeWorkspace?.color,
 									)}`}
 								>
@@ -150,7 +187,7 @@ export function Sidebar() {
 								onClick={() => handleSwitchWorkspace(workspace.id)}
 							>
 								<div
-									className={`w-3 h-3  mr-2 ${getWorkspaceColorClass(workspace.color)}`}
+									className={`w-3 h-3 mr-2 ${getWorkspaceColorClass(workspace.color)}`}
 								/>
 								<span className="flex-1 truncate">{workspace.name}</span>
 								{workspace.id === activeWorkspace?.id ? "✓" : null}
