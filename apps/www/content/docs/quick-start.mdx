@@ -18,7 +18,7 @@ Before you begin, ensure you have the following installed on your system:
 The fastest way to get started is with our automated installer:
 
 ```bash
-wget -qO- https://drivebase.one/install | bash
+curl -o compose.yaml https://drivebase.one/compose
 ```
 
 This will create a `drivebase` folder, set up your configuration, and generate secure keys automatically.
@@ -27,8 +27,7 @@ Alternatively, you can follow the manual steps below:
 
 1. **Download the Production Compose file**:
    ```bash
-   wget -O compose.yaml https://drivebase.one/compose
-   # OR: curl -o compose.yaml https://drivebase.one/compose
+   curl -o compose.yaml https://drivebase.one/compose
    ```
 
 2. **Create an environment file**:
