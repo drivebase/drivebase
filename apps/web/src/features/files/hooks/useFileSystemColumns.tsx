@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { FolderIcon } from "lucide-react";
+import { FolderIcon, Star } from "lucide-react";
 import { useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileMimeIcon } from "@/features/files/FileMimeIcon";
@@ -90,6 +90,9 @@ export function useFileSystemColumns({
 									<FolderIcon size={16} />
 								</div>
 								<span className="truncate">{folder.name}</span>
+								{folder.starred && (
+									<Star size={12} className="shrink-0 text-muted-foreground" />
+								)}
 							</button>
 						);
 					}
@@ -101,6 +104,9 @@ export function useFileSystemColumns({
 								<FileMimeIcon mimeType={file.mimeType} />
 							</div>
 							<span className="truncate">{file.name}</span>
+							{file.starred && (
+								<Star size={12} className="shrink-0 text-muted-foreground" />
+							)}
 						</div>
 					);
 				},
