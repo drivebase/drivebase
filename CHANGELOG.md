@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.4.0](https://github.com/drivebase/drivebase/compare/v2.3.0...v2.4.0) (2026-02-22)
+
+
+### Features
+
+* implement telemetry tracking ([4c5b472](https://github.com/drivebase/drivebase/commit/4c5b472d705f0644bf505aaadfe88a5fcdc6c1ba))
+
 # [2.3.0](https://github.com/drivebase/drivebase/compare/v2.2.1...v2.3.0) (2026-02-22)
 
 
