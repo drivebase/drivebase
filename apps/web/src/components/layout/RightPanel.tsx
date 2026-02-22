@@ -9,7 +9,7 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 import { useRecentUpdates } from "@/shared/hooks/useRecentUpdates";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
-function DefaultAccountView() {
+function DefaultView() {
 	const user = useAuthStore((state) => state.user);
 	const navigate = useNavigate();
 	const { posts, isLoading } = useRecentUpdates();
@@ -52,7 +52,7 @@ function DefaultAccountView() {
 						<Trans>Recent Updates</Trans>
 					</h3>
 				</div>
-				<div className="space-y-3">
+				<div>
 					{isLoading &&
 						Array.from({ length: 3 }).map((_, i) => (
 							// biome-ignore lint/suspicious/noArrayIndexKey: skeleton items have no stable id
@@ -73,7 +73,7 @@ function DefaultAccountView() {
 							href={post.url}
 							target="_blank"
 							rel="noreferrer noopener"
-							className="block  p-3 hover:bg-muted transition-colors px-4"
+							className="block hover:bg-muted transition-colors p-4"
 						>
 							<p className="text-sm font-medium leading-snug line-clamp-2">
 								{post.title}
@@ -123,7 +123,7 @@ export function RightPanel() {
 					<div className="flex-1 overflow-y-auto">{content}</div>
 				</div>
 			) : (
-				<DefaultAccountView />
+				<DefaultView />
 			)}
 		</div>
 	);
