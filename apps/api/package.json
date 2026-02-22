@@ -1,5 +1,5 @@
 {
-	"name": "@drivebase/api",
+	"name": "api",
 	"version": "0.1.0",
 	"module": "index.ts",
 	"type": "module",
