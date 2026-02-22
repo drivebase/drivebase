@@ -53,7 +53,7 @@ const client = telemetryEnabled
 	: null;
 
 type TelemetryEvent =
-	| { event: "server_started"; properties: { version: string; env: string } }
+	| { event: "server_started"; properties: { version: string } }
 	| { event: "server_shutdown"; properties?: Record<string, never> }
 	| { event: "user_registered"; properties: { role: string } }
 	| { event: "user_login"; properties: { success: boolean } }

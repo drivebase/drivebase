@@ -69,7 +69,7 @@ startUploadWorker();
 
 logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
 
-telemetry.capture("server_started", { version: appVersion, env: env.NODE_ENV });
+telemetry.capture("server_started", { version: appVersion });
 
 // Graceful shutdown
 let isShuttingDown = false;
