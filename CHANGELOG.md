@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.1](https://github.com/drivebase/drivebase/compare/v2.2.0...v2.2.1) (2026-02-22)
+
+
+### Bug Fixes
+
+* api package name in Dockerfile ([68fcbbd](https://github.com/drivebase/drivebase/commit/68fcbbdf1b46afa64554620430b379acfa1ae47e))
+* update installation command in Quick Start guide to use curl ([a0a65b0](https://github.com/drivebase/drivebase/commit/a0a65b0d086257cd92d90b6938233d5f19a6ab1b))
+
 # [2.2.0](https://github.com/drivebase/drivebase/compare/v2.1.4...v2.2.0) (2026-02-22)
 
 
