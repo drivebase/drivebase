@@ -5,8 +5,8 @@ import {
 	ValidationError,
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { files } from "@drivebase/db";
-import { eq } from "drizzle-orm";
+import { files, storageProviders } from "@drivebase/db";
+import { and, eq } from "drizzle-orm";
 import { getPublicApiBaseUrl } from "../../config/url";
 import { logger } from "../../utils/logger";
 import { FolderService } from "../folder";
@@ -71,9 +71,15 @@ export async function requestUpload(
 		}
 
 		const [existing] = await db
-			.select()
+			.select({ id: files.id, isDeleted: files.isDeleted })
 			.from(files)
-			.where(eq(files.virtualPath, virtualPath))
+			.innerJoin(storageProviders, eq(files.providerId, storageProviders.id))
+			.where(
+				and(
+					eq(files.virtualPath, virtualPath),
+					eq(storageProviders.workspaceId, workspaceId),
+				),
+			)
 			.limit(1);
 
 		if (existing && !existing.isDeleted) {
