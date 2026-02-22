@@ -142,13 +142,13 @@ export function FileSystemRowActions({
 					{file && canToggleFavorite ? (
 						<DropdownMenuItem onClick={() => onToggleFileFavorite?.(file)}>
 							<Star size={14} className="mr-2" />
-							{file.starred ? "Remove from Favorites" : "Add to Favorites"}
+							{file.starred ? "Remove from Starred" : "Add to Starred"}
 						</DropdownMenuItem>
 					) : null}
 					{folder && canToggleFavorite ? (
 						<DropdownMenuItem onClick={() => onToggleFolderFavorite?.(folder)}>
 							<Star size={14} className="mr-2" />
-							{folder.starred ? "Remove from Favorites" : "Add to Favorites"}
+							{folder.starred ? "Remove from Starred" : "Add to Starred"}
 						</DropdownMenuItem>
 					) : null}
 					{canShowDetails ? (
