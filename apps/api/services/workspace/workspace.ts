@@ -1,8 +1,8 @@
 import type { Database } from "@drivebase/db";
 import { workspaceMemberships, workspaces } from "@drivebase/db";
 import { and, asc, eq } from "drizzle-orm";
-import { logger } from "../../utils/logger";
 import { telemetry } from "../../posthog";
+import { logger } from "../../utils/logger";
 
 const DEFAULT_WORKSPACE_NAME = "My Workspace";
 const DEFAULT_WORKSPACE_COLOR = "sky";

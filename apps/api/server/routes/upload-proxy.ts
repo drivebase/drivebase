@@ -1,10 +1,10 @@
 import { files, getDb } from "@drivebase/db";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
+import { fileSizeBucket, telemetry } from "../../posthog";
 import { FileService } from "../../services/file";
 import { ProviderService } from "../../services/provider";
 import { logger } from "../../utils/logger";
-import { fileSizeBucket, telemetry } from "../../posthog";
 import type { AppEnv } from "../app";
 
 /**

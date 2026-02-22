@@ -7,8 +7,8 @@ import {
 	storageProviders,
 } from "@drivebase/db";
 import { and, eq, sql } from "drizzle-orm";
-import { logger } from "../../utils/logger";
 import { telemetry } from "../../posthog";
+import { logger } from "../../utils/logger";
 
 interface CreateRuleInput {
 	name: string;
