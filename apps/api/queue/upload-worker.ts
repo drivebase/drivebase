@@ -6,6 +6,7 @@ import { createBullMQConnection } from "../redis/client";
 import { UploadSessionManager } from "../services/file/upload-session";
 import { ProviderService } from "../services/provider";
 import { logger } from "../utils/logger";
+import { fileSizeBucket, telemetry } from "../posthog";
 import type { UploadJobData } from "./upload-queue";
 
 let uploadWorker: Worker<UploadJobData> | null = null;
@@ -236,6 +237,11 @@ export function startUploadWorker(): Worker<UploadJobData> {
 					errorMessage: null,
 				});
 
+				telemetry.capture("chunked_upload_completed", {
+					provider_type: providerRecord.type,
+					size_bucket: fileSizeBucket(totalSize),
+				});
+
 				logger.info({
 					msg: "Upload worker completed",
 					jobId: job.id,
@@ -250,6 +256,11 @@ export function startUploadWorker(): Worker<UploadJobData> {
 					jobId: job.id,
 					sessionId,
 					error: errorMessage,
+				});
+
+				telemetry.capture("chunked_upload_failed", {
+					provider_type: providerId,
+					reason: errorMessage,
 				});
 
 				// Mark session failed (leave temp files for retry)

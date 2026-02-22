@@ -10,6 +10,7 @@ import { files, folders, vaults } from "@drivebase/db";
 import { and, eq, isNull } from "drizzle-orm";
 import { getPublicApiBaseUrl } from "../config/url";
 import { logger } from "../utils/logger";
+import { telemetry } from "../posthog";
 import { ProviderService } from "./provider";
 
 /**
@@ -56,6 +57,7 @@ export class VaultService {
 		}
 
 		logger.info({ msg: "Vault created", userId, vaultId: vault.id });
+		telemetry.capture("vault_setup");
 		return vault;
 	}
 

@@ -8,6 +8,7 @@ import {
 } from "../../config/providers";
 import { encryptConfig } from "../../utils/encryption";
 import { logger } from "../../utils/logger";
+import { telemetry } from "../../posthog";
 import { getOAuthCredentialConfig } from "./provider-credentials";
 
 /**
@@ -84,6 +85,8 @@ export async function connectProvider(
 				throw new Error("Failed to save provider");
 			}
 
+			telemetry.capture("provider_connected", { type });
+
 			return savedProvider;
 		} catch (error) {
 			logger.error({
@@ -130,6 +133,8 @@ export async function connectProvider(
 			throw new Error("Failed to save provider");
 		}
 
+		telemetry.capture("provider_connected", { type });
+
 		return savedProvider;
 	} catch (error) {
 		logger.error({
@@ -166,6 +171,8 @@ export async function disconnectProvider(
 	}
 
 	await db.delete(storageProviders).where(eq(storageProviders.id, providerId));
+
+	telemetry.capture("provider_disconnected", { type: provider.type });
 }
 
 /**

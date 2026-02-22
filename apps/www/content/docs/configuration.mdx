@@ -29,6 +29,9 @@ Drivebase uses environment variables for configuration. You can set these in a `
 ### Web Client
 - `VITE_PUBLIC_API_URL`: The public GraphQL endpoint URL used by the browser (e.g., `http://localhost:4000/graphql`).
 
+### Telemetry
+- `DRIVEBASE_TELEMETRY`: Set to `false` to disable anonymous usage telemetry (default: `true`). See [Telemetry](/docs/telemetry) for details on what is collected.
+
 ## Generating Secure Keys
 
 For `JWT_SECRET` and `ENCRYPTION_KEY`, you should generate strong random strings. You can use the following command:

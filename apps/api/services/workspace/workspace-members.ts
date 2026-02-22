@@ -12,6 +12,7 @@ import {
 } from "@drivebase/db";
 import { and, asc, eq, gt, isNull } from "drizzle-orm";
 import type { WorkspaceRole } from "./rbac";
+import { telemetry } from "../../posthog";
 
 type WorkspaceMemberRow = {
 	userId: string;
@@ -301,6 +302,8 @@ export async function acceptWorkspaceInvite(
 			updatedAt: new Date(),
 		})
 		.where(eq(workspaceInvites.id, invite.id));
+
+	telemetry.capture("workspace_invite_accepted");
 
 	return {
 		id: invite.workspaceId,

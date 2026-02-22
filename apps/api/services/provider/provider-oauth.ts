@@ -8,6 +8,7 @@ import {
 } from "../../config/providers";
 import { getPublicApiBaseUrl } from "../../config/url";
 import { decryptConfig, encryptConfig } from "../../utils/encryption";
+import { telemetry } from "../../posthog";
 import { getProvider } from "./provider-queries";
 
 type OAuthInitiatorSource = "default" | "onboarding";
@@ -78,6 +79,8 @@ export async function initiateOAuth(
 			.set({ encryptedConfig, updatedAt: new Date() })
 			.where(eq(storageProviders.id, providerId));
 	}
+
+	telemetry.capture("provider_oauth_initiated", { type: providerRecord.type });
 
 	return { authorizationUrl: result.authorizationUrl, state: result.state };
 }

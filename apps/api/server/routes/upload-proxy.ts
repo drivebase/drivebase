@@ -4,6 +4,7 @@ import type { Context } from "hono";
 import { FileService } from "../../services/file";
 import { ProviderService } from "../../services/provider";
 import { logger } from "../../utils/logger";
+import { fileSizeBucket, telemetry } from "../../posthog";
 import type { AppEnv } from "../app";
 
 /**
@@ -62,6 +63,12 @@ export async function handleUploadProxy(c: Context<AppEnv>): Promise<Response> {
 		}
 
 		logger.debug({ msg: "Proxy upload success", fileId });
+
+		telemetry.capture("file_uploaded", {
+			provider_type: providerRecord.type,
+			size_bucket: fileSizeBucket(file.size ?? 0),
+			vault: !!file.vaultId,
+		});
 
 		return c.json({ success: true });
 	} catch (error) {

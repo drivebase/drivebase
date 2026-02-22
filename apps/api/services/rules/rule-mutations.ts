@@ -8,6 +8,7 @@ import {
 } from "@drivebase/db";
 import { and, eq, sql } from "drizzle-orm";
 import { logger } from "../../utils/logger";
+import { telemetry } from "../../posthog";
 
 interface CreateRuleInput {
 	name: string;
@@ -72,6 +73,7 @@ export async function createRule(
 	}
 
 	logger.debug({ msg: "File rule created", ruleId: rule.id, name: rule.name });
+	telemetry.capture("file_rule_created");
 	return rule;
 }
 

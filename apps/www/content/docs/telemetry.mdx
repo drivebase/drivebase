@@ -1,0 +1,60 @@
+---
+title: Telemetry
+description: What Drivebase collects and how to opt out
+icon: "ChartBar"
+---
+
+Drivebase collects **anonymous usage telemetry** to help understand how the product is used and to prioritize improvements. Telemetry is enabled by default and can be opted out at any time.
+
+## What we collect
+
+All events are tied to a randomly generated **instance ID** — a UUID created on first startup. It is not linked to any user account, email address, or identifiable information.
+
+| Event | Data collected |
+|---|---|
+| `server_started` | App version, environment (`production`/`development`) |
+| `server_shutdown` | _(none)_ |
+| `user_registered` | Role (`owner`, `admin`, `member`) |
+| `user_login` | Success or failure (boolean) |
+| `onboarding_completed` | _(none)_ |
+| `provider_connected` | Provider type (e.g. `google_drive`, `s3`) |
+| `provider_disconnected` | Provider type |
+| `provider_sync_completed` | Provider type, duration in ms |
+| `provider_oauth_initiated` | Provider type |
+| `file_uploaded` | Provider type, size bucket, vault flag |
+| `file_downloaded` | Provider type |
+| `file_deleted` | _(none)_ |
+| `chunked_upload_completed` | Provider type, size bucket |
+| `chunked_upload_failed` | Provider type, failure reason |
+| `vault_setup` | _(none)_ |
+| `file_rule_created` | _(none)_ |
+| `workspace_created` | _(none)_ |
+| `workspace_invite_accepted` | _(none)_ |
+
+File size buckets are coarse ranges (`small` \<10 MB, `medium` \<50 MB, `large` \<200 MB, `chunked` ≥200 MB) — no exact sizes are sent.
+
+## What we never collect
+
+- File names, folder paths, or any file content
+- User emails, names, or any personally identifiable information
+- Provider credentials, API keys, or tokens
+- IP addresses or geographic data
+- Workspace names or member lists
+
+## Instance ID
+
+On first startup, Drivebase generates a random UUID and stores it in the data directory (`/app/data/.instance-id`). This ID persists across restarts via the `drivebase_data` Docker volume. It is not linked to any user or machine — it exists solely to deduplicate telemetry from a single instance.
+
+## Telemetry provider
+
+Telemetry data is sent to **PostHog** (US region, `https://us.i.posthog.com`). PostHog is an open-source analytics platform. No data is sold or shared with third parties.
+
+## How to opt out
+
+Set the `DRIVEBASE_TELEMETRY` environment variable to `false`:
+
+```dotenv
+DRIVEBASE_TELEMETRY=false
+```
+
+Once set, no telemetry events will be captured or sent. See [Configuration](/docs/configuration) for where to add environment variables.

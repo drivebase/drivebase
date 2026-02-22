@@ -1,7 +1,9 @@
 import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
 import { FileService } from "../../services/file";
+import { ProviderService } from "../../services/provider";
 import { logger } from "../../utils/logger";
+import { telemetry } from "../../posthog";
 import type { AppEnv } from "../app";
 
 /**
@@ -22,6 +24,7 @@ export async function handleDownloadProxy(
 	try {
 		const db = getDb();
 		const fileService = new FileService(db);
+		const providerService = new ProviderService(db);
 		const workspaceId = c.req.header("x-workspace-id") ?? undefined;
 		const file = await fileService.getFileForProxy(
 			fileId,
@@ -39,6 +42,15 @@ export async function handleDownloadProxy(
 			user.userId,
 			workspaceId,
 		);
+
+		providerService
+			.getProvider(file.providerId, user.userId, workspaceId)
+			.then((providerRecord) => {
+				telemetry.capture("file_downloaded", {
+					provider_type: providerRecord.type,
+				});
+			})
+			.catch(() => {});
 
 		const encodedName = encodeURIComponent(file.name);
 		return new Response(stream, {
