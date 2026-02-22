@@ -10,15 +10,15 @@ import {
 	googleDriveRegistration,
 } from "@drivebase/google-drive";
 import { LocalSensitiveFields, localRegistration } from "@drivebase/local";
+import {
+	NextcloudSensitiveFields,
+	nextcloudRegistration,
+} from "@drivebase/nextcloud";
 import { S3SensitiveFields, s3Registration } from "@drivebase/s3";
 import {
 	TelegramSensitiveFields,
 	telegramRegistration,
 } from "@drivebase/telegram";
-import {
-	NextcloudSensitiveFields,
-	nextcloudRegistration,
-} from "@drivebase/nextcloud";
 import { WebDAVSensitiveFields, webdavRegistration } from "@drivebase/webdav";
 import type { Hono } from "hono";
 import type { AppEnv } from "../server/app";

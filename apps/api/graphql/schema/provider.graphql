@@ -76,7 +76,9 @@ type AvailableProvider {
 	name: String!
 	description: String!
 	authType: AuthType!
-	"""Whether this provider uses poll-based auth (popup + poll instead of redirect)"""
+	"""
+	Whether this provider uses poll-based auth (popup + poll instead of redirect)
+	"""
 	usesPollingAuth: Boolean!
 	configFields: [ProviderConfigField!]!
 }
@@ -181,9 +183,13 @@ input CreateOAuthProviderCredentialInput {
 Result of polling a provider's auth flow
 """
 type PollProviderAuthResult {
-	"""Whether auth is still pending or completed successfully"""
+	"""
+	Whether auth is still pending or completed successfully
+	"""
 	status: String!
-	"""The activated provider (only present when status is success)"""
+	"""
+	The activated provider (only present when status is success)
+	"""
 	provider: StorageProvider
 }
 

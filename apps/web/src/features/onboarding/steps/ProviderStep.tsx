@@ -168,7 +168,7 @@ export function ProviderStep({
 			setIsPolling(true);
 
 			pollIntervalRef.current = setInterval(async () => {
-				if (popup && popup.closed) {
+				if (popup?.closed) {
 					stopPolling();
 					toast.error("Authentication window was closed.");
 					return;

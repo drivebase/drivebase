@@ -76,7 +76,7 @@ export function useProviderConnect({ onSuccess }: UseProviderConnectOptions) {
 
 			pollIntervalRef.current = setInterval(async () => {
 				// If popup was closed by user, stop polling
-				if (popup && popup.closed) {
+				if (popup?.closed) {
 					stopPolling();
 					setIsInitiatingOAuth(null);
 					setError("Authentication window was closed.");

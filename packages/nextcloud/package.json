@@ -5,11 +5,17 @@
 	"type": "module",
 	"private": true,
 	"description": "Nextcloud storage provider for Drivebase using Login Flow v2 and WebDAV",
-	"exports": { ".": "./index.ts" },
+	"exports": {
+		".": "./index.ts"
+	},
 	"dependencies": {
 		"@drivebase/core": "workspace:*",
 		"zod": "^3.22.4"
 	},
-	"devDependencies": { "@types/bun": "latest" },
-	"peerDependencies": { "typescript": "^5" }
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	}
 }
