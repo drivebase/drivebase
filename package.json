@@ -10,6 +10,7 @@
 	"scripts": {
 		"generate": "bun --filter web generate && bun --filter api codegen",
 		"dev": "bun --env-file=.env.local turbo run dev --parallel --filter=api --filter=web",
+		"build": "bun turbo run build --filter=web",
 		"dev:api": "bun --env-file=.env.local turbo run --filter=api dev",
 		"dev:web": "bun --env-file=.env.local turbo run --filter=web dev",
 		"test": "bun test --env-file=.env.test",
