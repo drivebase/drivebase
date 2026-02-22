@@ -4,11 +4,11 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	Cloud,
 	Folder,
+	InfoIcon,
 	LayoutDashboard,
 	Lock,
 	Settings,
 	Star,
-	Trash2,
 } from "lucide-react";
 import { useMemo } from "react";
 import {
@@ -31,6 +31,7 @@ import {
 	setActiveWorkspaceId,
 	useWorkspaces,
 } from "@/features/workspaces";
+import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 
 const navItems = [
 	{ icon: LayoutDashboard, label: msg`Dashboard`, to: "/" },
@@ -45,6 +46,7 @@ export function Sidebar() {
 	const { i18n } = useLingui();
 	const navigate = useNavigate();
 	const [{ data }] = useWorkspaces(false);
+	const { isUpdateAvailable, latestGithubVersion, githubRepo } = useAppUpdate();
 
 	const activeWorkspaceId = getActiveWorkspaceId();
 	const workspaces = data?.workspaces ?? [];
@@ -71,30 +73,54 @@ export function Sidebar() {
 				<img src="/drivebase.svg" alt="Logo" className="w-12 h-12" />
 			</div>
 			<TooltipProvider>
-				<nav className="flex flex-col items-center gap-3 w-full flex-1">
-					{navItems.map((item) => (
-						<Tooltip key={item.to} delayDuration={0}>
-							<TooltipTrigger asChild>
-								<Link
-									to={item.to}
-									className="w-12 h-12  transition-all duration-200 flex items-center justify-center shrink-0"
-									activeProps={{
-										className: "bg-primary/10 text-primary",
-									}}
-									inactiveProps={{
-										className:
-											"text-muted-foreground hover:text-foreground hover:bg-muted/50",
-									}}
-								>
-									<item.icon size={24} />
-								</Link>
-							</TooltipTrigger>
-							<TooltipContent side="right">
-								<p>{i18n._(item.label)}</p>
-							</TooltipContent>
-						</Tooltip>
-					))}
+				<nav className="flex flex-col items-center gap-1.5 w-full flex-1">
+					{navItems.map((item) => {
+						return (
+							<Tooltip key={item.to} delayDuration={0}>
+								<TooltipTrigger asChild>
+									<Link
+										to={item.to}
+										className="w-12 h-12  transition-all duration-200 flex items-center justify-center shrink-0"
+										activeProps={{
+											className: "bg-primary/10 text-primary",
+										}}
+										inactiveProps={{
+											className:
+												"text-muted-foreground hover:text-foreground hover:bg-muted/50",
+										}}
+									>
+										<item.icon size={24} />
+									</Link>
+								</TooltipTrigger>
+								<TooltipContent side="right">
+									<p>{i18n._(item.label)}</p>
+								</TooltipContent>
+							</Tooltip>
+						);
+					})}
 				</nav>
+
+				{isUpdateAvailable && (
+					<Tooltip delayDuration={0}>
+						<TooltipTrigger asChild>
+							<a
+								href={`https://github.com/${githubRepo}/releases/latest`}
+								target="_blank"
+								rel="noreferrer noopener"
+								className="w-12 h-12  flex items-center justify-center text-sm font-semibold"
+							>
+								<InfoIcon />
+							</a>
+						</TooltipTrigger>
+						<TooltipContent side="right">
+							<p>
+								{i18n._(
+									msg`Update available: v${latestGithubVersion ?? "unknown"})`,
+								)}
+							</p>
+						</TooltipContent>
+					</Tooltip>
+				)}
 
 				<DropdownMenu>
 					<Tooltip delayDuration={0}>
