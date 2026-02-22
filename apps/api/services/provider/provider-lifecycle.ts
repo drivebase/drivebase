@@ -6,9 +6,9 @@ import {
 	getProviderRegistration,
 	getSensitiveFields,
 } from "../../config/providers";
+import { telemetry } from "../../posthog";
 import { encryptConfig } from "../../utils/encryption";
 import { logger } from "../../utils/logger";
-import { telemetry } from "../../posthog";
 import { getOAuthCredentialConfig } from "./provider-credentials";
 
 /**

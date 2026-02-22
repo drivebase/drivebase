@@ -2,11 +2,11 @@ import { files, getDb } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { eq } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
+import { fileSizeBucket, telemetry } from "../posthog";
 import { createBullMQConnection } from "../redis/client";
 import { UploadSessionManager } from "../services/file/upload-session";
 import { ProviderService } from "../services/provider";
 import { logger } from "../utils/logger";
-import { fileSizeBucket, telemetry } from "../posthog";
 import type { UploadJobData } from "./upload-queue";
 
 let uploadWorker: Worker<UploadJobData> | null = null;

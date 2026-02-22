@@ -8,8 +8,8 @@ import {
 import type { Database } from "@drivebase/db";
 import { files, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { logger } from "../../utils/logger";
 import { telemetry } from "../../posthog";
+import { logger } from "../../utils/logger";
 import { FolderService } from "../folder";
 import { ProviderService } from "../provider";
 import { getFile } from "./file-queries";

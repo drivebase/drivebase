@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { env } from "./config/env";
-import { isFirstRun, telemetry } from "./posthog";
 import { mountPluginRoutes } from "./config/providers";
+import { isFirstRun, telemetry } from "./posthog";
 import { closeUploadQueue } from "./queue/upload-queue";
 import { startUploadWorker, stopUploadWorker } from "./queue/upload-worker";
 import { createApp } from "./server/app";

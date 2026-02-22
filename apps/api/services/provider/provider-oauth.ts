@@ -7,8 +7,8 @@ import {
 	getSensitiveFields,
 } from "../../config/providers";
 import { getPublicApiBaseUrl } from "../../config/url";
-import { decryptConfig, encryptConfig } from "../../utils/encryption";
 import { telemetry } from "../../posthog";
+import { decryptConfig, encryptConfig } from "../../utils/encryption";
 import { getProvider } from "./provider-queries";
 
 type OAuthInitiatorSource = "default" | "onboarding";
