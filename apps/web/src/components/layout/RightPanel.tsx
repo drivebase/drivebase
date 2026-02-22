@@ -108,22 +108,20 @@ export function RightPanel() {
 	return (
 		<div className="w-80 py-6 flex flex-col gap-8 shrink-0 relative">
 			{content ? (
-				<>
-					<div className="flex items-center justify-end">
-						<Button
-							variant="ghost"
-							size="icon"
-							className="h-8 w-8"
-							onClick={clearContent}
-						>
-							<X className="h-4 w-4" />
-							<span className="sr-only">
-								<Trans>Close panel</Trans>
-							</span>
-						</Button>
-					</div>
-					<div className="-mt-4 flex-1 overflow-y-auto">{content}</div>
-				</>
+				<div className="relative px-4">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={clearContent}
+						className="h-8 w-8 absolute right-4"
+					>
+						<X className="h-4 w-4" />
+						<span className="sr-only">
+							<Trans>Close panel</Trans>
+						</span>
+					</Button>
+					<div className="flex-1 overflow-y-auto">{content}</div>
+				</div>
 			) : (
 				<DefaultAccountView />
 			)}
