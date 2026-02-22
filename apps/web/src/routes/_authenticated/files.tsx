@@ -144,7 +144,7 @@ function FilesPage() {
 					onFileChange={upload.handleFileChange}
 				/>
 
-				<div className="flex-1 overflow-y-auto">
+				<div className="flex-1 overflow-y-auto pb-8">
 					<FileSystemTable
 						files={files}
 						folders={folders}
