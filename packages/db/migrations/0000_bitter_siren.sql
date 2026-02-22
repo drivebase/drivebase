@@ -52,7 +52,7 @@ CREATE TABLE "files" (
 	"starred" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "files_virtual_path_unique" UNIQUE("virtual_path")
+	CONSTRAINT "files_virtual_path_provider_id_unique" UNIQUE("virtual_path","provider_id")
 );
 --> statement-breakpoint
 CREATE TABLE "folders" (
@@ -67,7 +67,7 @@ CREATE TABLE "folders" (
 	"starred" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "folders_virtual_path_unique" UNIQUE("virtual_path")
+	CONSTRAINT "folders_virtual_path_workspace_id_unique" UNIQUE("virtual_path","workspace_id")
 );
 --> statement-breakpoint
 CREATE TABLE "permissions" (
