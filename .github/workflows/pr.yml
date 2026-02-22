@@ -62,7 +62,7 @@ jobs:
         run: bun test
 
   lint:
-    name: Lint & Typecheck
+    name: Lint
     needs: install
     runs-on: ubuntu-latest
     steps:
@@ -84,6 +84,27 @@ jobs:
 
       - name: Biome check
         run: bunx biome check .
+
+  typecheck:
+    name: Type Check
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
 
       - name: Generate types (web)
         run: bun --filter web generate
