@@ -3,7 +3,7 @@ FROM oven/bun:1.2-alpine AS base
 FROM base AS pruner
 WORKDIR /app
 COPY . .
-RUN bunx turbo prune --scope=@drivebase/api --scope=web --docker
+RUN bunx turbo prune --scope=api --scope=web --docker
 
 FROM base AS deps
 WORKDIR /app
