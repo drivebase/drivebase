@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="195px" height="195px" viewBox="0 0 195 195" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>logo copy 2</title>
+    <defs>
+        <linearGradient x1="87.7405043%" y1="8.09971767%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="color(display-p3 0.669 0.629 1.000)" offset="0%"></stop>
+            <stop stop-color="color(display-p3 0.447 0.404 1.000)" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Drivebase" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="drivebase-banner" transform="translate(-986, -90)">
+            <g id="logo-copy-2" transform="translate(986, 90)">
+                <rect id="Rectangle" fill="url(#linearGradient-1)" x="0" y="0" width="195" height="195" rx="54.84375"></rect>
+                <path d="M137.109375,36.5625 L137.109375,117.221362 C137.109375,140.545321 118.238877,159.453125 94.9609375,159.453125 C71.6829982,159.453125 52.8125,140.545321 52.8125,117.221362 C52.8125,93.8974037 71.6829982,74.9895995 94.9609375,74.9895995 C99.7459299,74.9895995 104.344688,75.7885401 108.631588,77.2605498 L108.630701,65.041174 C108.630701,49.47012 121.127306,36.8178045 136.638428,36.5663153 L137.109375,36.5625 Z M94.9609375,96.1870093 C83.366906,96.1870093 73.9680864,105.60441 73.9680864,117.221362 C73.9680864,128.838315 83.366906,138.255715 94.9609375,138.255715 C106.554969,138.255715 115.953789,128.838315 115.953789,117.221362 C115.953789,105.60441 106.554969,96.1870093 94.9609375,96.1870093 Z" id="Combined-Shape" fill="color(display-p3 1.000 1.000 1.000)"></path>
+            </g>
+        </g>
+    </g>
+</svg>
