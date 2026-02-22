@@ -70,7 +70,7 @@ function JoinWorkspacePage() {
 	if (error) {
 		return (
 			<div className="min-h-screen w-full flex items-center justify-center p-8">
-				<div className="max-w-md w-full rounded-2xl border bg-card p-6 space-y-4">
+				<div className="max-w-md w-full  border bg-card p-6 space-y-4">
 					<h1 className="text-lg font-semibold">Could not join workspace</h1>
 					<p className="text-sm text-muted-foreground">{error}</p>
 					<Button onClick={() => window.location.reload()} className="w-full">

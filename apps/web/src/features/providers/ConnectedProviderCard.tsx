@@ -58,7 +58,7 @@ export function ConnectedProviderCard({
 		<Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
 			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 				<div className="flex items-center gap-3">
-					<div className="p-2 bg-muted rounded-md">
+					<div className="p-2 bg-muted ">
 						<ProviderIcon type={provider.type} className="h-6 w-6" />
 					</div>
 					<div>
@@ -142,7 +142,7 @@ export function ConnectedProviderCard({
 					{provider.quotaTotal ? (
 						<Progress value={usagePercent} className="h-2" />
 					) : (
-						<div className="h-2 bg-muted rounded-full overflow-hidden" />
+						<div className="h-2 bg-muted  overflow-hidden" />
 					)}
 				</div>
 

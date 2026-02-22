@@ -241,7 +241,7 @@ export function FileSystemTable({
 												: header.column.id === "actions"
 													? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-20 bg-background"
 													: header.column.id === "name"
-														? "w-full min-w-[200px]"
+														? "w-full min-w-50"
 														: undefined
 										}
 									>
@@ -278,7 +278,7 @@ export function FileSystemTable({
 													: cell.column.id === "actions"
 														? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-10 bg-background group-hover:bg-muted/50 group-data-[state=selected]:bg-muted"
 														: cell.column.id === "name"
-															? "w-full min-w-[200px]"
+															? "w-full min-w-50"
 															: undefined
 											}
 										>

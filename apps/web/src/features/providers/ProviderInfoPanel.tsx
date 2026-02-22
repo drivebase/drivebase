@@ -31,7 +31,7 @@ export function ProviderInfoPanel({ providerId }: ProviderInfoPanelProps) {
 	return (
 		<div className="space-y-5">
 			<div className="flex items-center gap-3">
-				<div className="rounded-md bg-muted p-2">
+				<div className=" bg-muted p-2">
 					<ProviderIcon type={provider.type} className="h-6 w-6" />
 				</div>
 				<div>
@@ -43,7 +43,7 @@ export function ProviderInfoPanel({ providerId }: ProviderInfoPanelProps) {
 			</div>
 
 			{provider.accountEmail || provider.accountName ? (
-				<div className="space-y-2 rounded-md border p-3">
+				<div className="space-y-2  border p-3">
 					<div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
 						Connected Account
 					</div>

@@ -42,7 +42,7 @@ export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 				</div>
 			</div>
 
-			<div className="space-y-2 rounded-md border p-3">
+			<div className="space-y-2  border p-3">
 				<div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
 					Storage Provider
 				</div>

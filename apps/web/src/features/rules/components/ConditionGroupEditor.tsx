@@ -84,7 +84,7 @@ export function ConditionGroupEditor({
 						</div>
 					)}
 
-					<div className="rounded-md border p-3 space-y-2">
+					<div className=" border p-3 space-y-2">
 						<div className="flex items-center justify-between mb-1">
 							<span className="text-xs text-muted-foreground">
 								<Trans>All conditions must match (AND)</Trans>

@@ -67,7 +67,7 @@ export function CompletionStep({
 	return (
 		<div className="flex flex-col flex-1 items-center justify-center text-center space-y-6 py-4">
 			<div
-				className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 ${
+				className={`w-16 h-16  flex items-center justify-center transition-all duration-500 ${
 					isCompleted
 						? "bg-emerald-100 text-emerald-600 scale-110 dark:bg-emerald-900/30 dark:text-emerald-400"
 						: "bg-primary/10 text-primary"
@@ -90,7 +90,7 @@ export function CompletionStep({
 			</div>
 
 			{connectedProvider && (
-				<div className="w-full rounded-lg border bg-muted/30 px-4 py-3 text-left">
+				<div className="w-full  border bg-muted/30 px-4 py-3 text-left">
 					<p className="text-xs text-muted-foreground">Provider</p>
 					<p className="text-sm font-medium">{connectedProvider.name}</p>
 					<p className="text-xs text-muted-foreground mt-1">

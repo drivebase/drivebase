@@ -181,7 +181,7 @@ export function ProviderStep({
 				</div>
 
 				{oauth === "success" && (
-					<div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
+					<div className=" border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
 						{fetchingConnected ? (
 							<div className="flex items-center gap-2">
 								<Loader2 className="h-4 w-4 animate-spin" />
@@ -201,7 +201,7 @@ export function ProviderStep({
 				)}
 
 				{oauth === "failed" && (
-					<div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+					<div className=" border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
 						{oauthErrorMessage}
 					</div>
 				)}

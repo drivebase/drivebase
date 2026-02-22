@@ -51,7 +51,7 @@ export function DashboardPage() {
 	const recentFiles = (filesData?.files?.files || []) as FileItemFragment[];
 
 	return (
-		<div className="p-8 flex flex-col gap-10 h-full overflow-y-auto">
+		<div className="px-8 flex flex-col gap-10 h-full overflow-y-auto">
 			<section>
 				<div className="flex justify-between items-center mb-6">
 					<h3 className="text-xl font-bold text-foreground">Starred Folders</h3>
@@ -62,9 +62,9 @@ export function DashboardPage() {
 							<div
 								// biome-ignore lint/suspicious/noArrayIndexKey: skeleton loading
 								key={idx}
-								className="rounded-2xl bg-muted/50 p-4 space-y-4"
+								className=" bg-muted/50 p-4 space-y-4"
 							>
-								<Skeleton className="h-10 w-10 rounded-xl" />
+								<Skeleton className="h-10 w-10 " />
 								<Skeleton className="h-4 w-28" />
 								<Skeleton className="h-3 w-16" />
 							</div>
@@ -73,7 +73,7 @@ export function DashboardPage() {
 				) : (
 					<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
 						{starredFolders.length === 0 ? (
-							<div className="col-span-full text-center text-muted-foreground h-60 flex items-center justify-center border border-dashed rounded-xl">
+							<div className="col-span-full text-center text-muted-foreground h-60 flex items-center justify-center border border-dashed ">
 								You haven't starred any folders yet.
 							</div>
 						) : (

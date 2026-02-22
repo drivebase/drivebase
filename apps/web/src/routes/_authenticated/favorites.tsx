@@ -149,7 +149,7 @@ function FavoritesPage() {
 		fileList.items.length === 0
 	) {
 		return (
-			<div className="p-8 flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
+			<div className="px-8 flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
 				<Star size={64} className="opacity-20" />
 				<h2 className="text-2xl font-bold">Favorites</h2>
 				<p>No favorites yet. Star files or folders to see them here.</p>
@@ -158,7 +158,7 @@ function FavoritesPage() {
 	}
 
 	return (
-		<div className="p-8 flex flex-col gap-10 h-full overflow-y-auto">
+		<div className="px-8 flex flex-col gap-10 h-full overflow-y-auto">
 			<section>
 				<FileSystemTable
 					files={fileList.items}

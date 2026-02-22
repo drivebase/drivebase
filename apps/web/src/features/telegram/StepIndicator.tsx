@@ -18,7 +18,7 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
 				<Fragment key={s.id}>
 					<div className="flex flex-col items-center gap-1.5">
 						<div
-							className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300 ${
+							className={`w-8 h-8  flex items-center justify-center text-xs font-semibold transition-all duration-300 ${
 								currentStep > s.id
 									? "bg-primary text-primary-foreground"
 									: currentStep === s.id

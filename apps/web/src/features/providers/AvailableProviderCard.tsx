@@ -39,7 +39,7 @@ export function AvailableProviderCard({
 				</a>
 			</Button>
 
-			<div className="rounded-full bg-primary/10 p-4">
+			<div className=" bg-primary/10 p-4">
 				<ProviderIcon type={provider.id} className="h-8 w-8" />
 			</div>
 

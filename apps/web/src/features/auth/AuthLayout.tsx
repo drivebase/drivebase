@@ -17,8 +17,8 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
 	return (
 		<div className="min-h-screen w-full flex items-center justify-center bg-background relative overflow-hidden">
 			{/* Abstract Background Shapes */}
-			<div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl opacity-70" />
-			<div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl opacity-70" />
+			<div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-primary/5  blur-3xl opacity-70" />
+			<div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-500/5  blur-3xl opacity-70" />
 
 			<div className="z-10 w-full max-w-md px-4">
 				{/* Logo Section */}

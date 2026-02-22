@@ -61,7 +61,7 @@ export function FileSystemTableLoading({
 							<Skeleton className="h-4 w-24 ml-auto" />
 						</TableCell>
 						<TableCell>
-							<Skeleton className="h-8 w-8 rounded-md ml-auto" />
+							<Skeleton className="h-8 w-8  ml-auto" />
 						</TableCell>
 					</TableRow>
 				))}

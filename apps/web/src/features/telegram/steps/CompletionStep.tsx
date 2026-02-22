@@ -4,7 +4,7 @@ export function CompletionStep() {
 	return (
 		<div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
 			<div className="flex flex-col items-center text-center gap-4 py-4">
-				<div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+				<div className="w-14 h-14  bg-primary/10 flex items-center justify-center">
 					<Check className="w-7 h-7 text-primary" />
 				</div>
 				<div className="space-y-1.5">
