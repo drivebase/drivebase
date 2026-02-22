@@ -1,5 +1,26 @@
 # Changelog
 
+# [2.2.0](https://github.com/drivebase/drivebase/compare/v2.1.4...v2.2.0) (2026-02-22)
+
+
+### Bug Fixes
+
+* add generate script to package.json ([f1785fe](https://github.com/drivebase/drivebase/commit/f1785fecec20f455c6e60c5ca0f70af564df82cb))
+* add max-width to AccountSettingsSection layout for better responsiveness ([eb60057](https://github.com/drivebase/drivebase/commit/eb6005708a92a84936f3061739ab0f7ce5baeaad))
+* adjust padding in layout for DashboardPage, FilesPage, and SettingsPage components ([938dea9](https://github.com/drivebase/drivebase/commit/938dea9749def386bf1d4d8353ec8bfc6cef2429))
+* refactor RightPanel component layout for improved structure ([f29c1ac](https://github.com/drivebase/drivebase/commit/f29c1acd9ecce765ce85981b4cb24714a750b018))
+* rename DefaultAccountView to DefaultView ([201ac74](https://github.com/drivebase/drivebase/commit/201ac7499853a59432dd37128cfe818b4115db31))
+* rename Favorites to Starred in relevant components and update translations ([3dff062](https://github.com/drivebase/drivebase/commit/3dff062f6eb734a29399a217e455b17bbd93ddbc))
+* update label for Favorites to Starred and adjust Settings route in Sidebar ([cd19f2c](https://github.com/drivebase/drivebase/commit/cd19f2c6367137f8da11b61dc074ae0b90bf1991))
+* update min-height values for CardContent in VaultSetupWizard and UploadProgressPanel components ([a6669eb](https://github.com/drivebase/drivebase/commit/a6669ebb1094e0180c837b07415f8f0ada1be62f))
+* update package names in scripts to remove scope prefix ([ab9a5f5](https://github.com/drivebase/drivebase/commit/ab9a5f5cc9451156da3c2f675af1cdcc7bedfa86))
+* update workspaces in package.json to specify api and web directories ([06a5652](https://github.com/drivebase/drivebase/commit/06a5652881eba0b8376b51e416775d0cede9d7e1))
+
+
+### Features
+
+* add Star icon display for starred folders and files ([3878d97](https://github.com/drivebase/drivebase/commit/3878d97149bc33cc713064323434ff24492835e1))
+
 ## [2.1.4](https://github.com/drivebase/drivebase/compare/v2.1.3...v2.1.4) (2026-02-22)
 
 
