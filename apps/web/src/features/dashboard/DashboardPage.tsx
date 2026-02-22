@@ -51,7 +51,7 @@ export function DashboardPage() {
 	const recentFiles = (filesData?.files?.files || []) as FileItemFragment[];
 
 	return (
-		<div className="px-8 flex flex-col gap-10 h-full overflow-y-auto">
+		<div className="px-8 pb-8 flex flex-col gap-10 h-full overflow-y-auto">
 			<section>
 				<div className="flex justify-between items-center mb-6">
 					<h3 className="text-xl font-bold text-foreground">Starred Folders</h3>

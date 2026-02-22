@@ -15,7 +15,7 @@ function SettingsPage() {
 		<div className="px-8 h-full">
 			<div className="flex gap-8 h-full">
 				<SettingsCategoryNav />
-				<div className="flex-1 overflow-y-auto pr-2">
+				<div className="flex-1 overflow-y-auto pb-8">
 					<Outlet />
 				</div>
 			</div>
