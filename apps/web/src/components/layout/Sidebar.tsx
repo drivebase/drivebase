@@ -44,13 +44,13 @@ type NavItem = {
 const topNavItems: NavItem[] = [
 	{ icon: LayoutDashboard, label: msg`Dashboard`, to: "/" },
 	{ icon: Folder, label: msg`Files`, to: "/files" },
-	{ icon: Star, label: msg`Favorites`, to: "/favorites" },
+	{ icon: Star, label: msg`Starred`, to: "/starred" },
 	{ icon: Cloud, label: msg`Providers`, to: "/providers" },
 ];
 
 const bottomNavItems: NavItem[] = [
 	{ icon: Lock, label: msg`Vault`, to: "/vault" },
-	{ icon: Settings, label: msg`Settings`, to: "/settings" },
+	{ icon: Settings, label: msg`Settings`, to: "/settings/general" },
 ];
 
 type SidebarItemProps = {
