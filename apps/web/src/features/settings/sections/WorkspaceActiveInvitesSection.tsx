@@ -24,7 +24,7 @@ export function WorkspaceActiveInvitesSection(
 	return (
 		<div className="space-y-3">
 			<h4 className="font-medium">Active invite links</h4>
-			<div className="border rounded-md divide-y">
+			<div className="border  divide-y">
 				{invites.map((invite) => {
 					const link = `${window.location.origin}/join-workspace?token=${invite.token}`;
 					return (

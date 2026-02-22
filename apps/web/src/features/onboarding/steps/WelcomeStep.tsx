@@ -46,10 +46,10 @@ export function WelcomeStep({ onNext, userName }: WelcomeStepProps) {
 				{FEATURES.map(({ icon: Icon, color, bg, title, description }) => (
 					<div
 						key={title}
-						className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-muted/30"
+						className="flex items-start gap-3 p-3  border border-border/60 bg-muted/30"
 					>
 						<div
-							className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${bg}`}
+							className={`w-8 h-8  flex items-center justify-center flex-shrink-0 ${bg}`}
 						>
 							<Icon className={`w-4 h-4 ${color}`} />
 						</div>

@@ -49,7 +49,7 @@ function FullScreenBrandLoader() {
 function ServerUnavailable({ onRetry }: { onRetry: () => void }) {
 	return (
 		<div className="min-h-screen w-full flex items-center justify-center p-8">
-			<div className="max-w-md w-full rounded-2xl border bg-card p-6 text-center space-y-4">
+			<div className="max-w-md w-full  border bg-card p-6 text-center space-y-4">
 				<img
 					src="/drivebase.svg"
 					alt="Drivebase"

@@ -36,7 +36,7 @@ export function FilesToolbar({
 }: FilesToolbarProps) {
 	return (
 		<div className="flex items-center justify-between">
-			<div className="flex items-center gap-1 text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg w-fit">
+			<div className="flex items-center gap-1 text-sm text-muted-foreground bg-muted/30 p-2  w-fit">
 				<DroppableBreadcrumb
 					id="__root__"
 					isCurrentPage={currentPath === "/"}

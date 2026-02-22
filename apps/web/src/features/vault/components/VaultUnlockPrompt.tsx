@@ -93,7 +93,7 @@ export function VaultUnlockPrompt({ onUnlocked }: VaultUnlockPromptProps) {
 			<Card className="shadow-xl border-border/50">
 				<CardContent className="px-8 py-8 space-y-6">
 					<div className="flex flex-col items-center gap-3">
-						<div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+						<div className="w-14 h-14  bg-primary/10 flex items-center justify-center">
 							<Lock className="w-7 h-7 text-primary" />
 						</div>
 						<div className="text-center space-y-1">

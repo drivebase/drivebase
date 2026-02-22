@@ -38,7 +38,7 @@ export function SettingsCategoryNav() {
 					<li key={category.to}>
 						<Link
 							to={category.to}
-							className="flex items-center gap-3 rounded-md px-3 py-4 text-sm transition-colors"
+							className="flex items-center gap-3  px-3 py-4 text-sm transition-colors"
 							activeProps={{
 								className: "bg-primary/10 text-primary",
 							}}
