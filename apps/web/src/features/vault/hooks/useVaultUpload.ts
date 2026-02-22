@@ -11,6 +11,7 @@ import {
 } from "@/features/vault/hooks/useVault";
 import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
 import { encryptChunk } from "@/features/vault/lib/crypto";
+import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
 
 const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
 const DEFAULT_CHUNK_SIZE = 50 * 1024 * 1024; // 50MB (plaintext chunk size)
@@ -104,10 +105,12 @@ export function useVaultUpload({
 				}
 			} else if (uploadUrl) {
 				// Proxy upload — must be POST (proxy endpoint accepts POST only)
+				const workspaceId = localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY);
 				await axios.post(uploadUrl, encryptedBlob, {
 					headers: {
 						"Content-Type": "application/octet-stream",
 						...(token ? { Authorization: `Bearer ${token}` } : {}),
+						...(workspaceId ? { "x-workspace-id": workspaceId } : {}),
 					},
 					onUploadProgress: (evt) => {
 						if (evt.total) {
@@ -271,6 +274,7 @@ export function useVaultUpload({
 
 					for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
 						try {
+							const wsId = localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY);
 							const response = await fetch(
 								`${apiUrl}/api/upload/chunk?sessionId=${sessionId}&chunkIndex=${i}`,
 								{
@@ -278,6 +282,7 @@ export function useVaultUpload({
 									headers: {
 										"Content-Type": "application/octet-stream",
 										...(token ? { Authorization: `Bearer ${token}` } : {}),
+										...(wsId ? { "x-workspace-id": wsId } : {}),
 									},
 									body: encryptedChunkBuffer,
 								},

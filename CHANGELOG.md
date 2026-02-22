@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/drivebase/drivebase/compare/v2.1.2...v2.1.3) (2026-02-21)
+
+
+### Bug Fixes
+
+* add workspace ID to upload requests ([67c8ef4](https://github.com/drivebase/drivebase/commit/67c8ef466e48e492a220c0cb31ac0d2814500e0e))
+
 ## [2.1.2](https://github.com/drivebase/drivebase/compare/v2.1.1...v2.1.2) (2026-02-21)
 
 
