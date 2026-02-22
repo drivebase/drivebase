@@ -15,6 +15,7 @@ export function UpdateSection() {
 		errorMessage,
 		updaterStatus,
 		triggerUpdate,
+		githubRepo,
 	} = useUpdate();
 
 	const isInProgress = phase === "updating";
@@ -88,22 +89,34 @@ export function UpdateSection() {
 					</div>
 				)}
 
-				<Button
-					onClick={() => triggerUpdate(latestGithubTag ?? undefined)}
-					disabled={!isUpdateAvailable || isInProgress || isSuccess}
-				>
-					{isInProgress ? (
-						<>
-							<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-							<Trans>Updating...</Trans>
-						</>
-					) : (
-						<>
+				{isInProgress ? (
+					<Button disabled>
+						<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+						<Trans>Updating...</Trans>
+					</Button>
+				) : (
+					<div className="flex items-center gap-2">
+						<Button
+							onClick={() => triggerUpdate(latestGithubTag ?? undefined)}
+							disabled={!isUpdateAvailable || isSuccess}
+						>
 							<RefreshCw className="h-4 w-4 mr-2" />
 							<Trans>Update now</Trans>
-						</>
-					)}
-				</Button>
+						</Button>
+
+						<Button
+							variant="link"
+							onClick={() =>
+								window.open(
+									`https://github.com/${githubRepo}/releases/latest`,
+									"_blank",
+								)
+							}
+						>
+							<Trans>View releases</Trans>
+						</Button>
+					</div>
+				)}
 			</div>
 		</div>
 	);

@@ -1,3 +1,4 @@
+import { Separator } from "@/components/ui/separator";
 import { useExport } from "./hooks/useExport";
 import { ExportSection } from "./sections/ExportSection";
 import { UpdateSection } from "./sections/UpdateSection";
@@ -9,7 +10,9 @@ export function AdvancedSettingsView() {
 	return (
 		<div className="space-y-8">
 			<UpdateSection />
+			<Separator />
 			<ExportSection onExport={exportWorkspace} isExporting={isExporting} />
+			<Separator />
 			<VaultKeySection />
 		</div>
 	);

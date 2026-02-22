@@ -6,15 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 import { useRecentUpdates } from "@/shared/hooks/useRecentUpdates";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
 function DefaultAccountView() {
 	const user = useAuthStore((state) => state.user);
 	const navigate = useNavigate();
-	const { currentVersion, isUpdateAvailable, latestGithubVersion, githubRepo } =
-		useAppUpdate();
 	const { posts, isLoading } = useRecentUpdates();
 
 	if (!user) return null;
@@ -24,7 +21,7 @@ function DefaultAccountView() {
 
 	return (
 		<>
-			<div className="flex flex-col items-center gap-4">
+			<div className="flex flex-col items-center gap-4 px-4">
 				<div className="relative">
 					<Avatar className="w-24 h-24 border-4 border-background">
 						<AvatarImage src={`https://ui-avatars.com/api/?name=${userName}`} />
@@ -35,18 +32,6 @@ function DefaultAccountView() {
 					<h2 className="text-xl font-bold text-foreground">{userName}</h2>
 					<p className="text-sm text-muted-foreground">{user.email}</p>
 				</div>
-				<p className="text-xs text-muted-foreground mt-1">v{currentVersion}</p>
-				{isUpdateAvailable && (
-					<a
-						href={`https://github.com/${githubRepo}/releases/latest`}
-						target="_blank"
-						rel="noreferrer noopener"
-						className="text-xs text-amber-600 dark:text-amber-400 hover:underline font-medium"
-					>
-						<Trans>Update available</Trans>{" "}
-						{latestGithubVersion && `(v${latestGithubVersion})`}
-					</a>
-				)}
 				<Button
 					className="w-full"
 					size="lg"
@@ -61,7 +46,7 @@ function DefaultAccountView() {
 			<Separator />
 
 			<div className="flex-1 overflow-y-auto">
-				<div className="flex items-center justify-between mb-4">
+				<div className="flex items-center justify-between mb-4 px-4">
 					<h3 className="font-semibold flex items-center gap-2">
 						<Rss size={18} />
 						<Trans>Recent Updates</Trans>
@@ -88,7 +73,7 @@ function DefaultAccountView() {
 							href={post.url}
 							target="_blank"
 							rel="noreferrer noopener"
-							className="block  p-3 hover:bg-muted transition-colors"
+							className="block  p-3 hover:bg-muted transition-colors px-4"
 						>
 							<p className="text-sm font-medium leading-snug line-clamp-2">
 								{post.title}

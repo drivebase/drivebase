@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { WorkspaceActiveInvitesSection } from "@/features/settings/sections/WorkspaceActiveInvitesSection";
 import { WorkspaceInviteCreateSection } from "@/features/settings/sections/WorkspaceInviteCreateSection";
@@ -175,24 +176,30 @@ export function UsersSettingsView() {
 	return (
 		<div className="space-y-8">
 			{canManageWorkspace ? (
-				<WorkspaceInviteCreateSection
-					inviteRole={inviteRole}
-					expiresInDays={expiresInDays}
-					generatedInviteLink={generatedInviteLink}
-					onInviteRoleChange={setInviteRole}
-					onExpiresInDaysChange={setExpiresInDays}
-					onCreateInvite={handleCreateInvite}
-					onCopyInviteLink={copyInviteLink}
-				/>
+				<>
+					<WorkspaceInviteCreateSection
+						inviteRole={inviteRole}
+						expiresInDays={expiresInDays}
+						generatedInviteLink={generatedInviteLink}
+						onInviteRoleChange={setInviteRole}
+						onExpiresInDaysChange={setExpiresInDays}
+						onCreateInvite={handleCreateInvite}
+						onCopyInviteLink={copyInviteLink}
+					/>
+					<Separator />
+				</>
 			) : null}
 
 			{shouldShowActiveInvitesSection ? (
-				<WorkspaceActiveInvitesSection
-					invites={workspaceInvites}
-					isLoading={invitesResult.fetching}
-					onCopyInviteLink={copyInviteLink}
-					onRevokeInvite={handleRevokeInvite}
-				/>
+				<>
+					<WorkspaceActiveInvitesSection
+						invites={workspaceInvites}
+						isLoading={invitesResult.fetching}
+						onCopyInviteLink={copyInviteLink}
+						onRevokeInvite={handleRevokeInvite}
+					/>
+					<Separator />
+				</>
 			) : null}
 
 			<WorkspaceMembersSection
