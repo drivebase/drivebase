@@ -402,7 +402,11 @@ export class VaultService {
 			.select()
 			.from(folders)
 			.where(
-				and(eq(folders.virtualPath, virtualPath), eq(folders.isDeleted, false)),
+				and(
+					eq(folders.virtualPath, virtualPath),
+					eq(folders.workspaceId, workspaceId),
+					eq(folders.isDeleted, false),
+				),
 			)
 			.limit(1);
 

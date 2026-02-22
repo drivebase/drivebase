@@ -38,7 +38,11 @@ export async function createFolder(
 		.select()
 		.from(folders)
 		.where(
-			and(eq(folders.virtualPath, virtualPath), eq(folders.isDeleted, false)),
+			and(
+				eq(folders.virtualPath, virtualPath),
+				eq(folders.workspaceId, workspaceId),
+				eq(folders.isDeleted, false),
+			),
 		)
 		.limit(1);
 
@@ -92,6 +96,7 @@ export async function renameFolder(
 		.where(
 			and(
 				eq(folders.virtualPath, newVirtualPath),
+				eq(folders.workspaceId, workspaceId),
 				eq(folders.isDeleted, false),
 			),
 		)
@@ -176,6 +181,7 @@ export async function moveFolder(
 		.where(
 			and(
 				eq(folders.virtualPath, newVirtualPath),
+				eq(folders.workspaceId, workspaceId),
 				eq(folders.isDeleted, false),
 			),
 		)
