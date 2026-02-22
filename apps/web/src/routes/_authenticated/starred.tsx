@@ -21,11 +21,11 @@ import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
 
-export const Route = createFileRoute("/_authenticated/favorites")({
-	component: FavoritesPage,
+export const Route = createFileRoute("/_authenticated/starred")({
+	component: StarredPage,
 });
 
-function FavoritesPage() {
+function StarredPage() {
 	const navigate = useNavigate();
 	const { downloadFile, showDetails } = useFileActions();
 	const { data: providersData } = useProviders();
@@ -92,8 +92,8 @@ function FavoritesPage() {
 
 			toast.success(
 				currentStarred
-					? `Removed ${file.name} from favorites`
-					: `Added ${file.name} to favorites`,
+					? `Removed ${file.name} from starred`
+					: `Added ${file.name} to starred`,
 			);
 		} catch (error) {
 			if (currentStarred) {
@@ -102,7 +102,7 @@ function FavoritesPage() {
 			const message =
 				error instanceof Error
 					? error.message
-					: "Failed to update favorite status.";
+					: "Failed to update starred status.";
 			toast.error(message);
 		}
 	};
@@ -127,8 +127,8 @@ function FavoritesPage() {
 
 			toast.success(
 				currentStarred
-					? `Removed ${folder.name} from favorites`
-					: `Added ${folder.name} to favorites`,
+					? `Removed ${folder.name} from starred`
+					: `Added ${folder.name} to starred`,
 			);
 		} catch (error) {
 			if (currentStarred) {
@@ -137,7 +137,7 @@ function FavoritesPage() {
 			const message =
 				error instanceof Error
 					? error.message
-					: "Failed to update favorite status.";
+					: "Failed to update starred status.";
 			toast.error(message);
 		}
 	};
@@ -151,8 +151,8 @@ function FavoritesPage() {
 		return (
 			<div className="px-8 flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
 				<Star size={64} className="opacity-20" />
-				<h2 className="text-2xl font-bold">Favorites</h2>
-				<p>No favorites yet. Star files or folders to see them here.</p>
+				<h2 className="text-2xl font-bold">Starred</h2>
+				<p>No starred files yet. Star files or folders to see them here.</p>
 			</div>
 		);
 	}
@@ -187,7 +187,7 @@ function FavoritesPage() {
 						canWriteFiles ? handleMoveFileToProvider : undefined
 					}
 					showSharedColumn
-					emptyStateMessage="No favorites yet"
+					emptyStateMessage="No starred files yet"
 				/>
 			</section>
 		</div>

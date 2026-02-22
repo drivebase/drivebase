@@ -4,7 +4,7 @@ import { msg } from "@lingui/macro";
 export const pageTitles: Record<string, MessageDescriptor> = {
 	"/": msg`Dashboard`,
 	"/files": msg`All Files`,
-	"/favorites": msg`Favorites`,
+	"/starred": msg`Starred`,
 	"/providers": msg`Providers`,
 	"/trash": msg`Trash`,
 	"/settings": msg`Settings`,

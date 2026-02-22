@@ -33,14 +33,14 @@ export function DashboardPage() {
 
 			toast.success(
 				file.starred
-					? `Removed ${file.name} from favorites`
-					: `Added ${file.name} to favorites`,
+					? `Removed ${file.name} from starred`
+					: `Added ${file.name} to starred`,
 			);
 		} catch (error) {
 			const message =
 				error instanceof Error
 					? error.message
-					: "Failed to update favorite status.";
+					: "Failed to update starred status.";
 			toast.error(message);
 		}
 	};

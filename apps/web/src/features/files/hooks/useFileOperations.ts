@@ -56,15 +56,15 @@ export function useFileOperations({
 
 			toast.success(
 				currentStarred
-					? `Removed ${file.name} from favorites`
-					: `Added ${file.name} to favorites`,
+					? `Removed ${file.name} from starred`
+					: `Added ${file.name} to starred`,
 			);
 		} catch (error) {
 			fileList.resetItem(file.id);
 			const message =
 				error instanceof Error
 					? error.message
-					: "Failed to update favorite status.";
+					: "Failed to update starred status.";
 			toast.error(message);
 		}
 	};
@@ -86,15 +86,15 @@ export function useFileOperations({
 
 			toast.success(
 				currentStarred
-					? `Removed ${folder.name} from favorites`
-					: `Added ${folder.name} to favorites`,
+					? `Removed ${folder.name} from starred`
+					: `Added ${folder.name} to starred`,
 			);
 		} catch (error) {
 			folderList.resetItem(folder.id);
 			const message =
 				error instanceof Error
 					? error.message
-					: "Failed to update favorite status.";
+					: "Failed to update starred status.";
 			toast.error(message);
 		}
 	};

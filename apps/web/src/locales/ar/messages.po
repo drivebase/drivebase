@@ -45,7 +45,6 @@ msgstr "متقدم"
 msgid "All conditions must match (AND)"
 msgstr "يجب أن تطابق جميع الشروط (AND)"
 
-#: src/components/layout/Header.tsx:111
 #: src/config/pageTitles.ts:6
 msgid "All Files"
 msgstr "جميع الملفات"
@@ -55,12 +54,12 @@ msgid "Appearance"
 msgstr "المظهر"
 
 #: src/components/layout/Header.tsx:135
-msgid "Audio"
-msgstr "صوتيات"
+#~ msgid "Audio"
+#~ msgstr "صوتيات"
 
 #: src/features/rules/components/RuleFormPage.tsx:66
-msgid "Automatically route uploaded files based on conditions."
-msgstr "توجيه الملفات المرفوعة تلقائيًا بناءً على الشروط."
+#~ msgid "Automatically route uploaded files based on conditions."
+#~ msgstr "توجيه الملفات المرفوعة تلقائيًا بناءً على الشروط."
 
 #: src/features/rules/components/RuleList.tsx:107
 msgid "Automatically route uploaded files to specific providers and folders based on file attributes."
@@ -86,7 +85,7 @@ msgstr "اختر المظهر الفاتح أو الداكن أو مظهر ال�
 msgid "Choose your preferred language"
 msgstr "اختر لغتك المفضلة"
 
-#: src/components/layout/RightPanel.tsx:136
+#: src/components/layout/RightPanel.tsx:120
 msgid "Close panel"
 msgstr "إغلاق اللوحة"
 
@@ -100,11 +99,11 @@ msgid "Connection failed"
 msgstr "فشل الاتصال"
 
 #: src/features/rules/components/RuleFormPage.tsx:63
-#: src/features/rules/components/RuleFormPage.tsx:78
+#: src/features/rules/components/RuleFormPage.tsx:73
 msgid "Create Rule"
 msgstr "إنشاء قاعدة"
 
-#: src/components/layout/Sidebar.tsx:138
+#: src/components/layout/Sidebar.tsx:200
 msgid "Create workspace"
 msgstr "إنشاء مساحة عمل"
 
@@ -112,7 +111,7 @@ msgstr "إنشاء مساحة عمل"
 msgid "Current password"
 msgstr "كلمة المرور الحالية"
 
-#: src/features/settings/sections/UpdateSection.tsx:46
+#: src/features/settings/sections/UpdateSection.tsx:48
 msgid "Current version"
 msgstr "الإصدار الحالي"
 
@@ -124,7 +123,7 @@ msgstr "خصص مظهر التطبيق. التبديل تلقائيًا بين �
 msgid "Dark"
 msgstr "داكن"
 
-#: src/components/layout/Sidebar.tsx:36
+#: src/components/layout/Sidebar.tsx:45
 #: src/config/pageTitles.ts:5
 #: src/config/pageTitles.ts:31
 msgid "Dashboard"
@@ -143,8 +142,8 @@ msgid "Destination Provider"
 msgstr "مزود الخدمة الهدف"
 
 #: src/components/layout/Header.tsx:117
-msgid "Documents"
-msgstr "المستندات"
+#~ msgid "Documents"
+#~ msgstr "المستندات"
 
 #: src/features/rules/components/RuleFormPage.tsx:63
 msgid "Edit Rule"
@@ -181,10 +180,10 @@ msgstr "فشل تحديث الملف الشخصي"
 
 #: src/components/layout/Sidebar.tsx:38
 #: src/config/pageTitles.ts:7
-msgid "Favorites"
-msgstr "المفضلة"
+#~ msgid "Favorites"
+#~ msgstr "المفضلة"
 
-#: src/components/layout/Sidebar.tsx:37
+#: src/components/layout/Sidebar.tsx:46
 msgid "Files"
 msgstr "الملفات"
 
@@ -197,8 +196,8 @@ msgid "General"
 msgstr "عام"
 
 #: src/components/layout/Header.tsx:123
-msgid "Images"
-msgstr "الصور"
+#~ msgid "Images"
+#~ msgstr "الصور"
 
 #: src/features/settings/sections/ExportSection.tsx:59
 msgid "Include provider configurations"
@@ -212,7 +211,7 @@ msgstr "تضمين بيانات اعتماد حساسة (يتطلب كلمة م�
 msgid "Language"
 msgstr "اللغة"
 
-#: src/features/settings/sections/UpdateSection.tsx:55
+#: src/features/settings/sections/UpdateSection.tsx:57
 msgid "Latest version"
 msgstr "أحدث إصدار"
 
@@ -224,7 +223,7 @@ msgstr "فاتح"
 msgid "Loading your account..."
 msgstr "جارٍ تحميل حسابك..."
 
-#: src/features/settings/sections/UpdateSection.tsx:39
+#: src/features/settings/sections/UpdateSection.tsx:41
 msgid "Manage application updates."
 msgstr "إدارة تحديثات التطبيق."
 
@@ -236,7 +235,7 @@ msgstr "الأعضاء"
 msgid "Members in this workspace."
 msgstr "الأعضاء في هذه مساحة العمل."
 
-#: src/components/layout/RightPanel.tsx:57
+#: src/components/layout/RightPanel.tsx:42
 #: src/config/pageTitles.ts:12
 msgid "My Account"
 msgstr "حسابي"
@@ -261,14 +260,14 @@ msgstr "كلمة المرور الجديدة"
 #~ msgstr "لا يوجد نشاط حديث"
 
 #: src/components/layout/Header.tsx:148
-msgid "No results found."
-msgstr "لم يتم العثور على نتائج."
+#~ msgid "No results found."
+#~ msgstr "لم يتم العثور على نتائج."
 
 #: src/features/rules/components/RuleList.tsx:121
 msgid "No rules yet. Create a rule to automatically route files on upload."
 msgstr "لا توجد قواعد حتى الآن. قم بإنشاء قاعدة لتوجيه الملفات تلقائيًا عند التحميل."
 
-#: src/components/layout/RightPanel.tsx:82
+#: src/components/layout/RightPanel.tsx:67
 msgid "No updates yet"
 msgstr "لا توجد تحديثات حتى الآن"
 
@@ -284,12 +283,12 @@ msgstr "الترتيب"
 msgid "Profile updated"
 msgstr "تم تحديث الملف الشخصي"
 
-#: src/components/layout/Sidebar.tsx:39
+#: src/components/layout/Sidebar.tsx:48
 #: src/config/pageTitles.ts:8
 msgid "Providers"
 msgstr "مزودو الخدمة"
 
-#: src/components/layout/RightPanel.tsx:67
+#: src/components/layout/RightPanel.tsx:52
 msgid "Recent Updates"
 msgstr "التحديثات الأخيرة"
 
@@ -324,7 +323,7 @@ msgstr "القواعد"
 msgid "Save"
 msgstr "حفظ"
 
-#: src/features/rules/components/RuleFormPage.tsx:78
+#: src/features/rules/components/RuleFormPage.tsx:73
 msgid "Save Changes"
 msgstr "حفظ التغييرات"
 
@@ -334,12 +333,12 @@ msgid "Saving..."
 msgstr "جارٍ الحفظ..."
 
 #: src/components/layout/Header.tsx:92
-msgid "Search files..."
-msgstr "البحث عن الملفات..."
+#~ msgid "Search files..."
+#~ msgstr "البحث عن الملفات..."
 
 #: src/components/layout/Header.tsx:146
-msgid "Searching..."
-msgstr "جارٍ البحث..."
+#~ msgid "Searching..."
+#~ msgstr "جارٍ البحث..."
 
 #: src/routes/__root.tsx:63
 msgid "Server may be unreachable"
@@ -349,7 +348,7 @@ msgstr "قد يكون الخادم غير متاح"
 msgid "Server Unreachable"
 msgstr "الخادم غير متاح"
 
-#: src/components/layout/Sidebar.tsx:42
+#: src/components/layout/Sidebar.tsx:53
 #: src/config/pageTitles.ts:10
 msgid "Settings"
 msgstr "الإعدادات"
@@ -361,6 +360,11 @@ msgstr "تسجيل الخروج"
 #: src/routes/__root.tsx:43
 msgid "Something went wrong while loading the app."
 msgstr "حدث خطأ أثناء تحميل التطبيق."
+
+#: src/components/layout/Sidebar.tsx:47
+#: src/config/pageTitles.ts:7
+msgid "Starred"
+msgstr "مُميَّز بنجمة"
 
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:72
 msgid "System"
@@ -374,7 +378,6 @@ msgstr "المظهر"
 msgid "This password will be used to encrypt your export file. Keep it safe, as you'll need it to import the data."
 msgstr "سيتم استخدام كلمة المرور هذه لتشفير ملف التصدير الخاص بك. احفظها في مكان آمن، لأنك ستحتاجها لاستيراد البيانات."
 
-#: src/components/layout/Sidebar.tsx:40
 #: src/config/pageTitles.ts:9
 msgid "Trash"
 msgstr "سلة المحذوفات"
@@ -384,8 +387,8 @@ msgid "Try again"
 msgstr "حاول مرة أخرى"
 
 #: src/components/layout/Header.tsx:144
-msgid "Type to search files"
-msgstr "اكتب للبحث عن الملفات"
+#~ msgid "Type to search files"
+#~ msgstr "اكتب للبحث عن الملفات"
 
 #: src/routes/_authenticated.tsx:63
 msgid "Unable to connect to the API right now. Check the server and try again."
@@ -399,12 +402,16 @@ msgstr "غير قادر على تحميل Drivebase"
 msgid "Unable to sign out from server. Signing out locally."
 msgstr "غير قادر على تسجيل الخروج من الخادم. جارٍ تسجيل الخروج محليًا."
 
-#: src/components/layout/RightPanel.tsx:46
-#: src/features/settings/sections/UpdateSection.tsx:63
+#: src/features/settings/sections/UpdateSection.tsx:65
 msgid "Update available"
 msgstr "تحديث متاح"
 
-#: src/features/settings/sections/UpdateSection.tsx:102
+#. placeholder {0}: latestGithubVersion ?? "unknown"
+#: src/components/layout/Sidebar.tsx:144
+msgid "Update available: v{0})"
+msgstr ""
+
+#: src/features/settings/sections/UpdateSection.tsx:104
 msgid "Update now"
 msgstr "التحديث الآن"
 
@@ -416,16 +423,16 @@ msgstr "تحديث كلمة مرور حسابك."
 msgid "Update your workspace display name."
 msgstr "تحديث اسم عرض مساحة العمل."
 
-#: src/features/settings/sections/UpdateSection.tsx:72
+#: src/features/settings/sections/UpdateSection.tsx:74
 msgid "Updated! The app will reload shortly."
 msgstr "تم التحديث! سيتم إعادة تحميل التطبيق قريبًا."
 
-#: src/features/settings/sections/UpdateSection.tsx:36
+#: src/features/settings/sections/UpdateSection.tsx:38
 msgid "Updates"
 msgstr "التحديثات"
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:87
-#: src/features/settings/sections/UpdateSection.tsx:97
+#: src/features/settings/sections/UpdateSection.tsx:95
 msgid "Updating..."
 msgstr "جارٍ التحديث..."
 
@@ -433,16 +440,20 @@ msgstr "جارٍ التحديث..."
 msgid "Users"
 msgstr "المستخدمون"
 
-#: src/components/layout/Sidebar.tsx:41
+#: src/components/layout/Sidebar.tsx:52
 #: src/config/pageTitles.ts:11
 msgid "Vault"
 msgstr "الخزنة"
 
 #: src/components/layout/Header.tsx:129
-msgid "Videos"
-msgstr "الفيديوهات"
+#~ msgid "Videos"
+#~ msgstr "الفيديوهات"
 
-#: src/components/layout/Sidebar.tsx:115
+#: src/features/settings/sections/UpdateSection.tsx:116
+msgid "View releases"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx:177
 msgid "Workspace"
 msgstr "مساحة العمل"
 
@@ -450,6 +461,6 @@ msgstr "مساحة العمل"
 msgid "Workspace name"
 msgstr "اسم مساحة العمل"
 
-#: src/components/layout/Sidebar.tsx:120
+#: src/components/layout/Sidebar.tsx:182
 msgid "Workspaces"
 msgstr "مساحات العمل"
