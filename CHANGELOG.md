@@ -1,5 +1,17 @@
 # Changelog
 
+# [2.3.0](https://github.com/drivebase/drivebase/compare/v2.2.1...v2.3.0) (2026-02-22)
+
+
+### Bug Fixes
+
+* update dashboard URL and GraphQL endpoint in README ([50a326a](https://github.com/drivebase/drivebase/commit/50a326afffa716dd1cee31d74903e5d57ffc4b8c))
+
+
+### Features
+
+* add nextcloud provider ([#91](https://github.com/drivebase/drivebase/issues/91)) ([8431ae2](https://github.com/drivebase/drivebase/commit/8431ae2f6c3aa26326ba00127394d63a0540e59d))
+
 ## [2.2.1](https://github.com/drivebase/drivebase/compare/v2.2.0...v2.2.1) (2026-02-22)
 
 
