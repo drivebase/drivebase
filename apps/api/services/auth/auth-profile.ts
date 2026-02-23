@@ -2,7 +2,7 @@ import { NotFoundError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
 import { eq } from "drizzle-orm";
-import { telemetry } from "../../posthog";
+import { telemetry } from "../../telemetry";
 
 /**
  * Get current authenticated user

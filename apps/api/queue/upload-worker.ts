@@ -2,10 +2,10 @@ import { files, getDb } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { eq } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
-import { fileSizeBucket, telemetry } from "../posthog";
 import { createBullMQConnection } from "../redis/client";
 import { UploadSessionManager } from "../services/file/upload-session";
 import { ProviderService } from "../services/provider";
+import { fileSizeBucket, telemetry } from "../telemetry";
 import { logger } from "../utils/logger";
 import type { UploadJobData } from "./upload-queue";
 

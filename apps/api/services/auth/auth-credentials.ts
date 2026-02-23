@@ -6,9 +6,9 @@ import {
 import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
 import { eq } from "drizzle-orm";
-import { telemetry } from "../../posthog";
 import { checkRateLimit, RateLimits } from "../../redis/rate-limit";
 import { createSession } from "../../redis/session";
+import { telemetry } from "../../telemetry";
 import { createToken } from "../../utils/jwt";
 import { logger } from "../../utils/logger";
 import {

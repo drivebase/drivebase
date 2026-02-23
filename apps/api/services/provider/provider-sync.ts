@@ -3,7 +3,7 @@ import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders } from "@drivebase/db";
 import { and, eq, notInArray } from "drizzle-orm";
 import { pubSub } from "../../graphql/pubsub";
-import { telemetry } from "../../posthog";
+import { telemetry } from "../../telemetry";
 import { getProviderInstance } from "./provider-queries";
 
 /**

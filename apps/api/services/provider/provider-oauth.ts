@@ -7,7 +7,7 @@ import {
 	getSensitiveFields,
 } from "../../config/providers";
 import { getPublicApiBaseUrl } from "../../config/url";
-import { telemetry } from "../../posthog";
+import { telemetry } from "../../telemetry";
 import { decryptConfig, encryptConfig } from "../../utils/encryption";
 import { getProvider } from "./provider-queries";
 

@@ -9,7 +9,7 @@ import type { Database } from "@drivebase/db";
 import { files, folders, vaults } from "@drivebase/db";
 import { and, eq, isNull } from "drizzle-orm";
 import { getPublicApiBaseUrl } from "../config/url";
-import { telemetry } from "../posthog";
+import { telemetry } from "../telemetry";
 import { logger } from "../utils/logger";
 import { ProviderService } from "./provider";
 
