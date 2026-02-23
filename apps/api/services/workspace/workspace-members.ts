@@ -11,7 +11,7 @@ import {
 	workspaces,
 } from "@drivebase/db";
 import { and, asc, eq, gt, isNull } from "drizzle-orm";
-import { telemetry } from "../../posthog";
+import { telemetry } from "../../telemetry";
 import type { WorkspaceRole } from "./rbac";
 
 type WorkspaceMemberRow = {

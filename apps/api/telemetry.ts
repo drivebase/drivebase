@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { PostHog } from "posthog-node";
 
-// In production DATA_DIR is set via env (mounted Docker volume).
-// In dev fall back to the directory of this file so read/write paths are consistent.
-const DATA_DIR = process.env.DATA_DIR ?? import.meta.dir;
+const DATA_DIR = import.meta.env.DATA_DIR ?? import.meta.dir;
 const INSTANCE_ID_PATH = `${DATA_DIR}/.instance-id`;
+
+const TELEMETRY_URL = "https://telemetry.drivebase.io/v1/record";
+const TIMEOUT_MS = 5_000;
 
 const telemetryEnabled =
 	process.env.NODE_ENV === "production" &&
@@ -44,14 +44,6 @@ const { id: instanceId, isFirstRun } = await loadOrCreateInstanceId();
 
 export { isFirstRun };
 
-const client = telemetryEnabled
-	? new PostHog("phc_gGuDrSZi8wRhCJUg1u4Urusu94ltxVJwZRATnFPgVRc", {
-			host: "https://us.i.posthog.com",
-			flushAt: 10,
-			flushInterval: 5000,
-		})
-	: null;
-
 type TelemetryEvent =
 	| { event: "server_started"; properties: { version: string } }
 	| { event: "server_shutdown"; properties?: Record<string, never> }
@@ -88,21 +80,34 @@ type TelemetryEvent =
 	| { event: "workspace_created"; properties?: Record<string, never> }
 	| { event: "workspace_invite_accepted"; properties?: Record<string, never> };
 
+function sendEvent(event: string, properties: Record<string, unknown>): void {
+	if (!telemetryEnabled) return;
+
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+	fetch(TELEMETRY_URL, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ event, properties, distinctId: instanceId }),
+		signal: controller.signal,
+	})
+		.catch(() => {
+			// Telemetry is best-effort; never surface errors to the caller
+		})
+		.finally(() => clearTimeout(timeoutId));
+}
+
 export const telemetry = {
 	capture<T extends TelemetryEvent>(
 		event: T["event"],
 		properties?: T extends { properties: infer P } ? P : undefined,
 	) {
-		if (!client) return;
-		client.capture({
-			distinctId: instanceId,
-			event,
-			properties: properties ?? {},
-		});
+		sendEvent(event, (properties as Record<string, unknown>) ?? {});
 	},
 
 	async shutdown() {
-		await client?.shutdown();
+		// No persistent client to flush — fire-and-forget fetch handles its own lifecycle
 	},
 };
 

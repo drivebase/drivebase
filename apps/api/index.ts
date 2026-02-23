@@ -1,12 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { env } from "./config/env";
 import { mountPluginRoutes } from "./config/providers";
-import { isFirstRun, telemetry } from "./posthog";
 import { closeUploadQueue } from "./queue/upload-queue";
 import { startUploadWorker, stopUploadWorker } from "./queue/upload-worker";
 import { createApp } from "./server/app";
 import { mountCoreRoutes } from "./server/routes/core";
 import { yoga } from "./server/yoga";
+import { isFirstRun, telemetry } from "./telemetry";
 import { initializeApp } from "./utils/init";
 import { logger } from "./utils/logger";
 
