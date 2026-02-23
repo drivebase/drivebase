@@ -1,5 +1,18 @@
 # Changelog
 
+# [2.5.0](https://github.com/drivebase/drivebase/compare/v2.4.2...v2.5.0) (2026-02-23)
+
+
+### Bug Fixes
+
+* update redis container name to drivebase_redis ([d243268](https://github.com/drivebase/drivebase/commit/d2432687c2b114ed123134a9a448f3b0d4bee557))
+
+
+### Features
+
+* add darkibox provider ([427e190](https://github.com/drivebase/drivebase/commit/427e190e962b68b20e9dfbb74863119011eb292a))
+* add make targets for docker compose up and down ([ca608e3](https://github.com/drivebase/drivebase/commit/ca608e39b9677f6388a8dbc6a14b89892743b765))
+
 ## [2.4.2](https://github.com/drivebase/drivebase/compare/v2.4.1...v2.4.2) (2026-02-23)
 
 

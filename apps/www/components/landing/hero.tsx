@@ -19,7 +19,7 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden pt-14 pb-16 sm:pb-24 lg:pb-32 bg-[#050505]">
       <div className="absolute inset-0 z-0 h-full w-full bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_60%,rgba(120,119,2.4.2.1),transparent)]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_60%,rgba(120,119,2.5.0.1),transparent)]" />
 
       <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
         <div className="mx-auto max-w-4xl text-center">
@@ -31,11 +31,11 @@ export function Hero() {
           >
             <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-gray-400 transition-all duration-300 backdrop-blur-sm bg-white/5 hover:bg-white/10">
               <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent font-medium">
-                v2.4.2 Released
+                v2.5.0 Released
               </span>
               <span className="mx-2 text-gray-600">|</span>
               <Link
-                href="https://github.com/drivebase/drivebase/releases/tag/v2.4.2"
+                href="https://github.com/drivebase/drivebase/releases/tag/v2.5.0"
                 target="_blank"
                 className="font-semibold text-indigo-400 hover:text-indigo-300"
               >
