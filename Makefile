@@ -17,3 +17,9 @@ build:
 
 build-no-cache:
 	docker build --no-cache -f $(DOCKERFILE) -t $(IMAGE_NAME):$(IMAGE_TAG) .
+
+up:
+	docker compose up -d redis db
+
+down-v:
+	docker compose down -v
