@@ -45,8 +45,8 @@ openssl rand -base64 32
 ```dotenv
 NODE_ENV=production
 PORT=4000
-API_BASE_URL=https://api.drivebase.one
-CORS_ORIGIN=https://app.drivebase.one
+API_BASE_URL=https://api.drivebase.io
+CORS_ORIGIN=https://app.drivebase.io
 
 DATABASE_URL=postgres://drivebase:securepassword@db.example.com:5432/drivebase
 REDIS_URL=redis://redis.example.com:6379
@@ -54,5 +54,5 @@ REDIS_URL=redis://redis.example.com:6379
 JWT_SECRET=xY7z... (at least 32 characters)
 ENCRYPTION_KEY=aB1c... (exactly 32 characters recommended)
 
-VITE_PUBLIC_API_URL=https://api.drivebase.one/graphql
+VITE_PUBLIC_API_URL=https://api.drivebase.io/graphql
 ```

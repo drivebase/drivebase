@@ -13,7 +13,7 @@ interface AvailableProviderCardProps {
 
 function getProviderDocsUrl(providerId: string): string {
 	const path = providerId.toLowerCase().replaceAll("_", "-");
-	return `https://drivebase.one/docs/storage-providers/${path}`;
+	return `https://drivebase.io/docs/storage-providers/${path}`;
 }
 
 export function AvailableProviderCard({

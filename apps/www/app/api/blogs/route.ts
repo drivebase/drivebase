@@ -9,7 +9,7 @@ export async function GET() {
     description: page.data.description,
     author: page.data.author,
     date: new Date(page.data.date).toISOString(),
-    url: `https://drivebase.one${page.url}`,
+    url: `https://drivebase.io${page.url}`,
   }));
 
   // Sort by date descending (newest first) and return top 5

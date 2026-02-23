@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const WWW_BASE_URL = "https://drivebase.one";
+const WWW_BASE_URL = "https://drivebase.io";
 const CACHE_KEY = "drivebase.recent_updates";
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 

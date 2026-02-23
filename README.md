@@ -5,7 +5,7 @@
   <a href="https://t.me/+fWEMYD3gp61lYWZl">
     <img src="https://img.shields.io/badge/Telegram-Join%20Chat-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram">
   </a> 
-  <a href="https://drivebase.one/docs">
+  <a href="https://drivebase.io/docs">
     <img src="https://img.shields.io/badge/Documentation-red?style=for-the-badge" alt="Documentation" />
   </a> 
   <a href="https://discord.gg/zy3XyWcU6D">
@@ -15,7 +15,7 @@
 
 Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. It includes Vault for end-to-end encrypted uploads and Smart Uploads for rule-based routing across providers. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
 
-<a href="https://drivebase.one/features/vault">Vault</a> · <a href="https://drivebase.one/features/smart-upload">Smart Upload</a> · <a href="https://drivebase.one/features/team-collaboration">Collaboration</a>
+<a href="https://drivebase.io/features/vault">Vault</a> · <a href="https://drivebase.io/features/smart-upload">Smart Upload</a> · <a href="https://drivebase.io/features/team-collaboration">Collaboration</a>
 
 ---
 
@@ -42,7 +42,7 @@ You can get started with Drivebase in multiple ways:
 Run the following command to install Drivebase using our automated installer. It uses Docker Compose to set up your environment and generate secure keys automatically.
 
 ```bash
-curl -fsSL https://drivebase.one/install | bash
+curl -fsSL https://drivebase.io/install | bash
 ```
 
 <img width="600" alt="Group" src="https://github.com/user-attachments/assets/19e11300-83e1-4e8b-a31e-17be9e2f81c9" />
