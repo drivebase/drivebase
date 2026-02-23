@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.2](https://github.com/drivebase/drivebase/compare/v2.4.1...v2.4.2) (2026-02-23)
+
+
+### Bug Fixes
+
+* update release name format in configuration ([c0d8b1e](https://github.com/drivebase/drivebase/commit/c0d8b1e942733c5e28d6aa8a07729d371482eb7c))
+
 ## [2.4.1](https://github.com/drivebase/drivebase/compare/v2.4.0...v2.4.1) (2026-02-22)
 
 # [2.4.0](https://github.com/drivebase/drivebase/compare/v2.3.0...v2.4.0) (2026-02-22)
