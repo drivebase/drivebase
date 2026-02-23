@@ -19,6 +19,7 @@ export class FolderService {
 	async createFolder(
 		userId: string,
 		name: string,
+		providerId: string,
 		parentId?: string,
 		preferredWorkspaceId?: string,
 	) {
@@ -27,7 +28,14 @@ export class FolderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		return createFolder(this.db, userId, workspaceId, name, parentId);
+		return createFolder(
+			this.db,
+			userId,
+			workspaceId,
+			name,
+			providerId,
+			parentId,
+		);
 	}
 
 	async getFolder(
@@ -45,8 +53,8 @@ export class FolderService {
 
 	async listFolders(
 		userId: string,
-		path?: string,
 		parentId?: string,
+		providerIds?: string[],
 		preferredWorkspaceId?: string,
 	) {
 		const workspaceId = await getAccessibleWorkspaceId(
@@ -54,7 +62,7 @@ export class FolderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		return listFolders(this.db, userId, workspaceId, path, parentId);
+		return listFolders(this.db, userId, workspaceId, parentId, providerIds);
 	}
 
 	async renameFolder(

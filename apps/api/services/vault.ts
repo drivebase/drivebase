@@ -85,16 +85,12 @@ export class VaultService {
 	}
 
 	/**
-	 * Get files and folders at a vault-scoped virtual path.
+	 * Get files and folders inside the vault at a given location.
 	 */
-	async getVaultContents(userId: string, path: string) {
+	async getVaultContents(userId: string, folderId?: string) {
 		const vault = await this.requireVault(userId);
 
-		const vaultRoot = `/vault/${userId}`;
-		const normalizedPath = this.resolveVaultPath(vaultRoot, path);
-		const isRoot = normalizedPath === vaultRoot;
-
-		if (isRoot) {
+		if (!folderId) {
 			const [fileList, folderList] = await Promise.all([
 				this.db
 					.select()
@@ -128,8 +124,8 @@ export class VaultService {
 			.from(folders)
 			.where(
 				and(
+					eq(folders.id, folderId),
 					eq(folders.vaultId, vault.id),
-					eq(folders.virtualPath, normalizedPath),
 					eq(folders.isDeleted, false),
 				),
 			)
@@ -239,7 +235,7 @@ export class VaultService {
 			name: sanitizedName,
 			mimeType,
 			size,
-			parentId: providerRecord.rootFolderId ?? undefined,
+			parentId: undefined,
 		});
 
 		await provider.cleanup();
@@ -360,11 +356,14 @@ export class VaultService {
 
 	/**
 	 * Create a folder inside the vault.
+	 * Vault folders are virtual (not backed by a real provider folder),
+	 * so we use a synthetic remoteId and require a providerId for storage.
 	 */
 	async createVaultFolder(
 		userId: string,
 		workspaceId: string,
 		name: string,
+		providerId: string,
 		parentId?: string,
 	) {
 		const vault = await this.requireVault(userId);
@@ -400,27 +399,16 @@ export class VaultService {
 			virtualPath = joinPath(vaultRoot, sanitizedName);
 		}
 
-		const [existing] = await this.db
-			.select()
-			.from(folders)
-			.where(
-				and(
-					eq(folders.virtualPath, virtualPath),
-					eq(folders.workspaceId, workspaceId),
-					eq(folders.isDeleted, false),
-				),
-			)
-			.limit(1);
-
-		if (existing) {
-			throw new ConflictError(`Folder already exists at path: ${virtualPath}`);
-		}
+		// Vault folders use a synthetic remoteId since they're not real provider folders
+		const syntheticRemoteId = `vault:${crypto.randomUUID()}`;
 
 		const [folder] = await this.db
 			.insert(folders)
 			.values({
 				virtualPath,
 				name: sanitizedName,
+				remoteId: syntheticRemoteId,
+				providerId,
 				workspaceId,
 				parentId: parentId ?? null,
 				createdBy: userId,
@@ -598,7 +586,7 @@ export class VaultService {
 			name: sanitizedName,
 			mimeType,
 			size: totalSize,
-			parentId: providerRecord.rootFolderId ?? undefined,
+			parentId: undefined,
 		});
 
 		await provider.cleanup();
@@ -690,21 +678,5 @@ export class VaultService {
 		}
 
 		return updated;
-	}
-
-	private resolveVaultPath(vaultRoot: string, path: string): string {
-		const normalized =
-			path === "/" ? vaultRoot : path.endsWith("/") ? path.slice(0, -1) : path;
-
-		// If path already includes the vault root, use as-is; otherwise append
-		if (normalized === "/" || normalized === "") {
-			return vaultRoot;
-		}
-
-		if (normalized.startsWith(vaultRoot)) {
-			return normalized;
-		}
-
-		return joinPath(vaultRoot, normalized);
 	}
 }

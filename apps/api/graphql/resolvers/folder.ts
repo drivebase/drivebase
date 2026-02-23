@@ -1,10 +1,60 @@
+import { NotFoundError } from "@drivebase/core";
+import { files, folders, storageProviders } from "@drivebase/db";
+import { and, eq } from "drizzle-orm";
 import { FolderService } from "../../services/folder";
-import type { MutationResolvers, QueryResolvers } from "../generated/types";
+import type {
+	FolderResolvers,
+	MutationResolvers,
+	QueryResolvers,
+} from "../generated/types";
 import { requireAuth } from "./auth-helpers";
 
-/**
- * Require authentication
- */
+export const folderResolvers: FolderResolvers = {
+	provider: async (parent, _args, context) => {
+		const [provider] = await context.db
+			.select()
+			.from(storageProviders)
+			.where(eq(storageProviders.id, parent.providerId))
+			.limit(1);
+
+		if (!provider) {
+			throw new NotFoundError("Provider");
+		}
+		return provider;
+	},
+
+	parent: async (parent, _args, context) => {
+		if (!parent.parentId) {
+			return null;
+		}
+		const [folder] = await context.db
+			.select()
+			.from(folders)
+			.where(eq(folders.id, parent.parentId))
+			.limit(1);
+		return folder ?? null;
+	},
+
+	children: async (parent, _args, context) => {
+		return context.db
+			.select()
+			.from(folders)
+			.where(and(eq(folders.parentId, parent.id), eq(folders.isDeleted, false)))
+			.orderBy(folders.name);
+	},
+
+	files: async (parent, _args, context) => {
+		return context.db
+			.select()
+			.from(files)
+			.where(and(eq(files.folderId, parent.id), eq(files.isDeleted, false)))
+			.orderBy(files.name);
+	},
+
+	permissions: async () => {
+		return [];
+	},
+};
 
 export const folderQueries: QueryResolvers = {
 	folder: async (_parent, args, context) => {
@@ -20,8 +70,8 @@ export const folderQueries: QueryResolvers = {
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return folderService.listFolders(
 			user.userId,
-			args.path ?? undefined,
 			args.parentId ?? undefined,
+			args.providerIds ?? undefined,
 			workspaceId,
 		);
 	},
@@ -43,6 +93,7 @@ export const folderMutations: MutationResolvers = {
 		return folderService.createFolder(
 			user.userId,
 			args.input.name,
+			args.input.providerId,
 			args.input.parentId ?? undefined,
 			workspaceId,
 		);

@@ -63,19 +63,19 @@ export async function syncProvider(
 				limit: 100,
 			});
 
-			// Process Folders - folders are DB-only, matched by virtualPath
+			// Process Folders - matched by (remoteId, providerId)
 			for (const folder of listResult.folders) {
 				const cleanName = folder.name.replace(/\//g, "-");
 				const virtualPath = `${parentPath}${cleanName}/`;
 
-				// Check if folder exists by virtualPath
+				// Check if folder exists by remoteId + providerId
 				let [dbFolder] = await db
 					.select()
 					.from(folders)
 					.where(
 						and(
-							eq(folders.virtualPath, virtualPath),
-							eq(folders.workspaceId, workspaceId),
+							eq(folders.remoteId, folder.remoteId),
+							eq(folders.providerId, providerId),
 						),
 					)
 					.limit(1);
@@ -87,6 +87,8 @@ export async function syncProvider(
 							.values({
 								name: cleanName,
 								virtualPath,
+								remoteId: folder.remoteId,
+								providerId,
 								workspaceId,
 								parentId: parentDbId,
 								createdBy: userId,
@@ -104,6 +106,7 @@ export async function syncProvider(
 							.update(folders)
 							.set({
 								name: cleanName,
+								virtualPath,
 								parentId: parentDbId,
 								updatedAt: folder.modifiedAt,
 								isDeleted: false,
@@ -198,7 +201,7 @@ export async function syncProvider(
 	};
 
 	try {
-		await syncFolder(providerRecord.rootFolderId || undefined, null, "/");
+		await syncFolder(undefined, null, "/");
 
 		// Prune deleted files if requested (only files are tied to providers)
 		if (pruneDeleted && seenFileRemoteIds.length > 0) {

@@ -18,13 +18,11 @@ const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
 
 interface UseUploadOptions {
 	currentFolderId: string | undefined;
-	currentFolderPath: string | undefined;
 	onUploadComplete: () => void;
 }
 
 export function useUpload({
 	currentFolderId,
-	currentFolderPath,
 	onUploadComplete,
 }: UseUploadOptions) {
 	const { token } = useAuthStore();
@@ -69,7 +67,7 @@ export function useUpload({
 	});
 
 	/**
-	 * Find the destination folder path for a file.
+	 * Find the destination display path for a file (for queue UI).
 	 * Priority: matching rule's destinationFolder > current browsed folder.
 	 */
 	const getDestinationPath = (file: File): string | undefined => {
@@ -87,7 +85,7 @@ export function useUpload({
 				}
 			}
 		}
-		return currentFolderPath;
+		return undefined;
 	};
 
 	const uploadSingleFile = async (

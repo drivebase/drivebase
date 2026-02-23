@@ -7,6 +7,7 @@ import {
 	unique,
 } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
+import { storageProviders } from "./providers";
 import { users } from "./users";
 import { vaults } from "./vaults";
 import { workspaces } from "./workspaces";
@@ -14,8 +15,8 @@ import { workspaces } from "./workspaces";
 /**
  * Folders table
  *
- * Folders are virtual/organizational and independent from providers.
- * Only files get uploaded to providers.
+ * Folders are provider-backed. Each folder has a providerId and remoteId
+ * linking it to an actual folder on a storage provider.
  */
 export const folders = pgTable(
 	"folders",
@@ -25,6 +26,10 @@ export const folders = pgTable(
 			.$defaultFn(() => createId()),
 		virtualPath: text("virtual_path").notNull(),
 		name: text("name").notNull(),
+		remoteId: text("remote_id").notNull(),
+		providerId: text("provider_id")
+			.notNull()
+			.references(() => storageProviders.id, { onDelete: "cascade" }),
 		workspaceId: text("workspace_id")
 			.notNull()
 			.references(() => workspaces.id, { onDelete: "cascade" }),
@@ -47,10 +52,7 @@ export const folders = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
-		unique("folders_virtual_path_workspace_id_unique").on(
-			t.virtualPath,
-			t.workspaceId,
-		),
+		unique("folders_remote_id_provider_id_unique").on(t.remoteId, t.providerId),
 	],
 );
 

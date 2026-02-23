@@ -163,7 +163,6 @@ export function UploadProgressPanel({
 										Uploaded to{" "}
 										<Link
 											to="/files"
-											search={{ path: item.destinationPath }}
 											className="text-primary underline underline-offset-2 hover:text-primary/80"
 										>
 											{item.destinationPath}

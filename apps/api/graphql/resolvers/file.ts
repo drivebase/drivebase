@@ -87,7 +87,12 @@ export const fileQueries: QueryResolvers = {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
-		return fileService.getContents(args.path, user.userId, workspaceId);
+		return fileService.getContents(
+			user.userId,
+			workspaceId,
+			args.folderId ?? undefined,
+			args.providerIds ?? undefined,
+		);
 	},
 
 	searchFiles: async (_parent, args, context) => {
@@ -262,7 +267,7 @@ export const fileMutations: MutationResolvers = {
 
 		if (provider instanceof S3Provider && provider.supportsChunkedUpload) {
 			// For S3, initiate native multipart and generate presigned part URLs
-			const parentId = providerRecord.rootFolderId ?? undefined;
+			const parentId: string | undefined = undefined;
 
 			const multipart = await provider.initiateMultipartUpload({
 				name: input.name,

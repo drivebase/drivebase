@@ -5,7 +5,7 @@ import {
 	ValidationError,
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { files, storageProviders } from "@drivebase/db";
+import { files, folders, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 import { getPublicApiBaseUrl } from "../../config/url";
 import { logger } from "../../utils/logger";
@@ -61,13 +61,23 @@ export async function requestUpload(
 
 		let folder = null;
 		let virtualPath: string;
+		let remoteParentId: string | undefined;
+
+		const providerService = new ProviderService(db);
+		const providerRecord = await providerService.getProvider(
+			providerId,
+			userId,
+			workspaceId,
+		);
 
 		if (folderId) {
 			const folderService = new FolderService(db);
 			folder = await folderService.getFolder(folderId, userId, workspaceId);
 			virtualPath = joinPath(folder.virtualPath, sanitizedName);
+			remoteParentId = folder.remoteId;
 		} else {
 			virtualPath = joinPath("/", sanitizedName);
+			remoteParentId = undefined;
 		}
 
 		const [existing] = await db
@@ -77,7 +87,7 @@ export async function requestUpload(
 			.where(
 				and(
 					eq(files.virtualPath, virtualPath),
-					eq(storageProviders.workspaceId, workspaceId),
+					eq(files.providerId, providerId),
 				),
 			)
 			.limit(1);
@@ -86,21 +96,13 @@ export async function requestUpload(
 			throw new ConflictError(`File already exists at path: ${virtualPath}`);
 		}
 
-		const providerService = new ProviderService(db);
-		const providerRecord = await providerService.getProvider(
-			providerId,
-			userId,
-			workspaceId,
-		);
 		const provider = await providerService.getProviderInstance(providerRecord);
-
-		const parentId = providerRecord.rootFolderId ?? undefined;
 
 		const uploadResponse = await provider.requestUpload({
 			name: sanitizedName,
 			mimeType,
 			size,
-			parentId,
+			parentId: remoteParentId,
 		});
 
 		await provider.cleanup();
@@ -374,11 +376,24 @@ export async function moveFileToProvider(
 	try {
 		const stream = await sourceProvider.downloadFile(file.remoteId);
 
+		// If file is in a folder, use that folder's remoteId; otherwise use provider root
+		let targetParentId: string | undefined;
+		if (file.folderId) {
+			const [folder] = await db
+				.select()
+				.from(folders)
+				.where(eq(folders.id, file.folderId))
+				.limit(1);
+			if (folder) {
+				targetParentId = folder.remoteId;
+			}
+		}
+
 		const uploadResponse = await targetProvider.requestUpload({
 			name: file.name,
 			mimeType: file.mimeType,
 			size: file.size,
-			parentId: targetRecord.rootFolderId ?? undefined,
+			parentId: targetParentId,
 		});
 
 		const finalRemoteId =

@@ -84,7 +84,7 @@ export function DashboardPage() {
 									onClick={() =>
 										navigate({
 											to: "/files",
-											search: { path: folder.virtualPath },
+											search: { folderId: folder.id },
 										})
 									}
 								/>

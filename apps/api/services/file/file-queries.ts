@@ -1,7 +1,7 @@
 import { NotFoundError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders } from "@drivebase/db";
-import { and, desc, eq, isNull, like } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, like } from "drizzle-orm";
 import { logger } from "../../utils/logger";
 
 /**
@@ -173,46 +173,51 @@ export async function searchFiles(
 }
 
 /**
- * Get files and folders at a virtual path (excludes vault files and vault folders).
- * path = "/" returns root-level content (no parent folder).
- * path = "/docs" returns content inside the "docs" folder.
+ * Get files and folders at a location (excludes vault files and vault folders).
+ * folderId = undefined returns root-level content.
+ * providerIds filters results to specific providers.
  */
 export async function getContents(
 	db: Database,
-	path: string,
 	workspaceId: string,
+	folderId?: string,
+	providerIds?: string[],
 ) {
-	const normalizedPath =
-		path === "/" ? "/" : path.endsWith("/") ? path.slice(0, -1) : path;
-	const isRoot = normalizedPath === "/" || normalizedPath === "";
+	const isRoot = !folderId;
 
 	if (isRoot) {
+		const fileConditions = [
+			isNull(files.folderId),
+			eq(files.isDeleted, false),
+			isNull(files.vaultId),
+			eq(storageProviders.workspaceId, workspaceId),
+		];
+		if (providerIds && providerIds.length > 0) {
+			fileConditions.push(inArray(files.providerId, providerIds));
+		}
+
+		const folderConditions = [
+			isNull(folders.parentId),
+			eq(folders.isDeleted, false),
+			isNull(folders.vaultId),
+			eq(folders.workspaceId, workspaceId),
+		];
+		if (providerIds && providerIds.length > 0) {
+			folderConditions.push(inArray(folders.providerId, providerIds));
+		}
+
 		const [fileList, folderList] = await Promise.all([
 			db
 				.select({ file: files })
 				.from(files)
 				.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
-				.where(
-					and(
-						isNull(files.folderId),
-						eq(files.isDeleted, false),
-						isNull(files.vaultId),
-						eq(storageProviders.workspaceId, workspaceId),
-					),
-				)
+				.where(and(...fileConditions))
 				.orderBy(files.name)
 				.then((rows) => rows.map((row) => row.file)),
 			db
 				.select()
 				.from(folders)
-				.where(
-					and(
-						isNull(folders.parentId),
-						eq(folders.isDeleted, false),
-						isNull(folders.vaultId),
-						eq(folders.workspaceId, workspaceId),
-					),
-				)
+				.where(and(...folderConditions))
 				.orderBy(folders.name),
 		]);
 
@@ -224,7 +229,7 @@ export async function getContents(
 		.from(folders)
 		.where(
 			and(
-				eq(folders.virtualPath, normalizedPath),
+				eq(folders.id, folderId),
 				eq(folders.isDeleted, false),
 				isNull(folders.vaultId),
 				eq(folders.workspaceId, workspaceId),
@@ -236,32 +241,38 @@ export async function getContents(
 		return { files: [], folders: [], folder: null };
 	}
 
+	const fileConditions = [
+		eq(files.folderId, targetFolder.id),
+		eq(files.isDeleted, false),
+		isNull(files.vaultId),
+		eq(storageProviders.workspaceId, workspaceId),
+	];
+	if (providerIds && providerIds.length > 0) {
+		fileConditions.push(inArray(files.providerId, providerIds));
+	}
+
+	const folderConditions = [
+		eq(folders.parentId, targetFolder.id),
+		eq(folders.isDeleted, false),
+		isNull(folders.vaultId),
+		eq(folders.workspaceId, workspaceId),
+	];
+	if (providerIds && providerIds.length > 0) {
+		folderConditions.push(inArray(folders.providerId, providerIds));
+	}
+
 	const [fileList, folderList] = await Promise.all([
 		db
 			.select({ file: files })
 			.from(files)
 			.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
-			.where(
-				and(
-					eq(files.folderId, targetFolder.id),
-					eq(files.isDeleted, false),
-					isNull(files.vaultId),
-					eq(storageProviders.workspaceId, workspaceId),
-				),
-			)
+			.where(and(...fileConditions))
 			.orderBy(files.name)
 			.then((rows) => rows.map((row) => row.file)),
 		db
 			.select()
 			.from(folders)
-			.where(
-				and(
-					eq(folders.parentId, targetFolder.id),
-					eq(folders.isDeleted, false),
-					isNull(folders.vaultId),
-					eq(folders.workspaceId, workspaceId),
-				),
-			)
+			.where(and(...folderConditions))
 			.orderBy(folders.name),
 	]);
 

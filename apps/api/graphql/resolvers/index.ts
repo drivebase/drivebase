@@ -6,7 +6,7 @@ import {
 	fileResolvers,
 	fileSubscriptions,
 } from "./file";
-import { folderMutations, folderQueries } from "./folder";
+import { folderMutations, folderQueries, folderResolvers } from "./folder";
 import { metadataMutations, metadataQueries } from "./metadata";
 import {
 	availableProviderResolvers,
@@ -82,6 +82,7 @@ export const resolvers: Resolvers = {
 	ProviderConfigField: providerConfigFieldResolvers,
 	OAuthProviderCredential: oauthProviderCredentialResolvers,
 	File: fileResolvers,
+	Folder: folderResolvers,
 	FileRule: fileRuleResolvers,
 	Workspace: workspaceResolvers,
 	WorkspaceMember: workspaceMemberResolvers,

@@ -4,6 +4,7 @@ export { CreateFolderDialog } from "./CreateFolderDialog";
 export { DroppableBreadcrumb } from "./components/DroppableBreadcrumb";
 export { FileDropZone } from "./components/FileDropZone";
 export { FilesToolbar } from "./components/FilesToolbar";
+export { ProviderFilter } from "./components/ProviderFilter";
 export { FileInfoPanel } from "./FileInfoPanel";
 export { FileMimeIcon } from "./FileMimeIcon";
 export type { DragItem } from "./FileSystemTable";

@@ -1,7 +1,8 @@
 import { NotFoundError, ProviderError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { storageProviders } from "@drivebase/db";
+import { storageProviders, workspaceMemberships } from "@drivebase/db";
 import { eq } from "drizzle-orm";
+import { enqueueSyncJob } from "../../queue/sync-queue";
 import {
 	getProviderRegistration,
 	getSensitiveFields,
@@ -97,6 +98,7 @@ export async function pollProviderAuth(
 	db: Database,
 	providerId: string,
 	workspaceId: string,
+	userId: string,
 ): Promise<
 	| { status: "pending"; provider?: undefined }
 	| { status: "success"; provider: typeof storageProviders.$inferSelect }
@@ -125,17 +127,6 @@ export async function pollProviderAuth(
 	const provider = registration.factory();
 	await provider.initialize(updatedConfig);
 
-	let rootFolderId: string;
-	const existingFolderId = await provider.findFolder?.("Drivebase");
-
-	if (existingFolderId) {
-		rootFolderId = existingFolderId;
-	} else {
-		rootFolderId = await provider.createFolder({
-			name: "Drivebase",
-		});
-	}
-
 	const quota = await provider.getQuota();
 
 	let accountEmail: string | null = null;
@@ -162,7 +153,6 @@ export async function pollProviderAuth(
 			isActive: true,
 			accountEmail,
 			accountName,
-			rootFolderId,
 			quotaTotal: quota.total ?? null,
 			quotaUsed: quota.used,
 			lastSyncAt: new Date(),
@@ -174,6 +164,13 @@ export async function pollProviderAuth(
 	if (!updated) {
 		throw new Error("Failed to update provider after poll-based auth");
 	}
+
+	// Auto-sync provider files in the background
+	await enqueueSyncJob({
+		providerId,
+		workspaceId: providerRecord.workspaceId,
+		userId,
+	});
 
 	return { status: "success", provider: updated };
 }
@@ -220,20 +217,9 @@ export async function handleOAuthCallback(
 		callbackUrl,
 	);
 
-	// Initialize provider with the new tokens to find or create the root folder
+	// Initialize provider with the new tokens to fetch account info and quota
 	const provider = registration.factory();
 	await provider.initialize(updatedConfig);
-
-	let rootFolderId: string;
-	const existingFolderId = await provider.findFolder?.("Drivebase");
-
-	if (existingFolderId) {
-		rootFolderId = existingFolderId;
-	} else {
-		rootFolderId = await provider.createFolder({
-			name: "Drivebase",
-		});
-	}
 
 	const quota = await provider.getQuota();
 
@@ -262,7 +248,6 @@ export async function handleOAuthCallback(
 			isActive: true,
 			accountEmail,
 			accountName,
-			rootFolderId,
 			quotaTotal: quota.total ?? null,
 			quotaUsed: quota.used,
 			lastSyncAt: new Date(),
@@ -273,6 +258,22 @@ export async function handleOAuthCallback(
 
 	if (!updated) {
 		throw new Error("Failed to update provider after OAuth callback");
+	}
+
+	// Auto-sync provider files in the background
+	// Look up a workspace member to use as the sync userId
+	const [member] = await db
+		.select()
+		.from(workspaceMemberships)
+		.where(eq(workspaceMemberships.workspaceId, providerRecord.workspaceId))
+		.limit(1);
+
+	if (member) {
+		await enqueueSyncJob({
+			providerId,
+			workspaceId: providerRecord.workspaceId,
+			userId: member.userId,
+		});
 	}
 
 	return {

@@ -43,6 +43,8 @@ export const FolderFragment = graphql(`
     id
     virtualPath
     name
+    remoteId
+    providerId
     workspaceId
     parentId
     createdBy
@@ -50,5 +52,10 @@ export const FolderFragment = graphql(`
     starred
     createdAt
     updatedAt
+    provider {
+      id
+      name
+      type
+    }
   }
 `);

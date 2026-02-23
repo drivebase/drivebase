@@ -23,11 +23,13 @@ export function useFiles(folderId?: string | null, limit = 50, offset = 0) {
 	return result;
 }
 
-export function useContents(path?: string) {
+export function useContents(folderId?: string | null, providerIds?: string[]) {
 	const [result, reexecuteQuery] = useQuery({
 		query: CONTENTS_QUERY,
-		variables: { path: path ?? "" },
-		pause: !path,
+		variables: {
+			folderId: folderId ?? null,
+			providerIds: providerIds?.length ? providerIds : null,
+		},
 		requestPolicy: "cache-and-network",
 	});
 	return [result, reexecuteQuery] as const;

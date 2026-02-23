@@ -13,8 +13,8 @@ export const FILES_QUERY = graphql(`
 `);
 
 export const CONTENTS_QUERY = graphql(`
-  query GetContents($path: String!) {
-    contents(path: $path) {
+  query GetContents($folderId: ID, $providerIds: [ID!]) {
+    contents(folderId: $folderId, providerIds: $providerIds) {
       files {
         ...FileItem
       }

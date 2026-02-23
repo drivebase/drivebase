@@ -1,7 +1,7 @@
-import { NotFoundError, normalizePath } from "@drivebase/core";
+import { NotFoundError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { folders } from "@drivebase/db";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 
 /**
  * Get folder by ID
@@ -20,6 +20,7 @@ export async function getFolder(
 				eq(folders.id, folderId),
 				eq(folders.isDeleted, false),
 				eq(folders.workspaceId, workspaceId),
+				isNull(folders.vaultId),
 			),
 		)
 		.limit(1);
@@ -32,53 +33,36 @@ export async function getFolder(
 }
 
 /**
- * List folders in a path or parent
+ * List folders by parent and optional provider filter
  */
 export async function listFolders(
 	db: Database,
 	_userId: string,
 	workspaceId: string,
-	path?: string,
 	parentId?: string,
+	providerIds?: string[],
 ) {
+	const conditions = [
+		eq(folders.isDeleted, false),
+		eq(folders.workspaceId, workspaceId),
+		isNull(folders.vaultId),
+	];
+
 	if (parentId) {
-		return db
-			.select()
-			.from(folders)
-			.where(
-				and(
-					eq(folders.parentId, parentId),
-					eq(folders.isDeleted, false),
-					eq(folders.workspaceId, workspaceId),
-				),
-			)
-			.orderBy(folders.name);
-	} else if (path) {
-		const normalizedPath = normalizePath(path);
-		return db
-			.select()
-			.from(folders)
-			.where(
-				and(
-					eq(folders.virtualPath, normalizedPath),
-					eq(folders.isDeleted, false),
-					eq(folders.workspaceId, workspaceId),
-				),
-			)
-			.orderBy(folders.name);
+		conditions.push(eq(folders.parentId, parentId));
 	} else {
-		return db
-			.select()
-			.from(folders)
-			.where(
-				and(
-					isNull(folders.parentId),
-					eq(folders.isDeleted, false),
-					eq(folders.workspaceId, workspaceId),
-				),
-			)
-			.orderBy(folders.name);
+		conditions.push(isNull(folders.parentId));
 	}
+
+	if (providerIds && providerIds.length > 0) {
+		conditions.push(inArray(folders.providerId, providerIds));
+	}
+
+	return db
+		.select()
+		.from(folders)
+		.where(and(...conditions))
+		.orderBy(folders.name);
 }
 
 /**
@@ -97,6 +81,7 @@ export async function getStarredFolders(
 				eq(folders.starred, true),
 				eq(folders.isDeleted, false),
 				eq(folders.workspaceId, workspaceId),
+				isNull(folders.vaultId),
 			),
 		)
 		.orderBy(folders.name);

@@ -1,21 +1,26 @@
 import { ChevronRight, FolderPlus, Home, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DroppableBreadcrumb } from "@/features/files/components/DroppableBreadcrumb";
+import { ProviderFilter } from "@/features/files/components/ProviderFilter";
+import type { BreadcrumbItem } from "@/features/files/hooks/useBreadcrumbs";
 import { cn } from "@/shared/lib/utils";
 
-interface BreadcrumbItem {
+interface Provider {
+	id: string;
 	name: string;
-	path: string;
-	folderId: string | null;
+	type: string;
 }
 
 interface FilesToolbarProps {
-	currentPath: string;
+	isRoot: boolean;
 	breadcrumbs: BreadcrumbItem[];
 	canWriteFiles: boolean;
 	isUploading: boolean;
 	isLoading: boolean;
-	onBreadcrumbClick: (path: string) => void;
+	providers: Provider[];
+	filterProviderIds: string[];
+	onFilterChange: (ids: string[]) => void;
+	onBreadcrumbClick: (folderId: string | null) => void;
 	onUploadClick: () => void;
 	onNewFolder: () => void;
 	fileInputRef: React.RefObject<HTMLInputElement | null>;
@@ -23,11 +28,14 @@ interface FilesToolbarProps {
 }
 
 export function FilesToolbar({
-	currentPath,
+	isRoot,
 	breadcrumbs,
 	canWriteFiles,
 	isUploading,
 	isLoading,
+	providers,
+	filterProviderIds,
+	onFilterChange,
 	onBreadcrumbClick,
 	onUploadClick,
 	onNewFolder,
@@ -39,18 +47,17 @@ export function FilesToolbar({
 			<div className="flex items-center gap-1 text-sm text-muted-foreground bg-muted/30 p-2  w-fit">
 				<DroppableBreadcrumb
 					id="__root__"
-					isCurrentPage={currentPath === "/"}
-					onHoverNavigate={() => onBreadcrumbClick("/")}
+					isCurrentPage={isRoot}
+					onHoverNavigate={() => onBreadcrumbClick(null)}
 				>
 					<Button
 						variant="ghost"
 						size="sm"
 						className={cn(
 							"h-6 px-2 hover:bg-muted hover:text-foreground transition-colors",
-							currentPath === "/" &&
-								"text-foreground font-medium pointer-events-none",
+							isRoot && "text-foreground font-medium pointer-events-none",
 						)}
-						onClick={() => onBreadcrumbClick("/")}
+						onClick={() => onBreadcrumbClick(null)}
 					>
 						<Home size={14} className="mr-1" />
 						Home
@@ -63,12 +70,12 @@ export function FilesToolbar({
 						: (crumb.folderId ?? `__disabled_${index}__`);
 					const canDrop = !isLast && crumb.folderId !== null;
 					return (
-						<div key={crumb.path} className="flex items-center">
+						<div key={`${crumb.name}-${index}`} className="flex items-center">
 							<ChevronRight size={14} className="mx-1 opacity-50" />
 							<DroppableBreadcrumb
 								id={droppableId}
 								isCurrentPage={isLast || !canDrop}
-								onHoverNavigate={() => onBreadcrumbClick(crumb.path)}
+								onHoverNavigate={() => onBreadcrumbClick(crumb.folderId)}
 							>
 								<Button
 									variant="ghost"
@@ -77,7 +84,7 @@ export function FilesToolbar({
 										"h-6 px-2 hover:bg-muted hover:text-foreground transition-colors",
 										isLast && "text-foreground font-medium pointer-events-none",
 									)}
-									onClick={() => onBreadcrumbClick(crumb.path)}
+									onClick={() => onBreadcrumbClick(crumb.folderId)}
 								>
 									{crumb.name}
 								</Button>
@@ -88,6 +95,11 @@ export function FilesToolbar({
 			</div>
 
 			<div className="flex gap-2">
+				<ProviderFilter
+					providers={providers}
+					selectedIds={filterProviderIds}
+					onChange={onFilterChange}
+				/>
 				{canWriteFiles ? (
 					<>
 						<input

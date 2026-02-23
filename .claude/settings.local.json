@@ -1,11 +1,12 @@
 {
-	"permissions": {
-		"allow": [
-			"Bash(bunx tsc:*)",
-			"Bash(bun run:*)",
-			"Bash(wc:*)",
-			"Bash(bun add:*)",
-			"Bash(bun install:*)"
-		]
-	}
+  "permissions": {
+    "allow": [
+      "Bash(bunx tsc:*)",
+      "Bash(bun run:*)",
+      "Bash(wc:*)",
+      "Bash(bun add:*)",
+      "Bash(bun install:*)",
+      "Bash(cd /Users/monawwar/Projects/drivebase/packages/db && bunx drizzle-kit generate 2>&1)"
+    ]
+  }
 }

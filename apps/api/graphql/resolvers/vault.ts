@@ -16,7 +16,10 @@ export const vaultQueries: QueryResolvers = {
 	vaultContents: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const vaultService = new VaultService(context.db);
-		return vaultService.getVaultContents(user.userId, args.path);
+		return vaultService.getVaultContents(
+			user.userId,
+			args.folderId ?? undefined,
+		);
 	},
 };
 
@@ -115,6 +118,7 @@ export const vaultMutations: MutationResolvers = {
 			user.userId,
 			resolvedWorkspaceId,
 			args.name,
+			args.providerId,
 			args.parentId ?? undefined,
 		);
 	},
@@ -197,7 +201,7 @@ export const vaultMutations: MutationResolvers = {
 				name: input.name,
 				mimeType: input.mimeType,
 				size: input.totalSize,
-				parentId: providerRecord.rootFolderId ?? undefined,
+				parentId: undefined,
 			});
 
 			presignedPartUrls = await provider.generatePresignedPartUrls(

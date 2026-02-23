@@ -2,21 +2,24 @@ import {
 	ConflictError,
 	getParentPath,
 	joinPath,
+	NotFoundError,
 	ValidationError,
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { files, folders } from "@drivebase/db";
 import { and, eq, like, sql } from "drizzle-orm";
+import { ProviderService } from "../../services/provider";
 import { getFolder } from "./folder-queries";
 
 /**
- * Create a new folder (DB-only, no provider interaction)
+ * Create a new folder on the provider and in the DB
  */
 export async function createFolder(
 	db: Database,
 	userId: string,
 	workspaceId: string,
 	name: string,
+	providerId: string,
 	parentId?: string,
 ) {
 	if (!name || name.trim().length === 0) {
@@ -25,52 +28,61 @@ export async function createFolder(
 
 	const sanitizedName = name.trim().replace(/[/\\]/g, "_");
 
-	let virtualPath: string;
+	const providerService = new ProviderService(db);
+	const providerRecord = await providerService.getProvider(
+		providerId,
+		userId,
+		workspaceId,
+	);
+	const provider = await providerService.getProviderInstance(providerRecord);
 
-	if (parentId) {
-		const parentFolder = await getFolder(db, parentId, userId, workspaceId);
-		virtualPath = joinPath(parentFolder.virtualPath, sanitizedName);
-	} else {
-		virtualPath = joinPath("/", sanitizedName);
-	}
+	try {
+		// Determine the remote parent ID and virtual path
+		let remoteParentId: string | undefined;
+		let virtualPath: string;
 
-	const [existing] = await db
-		.select()
-		.from(folders)
-		.where(
-			and(
-				eq(folders.virtualPath, virtualPath),
-				eq(folders.workspaceId, workspaceId),
-				eq(folders.isDeleted, false),
-			),
-		)
-		.limit(1);
+		if (parentId) {
+			const parentFolder = await getFolder(db, parentId, userId, workspaceId);
+			remoteParentId = parentFolder.remoteId;
+			virtualPath = joinPath(parentFolder.virtualPath, sanitizedName);
+		} else {
+			remoteParentId = undefined;
+			virtualPath = joinPath("/", sanitizedName);
+		}
 
-	if (existing) {
-		throw new ConflictError(`Folder already exists at path: ${virtualPath}`);
-	}
-
-	const [folder] = await db
-		.insert(folders)
-		.values({
-			virtualPath,
+		// Create the folder on the remote provider
+		const remoteId = await provider.createFolder({
 			name: sanitizedName,
-			workspaceId,
-			parentId: parentId ?? null,
-			createdBy: userId,
-			isDeleted: false,
-		})
-		.returning();
+			parentId: remoteParentId,
+		});
 
-	if (!folder) {
-		throw new Error("Failed to create folder");
+		// Insert the folder into the DB
+		const [folder] = await db
+			.insert(folders)
+			.values({
+				virtualPath,
+				name: sanitizedName,
+				remoteId,
+				providerId,
+				workspaceId,
+				parentId: parentId ?? null,
+				createdBy: userId,
+				isDeleted: false,
+			})
+			.returning();
+
+		if (!folder) {
+			throw new Error("Failed to create folder");
+		}
+
+		return folder;
+	} finally {
+		await provider.cleanup();
 	}
-
-	return folder;
 }
 
 /**
- * Rename a folder
+ * Rename a folder (DB-only, provider-side rename can be added later)
  */
 export async function renameFolder(
 	db: Database,
@@ -155,7 +167,7 @@ export async function renameFolder(
 }
 
 /**
- * Move folder to a different parent
+ * Move folder to a different parent (must be within the same provider)
  */
 export async function moveFolder(
 	db: Database,
@@ -170,6 +182,14 @@ export async function moveFolder(
 
 	if (newParentId) {
 		const newParent = await getFolder(db, newParentId, userId, workspaceId);
+
+		// Ensure the target parent is on the same provider
+		if (newParent.providerId !== folder.providerId) {
+			throw new ValidationError(
+				"Cannot move a folder to a parent on a different provider",
+			);
+		}
+
 		newVirtualPath = joinPath(newParent.virtualPath, folder.name);
 	} else {
 		newVirtualPath = joinPath("/", folder.name);
@@ -240,7 +260,7 @@ export async function moveFolder(
 }
 
 /**
- * Delete a folder (soft delete, DB-only)
+ * Delete a folder (deletes on the remote provider, then soft-deletes in DB)
  */
 export async function deleteFolder(
 	db: Database,
@@ -248,7 +268,21 @@ export async function deleteFolder(
 	userId: string,
 	workspaceId: string,
 ) {
-	await getFolder(db, folderId, userId, workspaceId);
+	const folder = await getFolder(db, folderId, userId, workspaceId);
+
+	const providerService = new ProviderService(db);
+	const providerRecord = await providerService.getProvider(
+		folder.providerId,
+		userId,
+		workspaceId,
+	);
+	const provider = await providerService.getProviderInstance(providerRecord);
+
+	try {
+		await provider.delete({ remoteId: folder.remoteId, isFolder: true });
+	} finally {
+		await provider.cleanup();
+	}
 
 	await db
 		.update(folders)

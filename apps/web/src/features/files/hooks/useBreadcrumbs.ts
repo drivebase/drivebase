@@ -1,30 +1,36 @@
 import { useMemo } from "react";
 import type { FolderItemFragment } from "@/gql/graphql";
 
-interface BreadcrumbItem {
+export interface BreadcrumbItem {
 	name: string;
-	path: string;
 	folderId: string | null;
 }
 
-export function useBreadcrumbs(
-	currentPath: string,
-	currentFolder: FolderItemFragment | undefined,
-) {
+/**
+ * Build breadcrumb items from the current folder's virtualPath segments.
+ * Each crumb gets a folderId only for the current folder and its parent
+ * (the rest are null since we don't have their IDs from the query).
+ */
+export function useBreadcrumbs(currentFolder: FolderItemFragment | undefined) {
 	const breadcrumbs = useMemo<BreadcrumbItem[]>(() => {
-		if (currentPath === "/") return [];
-		const parts = currentPath.split("/").filter(Boolean);
+		if (!currentFolder) return [];
+
+		const path = currentFolder.virtualPath;
+		if (!path || path === "/") return [];
+
+		// virtualPath looks like "/Documents/Work/" — split into segments
+		const parts = path.split("/").filter(Boolean);
+
 		return parts.map((part, index) => ({
 			name: part,
-			path: `/${parts.slice(0, index + 1).join("/")}`,
 			folderId:
 				index === parts.length - 1
-					? (currentFolder?.id ?? null)
+					? currentFolder.id
 					: index === parts.length - 2
-						? (currentFolder?.parentId ?? null)
+						? (currentFolder.parentId ?? null)
 						: null,
 		}));
-	}, [currentPath, currentFolder?.id, currentFolder?.parentId]);
+	}, [currentFolder]);
 
 	return breadcrumbs;
 }

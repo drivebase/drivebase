@@ -122,7 +122,7 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		return pollProviderAuth(this.db, providerId, workspaceId);
+		return pollProviderAuth(this.db, providerId, workspaceId, userId);
 	}
 
 	async disconnectProvider(

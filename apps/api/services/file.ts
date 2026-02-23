@@ -233,16 +233,17 @@ export class FileService {
 	}
 
 	async getContents(
-		path: string,
 		userId: string,
 		preferredWorkspaceId?: string,
+		folderId?: string,
+		providerIds?: string[],
 	) {
 		const workspaceId = await getAccessibleWorkspaceId(
 			this.db,
 			userId,
 			preferredWorkspaceId,
 		);
-		return getContents(this.db, path, workspaceId);
+		return getContents(this.db, workspaceId, folderId, providerIds);
 	}
 
 	async getStarredFiles(userId: string, preferredWorkspaceId?: string) {

@@ -1,7 +1,7 @@
 CREATE TYPE "public"."activity_type" AS ENUM('upload', 'download', 'create', 'update', 'delete', 'move', 'copy', 'share', 'unshare');--> statement-breakpoint
 CREATE TYPE "public"."permission_role" AS ENUM('viewer', 'editor', 'admin', 'owner');--> statement-breakpoint
 CREATE TYPE "public"."auth_type" AS ENUM('oauth', 'api_key', 'email_pass', 'no_auth');--> statement-breakpoint
-CREATE TYPE "public"."provider_type" AS ENUM('google_drive', 's3', 'local', 'dropbox', 'ftp', 'webdav', 'telegram', 'nextcloud');--> statement-breakpoint
+CREATE TYPE "public"."provider_type" AS ENUM('google_drive', 's3', 'local', 'dropbox', 'ftp', 'webdav', 'telegram', 'nextcloud', 'darkibox');--> statement-breakpoint
 CREATE TYPE "public"."upload_session_status" AS ENUM('pending', 'uploading', 'assembling', 'transferring', 'completed', 'failed', 'cancelled');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('viewer', 'editor', 'admin', 'owner');--> statement-breakpoint
 CREATE TYPE "public"."workspace_role" AS ENUM('owner', 'admin', 'editor', 'viewer');--> statement-breakpoint
@@ -59,6 +59,8 @@ CREATE TABLE "folders" (
 	"id" text PRIMARY KEY NOT NULL,
 	"virtual_path" text NOT NULL,
 	"name" text NOT NULL,
+	"remote_id" text NOT NULL,
+	"provider_id" text NOT NULL,
 	"workspace_id" text NOT NULL,
 	"parent_id" text,
 	"created_by" text NOT NULL,
@@ -67,7 +69,7 @@ CREATE TABLE "folders" (
 	"starred" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "folders_virtual_path_workspace_id_unique" UNIQUE("virtual_path","workspace_id")
+	CONSTRAINT "folders_remote_id_provider_id_unique" UNIQUE("remote_id","provider_id")
 );
 --> statement-breakpoint
 CREATE TABLE "permissions" (
@@ -211,6 +213,7 @@ ALTER TABLE "files" ADD CONSTRAINT "files_provider_id_storage_providers_id_fk" F
 ALTER TABLE "files" ADD CONSTRAINT "files_folder_id_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "files" ADD CONSTRAINT "files_uploaded_by_users_id_fk" FOREIGN KEY ("uploaded_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "files" ADD CONSTRAINT "files_vault_id_vaults_id_fk" FOREIGN KEY ("vault_id") REFERENCES "public"."vaults"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "folders" ADD CONSTRAINT "folders_provider_id_storage_providers_id_fk" FOREIGN KEY ("provider_id") REFERENCES "public"."storage_providers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "folders" ADD CONSTRAINT "folders_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "folders" ADD CONSTRAINT "folders_parent_id_folders_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."folders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "folders" ADD CONSTRAINT "folders_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

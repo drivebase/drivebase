@@ -26,7 +26,7 @@ import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 
 const searchSchema = z.object({
-	path: z.string().optional().catch(undefined),
+	folderId: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_authenticated/files")({
@@ -35,9 +35,10 @@ export const Route = createFileRoute("/_authenticated/files")({
 });
 
 function FilesPage() {
-	const { path: searchPath } = Route.useSearch();
+	const { folderId } = Route.useSearch();
 	const navigate = Route.useNavigate();
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+	const [filterProviderIds, setFilterProviderIds] = useState<string[]>([]);
 	const { downloadFile, showDetails } = useFileActions();
 	const { data: providersData } = useProviders();
 	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
@@ -52,10 +53,13 @@ function FilesPage() {
 		)?.role ?? null;
 	const canWriteFiles = can(currentWorkspaceRole, "files.write");
 
-	const currentPath = searchPath || "/";
+	const isRoot = !folderId;
 
 	const [{ data: contentsData, fetching: contentsFetching }, refreshContents] =
-		useContents(currentPath);
+		useContents(
+			folderId ?? null,
+			filterProviderIds.length ? filterProviderIds : undefined,
+		);
 
 	const currentFolder = contentsData?.contents?.folder as
 		| FolderItemFragment
@@ -75,7 +79,6 @@ function FilesPage() {
 
 	const upload = useUpload({
 		currentFolderId: currentFolder?.id,
-		currentFolderPath: currentFolder?.virtualPath,
 		onUploadComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 
@@ -85,7 +88,7 @@ function FilesPage() {
 		onUpdateItem: upload.updateQueueItem,
 	});
 
-	const breadcrumbs = useBreadcrumbs(currentPath, currentFolder);
+	const breadcrumbs = useBreadcrumbs(currentFolder);
 
 	const { isDragActive, dragHandlers } = useFileDrop({
 		onDrop: upload.handleFilesSelected,
@@ -97,17 +100,12 @@ function FilesPage() {
 		onMoveComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 
-	const handleNavigate = (folderId: string) => {
-		const targetFolder = folders.find(
-			(f: FolderItemFragment) => f.id === folderId,
-		);
-		if (targetFolder) {
-			navigate({ search: { path: targetFolder.virtualPath } });
-		}
+	const handleNavigate = (targetFolderId: string) => {
+		navigate({ search: { folderId: targetFolderId } });
 	};
 
-	const handleBreadcrumbClick = (path: string) => {
-		navigate({ search: { path } });
+	const handleBreadcrumbClick = (targetFolderId: string | null) => {
+		navigate({ search: { folderId: targetFolderId ?? undefined } });
 	};
 
 	return (
@@ -122,11 +120,16 @@ function FilesPage() {
 				{...dragHandlers}
 			>
 				<FilesToolbar
-					currentPath={currentPath}
+					isRoot={isRoot}
 					breadcrumbs={breadcrumbs}
 					canWriteFiles={canWriteFiles}
 					isUploading={upload.isUploading}
 					isLoading={contentsFetching}
+					providers={
+						providersData?.storageProviders?.filter((p) => p.isActive) ?? []
+					}
+					filterProviderIds={filterProviderIds}
+					onFilterChange={setFilterProviderIds}
 					onBreadcrumbClick={handleBreadcrumbClick}
 					onUploadClick={() => {
 						if (!canWriteFiles) {
@@ -180,6 +183,7 @@ function FilesPage() {
 						isOpen={isCreateDialogOpen}
 						onClose={() => setIsCreateDialogOpen(false)}
 						parentId={currentFolder?.id}
+						providers={providersData?.storageProviders}
 						onCreated={(folder) => {
 							folderList.addItem(folder as FolderItemFragment);
 							refreshContents({ requestPolicy: "network-only" });

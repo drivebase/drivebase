@@ -40,7 +40,7 @@ type FileConnection {
 }
 
 """
-Files and folders at a given virtual path
+Files and folders at a given location
 """
 type PathContents {
 	files: [File!]!
@@ -60,10 +60,11 @@ extend type Query {
 	files(folderId: ID, limit: Int, offset: Int): FileConnection!
 
 	"""
-	Get files and folders at a virtual path.
-	Use path "/" for root. Example: "/documents" for a subfolder.
+	Get files and folders at a location.
+	Pass folderId to browse a folder, or omit for root.
+	Pass providerIds to filter by specific providers.
 	"""
-	contents(path: String!): PathContents!
+	contents(folderId: ID, providerIds: [ID!]): PathContents!
 
 	"""
 	Search files by name

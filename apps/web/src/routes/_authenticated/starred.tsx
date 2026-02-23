@@ -166,13 +166,9 @@ function StarredPage() {
 					providers={providersData?.storageProviders}
 					isLoading={filesFetching || foldersFetching}
 					onNavigate={(folderId) => {
-						const folder = folderList.items.find(
-							(item) => item.id === folderId,
-						);
-						if (!folder) return;
 						navigate({
 							to: "/files",
-							search: { path: folder.virtualPath },
+							search: { folderId },
 						});
 					}}
 					onDownloadFile={downloadFile}
