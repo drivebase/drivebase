@@ -8,7 +8,7 @@ import { useState } from "react";
 
 export function Hero() {
   const [copied, setCopied] = useState(false);
-  const installCommand = "curl -fsSL https://drivebase.one/install | bash";
+  const installCommand = "curl -fsSL https://drivebase.io/install | bash";
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(installCommand);

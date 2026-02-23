@@ -91,7 +91,7 @@ echo -e "  3. Start Drivebase: ${BOLD}${BLUE}docker compose --env-file .env.loca
 
 # Telemetry
 (
-    TRACK_URL="https://drivebase.one/api/track"
+    TRACK_URL="https://drivebase.io/api/track"
     OS=$(uname -s)
     ARCH=$(uname -m)
     INSTALL_ID=$(openssl rand -hex 16)
@@ -109,4 +109,4 @@ echo -e "  3. Start Drivebase: ${BOLD}${BLUE}docker compose --env-file .env.loca
         }" > /dev/null 2>&1
 ) &
 
-echo -e "\n${GRAY}Need help? Visit https://drivebase.one/docs${NC}\n"
+echo -e "\n${GRAY}Need help? Visit https://drivebase.io/docs${NC}\n"
