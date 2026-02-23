@@ -1,0 +1,34 @@
+---
+title: Darkibox
+description: Connect Darkibox accounts using an API key
+---
+
+Darkibox is a cloud file-hosting service. Drivebase connects to it using your personal API key to upload, download, organise, and stream files stored in your Darkibox account.
+
+## Prerequisites
+
+### 1. Log in to Darkibox
+Go to [darkibox.com](https://darkibox.com) and sign in to your account.
+
+### 2. Copy your API Key
+Navigate to your account settings page. Your API key is listed there (e.g. `45whzlc91xqdmqm58`). Keep this value — you will paste it into Drivebase.
+
+## Connecting in Drivebase
+
+1. Navigate to the **Providers** page.
+2. Click **Connect Provider** and select **Darkibox**.
+3. Paste your API key into the **API Key** field.
+4. Click **Connect**.
+
+Drivebase will verify the key by calling the Darkibox account info endpoint and save your connection.
+
+<Callout type="info">
+Your API key is encrypted at rest using AES-256-GCM and never stored in plain text.
+</Callout>
+
+## Notes
+
+- **Uploads** are proxied through the Drivebase server (no direct browser-to-Darkibox upload). Drivebase first fetches an upload server URL from Darkibox, then streams your file there as multipart form data.
+- **Downloads** use a temporary direct link obtained from the Darkibox `file/direct_link` endpoint, bypassing the Drivebase server for better performance.
+- **Folder copy** is not supported by the Darkibox API; only file copy (clone) is available.
+- File remote IDs are the Darkibox `file_code` strings. Folder remote IDs are prefixed with `fld_` (e.g. `fld_12345`).

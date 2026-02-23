@@ -46,6 +46,8 @@ export enum ProviderType {
 	TELEGRAM = "telegram",
 	/** Nextcloud cloud storage with Login Flow v2 */
 	NEXTCLOUD = "nextcloud",
+	/** Darkibox cloud file hosting */
+	DARKIBOX = "darkibox",
 }
 
 /**

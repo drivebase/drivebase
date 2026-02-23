@@ -16,6 +16,7 @@
 	},
 	"dependencies": {
 		"@drivebase/core": "workspace:*",
+		"@drivebase/darkibox": "workspace:*",
 		"@drivebase/db": "workspace:*",
 		"@drivebase/dropbox": "workspace:*",
 		"@drivebase/ftp": "workspace:*",

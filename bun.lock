@@ -22,6 +22,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@drivebase/core": "workspace:*",
+        "@drivebase/darkibox": "workspace:*",
         "@drivebase/db": "workspace:*",
         "@drivebase/dropbox": "workspace:*",
         "@drivebase/ftp": "workspace:*",
@@ -131,6 +132,20 @@
       "version": "0.1.0",
       "dependencies": {
         "@drivebase/utils": "workspace:*",
+        "zod": "^3.22.4",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/darkibox": {
+      "name": "@drivebase/darkibox",
+      "version": "0.1.0",
+      "dependencies": {
+        "@drivebase/core": "workspace:*",
         "zod": "^3.22.4",
       },
       "devDependencies": {
@@ -547,6 +562,8 @@
     "@dotenvx/dotenvx": ["@dotenvx/dotenvx@1.52.0", "", { "dependencies": { "commander": "^11.1.0", "dotenv": "^17.2.1", "eciesjs": "^0.4.10", "execa": "^5.1.1", "fdir": "^6.2.0", "ignore": "^5.3.0", "object-treeify": "1.1.33", "picomatch": "^4.0.2", "which": "^4.0.0" }, "bin": { "dotenvx": "src/cli/dotenvx.js" } }, "sha512-CaQcc8JvtzQhUSm9877b6V4Tb7HCotkcyud9X2YwdqtQKwgljkMRwU96fVYKnzN3V0Hj74oP7Es+vZ0mS+Aa1w=="],
 
     "@drivebase/core": ["@drivebase/core@workspace:packages/core"],
+
+    "@drivebase/darkibox": ["@drivebase/darkibox@workspace:packages/darkibox"],
 
     "@drivebase/db": ["@drivebase/db@workspace:packages/db"],
 
