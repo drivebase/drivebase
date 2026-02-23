@@ -23,6 +23,7 @@ export const providerTypeEnum = pgEnum("provider_type", [
 	"webdav",
 	"telegram",
 	"nextcloud",
+	"darkibox",
 ]);
 
 /**

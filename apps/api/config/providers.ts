@@ -1,6 +1,10 @@
 import type { ProviderRegistration } from "@drivebase/core";
 import { ProviderType } from "@drivebase/core";
 import {
+	DarkiboxSensitiveFields,
+	darkiboxRegistration,
+} from "@drivebase/darkibox";
+import {
 	DropboxSensitiveFields,
 	dropboxRegistration,
 } from "@drivebase/dropbox";
@@ -37,6 +41,7 @@ export const providerRegistry: Record<string, ProviderRegistration> = {
 	[ProviderType.WEBDAV]: webdavRegistration,
 	[ProviderType.TELEGRAM]: telegramRegistration,
 	[ProviderType.NEXTCLOUD]: nextcloudRegistration,
+	[ProviderType.DARKIBOX]: darkiboxRegistration,
 };
 
 /**
@@ -51,6 +56,7 @@ export const providerSensitiveFields: Record<string, readonly string[]> = {
 	[ProviderType.WEBDAV]: WebDAVSensitiveFields,
 	[ProviderType.TELEGRAM]: TelegramSensitiveFields,
 	[ProviderType.NEXTCLOUD]: NextcloudSensitiveFields,
+	[ProviderType.DARKIBOX]: DarkiboxSensitiveFields,
 };
 
 /**
@@ -103,6 +109,8 @@ function getProviderName(type: string): string {
 			return "Telegram";
 		case ProviderType.NEXTCLOUD:
 			return "Nextcloud";
+		case ProviderType.DARKIBOX:
+			return "Darkibox";
 		default:
 			return type;
 	}

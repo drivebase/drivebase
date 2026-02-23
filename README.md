@@ -108,6 +108,7 @@ Drivebase supports the following cloud providers:
 - [x] WebDAV
 - [x] Telegram
 - [x] Nextcloud
+- [x] Darkibox
 - [ ] sFTP
 - [ ] Box
 - [ ] OneDrive

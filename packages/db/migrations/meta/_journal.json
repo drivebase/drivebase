@@ -8,6 +8,13 @@
 			"when": 1771765398152,
 			"tag": "0000_init",
 			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1740355200000,
+			"tag": "0001_add_darkibox_provider",
+			"breakpoints": true
 		}
 	]
 }
