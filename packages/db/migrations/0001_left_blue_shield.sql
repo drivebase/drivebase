@@ -1,1 +1,0 @@
-ALTER TABLE "workspaces" ADD COLUMN "sync_operations_to_provider" boolean DEFAULT false NOT NULL;

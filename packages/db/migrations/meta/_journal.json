@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1771899058997,
-      "tag": "0000_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1771938850594,
-      "tag": "0001_left_blue_shield",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1771946083229,
-      "tag": "0002_powerful_cammi",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1771946134830,
-      "tag": "0003_kind_karnak",
+      "when": 1771965063484,
+      "tag": "0000_far_random",
       "breakpoints": true
     }
   ]
