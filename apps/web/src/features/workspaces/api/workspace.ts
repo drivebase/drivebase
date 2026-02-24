@@ -100,6 +100,65 @@ export const UPDATE_WORKSPACE_SYNC_OPERATIONS_MUTATION = graphql(`
   }
 `);
 
+export const WORKSPACE_AI_SETTINGS_QUERY = graphql(`
+  query GetWorkspaceAiSettings($workspaceId: ID!) {
+    workspaceAiSettings(workspaceId: $workspaceId) {
+      workspaceId
+      enabled
+      modelsReady
+      embeddingTier
+      ocrTier
+      objectTier
+      maxConcurrency
+      updatedAt
+    }
+  }
+`);
+
+export const WORKSPACE_AI_PROGRESS_QUERY = graphql(`
+  query GetWorkspaceAiProgress($workspaceId: ID!) {
+    workspaceAiProgress(workspaceId: $workspaceId) {
+      workspaceId
+      eligibleFiles
+      processedFiles
+      pendingFiles
+      runningFiles
+      failedFiles
+      skippedFiles
+      completedFiles
+      completionPct
+      updatedAt
+    }
+  }
+`);
+
+export const UPDATE_WORKSPACE_AI_SETTINGS_MUTATION = graphql(`
+  mutation UpdateWorkspaceAiSettings($input: UpdateWorkspaceAiSettingsInput!) {
+    updateWorkspaceAiSettings(input: $input) {
+      workspaceId
+      enabled
+      modelsReady
+      embeddingTier
+      ocrTier
+      objectTier
+      maxConcurrency
+      updatedAt
+    }
+  }
+`);
+
+export const PREPARE_WORKSPACE_AI_MODELS_MUTATION = graphql(`
+  mutation PrepareWorkspaceAiModels($workspaceId: ID!) {
+    prepareWorkspaceAiModels(workspaceId: $workspaceId)
+  }
+`);
+
+export const START_WORKSPACE_AI_PROCESSING_MUTATION = graphql(`
+  mutation StartWorkspaceAiProcessing($workspaceId: ID!) {
+    startWorkspaceAiProcessing(workspaceId: $workspaceId)
+  }
+`);
+
 export const REMOVE_WORKSPACE_MEMBER_MUTATION = graphql(`
   mutation RemoveWorkspaceMember($workspaceId: ID!, $userId: ID!) {
     removeWorkspaceMember(workspaceId: $workspaceId, userId: $userId)
