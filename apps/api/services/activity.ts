@@ -128,6 +128,8 @@ export class ActivityService {
 		if (!activity) {
 			throw new Error("Failed to log activity");
 		}
+
+		pubSub.publish("activityCreated", input.userId, activity);
 		return activity;
 	}
 

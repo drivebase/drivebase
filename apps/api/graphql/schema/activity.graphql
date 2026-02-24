@@ -95,4 +95,9 @@ type Subscription {
 	Subscribe to job updates for the current workspace
 	"""
 	jobUpdated: Job!
+
+	"""
+	Subscribe to newly created activities for the current user
+	"""
+	activityCreated: Activity!
 }

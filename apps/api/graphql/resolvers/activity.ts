@@ -225,4 +225,11 @@ export const activitySubscriptions: SubscriptionResolvers = {
 		resolve: (payload: PubSubChannels["activityUpdated"][1]) =>
 			toGraphqlJob(payload),
 	},
+	activityCreated: {
+		subscribe: async (_parent, _args, context) => {
+			const user = requireAuth(context);
+			return pubSub.subscribe("activityCreated", user.userId);
+		},
+		resolve: (payload: PubSubChannels["activityCreated"][1]) => payload,
+	},
 };
