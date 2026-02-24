@@ -9,8 +9,6 @@ import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 function triggerBrowserDownload(url: string, fileName?: string) {
 	const link = document.createElement("a");
 	link.href = url;
-	link.target = "_blank";
-	link.rel = "noopener noreferrer";
 	if (fileName) {
 		link.download = fileName;
 	}

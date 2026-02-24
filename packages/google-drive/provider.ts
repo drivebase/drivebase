@@ -246,67 +246,89 @@ export class GoogleDriveProvider implements IStorageProvider {
 	 * Google Drive provides webContentLink for downloads
 	 */
 	async requestDownload(options: DownloadOptions): Promise<DownloadResponse> {
-		const drive = this.ensureInitialized();
-
-		try {
-			// Get file metadata to get webContentLink
-			const response = await drive.files.get({
-				fileId: options.remoteId,
-				fields: "webContentLink,webViewLink",
-			});
-
-			const downloadUrl =
-				response.data.webContentLink || response.data.webViewLink;
-
-			if (downloadUrl) {
-				return {
-					fileId: options.remoteId,
-					downloadUrl,
-					useDirectDownload: true,
-				};
-			}
-
-			// Fallback to streaming through API
-			return {
-				fileId: options.remoteId,
-				downloadUrl: undefined,
-				useDirectDownload: false,
-			};
-		} catch (error) {
-			throw new ProviderError("google_drive", "Failed to request download", {
-				error,
-			});
-		}
+		// Always proxy through API — Google Drive's webContentLink is a cross-origin
+		// Google URL, so browsers ignore the `download` attribute and open it in a
+		// new tab instead of saving the file. The proxy streams the file with a
+		// proper Content-Disposition: attachment header, triggering a real download.
+		return {
+			fileId: options.remoteId,
+			downloadUrl: undefined,
+			useDirectDownload: false,
+		};
 	}
 
 	/**
-	 * Download file from Google Drive
+	 * Export MIME type mapping for Google Workspace native formats.
+	 * These files cannot be downloaded with alt=media and must be exported.
+	 */
+	private static readonly GOOGLE_APPS_EXPORT_MAP: Record<string, string> = {
+		"application/vnd.google-apps.document":
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		"application/vnd.google-apps.spreadsheet":
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+		"application/vnd.google-apps.presentation":
+			"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+		"application/vnd.google-apps.drawing": "image/png",
+		"application/vnd.google-apps.script":
+			"application/vnd.google-apps.script+json",
+	};
+
+	/**
+	 * Download file from Google Drive.
+	 * For Google Workspace native files (Docs, Sheets, Slides, etc.), uses the
+	 * Export API to convert to a binary format. For all other files, streams the
+	 * raw content via alt=media.
 	 */
 	async downloadFile(remoteId: string): Promise<ReadableStream> {
 		const drive = this.ensureInitialized();
 
 		try {
+			// Fetch file metadata to check if it's a Google Workspace native type
+			const meta = await drive.files.get({
+				fileId: remoteId,
+				fields: "mimeType",
+			});
+
+			const mimeType = meta.data.mimeType ?? "";
+			const exportMime = GoogleDriveProvider.GOOGLE_APPS_EXPORT_MAP[mimeType];
+
+			if (exportMime) {
+				// Google Workspace native file — must use export
+				const response = await drive.files.export(
+					{ fileId: remoteId, mimeType: exportMime },
+					{ responseType: "stream" },
+				);
+				const nodeStream = response.data as NodeJS.ReadableStream;
+				return new ReadableStream({
+					start(controller) {
+						nodeStream.on("data", (chunk: Buffer) => {
+							controller.enqueue(chunk);
+						});
+						nodeStream.on("end", () => {
+							controller.close();
+						});
+						nodeStream.on("error", (error: Error) => {
+							controller.error(error);
+						});
+					},
+				});
+			}
+
+			// Regular binary file — stream via alt=media
 			const response = await drive.files.get(
-				{
-					fileId: remoteId,
-					alt: "media",
-				},
+				{ fileId: remoteId, alt: "media" },
 				{ responseType: "stream" },
 			);
 
-			// Convert Node.js stream to Web ReadableStream
 			const nodeStream = response.data as NodeJS.ReadableStream;
-
 			return new ReadableStream({
 				start(controller) {
 					nodeStream.on("data", (chunk: Buffer) => {
 						controller.enqueue(chunk);
 					});
-
 					nodeStream.on("end", () => {
 						controller.close();
 					});
-
 					nodeStream.on("error", (error: Error) => {
 						controller.error(error);
 					});
