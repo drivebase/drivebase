@@ -12,6 +12,7 @@ import {
 import {
 	connectProvider,
 	disconnectProvider,
+	renameProvider,
 	updateProviderQuota,
 } from "./provider/provider-lifecycle";
 import {
@@ -169,6 +170,26 @@ export class ProviderService {
 			quotaTotal,
 			quotaUsed,
 		);
+	}
+
+	async renameProvider(
+		providerId: string,
+		userId: string,
+		name: string,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		logger.debug({
+			msg: "Resolved workspace for provider rename",
+			userId,
+			workspaceId,
+			providerId,
+		});
+		return renameProvider(this.db, providerId, workspaceId, name);
 	}
 
 	async getProviders(userId: string, preferredWorkspaceId?: string) {

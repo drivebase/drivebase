@@ -32,6 +32,9 @@ const envSchema = z.object({
 
 	// Path to writable data directory (used for instance ID persistence)
 	DATA_DIR: z.string().default("/app/data"),
+
+	// Optional path for provider-transfer cache/staging files
+	TRANSFER_CACHE_DIR: z.string().optional(),
 });
 
 /**

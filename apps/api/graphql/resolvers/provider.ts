@@ -113,6 +113,19 @@ export const providerMutations: MutationResolvers = {
 		);
 	},
 
+	renameProvider: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		return providerService.renameProvider(
+			args.id,
+			user.userId,
+			args.name,
+			workspaceId,
+		);
+	},
+
 	initiateProviderOAuth: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);

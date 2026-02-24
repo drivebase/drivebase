@@ -3,6 +3,11 @@ import { env } from "./config/env";
 import { mountPluginRoutes } from "./config/providers";
 import { closeSyncQueue } from "./queue/sync-queue";
 import { startSyncWorker, stopSyncWorker } from "./queue/sync-worker";
+import { closeTransferQueue } from "./queue/transfer-queue";
+import {
+	startTransferWorker,
+	stopTransferWorker,
+} from "./queue/transfer-worker";
 import { closeUploadQueue } from "./queue/upload-queue";
 import { startUploadWorker, stopUploadWorker } from "./queue/upload-worker";
 import { createApp } from "./server/app";
@@ -69,6 +74,7 @@ const server = Bun.serve({
 // Start BullMQ workers
 startUploadWorker();
 startSyncWorker();
+startTransferWorker();
 
 logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
 
@@ -89,6 +95,8 @@ async function shutdown() {
 	await closeUploadQueue();
 	await stopSyncWorker();
 	await closeSyncQueue();
+	await stopTransferWorker();
+	await closeTransferQueue();
 	telemetry.capture("server_shutdown");
 	await telemetry.shutdown();
 	process.exit(0);

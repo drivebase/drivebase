@@ -5,6 +5,7 @@ import {
 	Info,
 	Link2,
 	MoreVertical,
+	Pencil,
 	RefreshCw,
 	Settings,
 	Trash2,
@@ -31,6 +32,7 @@ interface ConnectedProviderCardProps {
 	onDisconnect: (id: string) => void;
 	onQuota: (provider: StorageProvider) => void;
 	onInfo: (provider: StorageProvider) => void;
+	onRename: (provider: StorageProvider) => void;
 	onSync: (provider: StorageProvider) => void;
 	canManageProviders: boolean;
 	isDisconnecting: boolean;
@@ -44,6 +46,7 @@ export function ConnectedProviderCard({
 	onDisconnect,
 	onQuota,
 	onInfo,
+	onRename,
 	onSync,
 	canManageProviders,
 	isDisconnecting,
@@ -129,6 +132,9 @@ export function ConnectedProviderCard({
 								<DropdownMenuLabel>Actions</DropdownMenuLabel>
 								<DropdownMenuItem onClick={() => onInfo(provider)}>
 									<Info className="mr-2 h-4 w-4" /> View
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => onRename(provider)}>
+									<Pencil className="mr-2 h-4 w-4" /> Rename
 								</DropdownMenuItem>
 								<DropdownMenuItem
 									onClick={() => onSync(provider)}

@@ -4,11 +4,7 @@ import { FolderIcon, Star } from "lucide-react";
 import { useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileMimeIcon } from "@/features/files/FileMimeIcon";
-import {
-	formatFileTypeLabel,
-	formatProviderTypeLabel,
-	formatSize,
-} from "@/features/files/utils";
+import { formatFileTypeLabel, formatSize } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import { FileSystemRowActions } from "../components/file-system-table/FileSystemRowActions";
 import type {
@@ -72,9 +68,9 @@ export function useFileSystemColumns({
 			},
 			{
 				id: "name",
-				size: 300,
-				minSize: 220,
-				maxSize: 350,
+				size: 220,
+				minSize: 170,
+				maxSize: 500,
 				accessorFn: (row) =>
 					row.kind === "file" ? row.file.name : row.folder.name,
 				header: "Name",
@@ -125,13 +121,13 @@ export function useFileSystemColumns({
 			},
 			{
 				id: "provider",
-				size: 150,
-				minSize: 120,
+				size: 120,
+				minSize: 80,
 				header: "Provider",
 				accessorFn: (row) =>
 					row.kind === "file"
-						? (row.file.provider?.type ?? "Unknown")
-						: (row.folder.provider?.type ?? "Unknown"),
+						? (row.file.provider?.name ?? "Unknown")
+						: (row.folder.provider?.name ?? "Unknown"),
 				cell: ({ row }) => {
 					const provider =
 						row.original.kind === "file"
@@ -145,7 +141,7 @@ export function useFileSystemColumns({
 								className="h-4 w-4"
 							/>
 							<span className="text-sm text-muted-foreground">
-								{formatProviderTypeLabel(provider?.type)}
+								{provider?.name ?? "Unknown"}
 							</span>
 						</div>
 					);
@@ -176,8 +172,8 @@ export function useFileSystemColumns({
 			},
 			{
 				id: "updatedAt",
-				size: 170,
-				minSize: 150,
+				size: 120,
+				minSize: 80,
 				header: () => <div className="text-right">Last Modified</div>,
 				accessorFn: (row) =>
 					row.kind === "file" ? row.file.updatedAt : row.folder.updatedAt,

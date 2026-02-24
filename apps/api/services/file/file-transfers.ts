@@ -5,10 +5,12 @@ import {
 	ValidationError,
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { files, folders, storageProviders } from "@drivebase/db";
+import { files, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
+import { getTransferQueue } from "../../queue/transfer-queue";
 import { getPublicApiBaseUrl } from "../../config/url";
 import { logger } from "../../utils/logger";
+import { ActivityService } from "../activity";
 import { FolderService } from "../folder";
 import { ProviderService } from "../provider";
 import { evaluateRules } from "../rules";
@@ -333,7 +335,7 @@ export async function getFileMetadata(
 
 /**
  * Move file to a different storage provider.
- * Streams the file from source to destination without buffering.
+ * Enqueues a background transfer job and returns immediately.
  */
 export async function moveFileToProvider(
 	db: Database,
@@ -356,88 +358,57 @@ export async function moveFileToProvider(
 	}
 
 	const providerService = new ProviderService(db);
-
-	const sourceRecord = await providerService.getProvider(
-		file.providerId,
-		userId,
-		workspaceId,
-	);
-	const sourceProvider =
-		await providerService.getProviderInstance(sourceRecord);
-
-	const targetRecord = await providerService.getProvider(
-		targetProviderId,
-		userId,
-		workspaceId,
-	);
-	const targetProvider =
-		await providerService.getProviderInstance(targetRecord);
+	await providerService.getProvider(file.providerId, userId, workspaceId);
+	await providerService.getProvider(targetProviderId, userId, workspaceId);
 
 	try {
-		const stream = await sourceProvider.downloadFile(file.remoteId);
-
-		// If file is in a folder, use that folder's remoteId; otherwise use provider root
-		let targetParentId: string | undefined;
-		if (file.folderId) {
-			const [folder] = await db
-				.select()
-				.from(folders)
-				.where(eq(folders.id, file.folderId))
-				.limit(1);
-			if (folder) {
-				targetParentId = folder.remoteId;
-			}
-		}
-
-		const uploadResponse = await targetProvider.requestUpload({
-			name: file.name,
-			mimeType: file.mimeType,
-			size: file.size,
-			parentId: targetParentId,
+		const activityService = new ActivityService(db);
+		const activityJob = await activityService.create(workspaceId, {
+			type: "provider_transfer",
+			title: `Transfer ${file.name}`,
+			message: "Queued for transfer",
+			metadata: {
+				fileId: file.id,
+				fileName: file.name,
+				sourceProviderId: file.providerId,
+				targetProviderId,
+				totalSize: file.size,
+				phase: "queued",
+			},
 		});
 
-		const finalRemoteId =
-			(await targetProvider.uploadFile(uploadResponse.fileId, stream)) ||
-			uploadResponse.fileId;
+		const transferQueue = getTransferQueue();
+		await transferQueue.add(
+			"move-file-to-provider",
+			{
+				jobId: activityJob.id,
+				workspaceId,
+				userId,
+				fileId: file.id,
+				targetProviderId,
+			},
+			{
+				jobId: `file-transfer:${file.id}:${targetProviderId}`,
+			},
+		);
 
-		await sourceProvider.delete({
-			remoteId: file.remoteId,
-			isFolder: false,
-		});
-
-		const [updated] = await db
-			.update(files)
-			.set({
-				providerId: targetProviderId,
-				remoteId: finalRemoteId,
-				updatedAt: new Date(),
-			})
-			.where(eq(files.id, fileId))
-			.returning();
-
-		if (!updated) {
-			throw new Error("Failed to update file record");
-		}
-
-		logger.debug({
-			msg: "File moved to provider",
+		logger.info({
+			msg: "Queued file transfer job",
 			fileId,
+			activityJobId: activityJob.id,
 			from: file.providerId,
 			to: targetProviderId,
 		});
 
-		return updated;
+		return file;
 	} catch (error) {
 		logger.error({
-			msg: "Move file to provider failed",
+			msg: "Queue file transfer failed",
 			userId,
 			fileId,
 			targetProviderId,
 			error,
 		});
 		throw error;
-	} finally {
-		await sourceProvider.cleanup();
-		await targetProvider.cleanup();
 	}
 }

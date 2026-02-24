@@ -140,6 +140,11 @@ extend type Mutation {
 	updateProviderQuota(input: UpdateProviderQuotaInput!): StorageProvider!
 
 	"""
+	Rename a connected provider display name
+	"""
+	renameProvider(id: ID!, name: String!): StorageProvider!
+
+	"""
 	Initiate the OAuth flow for an OAuth-type provider.
 	Returns the authorization URL to redirect the user to.
 	The OAuth callback is handled via GET /webhook/callback/:id
