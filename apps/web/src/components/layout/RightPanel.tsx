@@ -131,7 +131,7 @@ function DefaultView() {
 			<Separator />
 
 			<div className="flex-1 overflow-y-auto">
-				<div className="flex items-center justify-between mb-4 px-4">
+				<div className="flex items-center justify-between mb-4 px-2">
 					<h3 className="font-semibold">
 						<Trans>Recent Activity</Trans>
 					</h3>
@@ -147,7 +147,7 @@ function DefaultView() {
 						</Button>
 					)}
 				</div>
-				<div className="px-1">
+				<div>
 					{fetching &&
 						Array.from({ length: 3 }).map((_, i) => (
 							// biome-ignore lint/suspicious/noArrayIndexKey: skeleton items have no stable id
@@ -203,7 +203,7 @@ function DefaultView() {
 						return (
 							<div
 								key={activity.id}
-								className="flex items-start gap-3 px-3 py-2.5 hover:bg-muted transition-colors rounded-md"
+								className="flex items-start gap-3 px-3 py-2.5 hover:bg-muted transition-colors"
 							>
 								{/* Provider icon */}
 								<div className="shrink-0 mt-0.5">
