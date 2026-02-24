@@ -108,6 +108,13 @@ export async function inferEmbedding(input: {
 	return postJson<EmbedResponse>("/embed", input);
 }
 
+export async function inferTextEmbedding(input: {
+	text: string;
+	modelTier: "lightweight" | "medium" | "heavy";
+}): Promise<EmbedResponse> {
+	return postJson<EmbedResponse>("/embed-text", input);
+}
+
 export async function inferEmbeddingStream(input: {
 	stream: ReadableStream;
 	fileName: string;

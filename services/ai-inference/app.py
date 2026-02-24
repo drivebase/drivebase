@@ -94,6 +94,11 @@ class EmbedResponse(BaseModel):
     modelName: str
 
 
+class EmbedTextRequest(BaseModel):
+    text: str
+    modelTier: TierType = "medium"
+
+
 class OcrRequest(BaseModel):
     fileId: str
     fileName: str
@@ -340,6 +345,14 @@ def embed(payload: EmbedRequest):
     logger.info("Embed requested file=%s tier=%s", payload.fileId, payload.modelTier)
     model_name = MODEL_REGISTRY[payload.modelTier]["embedding"]
     seed = f"{payload.fileId}|{payload.fileName}|{payload.mimeType}|{model_name}"
+    return EmbedResponse(embedding=_embedding_from_seed(seed), modelName=model_name)
+
+
+@app.post("/embed-text", response_model=EmbedResponse)
+def embed_text(payload: EmbedTextRequest):
+    model_name = MODEL_REGISTRY[payload.modelTier]["embedding"]
+    logger.info("Embed text requested tier=%s chars=%s", payload.modelTier, len(payload.text))
+    seed = f"{payload.text}|{model_name}"
     return EmbedResponse(embedding=_embedding_from_seed(seed), modelName=model_name)
 
 

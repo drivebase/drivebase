@@ -1,6 +1,12 @@
 import { NotFoundError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { files, folders, storageProviders } from "@drivebase/db";
+import {
+	fileEmbeddings,
+	files,
+	folders,
+	storageProviders,
+	workspaceAiSettings,
+} from "@drivebase/db";
 import {
 	and,
 	desc,
@@ -12,6 +18,7 @@ import {
 	sql,
 } from "drizzle-orm";
 import { logger } from "../../utils/logger";
+import { inferTextEmbedding } from "../ai/inference-client";
 import { getProviderInstance } from "../provider/provider-queries";
 
 function normalizeNullableId(value: string | null | undefined): string | null {
@@ -467,6 +474,84 @@ export async function searchFiles(
 	} catch (error) {
 		logger.error({ msg: "Search files failed", userId, query, error });
 		throw error;
+	}
+}
+
+function toVectorLiteral(values: number[]): string {
+	return `[${values.join(",")}]`;
+}
+
+/**
+ * Semantic search files using vector similarity. Falls back to name search if
+ * embedding inference is unavailable.
+ */
+export async function searchFilesAi(
+	db: Database,
+	userId: string,
+	workspaceId: string,
+	query: string,
+	limit: number = 20,
+) {
+	logger.debug({ msg: "Semantic searching files", userId, workspaceId, query });
+	try {
+		const [aiSettings] = await db
+			.select({
+				embeddingTier: workspaceAiSettings.embeddingTier,
+			})
+			.from(workspaceAiSettings)
+			.where(eq(workspaceAiSettings.workspaceId, workspaceId))
+			.limit(1);
+
+		const embed = await inferTextEmbedding({
+			text: query,
+			modelTier: aiSettings?.embeddingTier ?? "medium",
+		});
+		const vectorLiteral = toVectorLiteral(embed.embedding);
+
+		const rows = await db.execute(sql`
+			with latest_embeddings as (
+				select distinct on (fe.file_id) fe.file_id, fe.embedding
+				from file_embeddings fe
+				where fe.workspace_id = ${workspaceId}
+				order by fe.file_id, fe.created_at desc
+			)
+			select f.id
+			from latest_embeddings le
+			join nodes f on f.id = le.file_id
+			join storage_providers sp on sp.id = f.provider_id
+			where f.node_type = 'file'
+				and f.is_deleted = false
+				and f.vault_id is null
+				and sp.workspace_id = ${workspaceId}
+			order by (le.embedding <=> ${sql.raw(`'${vectorLiteral}'::vector`)}) asc
+			limit ${limit}
+		`);
+
+		const rankedIds = rows.rows
+			.map((row) => (row as { id?: unknown }).id)
+			.filter((id): id is string => typeof id === "string");
+
+		if (rankedIds.length === 0) {
+			return [];
+		}
+
+		const rankedFiles = await db
+			.select({ file: files })
+			.from(files)
+			.where(inArray(files.id, rankedIds))
+			.then((resultRows) => resultRows.map((resultRow) => resultRow.file));
+
+		const rankedFilesById = new Map(rankedFiles.map((file) => [file.id, file]));
+		return rankedIds
+			.map((id) => rankedFilesById.get(id))
+			.filter((file): file is typeof files.$inferSelect => Boolean(file));
+	} catch (error) {
+		logger.warn({
+			msg: "Semantic search unavailable, falling back to name search",
+			workspaceId,
+			error: error instanceof Error ? error.message : String(error),
+		});
+		return searchFiles(db, userId, workspaceId, query, limit);
 	}
 }
 

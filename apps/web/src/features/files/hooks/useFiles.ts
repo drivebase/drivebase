@@ -10,6 +10,7 @@ import {
 	RENAME_FILE_MUTATION,
 	REQUEST_DOWNLOAD_MUTATION,
 	REQUEST_UPLOAD_MUTATION,
+	SEARCH_FILES_AI_QUERY,
 	SEARCH_FILES_QUERY,
 	SEARCH_FOLDERS_QUERY,
 	STAR_FILE_MUTATION,
@@ -50,6 +51,15 @@ export function useFile(id: string) {
 export function useSearchFiles(query: string, limit = 20) {
 	const [result] = useQuery({
 		query: SEARCH_FILES_QUERY,
+		variables: { query, limit },
+		pause: !query,
+	});
+	return result;
+}
+
+export function useSearchFilesAi(query: string, limit = 20) {
+	const [result] = useQuery({
+		query: SEARCH_FILES_AI_QUERY,
 		variables: { query, limit },
 		pause: !query,
 	});

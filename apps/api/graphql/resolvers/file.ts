@@ -114,6 +114,19 @@ export const fileQueries: QueryResolvers = {
 		);
 	},
 
+	searchFilesAi: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		return fileService.searchFilesAi(
+			user.userId,
+			args.query,
+			args.limit ?? undefined,
+			workspaceId,
+		);
+	},
+
 	searchFolders: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);

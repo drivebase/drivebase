@@ -7,6 +7,7 @@ import {
 	getRecentFiles,
 	getStarredFiles,
 	listFiles,
+	searchFilesAi,
 	searchFiles,
 	searchFolders,
 } from "./file/file-queries";
@@ -99,6 +100,20 @@ export class FileService {
 			preferredWorkspaceId,
 		);
 		return searchFiles(this.db, userId, workspaceId, query, limit);
+	}
+
+	async searchFilesAi(
+		userId: string,
+		query: string,
+		limit?: number,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return searchFilesAi(this.db, userId, workspaceId, query, limit);
 	}
 
 	async searchFolders(

@@ -25,6 +25,7 @@ export {
 	useRenameFile,
 	useRequestDownload,
 	useRequestUpload,
+	useSearchFilesAi,
 	useSearchFiles,
 	useStarFile,
 	useStarredFiles,
