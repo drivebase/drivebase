@@ -1,7 +1,7 @@
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { Settings2, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Settings2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useSubscription } from "urql";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import {
 	ActivityType,
 	JobStatus,
@@ -19,7 +20,6 @@ import {
 	DELETE_ACTIVITIES_MUTATION,
 	RECENT_ACTIVITIES_QUERY,
 } from "@/shared/api/activity";
-import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import { useActivityStore } from "@/shared/store/activityStore";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
@@ -51,7 +51,13 @@ function DefaultView() {
 	// Subscribe to new activities — prepend them to the list in real-time
 	useSubscription({ query: ACTIVITY_CREATED_SUBSCRIPTION }, (_prev, data) => {
 		if (data?.activityCreated) {
-			setLocalActivities((prev) => [data.activityCreated, ...prev].slice(0, 5));
+			const newActivity = data.activityCreated;
+			setLocalActivities((prev) => {
+				if (prev.some((a) => a.id === newActivity.id)) {
+					return prev;
+				}
+				return [newActivity, ...prev].slice(0, 5);
+			});
 		}
 		return data;
 	});
