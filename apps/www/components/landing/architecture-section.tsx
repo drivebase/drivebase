@@ -79,6 +79,8 @@ export function ArchitectureSection() {
               src="https://picsum.photos/seed/schematic/800/800?grayscale"
               alt="Core Engine"
               className="w-3/4 h-3/4 object-contain opacity-50 mix-blend-screen invert"
+              width={700}
+              height={500}
             />
           </div>
         </div>
