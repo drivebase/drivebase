@@ -1,0 +1,5 @@
+{
+  "name": "Drivebase",
+  "description": "Unified storage interface for Google Drive, AWS S3, and local storage.",
+  "requestFramePermissions": []
+}

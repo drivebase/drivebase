@@ -1,164 +1,104 @@
 "use client";
 
-import {
-  ArrowRightLeft,
-  ChevronDown,
-  Github,
-  Route,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-const featureLinks = [
-  {
-    title: "Vault",
-    href: "/features/vault",
-    description: "Private encrypted storage with end-to-end protection.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Smart Upload",
-    href: "/features/smart-upload",
-    description: "Route files to the right provider automatically.",
-    icon: Route,
-  },
-  {
-    title: "Cloud Transfers",
-    href: "/features/cloud-transfers",
-    description: "Move files between providers without manual downloads.",
-    icon: ArrowRightLeft,
-  },
-  {
-    title: "Team Collaboration",
-    href: "/features/team-collaboration",
-    description: "Share files securely with workspace-level permissions.",
-    icon: Users,
-  },
+const NAV_LINKS = [
+  { label: "Features", href: "/#features" },
+  { label: "Docs", href: "/docs" },
+  { label: "Blog", href: "/blogs" },
 ];
 
 export function Navbar() {
-  const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
-  const featuresRef = useRef<HTMLDivElement>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const onPointerDown = (event: MouseEvent) => {
-      if (!featuresRef.current?.contains(event.target as Node)) {
-        setIsFeaturesOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", onPointerDown);
-    return () => document.removeEventListener("mousedown", onPointerDown);
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-black/60 backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid h-16 grid-cols-[1fr_auto_1fr] items-center">
-          <div className="flex items-center justify-start">
-            <Link href="/" className="flex items-center gap-2">
-              <Image
-                className="h-8 w-auto"
-                src="https://raw.githubusercontent.com/drivebase/drivebase/main/drivebase.svg"
-                alt="Drivebase"
-                width={32}
-                height={32}
-              />
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+        isScrolled ? "bg-background border-b border-border" : "bg-transparent"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <Link href="/" className="flex items-center space-x-4">
+            <Image
+              src="/drivebase.svg"
+              alt="Drivebase Logo"
+              width={32}
+              height={32}
+            />
+            <span className="text-foreground font-bold text-lg tracking-tight">
+              Drivebase
+            </span>
+          </Link>
+
+          <div className="hidden md:flex items-center space-x-8">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="hidden md:flex items-center space-x-4">
+            <Link
+              href="https://app.drivebase.tech"
+              className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium bg-primary hover:bg-primary/90 text-primary-foreground border border-transparent transition-colors"
+            >
+              Get Started
             </Link>
           </div>
-          <div className="hidden md:flex items-center justify-center gap-7">
-            {/** biome-ignore lint/a11y/noStaticElementInteractions: . */}
-            <div
-              ref={featuresRef}
-              className="relative"
-              onMouseEnter={() => setIsFeaturesOpen(true)}
-              onMouseLeave={() => setIsFeaturesOpen(false)}
-            >
-              <button
-                type="button"
-                aria-expanded={isFeaturesOpen}
-                onClick={() => setIsFeaturesOpen((prev) => !prev)}
-                className="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
-              >
-                Features
-                <ChevronDown
-                  className={`size-3 transition-transform ${isFeaturesOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-              <div
-                className={`absolute left-0 top-full z-30 w-[460px] pt-3 transition-all duration-150 ${
-                  isFeaturesOpen
-                    ? "pointer-events-auto opacity-100"
-                    : "pointer-events-none opacity-0"
-                }`}
-              >
-                <ul className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-[#0B0B0B] p-2 shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
-                  {featureLinks.map((item) => (
-                    <li key={item.title}>
-                      <Link
-                        href={item.href}
-                        onClick={() => setIsFeaturesOpen(false)}
-                        className="block rounded-lg p-3 transition-colors hover:bg-white/5"
-                      >
-                        <div className="flex items-start gap-2.5">
-                          <div className="mt-0.5 rounded-md bg-white/5 p-1.5 text-indigo-300">
-                            <item.icon className="size-3.5" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium leading-none text-white">
-                              {item.title}
-                            </p>
-                            <p className="mt-2 line-clamp-2 text-xs leading-snug text-gray-400">
-                              {item.description}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+
+          <button
+            type="button"
+            className="md:hidden text-muted-foreground"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-background border-b border-border px-4 py-4 space-y-4">
+          {NAV_LINKS.map((link) => (
             <Link
-              href="/docs"
-              className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+              key={link.href}
+              href={link.href}
+              className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
-              Documentation
+              {link.label}
             </Link>
+          ))}
+          <div className="pt-4 border-t border-border space-y-4">
             <Link
-              href="/docs/api"
-              className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
-            >
-              API Reference
-            </Link>
-            <Link
-              href="/blogs"
-              className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
-            >
-              Blogs
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="https://github.com/drivebase/drivebase"
-              target="_blank"
-              className="ml-auto text-gray-400 hover:text-white transition-colors"
-            >
-              <span className="sr-only">GitHub</span>
-              <Github className="size-5" />
-            </Link>
-            <Link
-              href="/docs"
-              className="hidden sm:block rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-black hover:bg-gray-200 transition-colors"
+              href="https://app.drivebase.tech"
+              className="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium bg-primary hover:bg-primary/90 text-primary-foreground border border-transparent rounded-sm"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               Get Started
             </Link>
           </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 }
