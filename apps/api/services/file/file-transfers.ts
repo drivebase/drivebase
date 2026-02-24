@@ -233,20 +233,6 @@ export async function requestDownload(
 				: proxyUrl,
 		});
 
-		const activityService = new ActivityService(db);
-		await activityService.log({
-			type: "download",
-			userId,
-			fileId: file.id,
-			providerId: file.providerId,
-			folderId: file.folderId ?? undefined,
-			metadata: {
-				name: file.name,
-				size: file.size,
-				useDirectDownload: canUseDirectDownload,
-			},
-		});
-
 		return {
 			file,
 			downloadUrl: canUseDirectDownload

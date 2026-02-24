@@ -1,5 +1,6 @@
 import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
+import { ActivityService } from "../../services/activity";
 import { FileService } from "../../services/file";
 import { ProviderService } from "../../services/provider";
 import { telemetry } from "../../telemetry";
@@ -79,6 +80,19 @@ export async function handleDownloadProxy(
 				telemetry.capture("file_downloaded", {
 					provider_type: providerRecord.type,
 				});
+			})
+			.catch(() => {});
+
+		// Log the download activity now — bytes are actually about to flow.
+		// Fire-and-forget so we don't delay the stream response.
+		new ActivityService(db)
+			.log({
+				type: "download",
+				userId: user.userId,
+				fileId: file.id,
+				providerId: file.providerId,
+				folderId: file.folderId ?? undefined,
+				metadata: { name: file.name, size: file.size },
 			})
 			.catch(() => {});
 
