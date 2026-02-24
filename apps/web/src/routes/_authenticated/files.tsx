@@ -6,6 +6,7 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 import { CreateFolderDialog } from "@/features/files/CreateFolderDialog";
 import { FileDropZone } from "@/features/files/components/FileDropZone";
 import { FilesToolbar } from "@/features/files/components/FilesToolbar";
+import { FilesSettingsDialog } from "@/features/files/settings/FilesSettingsDialog";
 import {
 	DragOverlayContent,
 	FileSystemTable,
@@ -21,9 +22,15 @@ import { useUploadSessionRestore } from "@/features/files/hooks/useUploadSession
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
-import { can, getActiveWorkspaceId } from "@/features/workspaces";
+import {
+	can,
+	getActiveWorkspaceId,
+	useUpdateWorkspaceSyncOperations,
+	useWorkspaces,
+} from "@/features/workspaces";
 import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
+import { toast } from "sonner";
 
 const searchSchema = z.object({
 	folderId: z.string().optional().catch(undefined),
@@ -38,9 +45,11 @@ function FilesPage() {
 	const { folderId } = Route.useSearch();
 	const navigate = Route.useNavigate();
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+	const [isFilesSettingsOpen, setIsFilesSettingsOpen] = useState(false);
 	const [filterProviderIds, setFilterProviderIds] = useState<string[]>([]);
 	const { downloadFile, showDetails } = useFileActions();
 	const { data: providersData } = useProviders();
+	const [workspacesResult, reexecuteWorkspaces] = useWorkspaces(false);
 	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
 	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
 	const [membersResult] = useWorkspaceMembers(
@@ -52,6 +61,10 @@ function FilesPage() {
 			(member) => member.userId === currentUserId,
 		)?.role ?? null;
 	const canWriteFiles = can(currentWorkspaceRole, "files.write");
+	const canManageSettings =
+		currentWorkspaceRole === "OWNER" || currentWorkspaceRole === "ADMIN";
+	const [updateSyncResult, updateWorkspaceSyncOperations] =
+		useUpdateWorkspaceSyncOperations();
 
 	const isRoot = !folderId;
 
@@ -105,6 +118,33 @@ function FilesPage() {
 		navigate({ search: { folderId: targetFolderId ?? undefined } });
 	};
 
+	const activeWorkspace =
+		workspacesResult.data?.workspaces?.find(
+			(w) => w.id === activeWorkspaceId,
+		) ??
+		workspacesResult.data?.workspaces?.[0] ??
+		null;
+
+	const handleUpdateSync = async (enabled: boolean) => {
+		if (!activeWorkspace?.id || !canManageSettings) {
+			return;
+		}
+
+		const result = await updateWorkspaceSyncOperations({
+			input: {
+				workspaceId: activeWorkspace.id,
+				enabled,
+			},
+		});
+
+		if (result.error || !result.data?.updateWorkspaceSyncOperations) {
+			toast.error(result.error?.message ?? "Failed to update sync setting");
+			return;
+		}
+
+		toast.success(enabled ? "Sync enabled" : "Sync disabled");
+	};
+
 	return (
 		<DndContext
 			sensors={dnd.sensors}
@@ -140,6 +180,8 @@ function FilesPage() {
 						}
 						setIsCreateDialogOpen(true);
 					}}
+					onOpenSettings={() => setIsFilesSettingsOpen(true)}
+					canManageSettings={canManageSettings}
 					fileInputRef={upload.fileInputRef}
 					onFileChange={upload.handleFileChange}
 				/>
@@ -198,6 +240,18 @@ function FilesPage() {
 					onSelectProvider={(providerId) =>
 						upload.handleUploadQueue(upload.selectedFiles, providerId)
 					}
+				/>
+
+				<FilesSettingsDialog
+					isOpen={isFilesSettingsOpen}
+					onClose={() => setIsFilesSettingsOpen(false)}
+					syncEnabled={activeWorkspace?.syncOperationsToProvider ?? false}
+					canManageSettings={canManageSettings}
+					isSaving={updateSyncResult.fetching}
+					onSyncToggle={async (enabled) => {
+						await handleUpdateSync(enabled);
+						reexecuteWorkspaces({ requestPolicy: "network-only" });
+					}}
 				/>
 
 				<FileDropZone isDragActive={isDragActive} />

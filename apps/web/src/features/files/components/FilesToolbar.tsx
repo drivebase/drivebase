@@ -1,4 +1,11 @@
-import { ChevronRight, FolderPlus, Home, Loader2, Upload } from "lucide-react";
+import {
+	ChevronRight,
+	FolderPlus,
+	Home,
+	Loader2,
+	Settings,
+	Upload,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DroppableBreadcrumb } from "@/features/files/components/DroppableBreadcrumb";
 import { ProviderFilter } from "@/features/files/components/ProviderFilter";
@@ -23,6 +30,8 @@ interface FilesToolbarProps {
 	onBreadcrumbClick: (folderId: string | null) => void;
 	onUploadClick: () => void;
 	onNewFolder: () => void;
+	onOpenSettings: () => void;
+	canManageSettings: boolean;
 	fileInputRef: React.RefObject<HTMLInputElement | null>;
 	onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -39,6 +48,8 @@ export function FilesToolbar({
 	onBreadcrumbClick,
 	onUploadClick,
 	onNewFolder,
+	onOpenSettings,
+	canManageSettings,
 	fileInputRef,
 	onFileChange,
 }: FilesToolbarProps) {
@@ -124,6 +135,17 @@ export function FilesToolbar({
 						<Button onClick={onNewFolder} disabled={isLoading}>
 							<FolderPlus size={18} className="mr-2" />
 							New Folder
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							size="icon"
+							onClick={onOpenSettings}
+							disabled={isLoading || !canManageSettings}
+							aria-label="Files settings"
+							title="Files settings"
+						>
+							<Settings size={18} />
 						</Button>
 					</>
 				) : null}

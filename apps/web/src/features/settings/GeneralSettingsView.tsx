@@ -7,12 +7,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { FileManagementSettingsSection } from "@/features/settings/sections/FileManagementSettingsSection";
 import { PreferencesSettingsSection } from "@/features/settings/sections/PreferencesSettingsSection";
 import { WorkspaceNameSection } from "@/features/settings/sections/WorkspaceNameSection";
 import {
 	getActiveWorkspaceId,
-	useUpdateWorkspaceSyncOperations,
 	useUpdateWorkspaceName,
 	useWorkspaceMembers,
 	useWorkspaces,
@@ -63,8 +61,6 @@ export function GeneralSettingsView() {
 
 	const [updateWorkspaceNameResult, updateWorkspaceName] =
 		useUpdateWorkspaceName();
-	const [updateWorkspaceSyncResult, updateWorkspaceSyncOperations] =
-		useUpdateWorkspaceSyncOperations();
 	const [workspaceName, setWorkspaceName] = useState("");
 
 	useEffect(() => {
@@ -111,27 +107,6 @@ export function GeneralSettingsView() {
 		}
 	};
 
-	const handleUpdateWorkspaceSync = async (enabled: boolean) => {
-		if (!workspaceId || !canManageWorkspace) {
-			return;
-		}
-
-		const result = await updateWorkspaceSyncOperations({
-			input: {
-				workspaceId,
-				enabled,
-			},
-		});
-
-		if (result.error || !result.data?.updateWorkspaceSyncOperations) {
-			toast.error(result.error?.message ?? "Failed to update sync setting");
-			return;
-		}
-
-		toast.success(enabled ? "Sync enabled" : "Sync disabled");
-		reexecuteWorkspaces({ requestPolicy: "network-only" });
-	};
-
 	return (
 		<div className="space-y-8">
 			{activeWorkspace ? (
@@ -147,15 +122,6 @@ export function GeneralSettingsView() {
 				</>
 			) : null}
 			<PreferencesSettingsSection />
-			<div className="border-t border-border" />
-			{activeWorkspace ? (
-				<FileManagementSettingsSection
-					syncEnabled={activeWorkspace.syncOperationsToProvider}
-					canEdit={canManageWorkspace}
-					isSaving={updateWorkspaceSyncResult.fetching}
-					onSyncToggle={handleUpdateWorkspaceSync}
-				/>
-			) : null}
 			<div className="border-t border-border pt-6">
 				<Button variant="outline" onClick={handleSignOut}>
 					<Trans>Sign out</Trans>

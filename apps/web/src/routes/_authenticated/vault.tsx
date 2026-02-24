@@ -225,6 +225,8 @@ function VaultBrowser({ folderId }: { folderId?: string }) {
 				onBreadcrumbClick={handleBreadcrumbClick}
 				onUploadClick={() => fileInputRef.current?.click()}
 				onNewFolder={() => setIsCreateFolderOpen(true)}
+				onOpenSettings={() => {}}
+				canManageSettings={false}
 				fileInputRef={fileInputRef}
 				onFileChange={handleFileChange}
 			/>
