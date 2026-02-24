@@ -324,32 +324,21 @@ export class VaultService {
 			throw new ValidationError("File is missing encryption key");
 		}
 
-		const providerService = new ProviderService(this.db);
-		const providerRecord = await providerService.getProvider(
+		// Vault downloads should always go through our proxy so auth + CORS are handled
+		// uniformly before client-side decryption.
+		await new ProviderService(this.db).getProvider(
 			file.providerId,
 			userId,
 			workspaceId,
 		);
-		const provider = await providerService.getProviderInstance(providerRecord);
-
-		const downloadResponse = await provider.requestDownload({
-			remoteId: file.remoteId,
-		});
-
-		await provider.cleanup();
 
 		const baseUrl = getPublicApiBaseUrl();
 		const proxyUrl = `${baseUrl}/api/download/proxy?fileId=${file.id}`;
-		const canUseDirectDownload =
-			downloadResponse.useDirectDownload &&
-			Boolean(downloadResponse.downloadUrl);
 
 		return {
 			fileId: file.id,
-			downloadUrl: canUseDirectDownload
-				? (downloadResponse.downloadUrl ?? undefined)
-				: proxyUrl,
-			useDirectDownload: canUseDirectDownload,
+			downloadUrl: proxyUrl,
+			useDirectDownload: false,
 			encryptedFileKey: file.encryptedFileKey,
 		};
 	}

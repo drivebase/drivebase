@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useQuery, useSubscription } from "urql";
+import { useClient, useQuery } from "urql";
 import {
 	ACTIVE_UPLOAD_SESSIONS,
 	UPLOAD_PROGRESS_SUBSCRIPTION,
@@ -20,6 +20,7 @@ export function useUploadSessionRestore({
 	onRestoreSessions,
 	onUpdateItem,
 }: UseUploadSessionRestoreOptions) {
+	const client = useClient();
 	const [{ data }] = useQuery({
 		query: ACTIVE_UPLOAD_SESSIONS,
 		requestPolicy: "network-only",
@@ -53,41 +54,53 @@ export function useUploadSessionRestore({
 		onRestoreSessions(items);
 	}, [data, onRestoreSessions]);
 
-	// Subscribe to progress for the first active session (if any)
-	const firstActiveSession = data?.activeUploadSessions?.find(
-		(s) =>
-			s.status !== "completed" &&
-			s.status !== "failed" &&
-			s.status !== "cancelled",
-	);
-
-	const [{ data: progressData }] = useSubscription({
-		query: UPLOAD_PROGRESS_SUBSCRIPTION,
-		variables: { sessionId: firstActiveSession?.sessionId ?? "" },
-		pause: !firstActiveSession,
-	});
-
-	// Update the queue item when progress events arrive
+	// Subscribe to all active sessions and stream realtime updates per session.
 	useEffect(() => {
-		if (!progressData?.uploadProgress) return;
-		const progress = progressData.uploadProgress;
-		const queueId = `session-${progress.sessionId}`;
+		const activeSessions =
+			data?.activeUploadSessions?.filter(
+				(s) =>
+					s.status !== "completed" &&
+					s.status !== "failed" &&
+					s.status !== "cancelled",
+			) ?? [];
 
-		onUpdateItem(queueId, {
-			progress: calculateProgressFromEvent(progress),
-			status: mapStatus(progress.status),
-			phase: progress.phase as
-				| "client_to_server"
-				| "server_to_provider"
-				| undefined,
-			error: progress.errorMessage ?? undefined,
-			canCancel:
-				progress.status !== "completed" &&
-				progress.status !== "failed" &&
-				progress.status !== "cancelled",
-			canRetry: progress.status === "failed",
-		});
-	}, [progressData, onUpdateItem]);
+		if (activeSessions.length === 0) {
+			return;
+		}
+
+		const subscriptions = activeSessions.map((session) =>
+			client
+				.subscription(UPLOAD_PROGRESS_SUBSCRIPTION, {
+					sessionId: session.sessionId,
+				})
+				.subscribe((result) => {
+					const progress = result.data?.uploadProgress;
+					if (!progress) return;
+
+					const queueId = `session-${progress.sessionId}`;
+					onUpdateItem(queueId, {
+						progress: calculateProgressFromEvent(progress),
+						status: mapStatus(progress.status),
+						phase: progress.phase as
+							| "client_to_server"
+							| "server_to_provider"
+							| undefined,
+						error: progress.errorMessage ?? undefined,
+						canCancel:
+							progress.status !== "completed" &&
+							progress.status !== "failed" &&
+							progress.status !== "cancelled",
+						canRetry: progress.status === "failed",
+					});
+				}),
+		);
+
+		return () => {
+			for (const sub of subscriptions) {
+				sub.unsubscribe();
+			}
+		};
+	}, [client, data, onUpdateItem]);
 }
 
 function calculateProgress(session: {

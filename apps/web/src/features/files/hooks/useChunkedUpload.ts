@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useMutation, useSubscription } from "urql";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import {
@@ -27,13 +27,72 @@ export function useChunkedUpload(callbacks: ChunkedUploadCallbacks) {
 
 	// Track active session IDs for subscriptions
 	const activeSessionRef = useRef<string | null>(null);
+	const queueBySessionRef = useRef<Map<string, string>>(new Map());
 
 	// Subscribe to upload progress for the active session
-	useSubscription({
+	const [{ data: progressData }] = useSubscription({
 		query: UPLOAD_PROGRESS_SUBSCRIPTION,
 		variables: { sessionId: activeSessionRef.current ?? "" },
 		pause: !activeSessionRef.current,
 	});
+
+	useEffect(() => {
+		const progress = progressData?.uploadProgress;
+		if (!progress) return;
+
+		const queueId =
+			queueBySessionRef.current.get(progress.sessionId) ??
+			`session-${progress.sessionId}`;
+
+		const totalChunks = Math.max(progress.totalChunks, 1);
+		const totalSize = Math.max(progress.totalSize, 1);
+		const computedProgress =
+			progress.status === "completed"
+				? 100
+				: progress.phase === "client_to_server"
+					? Math.round((progress.receivedChunks / totalChunks) * 50)
+					: Math.round(
+							50 + (progress.providerBytesTransferred / totalSize) * 50,
+						);
+
+		const status =
+			progress.status === "completed"
+				? "success"
+				: progress.status === "failed"
+					? "error"
+					: progress.status === "cancelled"
+						? "cancelled"
+						: progress.status === "transferring"
+							? "transferring"
+							: "uploading";
+
+		callbacks.onProgress(queueId, {
+			progress: Math.max(0, Math.min(100, computedProgress)),
+			status,
+			phase:
+				progress.phase === "client_to_server" ||
+				progress.phase === "server_to_provider"
+					? progress.phase
+					: undefined,
+			error: progress.errorMessage ?? undefined,
+			canCancel:
+				progress.status !== "completed" &&
+				progress.status !== "failed" &&
+				progress.status !== "cancelled",
+			canRetry: progress.status === "failed",
+		});
+
+		if (
+			progress.status === "completed" ||
+			progress.status === "failed" ||
+			progress.status === "cancelled"
+		) {
+			queueBySessionRef.current.delete(progress.sessionId);
+			if (activeSessionRef.current === progress.sessionId) {
+				activeSessionRef.current = null;
+			}
+		}
+	}, [progressData, callbacks]);
 
 	const uploadS3Direct = useCallback(
 		async (
@@ -204,20 +263,11 @@ export function useChunkedUpload(callbacks: ChunkedUploadCallbacks) {
 			}
 
 			// After all chunks sent, the server handles assembly and provider transfer
-			// The subscription will provide real-time progress for the server_to_provider phase
-			// For now, we mark it as success since the server will handle the rest in the background
+			// The subscription provides real-time progress for the server_to_provider phase.
 			callbacks.onProgress(queueId, {
 				status: "uploading",
 				progress: 50,
 				phase: "server_to_provider",
-			});
-
-			// Wait for server-side processing to complete by polling session state
-			// In a production app, this would use the subscription. For now, return true
-			// since the BullMQ worker handles the rest asynchronously.
-			callbacks.onProgress(queueId, {
-				status: "success",
-				progress: 100,
 			});
 
 			return true;
@@ -260,6 +310,7 @@ export function useChunkedUpload(callbacks: ChunkedUploadCallbacks) {
 				} = result.data.initiateChunkedUpload;
 
 				activeSessionRef.current = sessionId;
+				queueBySessionRef.current.set(sessionId, queueId);
 
 				callbacks.onProgress(queueId, {
 					status: "uploading",
@@ -298,8 +349,6 @@ export function useChunkedUpload(callbacks: ChunkedUploadCallbacks) {
 					progress: 100,
 				});
 				return false;
-			} finally {
-				activeSessionRef.current = null;
 			}
 		},
 		[initiateChunkedUpload, callbacks, uploadS3Direct, uploadProxyChunks],

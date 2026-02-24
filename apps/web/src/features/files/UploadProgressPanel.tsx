@@ -71,6 +71,14 @@ function getStatusText(item: UploadQueueItem): string | null {
 	}
 }
 
+function getProgressColor(item: UploadQueueItem): string {
+	if (item.status === "success") return "bg-emerald-500";
+	if (item.status === "error" || item.status === "cancelled")
+		return "bg-destructive";
+	if (item.phase === "server_to_provider") return "bg-cyan-500";
+	return "bg-blue-500";
+}
+
 export function UploadProgressPanel({
 	items,
 	onClose,
@@ -155,7 +163,11 @@ export function UploadProgressPanel({
 								) : null}
 							</div>
 						</div>
-						<Progress value={item.progress} className="h-1.5" />
+						<Progress
+							value={item.progress}
+							className="h-1.5"
+							indicatorClassName={getProgressColor(item)}
+						/>
 						<div className="flex items-center justify-between">
 							<div className="text-xs text-muted-foreground">
 								{item.status === "success" && item.destinationPath ? (
