@@ -1,23 +1,71 @@
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { Rss, Settings2, X } from "lucide-react";
+import {
+	ArrowDownToLine,
+	ArrowUpToLine,
+	FolderInput,
+	MoveRight,
+	Settings2,
+	Trash2,
+	X,
+} from "lucide-react";
+import { useMemo } from "react";
+import { useQuery } from "urql";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { useRecentUpdates } from "@/shared/hooks/useRecentUpdates";
+import { ActivityType, JobStatus } from "@/gql/graphql";
+import { RECENT_ACTIVITIES_QUERY } from "@/shared/api/activity";
+import { useActivityStore } from "@/shared/store/activityStore";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
 function DefaultView() {
 	const user = useAuthStore((state) => state.user);
 	const navigate = useNavigate();
-	const { posts, isLoading } = useRecentUpdates();
+	const jobsMap = useActivityStore((state) => state.jobs);
+	const [{ data, fetching }] = useQuery({
+		query: RECENT_ACTIVITIES_QUERY,
+		variables: { limit: 5, offset: 0 },
+		requestPolicy: "cache-and-network",
+	});
 
 	if (!user) return null;
 
 	const userName = user.name?.trim() || user.email.split("@")[0];
 	const userInitial = userName.charAt(0).toUpperCase();
+	const recentJobs = useMemo(
+		() =>
+			Array.from(jobsMap.values())
+				.sort(
+					(a, b) =>
+						new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+				)
+				.slice(0, 3),
+		[jobsMap],
+	);
+	const recentActivities = data?.activities ?? [];
+
+	const formatActivityType = (type: ActivityType) => {
+		if (type === ActivityType.Upload) return "Upload requested";
+		if (type === ActivityType.Download) return "Download requested";
+		if (type === ActivityType.Delete) return "File deleted";
+		if (type === ActivityType.Move) return "File moved";
+		if (type === ActivityType.Update) return "File updated";
+		if (type === ActivityType.Create) return "Created";
+		if (type === ActivityType.Copy) return "Copied";
+		if (type === ActivityType.Share) return "Shared";
+		return "Unshared";
+	};
+
+	const getActivityIcon = (type: ActivityType) => {
+		if (type === ActivityType.Upload) return <ArrowUpToLine size={14} />;
+		if (type === ActivityType.Download) return <ArrowDownToLine size={14} />;
+		if (type === ActivityType.Delete) return <Trash2 size={14} />;
+		if (type === ActivityType.Move) return <MoveRight size={14} />;
+		return <FolderInput size={14} />;
+	};
 
 	return (
 		<>
@@ -47,50 +95,67 @@ function DefaultView() {
 
 			<div className="flex-1 overflow-y-auto">
 				<div className="flex items-center justify-between mb-4 px-4">
-					<h3 className="font-semibold flex items-center gap-2">
-						<Rss size={18} />
-						<Trans>Recent Updates</Trans>
+					<h3 className="font-semibold">
+						<Trans>Recent Activity</Trans>
 					</h3>
 				</div>
-				<div>
-					{isLoading &&
+				<div className="px-1">
+					{fetching &&
 						Array.from({ length: 3 }).map((_, i) => (
 							// biome-ignore lint/suspicious/noArrayIndexKey: skeleton items have no stable id
-							<div key={i} className="space-y-2 py-1">
+							<div key={i} className="space-y-2 py-2 px-3">
 								<Skeleton className="h-4 w-full" />
 								<Skeleton className="h-3 w-4/5" />
 								<Skeleton className="h-3 w-1/3" />
 							</div>
 						))}
-					{!isLoading && posts.length === 0 && (
-						<div className="text-sm text-muted-foreground text-center py-8">
-							<Trans>No updates yet</Trans>
+					{!fetching &&
+						recentJobs.length === 0 &&
+						recentActivities.length === 0 && (
+							<div className="text-sm text-muted-foreground text-center py-8">
+								<Trans>No recent activity</Trans>
+							</div>
+						)}
+					{recentJobs.map((job) => (
+						<div key={job.id} className="p-3 hover:bg-muted transition-colors">
+							<p className="text-sm font-medium leading-snug line-clamp-1">
+								{job.title}
+							</p>
+							<p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+								{job.message ??
+									(job.status === JobStatus.Running
+										? "Running"
+										: job.status === JobStatus.Pending
+											? "Pending"
+											: job.status === JobStatus.Completed
+												? "Completed"
+												: "Failed")}
+							</p>
+							<p className="text-xs text-muted-foreground mt-1">
+								{new Date(job.updatedAt).toLocaleString()}
+							</p>
 						</div>
-					)}
-					{posts.map((post) => (
-						<a
-							key={post.url}
-							href={post.url}
-							target="_blank"
-							rel="noreferrer noopener"
-							className="block hover:bg-muted transition-colors p-4"
+					))}
+					{recentActivities.map((activity) => (
+						<div
+							key={activity.id}
+							className="p-3 hover:bg-muted transition-colors"
 						>
-							<p className="text-sm font-medium leading-snug line-clamp-2">
-								{post.title}
+							<p className="text-sm font-medium leading-snug line-clamp-1 flex items-center gap-2">
+								{getActivityIcon(activity.type)}
+								{formatActivityType(activity.type)}
 							</p>
-							{post.description && (
-								<p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-									{post.description}
-								</p>
-							)}
-							<p className="text-xs text-muted-foreground mt-2">
-								{new Date(post.date).toLocaleDateString("en-US", {
-									month: "short",
-									day: "numeric",
-									year: "numeric",
-								})}
+							<p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+								{typeof activity.metadata?.name === "string"
+									? activity.metadata.name
+									: activity.fileId
+										? `File ID: ${activity.fileId}`
+										: "System event"}
 							</p>
-						</a>
+							<p className="text-xs text-muted-foreground mt-1">
+								{new Date(activity.createdAt).toLocaleString()}
+							</p>
+						</div>
 					))}
 				</div>
 			</div>

@@ -1,5 +1,6 @@
 import type { Resolvers } from "../generated/types";
 import {
+	activityResolvers,
 	activityMutations,
 	activityQueries,
 	activitySubscriptions,
@@ -50,9 +51,6 @@ export const resolvers: Resolvers = {
 		...workspaceQueries,
 		...vaultQueries,
 		...activityQueries,
-
-		// Placeholder resolvers for unimplemented features
-		activities: async () => [],
 	},
 
 	Mutation: {
@@ -82,6 +80,7 @@ export const resolvers: Resolvers = {
 	},
 
 	AuthResponse: authResponseResolvers,
+	Activity: activityResolvers,
 	User: userResolvers,
 	StorageProvider: storageProviderResolvers,
 	AvailableProvider: availableProviderResolvers,

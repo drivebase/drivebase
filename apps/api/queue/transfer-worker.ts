@@ -100,6 +100,15 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					throw new TransferCancelledError();
 				}
 			};
+			const updateActivity = async (input: {
+				progress?: number;
+				message?: string;
+				status?: "pending" | "running" | "completed" | "error";
+				metadata?: Record<string, unknown>;
+			}) => {
+				await assertNotCancelled();
+				await activityService.update(jobId, input);
+			};
 
 			let sourceProvider: Awaited<
 				ReturnType<ProviderService["getProviderInstance"]>
@@ -109,7 +118,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 			> | null = null;
 
 			try {
-				await activityService.update(jobId, {
+				await updateActivity({
 					status: "running",
 					message: "Preparing transfer",
 					progress: 0,
@@ -122,7 +131,6 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 								: 1,
 					},
 				});
-				await assertNotCancelled();
 
 				const [file] = await db
 					.select()
@@ -178,7 +186,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					Boolean(cachedStats) && manifest.downloadedBytes >= file.size;
 
 				if (!hasFullCache) {
-					await activityService.update(jobId, {
+					await updateActivity({
 						message: "Downloading from source provider",
 						progress: getTransferProgress(0, manifest.uploadedBytes, file.size),
 						metadata: {
@@ -211,7 +219,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 								downloadedBytes === file.size
 							) {
 								await writeManifest(manifestPath, manifest);
-								await activityService.update(jobId, {
+								await updateActivity({
 									message: `Downloading ${((downloadedBytes / Math.max(file.size, 1)) * 100).toFixed(0)}%`,
 									progress: getTransferProgress(
 										downloadedBytes,
@@ -257,7 +265,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					}
 				}
 
-				await activityService.update(jobId, {
+				await updateActivity({
 					message: "Uploading to target provider",
 					progress: getTransferProgress(
 						manifest.downloadedBytes,
@@ -343,7 +351,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 						manifest.uploadedBytes = uploadedBytes;
 
 						await writeManifest(manifestPath, manifest);
-						await activityService.update(jobId, {
+						await updateActivity({
 							message: `Uploading ${((uploadedBytes / Math.max(file.size, 1)) * 100).toFixed(0)}%`,
 							progress: getTransferProgress(
 								manifest.downloadedBytes,
@@ -385,7 +393,8 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					let uploadedBytes = 0;
 					let lastReportedBytes = 0;
 					const progressStream = new TransformStream<Uint8Array, Uint8Array>({
-						transform(chunk, controller) {
+						async transform(chunk, controller) {
+							await assertNotCancelled();
 							uploadedBytes += chunk.byteLength;
 							controller.enqueue(chunk);
 
@@ -397,24 +406,22 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 								lastReportedBytes = uploadedBytes;
 								manifest.uploadedBytes = uploadedBytes;
 								writeManifest(manifestPath, manifest).catch(() => {});
-								activityService
-									.update(jobId, {
-										message: `Uploading ${(
-											(uploadedBytes / Math.max(file.size, 1)) * 100
-										).toFixed(0)}%`,
-										progress: getTransferProgress(
-											manifest.downloadedBytes,
-											uploadedBytes,
-											file.size,
-										),
-										metadata: {
-											phase: "upload",
-											downloadedBytes: manifest.downloadedBytes,
-											uploadedBytes,
-											totalSize: file.size,
-										},
-									})
-									.catch(() => {});
+								updateActivity({
+									message: `Uploading ${(
+										(uploadedBytes / Math.max(file.size, 1)) * 100
+									).toFixed(0)}%`,
+									progress: getTransferProgress(
+										manifest.downloadedBytes,
+										uploadedBytes,
+										file.size,
+									),
+									metadata: {
+										phase: "upload",
+										downloadedBytes: manifest.downloadedBytes,
+										uploadedBytes,
+										totalSize: file.size,
+									},
+								}).catch(() => {});
 							}
 						},
 					});

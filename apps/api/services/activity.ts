@@ -1,6 +1,6 @@
 import type { Database } from "@drivebase/db";
-import { jobs } from "@drivebase/db";
-import { and, eq, inArray } from "drizzle-orm";
+import { activities, jobs } from "@drivebase/db";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
 
 interface CreateJobInput {
@@ -15,6 +15,26 @@ interface UpdateJobInput {
 	message?: string;
 	status?: "pending" | "running" | "completed" | "error";
 	metadata?: Record<string, unknown>;
+}
+
+interface LogActivityInput {
+	type:
+		| "upload"
+		| "download"
+		| "create"
+		| "update"
+		| "delete"
+		| "move"
+		| "copy"
+		| "share"
+		| "unshare";
+	userId: string;
+	fileId?: string;
+	folderId?: string;
+	providerId?: string;
+	metadata?: Record<string, unknown>;
+	ipAddress?: string;
+	userAgent?: string;
 }
 
 export class ActivityService {
@@ -88,5 +108,38 @@ export class ActivityService {
 					inArray(jobs.status, ["pending", "running"]),
 				),
 			);
+	}
+
+	async log(input: LogActivityInput) {
+		const [activity] = await this.db
+			.insert(activities)
+			.values({
+				type: input.type,
+				userId: input.userId,
+				fileId: input.fileId ?? null,
+				folderId: input.folderId ?? null,
+				providerId: input.providerId ?? null,
+				metadata: input.metadata ?? null,
+				ipAddress: input.ipAddress ?? null,
+				userAgent: input.userAgent ?? null,
+			})
+			.returning();
+
+		if (!activity) {
+			throw new Error("Failed to log activity");
+		}
+		return activity;
+	}
+
+	async getRecentForUser(userId: string, limit = 5, offset = 0) {
+		const safeLimit = Math.max(1, Math.min(50, limit));
+		const safeOffset = Math.max(0, offset);
+		return this.db
+			.select()
+			.from(activities)
+			.where(eq(activities.userId, userId))
+			.orderBy(desc(activities.createdAt))
+			.limit(safeLimit)
+			.offset(safeOffset);
 	}
 }

@@ -44,6 +44,20 @@ export const ACTIVE_JOBS_QUERY = graphql(`
   }
 `);
 
+export const RECENT_ACTIVITIES_QUERY = graphql(`
+  query RecentActivities($limit: Int, $offset: Int) {
+    activities(limit: $limit, offset: $offset) {
+      id
+      type
+      fileId
+      folderId
+      providerId
+      metadata
+      createdAt
+    }
+  }
+`);
+
 export const JOB_UPDATED_SUBSCRIPTION = graphql(`
   subscription JobUpdated {
     jobUpdated {

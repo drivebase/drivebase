@@ -163,6 +163,21 @@ export async function requestUpload(
 			uploadUrl,
 		});
 
+		const activityService = new ActivityService(db);
+		await activityService.log({
+			type: "upload",
+			userId,
+			fileId: fileRecord.id,
+			providerId,
+			folderId: folderId ?? undefined,
+			metadata: {
+				name: sanitizedName,
+				size,
+				mimeType,
+				useDirectUpload: uploadResponse.useDirectUpload,
+			},
+		});
+
 		return {
 			file: fileRecord,
 			uploadUrl,
@@ -216,6 +231,20 @@ export async function requestDownload(
 			downloadUrl: canUseDirectDownload
 				? downloadResponse.downloadUrl
 				: proxyUrl,
+		});
+
+		const activityService = new ActivityService(db);
+		await activityService.log({
+			type: "download",
+			userId,
+			fileId: file.id,
+			providerId: file.providerId,
+			folderId: file.folderId ?? undefined,
+			metadata: {
+				name: file.name,
+				size: file.size,
+				useDirectDownload: canUseDirectDownload,
+			},
 		});
 
 		return {
@@ -402,6 +431,21 @@ export async function moveFileToProvider(
 			activityJobId: activityJob.id,
 			from: file.providerId,
 			to: targetProviderId,
+		});
+
+		await activityService.log({
+			type: "move",
+			userId,
+			fileId: file.id,
+			providerId: targetProviderId,
+			folderId: file.folderId ?? undefined,
+			metadata: {
+				mode: "provider_transfer",
+				sourceProviderId: file.providerId,
+				targetProviderId,
+				fileName: file.name,
+				jobId: activityJob.id,
+			},
 		});
 
 		return file;

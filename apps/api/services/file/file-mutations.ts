@@ -10,6 +10,7 @@ import { files, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 import { telemetry } from "../../telemetry";
 import { logger } from "../../utils/logger";
+import { ActivityService } from "../activity";
 import { FolderService } from "../folder";
 import { ProviderService } from "../provider";
 import { getFile } from "./file-queries";
@@ -90,6 +91,20 @@ export async function renameFile(
 			fileId,
 			oldName: file.name,
 			newName: sanitizedName,
+		});
+
+		const activityService = new ActivityService(db);
+		await activityService.log({
+			type: "update",
+			userId,
+			fileId: updated.id,
+			providerId: updated.providerId,
+			folderId: updated.folderId ?? undefined,
+			metadata: {
+				action: "rename",
+				oldName: file.name,
+				newName: sanitizedName,
+			},
 		});
 
 		return updated;
@@ -174,6 +189,22 @@ export async function moveFile(
 			newPath: newVirtualPath,
 		});
 
+		const activityService = new ActivityService(db);
+		await activityService.log({
+			type: "move",
+			userId,
+			fileId: updated.id,
+			providerId: updated.providerId,
+			folderId: updated.folderId ?? undefined,
+			metadata: {
+				action: "move_folder",
+				oldPath: file.virtualPath,
+				newPath: newVirtualPath,
+				fromFolderId: file.folderId,
+				toFolderId: updated.folderId,
+			},
+		});
+
 		return updated;
 	} catch (error) {
 		logger.error({
@@ -222,6 +253,19 @@ export async function deleteFile(
 
 		logger.debug({ msg: "File deleted", fileId });
 		telemetry.capture("file_deleted");
+
+		const activityService = new ActivityService(db);
+		await activityService.log({
+			type: "delete",
+			userId,
+			fileId,
+			providerId: file.providerId,
+			folderId: file.folderId ?? undefined,
+			metadata: {
+				name: file.name,
+				virtualPath: file.virtualPath,
+			},
+		});
 	} catch (error) {
 		logger.error({ msg: "Delete file failed", userId, fileId, error });
 		throw error;

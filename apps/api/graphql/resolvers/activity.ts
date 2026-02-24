@@ -1,6 +1,14 @@
 import { ActivityService } from "../../services/activity";
 import { ValidationError } from "@drivebase/core";
-import { jobs, type Job as DbJob } from "@drivebase/db";
+import {
+	files,
+	folders,
+	jobs,
+	storageProviders,
+	type Activity as DbActivity,
+	type Job as DbJob,
+	users,
+} from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 import {
 	buildTransferQueueJobId,
@@ -10,6 +18,8 @@ import { getRedis } from "../../redis/client";
 import { getAccessibleWorkspaceId } from "../../services/workspace/workspace";
 import {
 	JobStatus,
+	type ActivityResolvers,
+	ActivityType,
 	type Job,
 	type MutationResolvers,
 	type QueryResolvers,
@@ -39,7 +49,28 @@ function toGraphqlJob(job: DbJob): Job {
 	};
 }
 
+function toActivityType(type: DbActivity["type"]): ActivityType {
+	if (type === "upload") return ActivityType.Upload;
+	if (type === "download") return ActivityType.Download;
+	if (type === "create") return ActivityType.Create;
+	if (type === "update") return ActivityType.Update;
+	if (type === "delete") return ActivityType.Delete;
+	if (type === "move") return ActivityType.Move;
+	if (type === "copy") return ActivityType.Copy;
+	if (type === "share") return ActivityType.Share;
+	return ActivityType.Unshare;
+}
+
 export const activityQueries: QueryResolvers = {
+	activities: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const activityService = new ActivityService(context.db);
+		return activityService.getRecentForUser(
+			user.userId,
+			args.limit ?? undefined,
+			args.offset ?? undefined,
+		);
+	},
 	activeJobs: async (_parent, _args, context) => {
 		const user = requireAuth(context);
 		const workspaceId = await getAccessibleWorkspaceId(
@@ -50,6 +81,48 @@ export const activityQueries: QueryResolvers = {
 		const activityService = new ActivityService(context.db);
 		const jobs = await activityService.getActive(workspaceId);
 		return jobs.map(toGraphqlJob);
+	},
+};
+
+export const activityResolvers: ActivityResolvers = {
+	type: (parent) => toActivityType(parent.type),
+	user: async (parent, _args, context) => {
+		const [user] = await context.db
+			.select()
+			.from(users)
+			.where(eq(users.id, parent.userId))
+			.limit(1);
+		if (!user) {
+			throw new ValidationError("User not found for activity");
+		}
+		return user;
+	},
+	file: async (parent, _args, context) => {
+		if (!parent.fileId) return null;
+		const [file] = await context.db
+			.select()
+			.from(files)
+			.where(eq(files.id, parent.fileId))
+			.limit(1);
+		return file ?? null;
+	},
+	folder: async (parent, _args, context) => {
+		if (!parent.folderId) return null;
+		const [folder] = await context.db
+			.select()
+			.from(folders)
+			.where(eq(folders.id, parent.folderId))
+			.limit(1);
+		return folder ?? null;
+	},
+	provider: async (parent, _args, context) => {
+		if (!parent.providerId) return null;
+		const [provider] = await context.db
+			.select()
+			.from(storageProviders)
+			.where(eq(storageProviders.id, parent.providerId))
+			.limit(1);
+		return provider ?? null;
 	},
 };
 
@@ -126,8 +199,8 @@ export const activityMutations: MutationResolvers = {
 		}
 
 		await activityService.update(job.id, {
-			status: "running",
-			message: "Cancelling transfer...",
+			status: "error",
+			message: "Transfer cancellation requested",
 			metadata: {
 				...(job.metadata ?? {}),
 				phase: "cancelling",
