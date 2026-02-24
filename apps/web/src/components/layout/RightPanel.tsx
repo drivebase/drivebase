@@ -9,15 +9,22 @@ import {
 	Trash2,
 	X,
 } from "lucide-react";
-import { useMemo } from "react";
-import { useQuery } from "urql";
+import { useMemo, useState } from "react";
+import { useQuery, useSubscription } from "urql";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { ActivityType, JobStatus } from "@/gql/graphql";
-import { RECENT_ACTIVITIES_QUERY } from "@/shared/api/activity";
+import {
+	ActivityType,
+	JobStatus,
+	type RecentActivitiesQuery,
+} from "@/gql/graphql";
+import {
+	ACTIVITY_CREATED_SUBSCRIPTION,
+	RECENT_ACTIVITIES_QUERY,
+} from "@/shared/api/activity";
 import { useActivityStore } from "@/shared/store/activityStore";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
@@ -25,10 +32,21 @@ function DefaultView() {
 	const user = useAuthStore((state) => state.user);
 	const navigate = useNavigate();
 	const jobsMap = useActivityStore((state) => state.jobs);
+	const [localActivities, setLocalActivities] = useState<
+		NonNullable<RecentActivitiesQuery["activities"]>
+	>([]);
 	const [{ data, fetching }] = useQuery({
 		query: RECENT_ACTIVITIES_QUERY,
 		variables: { limit: 5, offset: 0 },
 		requestPolicy: "cache-and-network",
+	});
+
+	// Subscribe to new activities — prepend them to the list in real-time
+	useSubscription({ query: ACTIVITY_CREATED_SUBSCRIPTION }, (_prev, data) => {
+		if (data?.activityCreated) {
+			setLocalActivities((prev) => [data.activityCreated, ...prev].slice(0, 5));
+		}
+		return data;
 	});
 
 	if (!user) return null;
@@ -45,11 +63,17 @@ function DefaultView() {
 				.slice(0, 3),
 		[jobsMap],
 	);
-	const recentActivities = data?.activities ?? [];
+	// Merge: local real-time items at the top, then server-fetched ones, deduplicated, capped at 5
+	const serverActivities = data?.activities ?? [];
+	const seenIds = new Set(localActivities.map((a) => a.id));
+	const recentActivities = [
+		...localActivities,
+		...serverActivities.filter((a) => !seenIds.has(a.id)),
+	].slice(0, 5);
 
 	const formatActivityType = (type: ActivityType) => {
-		if (type === ActivityType.Upload) return "Upload requested";
-		if (type === ActivityType.Download) return "Download requested";
+		if (type === ActivityType.Upload) return "File uploaded";
+		if (type === ActivityType.Download) return "File downloaded";
 		if (type === ActivityType.Delete) return "File deleted";
 		if (type === ActivityType.Move) return "File moved";
 		if (type === ActivityType.Update) return "File updated";

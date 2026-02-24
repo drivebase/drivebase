@@ -79,3 +79,17 @@ export const CANCEL_TRANSFER_JOB_MUTATION = graphql(`
     cancelTransferJob(jobId: $jobId)
   }
 `);
+
+export const ACTIVITY_CREATED_SUBSCRIPTION = graphql(`
+  subscription ActivityCreated {
+    activityCreated {
+      id
+      type
+      fileId
+      folderId
+      providerId
+      metadata
+      createdAt
+    }
+  }
+`);
