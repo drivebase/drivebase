@@ -4,9 +4,11 @@ import {
 	getContents,
 	getFile,
 	getFileForProxy,
+	getRecentFiles,
 	getStarredFiles,
 	listFiles,
 	searchFiles,
+	searchFolders,
 } from "./file/file-queries";
 import { starFile, unstarFile } from "./file/file-stars";
 import {
@@ -97,6 +99,33 @@ export class FileService {
 			preferredWorkspaceId,
 		);
 		return searchFiles(this.db, userId, workspaceId, query, limit);
+	}
+
+	async searchFolders(
+		userId: string,
+		query: string,
+		limit?: number,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return searchFolders(this.db, userId, workspaceId, query, limit);
+	}
+
+	async getRecentFiles(
+		userId: string,
+		limit?: number,
+		preferredWorkspaceId?: string,
+	) {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return getRecentFiles(this.db, userId, workspaceId, limit);
 	}
 
 	async requestDownload(

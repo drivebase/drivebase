@@ -6,10 +6,12 @@ import {
 	FILES_QUERY,
 	MOVE_FILE_MUTATION,
 	MOVE_FILE_TO_PROVIDER_MUTATION,
+	RECENT_FILES_QUERY,
 	RENAME_FILE_MUTATION,
 	REQUEST_DOWNLOAD_MUTATION,
 	REQUEST_UPLOAD_MUTATION,
 	SEARCH_FILES_QUERY,
+	SEARCH_FOLDERS_QUERY,
 	STAR_FILE_MUTATION,
 	STARRED_FILES_QUERY,
 	UNSTAR_FILE_MUTATION,
@@ -50,6 +52,24 @@ export function useSearchFiles(query: string, limit = 20) {
 		query: SEARCH_FILES_QUERY,
 		variables: { query, limit },
 		pause: !query,
+	});
+	return result;
+}
+
+export function useSearchFolders(query: string, limit = 20) {
+	const [result] = useQuery({
+		query: SEARCH_FOLDERS_QUERY,
+		variables: { query, limit },
+		pause: !query,
+	});
+	return result;
+}
+
+export function useRecentFiles(limit = 3) {
+	const [result] = useQuery({
+		query: RECENT_FILES_QUERY,
+		variables: { limit },
+		requestPolicy: "cache-and-network",
 	});
 	return result;
 }

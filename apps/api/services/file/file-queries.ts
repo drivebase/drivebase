@@ -1,7 +1,16 @@
 import { NotFoundError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders } from "@drivebase/db";
-import { and, desc, eq, inArray, isNull, like, notInArray } from "drizzle-orm";
+import {
+	and,
+	desc,
+	eq,
+	ilike,
+	inArray,
+	isNull,
+	notInArray,
+	sql,
+} from "drizzle-orm";
 import { logger } from "../../utils/logger";
 import { getProviderInstance } from "../provider/provider-queries";
 
@@ -446,7 +455,7 @@ export async function searchFiles(
 			.where(
 				and(
 					eq(files.nodeType, "file"),
-					like(files.name, searchPattern),
+					ilike(files.name, searchPattern),
 					eq(files.isDeleted, false),
 					isNull(files.vaultId),
 					eq(storageProviders.workspaceId, workspaceId),
@@ -457,6 +466,79 @@ export async function searchFiles(
 			.then((rows) => rows.map((row) => row.file));
 	} catch (error) {
 		logger.error({ msg: "Search files failed", userId, query, error });
+		throw error;
+	}
+}
+
+/**
+ * Search folders by name (excludes vault folders)
+ */
+export async function searchFolders(
+	db: Database,
+	userId: string,
+	workspaceId: string,
+	query: string,
+	limit: number = 50,
+) {
+	logger.debug({ msg: "Searching folders", userId, workspaceId, query });
+	const searchPattern = `%${query}%`;
+
+	try {
+		return await db
+			.select({ folder: folders })
+			.from(folders)
+			.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
+			.where(
+				and(
+					eq(folders.nodeType, "folder"),
+					ilike(folders.name, searchPattern),
+					eq(folders.isDeleted, false),
+					isNull(folders.vaultId),
+					eq(storageProviders.workspaceId, workspaceId),
+				),
+			)
+			.limit(limit)
+			.orderBy(folders.name)
+			.then((rows) => rows.map((row) => row.folder));
+	} catch (error) {
+		logger.error({ msg: "Search folders failed", userId, query, error });
+		throw error;
+	}
+}
+
+/**
+ * Get recent files ordered by most recent create/update timestamp (excludes vault files)
+ */
+export async function getRecentFiles(
+	db: Database,
+	userId: string,
+	workspaceId: string,
+	limit: number = 3,
+) {
+	logger.debug({ msg: "Listing recent files", userId, workspaceId, limit });
+
+	try {
+		return await db
+			.select({ file: files })
+			.from(files)
+			.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
+			.where(
+				and(
+					eq(files.nodeType, "file"),
+					eq(files.isDeleted, false),
+					isNull(files.vaultId),
+					eq(storageProviders.workspaceId, workspaceId),
+				),
+			)
+			.limit(limit)
+			.orderBy(
+				desc(sql`GREATEST(${files.updatedAt}, ${files.createdAt})`),
+				desc(files.updatedAt),
+				desc(files.createdAt),
+			)
+			.then((rows) => rows.map((row) => row.file));
+	} catch (error) {
+		logger.error({ msg: "List recent files failed", userId, error });
 		throw error;
 	}
 }

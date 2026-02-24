@@ -113,6 +113,31 @@ export const fileQueries: QueryResolvers = {
 		);
 	},
 
+	searchFolders: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		return fileService.searchFolders(
+			user.userId,
+			args.query,
+			args.limit ?? undefined,
+			workspaceId,
+		);
+	},
+
+	recentFiles: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		return fileService.getRecentFiles(
+			user.userId,
+			args.limit ?? undefined,
+			workspaceId,
+		);
+	},
+
 	starredFiles: async (_parent, _args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);

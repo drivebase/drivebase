@@ -66,6 +66,22 @@ export const SEARCH_FILES_QUERY = graphql(`
   }
 `);
 
+export const SEARCH_FOLDERS_QUERY = graphql(`
+  query SearchFolders($query: String!, $limit: Int) {
+    searchFolders(query: $query, limit: $limit) {
+      ...FolderItem
+    }
+  }
+`);
+
+export const RECENT_FILES_QUERY = graphql(`
+  query RecentFiles($limit: Int) {
+    recentFiles(limit: $limit) {
+      ...FileItem
+    }
+  }
+`);
+
 export const STARRED_FILES_QUERY = graphql(`
   query GetStarredFiles {
     starredFiles {

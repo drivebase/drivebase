@@ -72,6 +72,16 @@ extend type Query {
 	searchFiles(query: String!, limit: Int): [File!]!
 
 	"""
+	Search folders by name
+	"""
+	searchFolders(query: String!, limit: Int): [Folder!]!
+
+	"""
+	Get recent files sorted by latest created/updated timestamp
+	"""
+	recentFiles(limit: Int): [File!]!
+
+	"""
 	Get starred files
 	"""
 	starredFiles: [File!]!
