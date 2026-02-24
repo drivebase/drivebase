@@ -35,7 +35,7 @@ export function useActivities() {
 
 		setJob(job);
 
-		if (job.status === JobStatus.Completed || job.status === JobStatus.Error) {
+		if (job.status === JobStatus.Completed) {
 			const existingTimer = timersRef.current.get(job.id);
 			if (existingTimer) {
 				clearTimeout(existingTimer);

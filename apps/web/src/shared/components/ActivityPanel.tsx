@@ -38,6 +38,33 @@ function getStatusLabel(job: Job) {
 	return "Error";
 }
 
+function getProgressIndicatorClass(status: JobStatus) {
+	if (status === JobStatus.Error) return "bg-destructive";
+	if (status === JobStatus.Completed) return "bg-emerald-600";
+	return "bg-primary";
+}
+
+function getRetryLabel(job: Job): string | null {
+	if (job.status !== JobStatus.Error || !job.metadata) return null;
+	if (typeof job.metadata !== "object" || Array.isArray(job.metadata))
+		return null;
+
+	const retryAttempt = job.metadata.retryAttempt;
+	const retryMax = job.metadata.retryMax;
+	const willRetry = job.metadata.willRetry;
+	if (
+		typeof retryAttempt !== "number" ||
+		typeof retryMax !== "number" ||
+		typeof willRetry !== "boolean"
+	) {
+		return null;
+	}
+
+	return willRetry
+		? `Retrying ${retryAttempt}/${retryMax}`
+		: `Failed ${retryAttempt}/${retryMax}`;
+}
+
 export function ActivityPanel() {
 	const [expanded, setExpanded] = useState(true);
 	const jobsMap = useActivityStore((state) => state.jobs);
@@ -98,6 +125,7 @@ export function ActivityPanel() {
 						0,
 						Math.min(100, Math.round(job.progress * 100)),
 					);
+					const retryLabel = getRetryLabel(job);
 
 					return (
 						<div key={job.id} className="space-y-2">
@@ -112,8 +140,13 @@ export function ActivityPanel() {
 								</div>
 								<div className="shrink-0">{getStatusIcon(job.status)}</div>
 							</div>
-							<Progress value={progress} className="h-1.5" />
-							<div className="text-right text-xs text-muted-foreground">
+							<Progress
+								value={progress}
+								className="h-1.5"
+								indicatorClassName={getProgressIndicatorClass(job.status)}
+							/>
+							<div className="flex items-center justify-between text-xs text-muted-foreground">
+								<span>{retryLabel ?? ""}</span>
 								{progress}%
 							</div>
 						</div>

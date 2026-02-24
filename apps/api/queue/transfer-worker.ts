@@ -82,61 +82,76 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 			const { jobId, workspaceId, userId, fileId, targetProviderId } =
 				bullJob.data;
 
-			await activityService.update(jobId, {
-				status: "running",
-				message: "Preparing transfer",
-				progress: 0,
-			});
-
-			const [file] = await db
-				.select()
-				.from(files)
-				.where(eq(files.id, fileId))
-				.limit(1);
-
-			if (!file) {
-				await activityService.fail(jobId, "File not found");
-				return;
-			}
-
-			if (file.providerId === targetProviderId) {
-				await activityService.fail(jobId, "File is already on this provider");
-				return;
-			}
-
-			const transferDir = join(getTransferCacheRoot(), workspaceId, file.id);
-			const cachedFilePath = join(transferDir, "payload.bin");
-			const manifestPath = join(transferDir, "manifest.json");
-
-			await mkdir(transferDir, { recursive: true });
-
-			const sourceRecord = await providerService.getProvider(
-				file.providerId,
-				userId,
-				workspaceId,
-			);
-			const targetRecord = await providerService.getProvider(
-				targetProviderId,
-				userId,
-				workspaceId,
-			);
-			const sourceProvider =
-				await providerService.getProviderInstance(sourceRecord);
-			const targetProvider =
-				await providerService.getProviderInstance(targetRecord);
-
-			let manifest =
-				(await readManifest(manifestPath)) ??
-				({
-					fileId: file.id,
-					sourceProviderId: file.providerId,
-					targetProviderId,
-					totalSize: file.size,
-					downloadedBytes: 0,
-					uploadedBytes: 0,
-				} satisfies TransferManifest);
+			let sourceProvider: Awaited<
+				ReturnType<ProviderService["getProviderInstance"]>
+			> | null = null;
+			let targetProvider: Awaited<
+				ReturnType<ProviderService["getProviderInstance"]>
+			> | null = null;
 
 			try {
+				await activityService.update(jobId, {
+					status: "running",
+					message: "Preparing transfer",
+					progress: 0,
+					metadata: {
+						phase: "prepare",
+						retryAttempt: bullJob.attemptsMade + 1,
+						retryMax:
+							typeof bullJob.opts.attempts === "number"
+								? bullJob.opts.attempts
+								: 1,
+					},
+				});
+
+				const [file] = await db
+					.select()
+					.from(files)
+					.where(eq(files.id, fileId))
+					.limit(1);
+
+				if (!file) {
+					await activityService.fail(jobId, "File not found");
+					return;
+				}
+
+				if (file.providerId === targetProviderId) {
+					await activityService.fail(jobId, "File is already on this provider");
+					return;
+				}
+
+				const transferDir = join(getTransferCacheRoot(), workspaceId, file.id);
+				const cachedFilePath = join(transferDir, "payload.bin");
+				const manifestPath = join(transferDir, "manifest.json");
+
+				await mkdir(transferDir, { recursive: true });
+
+				const sourceRecord = await providerService.getProvider(
+					file.providerId,
+					userId,
+					workspaceId,
+				);
+				const targetRecord = await providerService.getProvider(
+					targetProviderId,
+					userId,
+					workspaceId,
+				);
+				sourceProvider =
+					await providerService.getProviderInstance(sourceRecord);
+				targetProvider =
+					await providerService.getProviderInstance(targetRecord);
+
+				let manifest =
+					(await readManifest(manifestPath)) ??
+					({
+						fileId: file.id,
+						sourceProviderId: file.providerId,
+						targetProviderId,
+						totalSize: file.size,
+						downloadedBytes: 0,
+						uploadedBytes: 0,
+					} satisfies TransferManifest);
+
 				const cachedStats = await stat(cachedFilePath).catch(() => null);
 				const hasFullCache =
 					Boolean(cachedStats) && manifest.downloadedBytes >= file.size;
@@ -415,19 +430,55 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				await rm(transferDir, { recursive: true, force: true });
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
+				const currentAttempt = bullJob.attemptsMade + 1;
+				const maxAttempts =
+					typeof bullJob.opts.attempts === "number" ? bullJob.opts.attempts : 1;
+				const willRetry = currentAttempt < maxAttempts;
+
 				logger.error({
 					msg: "Provider transfer job failed",
 					jobId,
 					fileId,
 					targetProviderId,
 					error: message,
+					retryAttempt: currentAttempt,
+					retryMax: maxAttempts,
+					willRetry,
 				});
 
-				await activityService.fail(jobId, message);
+				if (willRetry) {
+					await activityService.update(jobId, {
+						status: "error",
+						message: `Transfer failed. Retrying (${currentAttempt}/${maxAttempts})`,
+						metadata: {
+							phase: "retry",
+							error: message,
+							retryAttempt: currentAttempt,
+							retryMax: maxAttempts,
+							willRetry: true,
+						},
+					});
+				} else {
+					await activityService.update(jobId, {
+						status: "error",
+						message: `Transfer failed after ${currentAttempt}/${maxAttempts} attempts`,
+						metadata: {
+							phase: "failed",
+							error: message,
+							retryAttempt: currentAttempt,
+							retryMax: maxAttempts,
+							willRetry: false,
+						},
+					});
+				}
 				throw error;
 			} finally {
-				await sourceProvider.cleanup();
-				await targetProvider.cleanup();
+				if (sourceProvider) {
+					await sourceProvider.cleanup().catch(() => {});
+				}
+				if (targetProvider) {
+					await targetProvider.cleanup().catch(() => {});
+				}
 			}
 		},
 		{
