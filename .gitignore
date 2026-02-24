@@ -10,6 +10,10 @@ dist
 coverage
 *.lcov
 
+# python
+__pycache__
+*.pyc
+
 # logs
 logs
 _.log
