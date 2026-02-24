@@ -44,24 +44,24 @@ export function FilesToolbar({
 }: FilesToolbarProps) {
 	return (
 		<div className="flex items-center justify-between">
-			<div className="flex items-center gap-1 text-sm text-muted-foreground bg-muted/30 p-2  w-fit">
+			<div className="flex items-center gap-1 text-sm text-muted-foreground bg-muted/30 px-2 py-1.5 w-fit">
 				<DroppableBreadcrumb
 					id="__root__"
 					isCurrentPage={isRoot}
 					onHoverNavigate={() => onBreadcrumbClick(null)}
 				>
-					<Button
-						variant="ghost"
-						size="sm"
+					<button
+						type="button"
 						className={cn(
-							"h-6 px-2 hover:bg-muted hover:text-foreground transition-colors",
+							"inline-flex h-6 items-center rounded px-1.5 hover:text-foreground transition-colors",
+							!isRoot && "hover:underline underline-offset-2",
 							isRoot && "text-foreground font-medium pointer-events-none",
 						)}
 						onClick={() => onBreadcrumbClick(null)}
 					>
 						<Home size={14} className="mr-1" />
 						Home
-					</Button>
+					</button>
 				</DroppableBreadcrumb>
 				{breadcrumbs.map((crumb, index) => {
 					const isLast = index === breadcrumbs.length - 1;
@@ -77,17 +77,17 @@ export function FilesToolbar({
 								isCurrentPage={isLast || !canDrop}
 								onHoverNavigate={() => onBreadcrumbClick(crumb.folderId)}
 							>
-								<Button
-									variant="ghost"
-									size="sm"
+								<button
+									type="button"
 									className={cn(
-										"h-6 px-2 hover:bg-muted hover:text-foreground transition-colors",
+										"inline-flex h-6 items-center rounded px-1.5 hover:text-foreground transition-colors",
+										!isLast && "hover:underline underline-offset-2",
 										isLast && "text-foreground font-medium pointer-events-none",
 									)}
 									onClick={() => onBreadcrumbClick(crumb.folderId)}
 								>
 									{crumb.name}
-								</Button>
+								</button>
 							</DroppableBreadcrumb>
 						</div>
 					);

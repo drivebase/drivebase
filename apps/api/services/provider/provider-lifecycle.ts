@@ -2,7 +2,6 @@ import { NotFoundError, ProviderError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { enqueueSyncJob } from "../../queue/sync-queue";
 import {
 	getProviderRegistration,
 	getSensitiveFields,
@@ -135,13 +134,6 @@ export async function connectProvider(
 		}
 
 		telemetry.capture("provider_connected", { type });
-
-		// Auto-sync provider files in the background
-		await enqueueSyncJob({
-			providerId: savedProvider.id,
-			workspaceId,
-			userId,
-		});
 
 		return savedProvider;
 	} catch (error) {

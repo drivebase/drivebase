@@ -243,7 +243,7 @@ export class FileService {
 			userId,
 			preferredWorkspaceId,
 		);
-		return getContents(this.db, workspaceId, folderId, providerIds);
+		return getContents(this.db, workspaceId, userId, folderId, providerIds);
 	}
 
 	async getStarredFiles(userId: string, preferredWorkspaceId?: string) {

@@ -72,8 +72,9 @@ export function useFileSystemColumns({
 			},
 			{
 				id: "name",
-				size: 360,
-				minSize: 260,
+				size: 300,
+				minSize: 220,
+				maxSize: 350,
 				accessorFn: (row) =>
 					row.kind === "file" ? row.file.name : row.folder.name,
 				header: "Name",
@@ -130,18 +131,21 @@ export function useFileSystemColumns({
 				accessorFn: (row) =>
 					row.kind === "file"
 						? (row.file.provider?.type ?? "Unknown")
-						: "Folder",
+						: (row.folder.provider?.type ?? "Unknown"),
 				cell: ({ row }) => {
-					if (row.original.kind === "folder") return "-";
-					const file = row.original.file;
+					const provider =
+						row.original.kind === "file"
+							? row.original.file.provider
+							: row.original.folder.provider;
+
 					return (
 						<div className="flex items-center gap-2">
 							<ProviderIcon
-								type={file.provider?.type ?? "unknown"}
+								type={provider?.type ?? "unknown"}
 								className="h-4 w-4"
 							/>
 							<span className="text-sm text-muted-foreground">
-								{formatProviderTypeLabel(file.provider?.type)}
+								{formatProviderTypeLabel(provider?.type)}
 							</span>
 						</div>
 					);
@@ -149,15 +153,26 @@ export function useFileSystemColumns({
 			},
 			{
 				id: "type",
-				size: 60,
-				minSize: 80,
+				size: 90,
+				minSize: 70,
+				maxSize: 110,
 				header: "Type",
 				accessorFn: (row) =>
 					row.kind === "file" ? row.file.mimeType : "folder",
-				cell: ({ row }) =>
-					row.original.kind === "file"
-						? formatFileTypeLabel(row.original.file.mimeType)
-						: "Folder",
+				cell: ({ row }) => (
+					<span
+						className="block truncate"
+						title={
+							row.original.kind === "file"
+								? formatFileTypeLabel(row.original.file.mimeType)
+								: "Folder"
+						}
+					>
+						{row.original.kind === "file"
+							? formatFileTypeLabel(row.original.file.mimeType)
+							: "Folder"}
+					</span>
+				),
 			},
 			{
 				id: "updatedAt",

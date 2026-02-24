@@ -9,9 +9,7 @@ import type {
 	ProviderConfigFieldResolvers,
 	QueryResolvers,
 	StorageProviderResolvers,
-	SubscriptionResolvers,
 } from "../generated/types";
-import { type PubSubChannels, pubSub } from "../pubsub";
 import { requireAuth } from "./auth-helpers";
 
 /**
@@ -134,14 +132,6 @@ export const providerMutations: MutationResolvers = {
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return providerService.pollProviderAuth(args.id, user.userId, workspaceId);
-	},
-};
-
-export const providerSubscriptions: SubscriptionResolvers = {
-	providerSyncProgress: {
-		subscribe: (_parent, args, _context) =>
-			pubSub.subscribe("providerSyncProgress", args.providerId),
-		resolve: (payload: PubSubChannels["providerSyncProgress"][1]) => payload,
 	},
 };
 

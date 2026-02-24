@@ -186,7 +186,7 @@ export async function moveFile(
 }
 
 /**
- * Delete a file (soft delete)
+ * Delete a file
  */
 export async function deleteFile(
 	db: Database,
@@ -214,13 +214,7 @@ export async function deleteFile(
 
 		await provider.cleanup();
 
-		await db
-			.update(files)
-			.set({
-				isDeleted: true,
-				updatedAt: new Date(),
-			})
-			.where(eq(files.id, fileId));
+		await db.delete(files).where(eq(files.id, fileId));
 
 		logger.debug({ msg: "File deleted", fileId });
 		telemetry.capture("file_deleted");

@@ -27,3 +27,35 @@ export const ACTIVITIES_QUERY = graphql(`
     }
   }
 `);
+
+export const ACTIVE_JOBS_QUERY = graphql(`
+  query ActiveJobs {
+    activeJobs {
+      id
+      type
+      title
+      message
+      progress
+      status
+      metadata
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const JOB_UPDATED_SUBSCRIPTION = graphql(`
+  subscription JobUpdated {
+    jobUpdated {
+      id
+      type
+      title
+      message
+      progress
+      status
+      metadata
+      createdAt
+      updatedAt
+    }
+  }
+`);

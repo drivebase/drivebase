@@ -1,8 +1,7 @@
 import { NotFoundError, ProviderError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { storageProviders, workspaceMemberships } from "@drivebase/db";
+import { storageProviders } from "@drivebase/db";
 import { eq } from "drizzle-orm";
-import { enqueueSyncJob } from "../../queue/sync-queue";
 import {
 	getProviderRegistration,
 	getSensitiveFields,
@@ -98,7 +97,7 @@ export async function pollProviderAuth(
 	db: Database,
 	providerId: string,
 	workspaceId: string,
-	userId: string,
+	_userId: string,
 ): Promise<
 	| { status: "pending"; provider?: undefined }
 	| { status: "success"; provider: typeof storageProviders.$inferSelect }
@@ -164,13 +163,6 @@ export async function pollProviderAuth(
 	if (!updated) {
 		throw new Error("Failed to update provider after poll-based auth");
 	}
-
-	// Auto-sync provider files in the background
-	await enqueueSyncJob({
-		providerId,
-		workspaceId: providerRecord.workspaceId,
-		userId,
-	});
 
 	return { status: "success", provider: updated };
 }
@@ -258,22 +250,6 @@ export async function handleOAuthCallback(
 
 	if (!updated) {
 		throw new Error("Failed to update provider after OAuth callback");
-	}
-
-	// Auto-sync provider files in the background
-	// Look up a workspace member to use as the sync userId
-	const [member] = await db
-		.select()
-		.from(workspaceMemberships)
-		.where(eq(workspaceMemberships.workspaceId, providerRecord.workspaceId))
-		.limit(1);
-
-	if (member) {
-		await enqueueSyncJob({
-			providerId,
-			workspaceId: providerRecord.workspaceId,
-			userId: member.userId,
-		});
 	}
 
 	return {

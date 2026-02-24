@@ -173,7 +173,7 @@ function FilesPage() {
 						onDeleteSelection={
 							canWriteFiles ? operations.handleDeleteSelection : undefined
 						}
-						isLoading={contentsFetching && !contentsData}
+						isLoading={contentsFetching}
 						showSharedColumn
 					/>
 				</div>

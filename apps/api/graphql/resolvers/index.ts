@@ -1,4 +1,5 @@
 import type { Resolvers } from "../generated/types";
+import { activityQueries, activitySubscriptions } from "./activity";
 import { authMutations, authQueries, authResponseResolvers } from "./auth";
 import {
 	fileMutations,
@@ -14,7 +15,6 @@ import {
 	providerConfigFieldResolvers,
 	providerMutations,
 	providerQueries,
-	providerSubscriptions,
 	storageProviderResolvers,
 } from "./provider";
 import { fileRuleResolvers, ruleMutations, ruleQueries } from "./rule";
@@ -45,6 +45,7 @@ export const resolvers: Resolvers = {
 		...metadataQueries,
 		...workspaceQueries,
 		...vaultQueries,
+		...activityQueries,
 
 		// Placeholder resolvers for unimplemented features
 		activities: async () => [],
@@ -71,7 +72,7 @@ export const resolvers: Resolvers = {
 	},
 
 	Subscription: {
-		...providerSubscriptions,
+		...activitySubscriptions,
 		...fileSubscriptions,
 	},
 

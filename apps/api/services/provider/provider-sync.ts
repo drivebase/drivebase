@@ -1,10 +1,15 @@
 import { NotFoundError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders } from "@drivebase/db";
-import { and, eq, notInArray } from "drizzle-orm";
-import { pubSub } from "../../graphql/pubsub";
+import { and, eq, isNull, notInArray } from "drizzle-orm";
+import { ActivityService } from "../activity";
 import { telemetry } from "../../telemetry";
 import { getProviderInstance } from "./provider-queries";
+
+function getSyncProgress(processedCount: number): number {
+	if (processedCount <= 0) return 0;
+	return Math.min(0.95, processedCount / (processedCount + 20));
+}
 
 /**
  * Sync provider quota and files
@@ -34,13 +39,22 @@ export async function syncProvider(
 	}
 
 	const syncStartTime = Date.now();
+	const activityService = new ActivityService(db);
+	const job = await activityService.create(workspaceId, {
+		type: "sync",
+		title: `Syncing ${providerRecord.name}`,
+		message: "Starting sync...",
+		metadata: {
+			providerId,
+			recursive,
+			pruneDeleted,
+		},
+	});
 
-	// Notify start
-	pubSub.publish("providerSyncProgress", providerId, {
-		providerId,
-		processed: 0,
+	await activityService.update(job.id, {
 		status: "running",
 		message: "Starting sync...",
+		progress: 0,
 	});
 
 	const provider = await getProviderInstance(providerRecord);
@@ -120,10 +134,9 @@ export async function syncProvider(
 
 				processedCount++;
 				if (processedCount % 10 === 0) {
-					pubSub.publish("providerSyncProgress", providerId, {
-						providerId,
-						processed: processedCount,
+					await activityService.update(job.id, {
 						status: "running",
+						progress: getSyncProgress(processedCount),
 						message: `Syncing... (${processedCount} items)`,
 					});
 				}
@@ -187,10 +200,9 @@ export async function syncProvider(
 
 				processedCount++;
 				if (processedCount % 10 === 0) {
-					pubSub.publish("providerSyncProgress", providerId, {
-						providerId,
-						processed: processedCount,
+					await activityService.update(job.id, {
 						status: "running",
+						progress: getSyncProgress(processedCount),
 						message: `Syncing... (${processedCount} items)`,
 					});
 				}
@@ -205,19 +217,18 @@ export async function syncProvider(
 
 		// Prune deleted files if requested (only files are tied to providers)
 		if (pruneDeleted && seenFileRemoteIds.length > 0) {
-			pubSub.publish("providerSyncProgress", providerId, {
-				providerId,
-				processed: processedCount,
+			await activityService.update(job.id, {
 				status: "running",
+				progress: getSyncProgress(processedCount),
 				message: "Pruning deleted items...",
 			});
 
 			await db
-				.update(files)
-				.set({ isDeleted: true })
+				.delete(files)
 				.where(
 					and(
 						eq(files.providerId, providerId),
+						isNull(files.vaultId),
 						notInArray(files.remoteId, seenFileRemoteIds),
 					),
 				);
@@ -240,29 +251,22 @@ export async function syncProvider(
 			throw new Error("Failed to update provider");
 		}
 
-		pubSub.publish("providerSyncProgress", providerId, {
-			providerId,
-			processed: processedCount,
-			status: "completed",
-			message: "Sync completed successfully",
-		});
+		await activityService.complete(
+			job.id,
+			`Sync completed successfully (${processedCount} items)`,
+		);
 
 		telemetry.capture("provider_sync_completed", {
 			type: providerRecord.type,
 			duration_ms: Date.now() - syncStartTime,
 		});
 
-		await provider.cleanup();
-
 		return updated;
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);
-		pubSub.publish("providerSyncProgress", providerId, {
-			providerId,
-			processed: processedCount,
-			status: "error",
-			message: `Sync failed: ${msg}`,
-		});
+		await activityService.fail(job.id, `Sync failed: ${msg}`);
 		throw error;
+	} finally {
+		await provider.cleanup();
 	}
 }

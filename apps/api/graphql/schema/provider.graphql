@@ -192,15 +192,3 @@ type PollProviderAuthResult {
 	"""
 	provider: StorageProvider
 }
-
-type SyncProgress {
-	providerId: ID!
-	processed: Int!
-	total: Int
-	message: String
-	status: String! # "running" | "completed" | "error"
-}
-
-type Subscription {
-	providerSyncProgress(providerId: ID!): SyncProgress!
-}
