@@ -1,6 +1,6 @@
 import { NotFoundError, ProviderError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { storageProviders } from "@drivebase/db";
+import { storageProviders, workspaces } from "@drivebase/db";
 import { eq } from "drizzle-orm";
 import {
 	getProviderRegistration,
@@ -10,6 +10,7 @@ import { getPublicApiBaseUrl } from "../../config/url";
 import { telemetry } from "../../telemetry";
 import { decryptConfig, encryptConfig } from "../../utils/encryption";
 import { getProvider } from "./provider-queries";
+import { scheduleInitialProviderSync } from "./provider-sync-scheduler";
 
 type OAuthInitiatorSource = "default" | "onboarding";
 
@@ -23,8 +24,9 @@ function normalizeOAuthSource(source?: string): OAuthInitiatorSource {
 function parseOAuthState(state: string): {
 	providerId: string;
 	source: OAuthInitiatorSource;
+	userId?: string;
 } {
-	const [providerId, _csrfToken, source] = state.split(":");
+	const [providerId, _csrfToken, source, userId] = state.split(":");
 	if (!providerId) {
 		throw new ValidationError("Invalid OAuth state parameter");
 	}
@@ -32,6 +34,7 @@ function parseOAuthState(state: string): {
 	return {
 		providerId,
 		source: normalizeOAuthSource(source),
+		userId: userId || undefined,
 	};
 }
 
@@ -48,6 +51,7 @@ export async function initiateOAuth(
 	db: Database,
 	providerId: string,
 	workspaceId: string,
+	userId: string,
 	source?: string,
 ) {
 	const providerRecord = await getProvider(db, providerId, workspaceId);
@@ -65,7 +69,7 @@ export async function initiateOAuth(
 	const config = decryptConfig(providerRecord.encryptedConfig, sensitiveFields);
 
 	// Encode provider ID + random CSRF token into state
-	const state = `${providerId}:${crypto.randomUUID()}:${normalizeOAuthSource(source)}`;
+	const state = `${providerId}:${crypto.randomUUID()}:${normalizeOAuthSource(source)}:${userId}`;
 	const callbackUrl = buildCallbackUrl();
 	const result = await registration.initiateOAuth(config, callbackUrl, state);
 
@@ -97,7 +101,7 @@ export async function pollProviderAuth(
 	db: Database,
 	providerId: string,
 	workspaceId: string,
-	_userId: string,
+	userId: string,
 ): Promise<
 	| { status: "pending"; provider?: undefined }
 	| { status: "success"; provider: typeof storageProviders.$inferSelect }
@@ -164,6 +168,14 @@ export async function pollProviderAuth(
 		throw new Error("Failed to update provider after poll-based auth");
 	}
 
+	await scheduleInitialProviderSync({
+		db,
+		providerId: updated.id,
+		workspaceId,
+		userId,
+		context: "pollProviderAuth",
+	});
+
 	return { status: "success", provider: updated };
 }
 
@@ -178,7 +190,7 @@ export async function handleOAuthCallback(
 	code: string,
 	state: string,
 ) {
-	const { providerId, source } = parseOAuthState(state);
+	const { providerId, source, userId: stateUserId } = parseOAuthState(state);
 
 	const [providerRecord] = await db
 		.select()
@@ -250,6 +262,26 @@ export async function handleOAuthCallback(
 
 	if (!updated) {
 		throw new Error("Failed to update provider after OAuth callback");
+	}
+
+	let syncUserId = stateUserId;
+	if (!syncUserId) {
+		const [workspace] = await db
+			.select({ ownerId: workspaces.ownerId })
+			.from(workspaces)
+			.where(eq(workspaces.id, updated.workspaceId))
+			.limit(1);
+		syncUserId = workspace?.ownerId;
+	}
+
+	if (syncUserId) {
+		await scheduleInitialProviderSync({
+			db,
+			providerId: updated.id,
+			workspaceId: updated.workspaceId,
+			userId: syncUserId,
+			context: "handleOAuthCallback",
+		});
 	}
 
 	return {

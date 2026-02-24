@@ -40,7 +40,7 @@ export async function enqueueSyncJob(data: SyncJobData) {
 	const queue = getSyncQueue();
 	return queue.add("sync-provider", data, {
 		// Deduplicate by providerId — don't queue multiple syncs for the same provider
-		jobId: `sync:${data.providerId}`,
+		jobId: `sync-${data.providerId}`,
 	});
 }
 

@@ -25,6 +25,7 @@ import {
 	getProviderInstance,
 	getProviders,
 } from "./provider/provider-queries";
+import { scheduleInitialProviderSync } from "./provider/provider-sync-scheduler";
 import { syncProvider } from "./provider/provider-sync";
 import { getProviderConfigPreview } from "./provider/provider-utils";
 import { getAccessibleWorkspaceId } from "./workspace/workspace";
@@ -65,7 +66,7 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		return connectProvider(
+		const provider = await connectProvider(
 			this.db,
 			workspaceId,
 			userId,
@@ -74,6 +75,19 @@ export class ProviderService {
 			config,
 			oauthCredentialId,
 		);
+
+		// Trigger an initial background sync for active providers.
+		if (provider.isActive) {
+			await scheduleInitialProviderSync({
+				db: this.db,
+				providerId: provider.id,
+				workspaceId,
+				userId,
+				context: "connectProvider",
+			});
+		}
+
+		return provider;
 	}
 
 	async listOAuthProviderCredentials(userId: string, type: string) {
@@ -106,7 +120,7 @@ export class ProviderService {
 			providerId,
 			source,
 		});
-		return initiateOAuth(this.db, providerId, workspaceId, source);
+		return initiateOAuth(this.db, providerId, workspaceId, userId, source);
 	}
 
 	async handleOAuthCallback(code: string, state: string) {

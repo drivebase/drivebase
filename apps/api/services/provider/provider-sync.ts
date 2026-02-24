@@ -180,19 +180,34 @@ export async function syncProvider(
 							})
 							.where(eq(files.id, existingFile.id));
 					} else {
-						await db.insert(files).values({
-							name: cleanName,
-							virtualPath,
-							mimeType: file.mimeType,
-							size: file.size,
-							hash: file.hash,
-							remoteId: file.remoteId,
-							providerId,
-							folderId: parentDbId,
-							uploadedBy: userId,
-							updatedAt: file.modifiedAt,
-							createdAt: file.modifiedAt,
-						});
+						await db
+							.insert(files)
+							.values({
+								name: cleanName,
+								virtualPath,
+								mimeType: file.mimeType,
+								size: file.size,
+								hash: file.hash,
+								remoteId: file.remoteId,
+								providerId,
+								folderId: parentDbId,
+								uploadedBy: userId,
+								updatedAt: file.modifiedAt,
+								createdAt: file.modifiedAt,
+							})
+							.onConflictDoUpdate({
+								target: [files.virtualPath, files.providerId],
+								set: {
+									name: cleanName,
+									mimeType: file.mimeType,
+									size: file.size,
+									hash: file.hash,
+									remoteId: file.remoteId,
+									folderId: parentDbId,
+									updatedAt: file.modifiedAt,
+									isDeleted: false,
+								},
+							});
 					}
 				} catch (error) {
 					console.warn(`Failed to sync file ${virtualPath}: ${error}`);
