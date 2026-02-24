@@ -25,8 +25,8 @@ import {
 	getProviderInstance,
 	getProviders,
 } from "./provider/provider-queries";
-import { scheduleInitialProviderSync } from "./provider/provider-sync-scheduler";
 import { syncProvider } from "./provider/provider-sync";
+import { scheduleInitialProviderSync } from "./provider/provider-sync-scheduler";
 import { getProviderConfigPreview } from "./provider/provider-utils";
 import { getAccessibleWorkspaceId } from "./workspace/workspace";
 

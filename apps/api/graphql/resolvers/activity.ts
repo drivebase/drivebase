@@ -1,12 +1,11 @@
-import { ActivityService } from "../../services/activity";
 import { ValidationError } from "@drivebase/core";
 import {
+	type Activity as DbActivity,
+	type Job as DbJob,
 	files,
 	folders,
 	jobs,
 	storageProviders,
-	type Activity as DbActivity,
-	type Job as DbJob,
 	users,
 } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
@@ -15,12 +14,13 @@ import {
 	getTransferQueue,
 } from "../../queue/transfer-queue";
 import { getRedis } from "../../redis/client";
+import { ActivityService } from "../../services/activity";
 import { getAccessibleWorkspaceId } from "../../services/workspace/workspace";
 import {
-	JobStatus,
 	type ActivityResolvers,
 	ActivityType,
 	type Job,
+	JobStatus,
 	type MutationResolvers,
 	type QueryResolvers,
 	type SubscriptionResolvers,

@@ -1,8 +1,8 @@
 import type { Resolvers } from "../generated/types";
 import {
-	activityResolvers,
 	activityMutations,
 	activityQueries,
+	activityResolvers,
 	activitySubscriptions,
 } from "./activity";
 import { authMutations, authQueries, authResponseResolvers } from "./auth";

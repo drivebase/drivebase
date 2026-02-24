@@ -2,8 +2,8 @@ import { CheckCircle2, Loader2, X, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-	useProgressItems,
 	type ProgressItem,
+	useProgressItems,
 } from "@/shared/lib/progressPanel";
 
 /**

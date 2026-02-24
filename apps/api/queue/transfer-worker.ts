@@ -170,7 +170,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				targetProvider =
 					await providerService.getProviderInstance(targetRecord);
 
-				let manifest =
+				const manifest =
 					(await readManifest(manifestPath)) ??
 					({
 						fileId: file.id,

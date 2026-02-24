@@ -2,7 +2,6 @@ import {
 	ConflictError,
 	getParentPath,
 	joinPath,
-	NotFoundError,
 	ValidationError,
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";

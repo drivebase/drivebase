@@ -12,6 +12,7 @@ export { DragOverlayContent, FileSystemTable } from "./FileSystemTable";
 export { FolderCard } from "./FolderCard";
 export { useBreadcrumbs } from "./hooks/useBreadcrumbs";
 export { useChunkedUpload } from "./hooks/useChunkedUpload";
+export { useDownload } from "./hooks/useDownload";
 export { useDragAndDrop } from "./hooks/useDragAndDrop";
 export { useFileDrop } from "./hooks/useFileDrop";
 export { useFileOperations } from "./hooks/useFileOperations";
@@ -40,7 +41,6 @@ export {
 	useStarredFolders,
 	useUnstarFolder,
 } from "./hooks/useFolders";
-export { useDownload } from "./hooks/useDownload";
 export { useUpload } from "./hooks/useUpload";
 export { UploadProviderDialog } from "./UploadProviderDialog";
 // Hooks

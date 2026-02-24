@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { JobStatus, type Job } from "@/gql/graphql";
+import { type Job, JobStatus } from "@/gql/graphql";
 
 interface ActivityStore {
 	jobs: Map<string, Job>;

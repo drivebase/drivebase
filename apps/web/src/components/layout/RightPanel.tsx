@@ -62,10 +62,6 @@ function DefaultView() {
 		return data;
 	});
 
-	if (!user) return null;
-
-	const userName = user.name?.trim() || user.email.split("@")[0];
-	const userInitial = userName.charAt(0).toUpperCase();
 	const recentJobs = useMemo(
 		() =>
 			Array.from(jobsMap.values())
@@ -76,7 +72,6 @@ function DefaultView() {
 				.slice(0, 3),
 		[jobsMap],
 	);
-	// Merge: local real-time items at the top, then server-fetched ones, deduplicated, capped at 5
 	const serverActivities = data?.activities ?? [];
 	const seenIds = new Set(localActivities.map((a) => a.id));
 	const recentActivities = [
@@ -84,12 +79,15 @@ function DefaultView() {
 		...serverActivities.filter((a) => !seenIds.has(a.id)),
 	].slice(0, 5);
 
+	if (!user) return null;
+
+	const userName = user.name?.trim() || user.email.split("@")[0];
+	const userInitial = userName.charAt(0).toUpperCase();
+
 	const handleClearActivities = () => {
 		const ids = recentActivities.map((a) => a.id);
 		if (ids.length === 0) return;
-		// Delete from backend (fire-and-forget — UI updates immediately)
 		void deleteActivities({ ids });
-		// Immediately clear local state and page forward
 		setLocalActivities([]);
 		setOffset((prev) => prev + ids.length);
 	};

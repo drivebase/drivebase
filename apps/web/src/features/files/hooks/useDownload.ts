@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useRequestDownload } from "@/features/files/hooks/useFiles";
-import type { FileItemFragment } from "@/gql/graphql";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
+import type { FileItemFragment } from "@/gql/graphql";
 import { progressPanel } from "@/shared/lib/progressPanel";
 
 function triggerSave(blobUrl: string, fileName: string) {

@@ -2,8 +2,8 @@ import { NotFoundError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders } from "@drivebase/db";
 import { and, desc, eq, inArray, isNull, like, notInArray } from "drizzle-orm";
-import { getProviderInstance } from "../provider/provider-queries";
 import { logger } from "../../utils/logger";
+import { getProviderInstance } from "../provider/provider-queries";
 
 function normalizeNullableId(value: string | null | undefined): string | null {
 	if (!value) return null;

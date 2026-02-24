@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { useMutation } from "urql";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { JobStatus, type Job } from "@/gql/graphql";
+import { type Job, JobStatus } from "@/gql/graphql";
 import { CANCEL_TRANSFER_JOB_MUTATION } from "@/shared/api/activity";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
 import { useActivityStore } from "@/shared/store/activityStore";
