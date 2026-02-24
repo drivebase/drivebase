@@ -2,6 +2,7 @@ import { Trans } from "@lingui/react/macro";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 import { Toaster } from "sonner";
+import { NotFound } from "@/components/not-found";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/features/auth/hooks/useAuth";
@@ -14,6 +15,7 @@ import { PromptDialogHost } from "@/shared/lib/promptDialog";
 export const Route = createRootRoute({
 	component: RootComponent,
 	errorComponent: RootErrorComponent,
+	notFoundComponent: NotFound,
 });
 
 function RootComponent() {
