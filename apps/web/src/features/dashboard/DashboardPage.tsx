@@ -101,30 +101,36 @@ export function DashboardPage() {
 								<div
 									// biome-ignore lint/suspicious/noArrayIndexKey: skeleton loading
 									key={idx}
-									className="border p-5 space-y-4"
+									className="h-[136px] border p-5"
 								>
-									<Skeleton className="h-8 w-8" />
-									<Skeleton className="h-3 w-24" />
-									<Skeleton className="h-6 w-32" />
+									<div className="h-full flex flex-col justify-between">
+										<div className="flex items-center gap-3">
+											<Skeleton className="h-9 w-9" />
+											<Skeleton className="h-3 w-24" />
+										</div>
+										<Skeleton className="h-10 w-32" />
+									</div>
 								</div>
 							))
 						: statCards.map((card) => {
 								const Icon = card.icon;
 								return (
-									<div key={card.id} className="border p-5">
-										<div className="flex items-center gap-3 mb-4">
-											<div
-												className={`h-9 w-9 grid place-items-center ${card.iconClassName}`}
-											>
-												<Icon className="h-5 w-5" />
+									<div key={card.id} className="h-[136px] border p-5">
+										<div className="h-full flex flex-col justify-between">
+											<div className="flex items-center gap-3">
+												<div
+													className={`h-9 w-9 grid place-items-center ${card.iconClassName}`}
+												>
+													<Icon className="h-5 w-5" />
+												</div>
+												<p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+													{card.title}
+												</p>
 											</div>
-											<p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
-												{card.title}
+											<p className="text-4xl leading-none font-bold text-foreground tabular-nums">
+												{card.value}
 											</p>
 										</div>
-										<p className="text-4xl leading-none font-bold text-foreground">
-											{card.value}
-										</p>
 									</div>
 								);
 							})}
