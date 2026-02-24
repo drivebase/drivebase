@@ -1,6 +1,7 @@
 "use client";
 
 import { Code2, Server, Users } from "lucide-react";
+import Link from "next/link";
 
 export function UserTypesSection() {
   return (
@@ -13,12 +14,12 @@ export function UserTypesSection() {
             Consolidate multiple SDK instances into one simple API. Build
             powerful applications without managing credentials.
           </p>
-          <a
+          <Link
             href="#"
             className="text-sm font-medium text-primary hover:underline"
           >
             View API Docs →
-          </a>
+          </Link>
         </div>
         <div className="p-12 hover:bg-secondary transition-colors">
           <Users className="w-10 h-10 text-primary mb-6" />
@@ -27,12 +28,12 @@ export function UserTypesSection() {
             Manage cross-provider assets without credential leakage. Collaborate
             securely with granular permissions.
           </p>
-          <a
+          <Link
             href="#"
             className="text-sm font-medium text-primary hover:underline"
           >
             Team Features →
-          </a>
+          </Link>
         </div>
         <div className="p-12 hover:bg-secondary transition-colors">
           <Server className="w-10 h-10 text-primary mb-6" />
@@ -43,12 +44,12 @@ export function UserTypesSection() {
             Integrate NAS nodes with cloud mirror protocols. Full control over
             your infrastructure.
           </p>
-          <a
+          <Link
             href="#"
             className="text-sm font-medium text-primary hover:underline"
           >
             Self-Host Options →
-          </a>
+          </Link>
         </div>
       </div>
     </div>

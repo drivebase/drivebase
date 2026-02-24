@@ -1,8 +1,7 @@
 "use client";
 
-import { Activity, ArrowRight, Check, Copy, Terminal } from "lucide-react";
+import { ArrowRight, Check, Copy, Terminal } from "lucide-react";
 import { motion } from "motion/react";
-import Image from "next/image";
 import { useState } from "react";
 
 function Badge({

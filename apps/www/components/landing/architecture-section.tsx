@@ -1,6 +1,7 @@
 "use client";
 
-import { Cpu, Database, LinkIcon, PianoIcon } from "lucide-react";
+import { Cpu, LinkIcon, PianoIcon } from "lucide-react";
+import Image from "next/image";
 
 function Section({
   children,
@@ -74,7 +75,7 @@ export function ArchitectureSection() {
           <div className="aspect-square bg-background border border-border relative overflow-hidden flex items-center justify-center">
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[length:20px_20px]" />
 
-            <img
+            <Image
               src="https://picsum.photos/seed/schematic/800/800?grayscale"
               alt="Core Engine"
               className="w-3/4 h-3/4 object-contain opacity-50 mix-blend-screen invert"

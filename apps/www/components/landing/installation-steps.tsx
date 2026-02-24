@@ -52,7 +52,7 @@ export function InstallationSteps() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
-        {steps.map((item, i) => (
+        {steps.map((item, _i) => (
           <div
             key={item.step}
             className="border border-border p-8 hover:border-primary/50 transition-colors group relative bg-background"

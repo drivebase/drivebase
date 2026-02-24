@@ -1,6 +1,40 @@
 "use client";
 
 import { Layers } from "lucide-react";
+import Link from "next/link";
+
+const footerLinks = [
+  {
+    title: "Product",
+    links: [
+      { label: "Features", href: "#" },
+      { label: "Pricing", href: "#" },
+      { label: "Integrations", href: "#" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Documentation", href: "#" },
+      { label: "API Reference", href: "#" },
+      { label: "Guides", href: "#" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About", href: "#" },
+      { label: "Careers", href: "#" },
+      { label: "Privacy Policy", href: "#" },
+    ],
+  },
+];
+
+const socialLinks = [
+  { label: "Twitter", href: "#" },
+  { label: "GitHub", href: "#" },
+  { label: "Discord", href: "#" },
+];
 
 export function Footer() {
   return (
@@ -16,83 +50,42 @@ export function Footer() {
               Unified storage platform for all your cloud providers.
             </p>
           </div>
-          <div>
-            <h4 className="text-sm font-bold text-foreground mb-4">Product</h4>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  Integrations
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-sm font-bold text-foreground mb-4">
-              Resources
-            </h4>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  Documentation
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  API Reference
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  Guides
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-sm font-bold text-foreground mb-4">Company</h4>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  Privacy Policy
-                </a>
-              </li>
-            </ul>
-          </div>
+
+          {footerLinks.map((section) => (
+            <div key={section.title}>
+              <h4 className="text-sm font-bold text-foreground mb-4">
+                {section.title}
+              </h4>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                {section.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
+
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm text-muted-foreground">
-            © 2024 Drivebase. All rights reserved.
+            © {new Date().getFullYear()} Drivebase. All rights reserved.
           </div>
           <div className="flex space-x-6 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground">
-              Twitter
-            </a>
-            <a href="#" className="hover:text-foreground">
-              GitHub
-            </a>
-            <a href="#" className="hover:text-foreground">
-              Discord
-            </a>
+            {socialLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>
