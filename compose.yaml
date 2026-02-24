@@ -13,18 +13,21 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
       API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
       SKIP_DB_MIGRATIONS: ${SKIP_DB_MIGRATIONS:-false}
+      AI_INFERENCE_URL: ${AI_INFERENCE_URL:-http://ai-inference:8010}
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+      ai-inference:
+        condition: service_started
     volumes:
       - drivebase_data:/app/data
     ports:
       - "3000:3000"
 
   db:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17
     container_name: drivebase_db
     restart: unless-stopped
     environment:
@@ -52,6 +55,22 @@ services:
       retries: 10
     ports:
       - "6379:6379"
+
+  ai-inference:
+    image: python:3.12-slim
+    container_name: drivebase_ai_inference
+    restart: unless-stopped
+    working_dir: /srv/ai-inference
+    command: >
+      sh -c "pip install --no-cache-dir -r requirements.txt &&
+      uvicorn app:app --host 0.0.0.0 --port 8010"
+    environment:
+      AI_MODELS_DIR: /app/data/ai-models
+    volumes:
+      - ./services/ai-inference:/srv/ai-inference
+      - drivebase_data:/app/data
+    ports:
+      - "8010:8010"
 
 volumes:
   postgres_data:
