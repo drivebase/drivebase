@@ -68,6 +68,9 @@ app.all("/graphql", (c) => yoga.fetch(c.req.raw));
 const server = Bun.serve({
 	port: parseInt(env.PORT, 10),
 	development: env.NODE_ENV === "development",
+	// GraphQL subscriptions/SSE can stay open without immediate traffic.
+	// Bun defaults to 10s, which is too low and causes request timeout logs.
+	idleTimeout: 120,
 	fetch: app.fetch,
 });
 
