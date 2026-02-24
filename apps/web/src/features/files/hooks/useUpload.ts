@@ -1,6 +1,6 @@
 import { matchesRule, type RuleConditionGroups } from "@drivebase/utils";
 import axios from "axios";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useChunkedUpload } from "@/features/files/hooks/useChunkedUpload";
@@ -8,11 +8,11 @@ import {
 	useDeleteFile,
 	useRequestUpload,
 } from "@/features/files/hooks/useFiles";
-import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
 import { useProviders } from "@/features/providers/hooks/useProviders";
 import { useFileRules } from "@/features/rules/hooks/useRules";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
 import type { StorageProvider } from "@/gql/graphql";
+import { progressPanel } from "@/shared/lib/progressPanel";
 
 const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
 
@@ -35,41 +35,27 @@ export function useUpload({
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 	const [isUploading, setIsUploading] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-	const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([]);
 
-	const activeProviders = useMemo(() => {
-		return providersData?.storageProviders.filter((p) => p.isActive) || [];
-	}, [providersData]);
+	const activeProviders = useMemo(
+		() => providersData?.storageProviders.filter((p) => p.isActive) || [],
+		[providersData],
+	);
 
 	const activeProviderIds = useMemo(
 		() => new Set(activeProviders.map((p) => p.id)),
 		[activeProviders],
 	);
 
-	const enabledRules = useMemo(() => {
-		return (rulesResult.data?.fileRules ?? [])
-			.filter((r) => r.enabled)
-			.sort((a, b) => a.priority - b.priority);
-	}, [rulesResult.data]);
-
-	const updateQueueItem = useCallback(
-		(id: string, patch: Partial<UploadQueueItem>) => {
-			setUploadQueue((prev) =>
-				prev.map((item) => (item.id === id ? { ...item, ...patch } : item)),
-			);
-		},
-		[],
+	const enabledRules = useMemo(
+		() =>
+			(rulesResult.data?.fileRules ?? [])
+				.filter((r) => r.enabled)
+				.sort((a, b) => a.priority - b.priority),
+		[rulesResult.data],
 	);
 
-	// Chunked upload hook for large files
-	const { uploadChunked, cancelSession, retrySession } = useChunkedUpload({
-		onProgress: updateQueueItem,
-	});
+	const { uploadChunked, cancelSession, retrySession } = useChunkedUpload();
 
-	/**
-	 * Find the destination display path for a file (for queue UI).
-	 * Priority: matching rule's destinationFolder > current browsed folder.
-	 */
 	const getDestinationPath = (file: File): string | undefined => {
 		for (const rule of enabledRules) {
 			if (
@@ -91,19 +77,18 @@ export function useUpload({
 	const uploadSingleFile = async (
 		file: File,
 		providerId: string,
-		queueId: string,
+		ppId: string,
 	) => {
-		// Route large files to chunked upload
+		// Large files → chunked upload (uses progressPanel internally)
 		if (file.size > CHUNK_THRESHOLD) {
-			return uploadChunked(file, providerId, queueId, currentFolderId);
+			return uploadChunked(file, providerId, ppId, currentFolderId);
 		}
 
-		// Existing small file upload path (unchanged)
 		let createdFileId: string | undefined;
-		updateQueueItem(queueId, {
-			status: "uploading",
+		progressPanel.update(ppId, {
+			phase: "green",
 			progress: 0,
-			error: undefined,
+			phaseLabel: "Uploading…",
 		});
 
 		try {
@@ -117,28 +102,27 @@ export function useUpload({
 				},
 			});
 
-			if (result.error) {
-				throw new Error(result.error.message);
-			}
+			if (result.error) throw new Error(result.error.message);
 
 			const { fileId, uploadUrl, uploadFields, useDirectUpload } =
 				result.data?.requestUpload || {};
 			createdFileId = fileId ?? undefined;
 
-			if (!uploadUrl) {
-				throw new Error("Upload URL was not returned.");
-			}
+			if (!uploadUrl) throw new Error("Upload URL was not returned.");
 
 			const onUploadProgress = (progressEvent: {
 				loaded: number;
 				total?: number;
 			}) => {
 				const total = progressEvent.total || file.size;
-				const percent = Math.max(
+				const pct = Math.max(
 					1,
 					Math.round((progressEvent.loaded * 100) / total),
 				);
-				updateQueueItem(queueId, { progress: percent });
+				progressPanel.update(ppId, {
+					progress: pct,
+					phaseLabel: `Uploading… ${pct}%`,
+				});
 			};
 
 			if (uploadFields) {
@@ -168,7 +152,7 @@ export function useUpload({
 				});
 			}
 
-			updateQueueItem(queueId, { status: "success", progress: 100 });
+			progressPanel.done(ppId, "Uploaded");
 			return true;
 		} catch (error: unknown) {
 			if (createdFileId) {
@@ -181,18 +165,13 @@ export function useUpload({
 					);
 				}
 			}
-
 			const axiosError = error as {
 				response?: { data?: string };
 				message?: string;
 			};
 			const message =
 				axiosError.response?.data || axiosError.message || "Upload failed";
-			updateQueueItem(queueId, {
-				status: "error",
-				error: String(message),
-				progress: 100,
-			});
+			progressPanel.error(ppId, String(message));
 			return false;
 		}
 	};
@@ -203,30 +182,32 @@ export function useUpload({
 	) => {
 		setIsUploadDialogOpen(false);
 		setIsUploading(true);
-		const now = Date.now();
-		const queueItems: UploadQueueItem[] = filesToUpload.map((file, index) => ({
-			id: `${now}-${index}-${file.name}`,
-			name: file.name,
-			size: file.size,
-			progress: 0,
-			status: "queued",
-			destinationPath: getDestinationPath(file),
-		}));
-		setUploadQueue((prev) => [...prev, ...queueItems]);
+
+		// Create a progressPanel item for each file upfront
+		const ppIds = filesToUpload.map((file) =>
+			progressPanel.create({
+				title: file.name,
+				subtitle: formatBytes(file.size),
+				phase: "green",
+				progress: 0,
+				phaseLabel: "Queued",
+				...(getDestinationPath(file)
+					? { subtitle: getDestinationPath(file) }
+					: {}),
+			}),
+		);
 
 		try {
 			let successCount = 0;
-			for (let index = 0; index < filesToUpload.length; index += 1) {
+			for (let i = 0; i < filesToUpload.length; i++) {
 				const ok = await uploadSingleFile(
-					filesToUpload[index],
+					filesToUpload[i],
 					providerId,
-					queueItems[index].id,
+					ppIds[i],
 				);
-				if (ok) successCount += 1;
+				if (ok) successCount++;
 			}
-			if (successCount > 0) {
-				onUploadComplete();
-			}
+			if (successCount > 0) onUploadComplete();
 		} finally {
 			setIsUploading(false);
 			setSelectedFiles([]);
@@ -238,8 +219,6 @@ export function useUpload({
 		if (activeProviders.length === 1) {
 			handleUploadQueue(incomingFiles, activeProviders[0].id);
 		} else if (activeProviders.length > 1) {
-			// Skip the provider dialog if every file is covered by a matching rule
-			// whose destination provider is currently active.
 			const allFilesHaveRule = incomingFiles.every((file) =>
 				enabledRules.some(
 					(rule) =>
@@ -253,8 +232,6 @@ export function useUpload({
 			);
 
 			if (allFilesHaveRule) {
-				// The backend will apply the matching rule and route each file to
-				// the correct provider; pass the first active provider as a placeholder.
 				handleUploadQueue(incomingFiles, activeProviders[0].id);
 			} else {
 				setSelectedFiles(incomingFiles);
@@ -267,9 +244,7 @@ export function useUpload({
 		}
 	};
 
-	const handleUploadClick = () => {
-		fileInputRef.current?.click();
-	};
+	const handleUploadClick = () => fileInputRef.current?.click();
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const incomingFiles = Array.from(e.target.files || []);
@@ -277,37 +252,25 @@ export function useUpload({
 		handleFilesSelected(incomingFiles);
 	};
 
-	const clearUploadQueue = () => setUploadQueue([]);
-
-	const restoreSessions = useCallback((items: UploadQueueItem[]) => {
-		setUploadQueue((prev) => {
-			// Avoid duplicates by sessionId
-			const existingSessionIds = new Set(
-				prev.filter((i) => i.sessionId).map((i) => i.sessionId),
-			);
-			const newItems = items.filter(
-				(i) => !i.sessionId || !existingSessionIds.has(i.sessionId),
-			);
-			return [...prev, ...newItems];
-		});
-	}, []);
-
 	return {
 		fileInputRef,
 		isUploading,
 		isUploadDialogOpen,
 		setIsUploadDialogOpen,
 		selectedFiles,
-		uploadQueue,
 		activeProviders: activeProviders as StorageProvider[],
 		handleUploadClick,
 		handleFileChange,
 		handleFilesSelected,
 		handleUploadQueue,
-		clearUploadQueue,
-		restoreSessions,
-		updateQueueItem,
 		cancelSession,
 		retrySession,
 	};
+}
+
+function formatBytes(bytes: number) {
+	if (!bytes) return "";
+	const units = ["B", "KB", "MB", "GB", "TB"];
+	const exp = Math.floor(Math.log(bytes) / Math.log(1024));
+	return `${(bytes / 1024 ** exp).toFixed(exp === 0 ? 0 : 1)} ${units[exp]}`;
 }

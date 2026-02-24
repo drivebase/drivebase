@@ -17,7 +17,7 @@ import { FilesToolbar } from "@/features/files/components/FilesToolbar";
 import { FileSystemTable } from "@/features/files/FileSystemTable";
 import { useBreadcrumbs } from "@/features/files/hooks/useBreadcrumbs";
 import { useFileDrop } from "@/features/files/hooks/useFileDrop";
-import { UploadProgressPanel } from "@/features/files/UploadProgressPanel";
+
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useProviders } from "@/features/providers/hooks/useProviders";
 import { VaultSetupWizard } from "@/features/vault/components/VaultSetupWizard";
@@ -109,7 +109,7 @@ function VaultBrowser({ folderId }: { folderId?: string }) {
 
 	const refresh = () => refreshContents({ requestPolicy: "network-only" });
 
-	const { uploadFiles, uploadQueue, isUploading, clearQueue } = useVaultUpload({
+	const { uploadFiles, isUploading } = useVaultUpload({
 		currentFolderId: currentFolder?.id,
 		onUploadComplete: refresh,
 	});
@@ -300,13 +300,6 @@ function VaultBrowser({ folderId }: { folderId?: string }) {
 			/>
 
 			<FileDropZone isDragActive={isDragActive} />
-
-			<UploadProgressPanel
-				items={uploadQueue}
-				onClose={clearQueue}
-				onCancel={() => {}}
-				onRetry={() => {}}
-			/>
 		</div>
 	);
 }

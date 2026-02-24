@@ -40,10 +40,8 @@ export {
 	useStarredFolders,
 	useUnstarFolder,
 } from "./hooks/useFolders";
+export { useDownload } from "./hooks/useDownload";
 export { useUpload } from "./hooks/useUpload";
-export { useUploadSessionRestore } from "./hooks/useUploadSessionRestore";
-export type { UploadQueueItem } from "./UploadProgressPanel";
-export { UploadProgressPanel } from "./UploadProgressPanel";
 export { UploadProviderDialog } from "./UploadProviderDialog";
 // Hooks
 export { useFileActions } from "./useFileActions";

@@ -17,7 +17,7 @@ import { useFileOperations } from "@/features/files/hooks/useFileOperations";
 import { useContents } from "@/features/files/hooks/useFiles";
 import { useUpload } from "@/features/files/hooks/useUpload";
 import { useUploadSessionRestore } from "@/features/files/hooks/useUploadSessionRestore";
-import { UploadProgressPanel } from "@/features/files/UploadProgressPanel";
+
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
@@ -83,10 +83,7 @@ function FilesPage() {
 	});
 
 	// Restore active upload sessions on page load
-	useUploadSessionRestore({
-		onRestoreSessions: upload.restoreSessions,
-		onUpdateItem: upload.updateQueueItem,
-	});
+	useUploadSessionRestore();
 
 	const breadcrumbs = useBreadcrumbs(currentFolder);
 
@@ -204,13 +201,6 @@ function FilesPage() {
 				/>
 
 				<FileDropZone isDragActive={isDragActive} />
-
-				<UploadProgressPanel
-					items={upload.uploadQueue}
-					onClose={upload.clearUploadQueue}
-					onCancel={upload.cancelSession}
-					onRetry={upload.retrySession}
-				/>
 			</div>
 
 			<DragOverlay dropAnimation={null}>

@@ -6,6 +6,7 @@ import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/features/auth/hooks/useAuth";
 import { ActivityPanel } from "@/shared/components/ActivityPanel";
+import { TransferProgressPanel } from "@/shared/components/TransferProgressPanel";
 import { useActivities } from "@/shared/hooks/useActivities";
 import { ConfirmDialogHost } from "@/shared/lib/confirmDialog";
 import { PromptDialogHost } from "@/shared/lib/promptDialog";
@@ -16,7 +17,6 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-	// This will fetch the user profile if a token exists in localStorage
 	useMe();
 	useActivities();
 
@@ -28,6 +28,7 @@ function RootComponent() {
 			<ConfirmDialogHost />
 			<PromptDialogHost />
 			<ActivityPanel />
+			<TransferProgressPanel />
 			<Toaster position="bottom-right" theme={theme} />
 		</>
 	);
