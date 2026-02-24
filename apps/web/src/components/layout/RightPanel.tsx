@@ -131,15 +131,15 @@ function DefaultView() {
 			<Separator />
 
 			<div className="flex-1 overflow-y-auto">
-				<div className="flex items-center justify-between mb-4 px-2">
+				<div className="flex items-center justify-between mb-4 px-4">
 					<h3 className="font-semibold">
 						<Trans>Recent Activity</Trans>
 					</h3>
 					{recentActivities.length > 0 && (
 						<Button
 							size="sm"
-							variant="ghost"
-							className="h-7 text-xs text-muted-foreground"
+							variant="link"
+							className="h-7 text-xs text-muted-foreground px-0"
 							onClick={handleClearActivities}
 							disabled={fetching}
 						>
@@ -203,7 +203,7 @@ function DefaultView() {
 						return (
 							<div
 								key={activity.id}
-								className="flex items-start gap-3 px-3 py-2.5 hover:bg-muted transition-colors"
+								className="flex items-start gap-3 px-4 py-2.5 hover:bg-muted transition-colors"
 							>
 								{/* Provider icon */}
 								<div className="shrink-0 mt-0.5">
