@@ -2,6 +2,7 @@
 
 import { Cpu, LinkIcon, PianoIcon } from "lucide-react";
 import Image from "next/image";
+import { motion } from "motion/react";
 
 function Section({
   children,
@@ -23,7 +24,12 @@ export function ArchitectureSection() {
   return (
     <Section className="!py-32">
       <div className="grid lg:grid-cols-2 gap-16 items-center">
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
           <h2 className="text-4xl font-bold text-foreground mb-6">
             Built for reliability and performance
           </h2>
@@ -69,9 +75,15 @@ export function ArchitectureSection() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="border border-border bg-secondary/20 p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="border border-border bg-secondary/20 p-4"
+        >
           <div className="aspect-square bg-background border border-border relative overflow-hidden flex items-center justify-center">
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[length:20px_20px]" />
 
@@ -83,7 +95,7 @@ export function ArchitectureSection() {
               height={500}
             />
           </div>
-        </div>
+        </motion.div>
       </div>
     </Section>
   );

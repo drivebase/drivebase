@@ -2,23 +2,8 @@
 
 import { ArrowRight, Check, Copy, Terminal } from "lucide-react";
 import { motion } from "motion/react";
+import Link from "next/link";
 import { useState } from "react";
-
-function Badge({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <span
-      className={`inline-flex items-center px-3 py-1 text-xs font-medium bg-primary/10 text-primary ${className}`}
-    >
-      {children}
-    </span>
-  );
-}
 
 function Button({
   children,
@@ -72,12 +57,24 @@ export function HeroSection() {
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7">
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="mb-6"
+              className="mb-8 flex"
             >
-              <Badge>v2.5.0 Released | Read Changelog →</Badge>
+              <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-gray-400 transition-all duration-300 backdrop-blur-sm bg-white/5 hover:bg-white/10">
+                <span className="bg-linear-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent font-medium">
+                  v2.5.0 Released
+                </span>
+                <span className="mx-2 text-gray-600">|</span>
+                <Link
+                  href="https://github.com/drivebase/drivebase/releases/tag/v2.5.0"
+                  target="_blank"
+                  className="font-semibold text-indigo-400 hover:text-indigo-300"
+                >
+                  Read Changelog <span aria-hidden="true">&rarr;</span>
+                </Link>
+              </div>
             </motion.div>
 
             <motion.h1
@@ -135,7 +132,7 @@ export function HeroSection() {
               <Button
                 variant="primary"
                 icon={ArrowRight}
-                href="#"
+                href="https://drivebase.io/docs/quick-start"
                 className="w-full sm:w-auto"
               >
                 Get Started
@@ -143,7 +140,7 @@ export function HeroSection() {
               <Button
                 variant="outline"
                 icon={Terminal}
-                href="#"
+                href="https://drivebase.io/docs"
                 className="w-full sm:w-auto"
               >
                 View Documentation

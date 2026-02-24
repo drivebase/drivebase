@@ -1,5 +1,7 @@
 "use client";
 
+import { motion } from "motion/react";
+
 const problemItems = [
   "Managing multiple cloud accounts and login credentials",
   "Copying files manually between different services",
@@ -16,7 +18,13 @@ export function ProblemSolution() {
   return (
     <div className="border-b border-border bg-background z-10 relative">
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border border-x border-border">
-        <div className="p-12 lg:p-16">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="p-12 lg:p-16"
+        >
           <div className="flex items-center space-x-2 text-destructive mb-6">
             <span className="w-2 h-2 bg-destructive" />
             <span className="text-sm font-medium">The Problem</span>
@@ -32,9 +40,15 @@ export function ProblemSolution() {
               </li>
             ))}
           </ul>
-        </div>
+        </motion.div>
 
-        <div className="p-12 lg:p-16 bg-card/50">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="p-12 lg:p-16 bg-card/50"
+        >
           <div className="flex items-center space-x-2 text-primary mb-6">
             <span className="w-2 h-2 bg-primary" />
             <span className="text-sm font-medium">The Solution</span>
@@ -50,7 +64,7 @@ export function ProblemSolution() {
               </li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

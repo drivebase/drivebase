@@ -1,9 +1,17 @@
 "use client";
 
+import { motion } from "motion/react";
+
 export function CTASection() {
   return (
     <div className="py-32 text-center bg-background border-b border-border">
-      <div className="max-w-3xl mx-auto px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="max-w-3xl mx-auto px-4"
+      >
         <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
           Take control of your cloud storage today
         </h2>
@@ -24,7 +32,7 @@ export function CTASection() {
             Contact Sales
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

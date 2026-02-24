@@ -1,6 +1,7 @@
 "use client";
 
 import { Globe, Layout, Zap } from "lucide-react";
+import { motion } from "motion/react";
 
 const steps = [
   {
@@ -42,18 +43,28 @@ function Section({
 export function InstallationSteps() {
   return (
     <Section className="py-32!">
-      <div className="text-center mb-16">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="text-center mb-16"
+      >
         <h2 className="text-3xl font-bold text-foreground mb-4">
           Get Started in Minutes
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto">
           Three simple steps to unify all your cloud storage in one place
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid md:grid-cols-3 gap-8">
         {steps.map((item, _i) => (
-          <div
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: _i * 0.1 }}
             key={item.step}
             className="border border-border p-8 hover:border-primary/50 transition-colors group relative bg-background"
           >
@@ -67,7 +78,7 @@ export function InstallationSteps() {
               {item.title}
             </h3>
             <p className="text-muted-foreground">{item.desc}</p>
-          </div>
+          </motion.div>
         ))}
       </div>
     </Section>

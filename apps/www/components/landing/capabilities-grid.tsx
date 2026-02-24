@@ -1,6 +1,7 @@
 "use client";
 
 import { Activity, FileText, Layout, Lock, Search, Shield } from "lucide-react";
+import { motion } from "motion/react";
 
 const capabilities = [
   {
@@ -45,17 +46,27 @@ export function CapabilitiesGrid() {
   return (
     <div className="border-y border-border bg-background">
       <div className="max-w-7xl mx-auto">
-        <div className="px-4 py-8 border-b border-border">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="px-4 py-8 border-b border-border"
+        >
           <h2 className="text-2xl font-bold text-foreground">
             Everything you need to manage cloud storage
           </h2>
           <p className="text-muted-foreground mt-2">
             Powerful features to streamline your workflow
           </p>
-        </div>
+        </motion.div>
         <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border border-x border-border">
-          {capabilities.map((item) => (
-            <div
+          {capabilities.map((item, index) => (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
               key={item.label}
               className="p-8 hover:bg-secondary/50 transition-colors group"
             >
@@ -64,7 +75,7 @@ export function CapabilitiesGrid() {
                 {item.title}
               </h3>
               <p className="text-muted-foreground">{item.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
