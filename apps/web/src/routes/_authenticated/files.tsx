@@ -104,9 +104,17 @@ function FilesPage() {
 		onDrop: upload.handleFilesSelected,
 	});
 
+	const syncEnabledInWorkspace =
+		(
+			workspacesResult.data?.workspaces?.find(
+				(w) => w.id === activeWorkspaceId,
+			) ?? workspacesResult.data?.workspaces?.[0]
+		)?.syncOperationsToProvider ?? false;
+
 	const dnd = useDragAndDrop({
 		fileList,
 		folderList,
+		syncEnabled: syncEnabledInWorkspace,
 		onMoveComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 
