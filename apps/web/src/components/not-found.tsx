@@ -24,7 +24,7 @@ export function NotFound() {
 				{/* Card */}
 				<div className="relative max-w-md w-md border bg-card p-6 text-center space-y-4 shadow-sm">
 					<img
-						src="/drivebase.svg"
+						src="/drivebase-light.svg"
 						alt="Drivebase"
 						className="h-12 w-12 mx-auto"
 					/>
