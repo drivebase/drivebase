@@ -290,3 +290,37 @@ export async function updateWorkspaceName(
 
 	return workspace;
 }
+
+export async function updateWorkspaceSyncOperationsToProvider(
+	db: WorkspaceUpdateDbLike,
+	workspaceId: string,
+	enabled: boolean,
+) {
+	const [workspace] = await db
+		.update(workspaces)
+		.set({
+			syncOperationsToProvider: enabled,
+			updatedAt: new Date(),
+		})
+		.where(eq(workspaces.id, workspaceId))
+		.returning();
+
+	if (!workspace) {
+		throw new Error("Workspace not found");
+	}
+
+	return workspace;
+}
+
+export async function getWorkspaceSyncOperationsToProvider(
+	db: WorkspaceDbLike,
+	workspaceId: string,
+) {
+	const [workspace] = await db
+		.select({ syncOperationsToProvider: workspaces.syncOperationsToProvider })
+		.from(workspaces)
+		.where(eq(workspaces.id, workspaceId))
+		.limit(1);
+
+	return workspace?.syncOperationsToProvider ?? false;
+}

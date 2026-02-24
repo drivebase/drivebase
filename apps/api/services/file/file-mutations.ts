@@ -13,6 +13,7 @@ import { logger } from "../../utils/logger";
 import { ActivityService } from "../activity";
 import { FolderService } from "../folder";
 import { ProviderService } from "../provider";
+import { getWorkspaceSyncOperationsToProvider } from "../workspace/workspace";
 import { getFile } from "./file-queries";
 
 /**
@@ -134,6 +135,10 @@ export async function moveFile(
 
 	try {
 		const file = await getFile(db, fileId, userId, workspaceId);
+		const syncOperationsToProvider = await getWorkspaceSyncOperationsToProvider(
+			db,
+			workspaceId,
+		);
 
 		let newFolder = null;
 		let newVirtualPath: string;
@@ -148,6 +153,16 @@ export async function moveFile(
 			newVirtualPath = joinPath(newFolder.virtualPath, file.name);
 		} else {
 			newVirtualPath = joinPath("/", file.name);
+		}
+
+		if (
+			syncOperationsToProvider &&
+			newFolder &&
+			newFolder.providerId !== file.providerId
+		) {
+			throw new ValidationError(
+				"Cannot sync move to a folder on a different provider",
+			);
 		}
 
 		const [existing] = await db
@@ -166,6 +181,26 @@ export async function moveFile(
 
 		if (existing && existing.id !== fileId) {
 			throw new ConflictError(`File already exists at path: ${newVirtualPath}`);
+		}
+
+		if (syncOperationsToProvider) {
+			const providerService = new ProviderService(db);
+			const providerRecord = await providerService.getProvider(
+				file.providerId,
+				userId,
+				workspaceId,
+			);
+			const provider =
+				await providerService.getProviderInstance(providerRecord);
+
+			try {
+				await provider.move({
+					remoteId: file.remoteId,
+					newParentId: newFolder?.remoteId,
+				});
+			} finally {
+				await provider.cleanup();
+			}
 		}
 
 		const [updated] = await db

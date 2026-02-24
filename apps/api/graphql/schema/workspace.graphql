@@ -21,6 +21,7 @@ type Workspace {
 	name: String!
 	color: WorkspaceColor!
 	ownerId: ID!
+	syncOperationsToProvider: Boolean!
 	createdAt: DateTime!
 	updatedAt: DateTime!
 }
@@ -81,6 +82,11 @@ input UpdateWorkspaceNameInput {
 	name: String!
 }
 
+input UpdateWorkspaceSyncOperationsInput {
+	workspaceId: ID!
+	enabled: Boolean!
+}
+
 extend type Mutation {
 	"""
 	Create a new workspace
@@ -106,6 +112,13 @@ extend type Mutation {
 	Update workspace name
 	"""
 	updateWorkspaceName(input: UpdateWorkspaceNameInput!): Workspace!
+
+	"""
+	Update workspace sync behavior for move/rename operations
+	"""
+	updateWorkspaceSyncOperations(
+		input: UpdateWorkspaceSyncOperationsInput!
+	): Workspace!
 
 	"""
 	Remove a member from workspace

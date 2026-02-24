@@ -7,6 +7,7 @@ import {
 	REVOKE_WORKSPACE_INVITE_MUTATION,
 	UPDATE_WORKSPACE_MEMBER_ROLE_MUTATION,
 	UPDATE_WORKSPACE_NAME_MUTATION,
+	UPDATE_WORKSPACE_SYNC_OPERATIONS_MUTATION,
 	WORKSPACE_INVITES_QUERY,
 	WORKSPACE_MEMBERS_QUERY,
 	WORKSPACES_QUERY,
@@ -58,6 +59,13 @@ export function useUpdateWorkspaceMemberRole() {
 
 export function useUpdateWorkspaceName() {
 	const [result, execute] = useMutation(UPDATE_WORKSPACE_NAME_MUTATION);
+	return [result, execute] as const;
+}
+
+export function useUpdateWorkspaceSyncOperations() {
+	const [result, execute] = useMutation(
+		UPDATE_WORKSPACE_SYNC_OPERATIONS_MUTATION,
+	);
 	return [result, execute] as const;
 }
 

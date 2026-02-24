@@ -8,6 +8,7 @@ import type { Database } from "@drivebase/db";
 import { files, folders } from "@drivebase/db";
 import { and, eq, like, sql } from "drizzle-orm";
 import { ProviderService } from "../../services/provider";
+import { getWorkspaceSyncOperationsToProvider } from "../../services/workspace/workspace";
 import { getFolder } from "./folder-queries";
 
 /**
@@ -82,7 +83,7 @@ export async function createFolder(
 }
 
 /**
- * Rename a folder (DB-only, provider-side rename can be added later)
+ * Rename a folder and optionally sync to provider
  */
 export async function renameFolder(
 	db: Database,
@@ -92,6 +93,10 @@ export async function renameFolder(
 	newName: string,
 ) {
 	const folder = await getFolder(db, folderId, userId, workspaceId);
+	const syncOperationsToProvider = await getWorkspaceSyncOperationsToProvider(
+		db,
+		workspaceId,
+	);
 
 	const sanitizedName = newName.trim().replace(/[/\\]/g, "_");
 
@@ -117,6 +122,25 @@ export async function renameFolder(
 
 	if (existing && existing.id !== folderId) {
 		throw new ConflictError(`Folder already exists at path: ${newVirtualPath}`);
+	}
+
+	if (syncOperationsToProvider) {
+		const providerService = new ProviderService(db);
+		const providerRecord = await providerService.getProvider(
+			folder.providerId,
+			userId,
+			workspaceId,
+		);
+		const provider = await providerService.getProviderInstance(providerRecord);
+
+		try {
+			await provider.move({
+				remoteId: folder.remoteId,
+				newName: sanitizedName,
+			});
+		} finally {
+			await provider.cleanup();
+		}
 	}
 
 	const [updated] = await db
@@ -180,8 +204,13 @@ export async function moveFolder(
 	newParentId?: string,
 ) {
 	const folder = await getFolder(db, folderId, userId, workspaceId);
+	const syncOperationsToProvider = await getWorkspaceSyncOperationsToProvider(
+		db,
+		workspaceId,
+	);
 
 	let newVirtualPath: string;
+	let newParentRemoteId: string | undefined;
 
 	if (newParentId) {
 		const newParent = await getFolder(db, newParentId, userId, workspaceId);
@@ -194,8 +223,10 @@ export async function moveFolder(
 		}
 
 		newVirtualPath = joinPath(newParent.virtualPath, folder.name);
+		newParentRemoteId = newParent.remoteId;
 	} else {
 		newVirtualPath = joinPath("/", folder.name);
+		newParentRemoteId = undefined;
 	}
 
 	const [existing] = await db
@@ -213,6 +244,25 @@ export async function moveFolder(
 
 	if (existing && existing.id !== folderId) {
 		throw new ConflictError(`Folder already exists at path: ${newVirtualPath}`);
+	}
+
+	if (syncOperationsToProvider) {
+		const providerService = new ProviderService(db);
+		const providerRecord = await providerService.getProvider(
+			folder.providerId,
+			userId,
+			workspaceId,
+		);
+		const provider = await providerService.getProviderInstance(providerRecord);
+
+		try {
+			await provider.move({
+				remoteId: folder.remoteId,
+				newParentId: newParentRemoteId,
+			});
+		} finally {
+			await provider.cleanup();
+		}
 	}
 
 	const [updated] = await db

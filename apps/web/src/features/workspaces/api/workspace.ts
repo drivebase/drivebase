@@ -9,6 +9,7 @@ export const WORKSPACES_QUERY = graphql(`
       name
       color
       ownerId
+      syncOperationsToProvider
       createdAt
       updatedAt
     }
@@ -78,6 +79,21 @@ export const UPDATE_WORKSPACE_NAME_MUTATION = graphql(`
       name
       color
       ownerId
+      syncOperationsToProvider
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const UPDATE_WORKSPACE_SYNC_OPERATIONS_MUTATION = graphql(`
+  mutation UpdateWorkspaceSyncOperations($input: UpdateWorkspaceSyncOperationsInput!) {
+    updateWorkspaceSyncOperations(input: $input) {
+      id
+      name
+      color
+      ownerId
+      syncOperationsToProvider
       createdAt
       updatedAt
     }
@@ -103,6 +119,7 @@ export const ACCEPT_WORKSPACE_INVITE_MUTATION = graphql(`
       name
       color
       ownerId
+      syncOperationsToProvider
       createdAt
       updatedAt
     }

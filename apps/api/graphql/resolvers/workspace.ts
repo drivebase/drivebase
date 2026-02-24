@@ -1,6 +1,7 @@
 import {
 	createWorkspace,
 	listAccessibleWorkspaces,
+	updateWorkspaceSyncOperationsToProvider,
 	updateWorkspaceName,
 } from "../../services/workspace/workspace";
 import {
@@ -32,6 +33,7 @@ function toWorkspaceType(workspace: {
 	name: string;
 	color: string;
 	ownerId: string;
+	syncOperationsToProvider: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 }): WorkspaceType {
@@ -172,6 +174,24 @@ export const workspaceMutations: MutationResolvers = {
 			context.db,
 			args.input.workspaceId,
 			args.input.name,
+		);
+
+		return toWorkspaceType(workspace);
+	},
+
+	updateWorkspaceSyncOperations: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(
+			context.db,
+			args.input.workspaceId,
+			user.userId,
+			["owner", "admin"],
+		);
+
+		const workspace = await updateWorkspaceSyncOperationsToProvider(
+			context.db,
+			args.input.workspaceId,
+			args.input.enabled,
 		);
 
 		return toWorkspaceType(workspace);
