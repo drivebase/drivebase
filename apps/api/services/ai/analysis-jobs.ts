@@ -4,13 +4,21 @@ import {
 	fileAnalysisRuns,
 	files,
 	storageProviders,
+	workspaceAiProgress,
 	workspaceAiSettings,
 } from "@drivebase/db";
-import { and, eq } from "drizzle-orm";
-import { getAnalysisQueue } from "../../queue/analysis-queue";
+import { and, eq, inArray } from "drizzle-orm";
+import {
+	cancelWorkspaceAnalysisJobs,
+	getAnalysisQueue,
+} from "../../queue/analysis-queue";
+import { env } from "../../config/env";
 import { logger } from "../../utils/logger";
-import { isEligibleForAiAnalysis } from "./ai-support";
-import { refreshWorkspaceAiProgress } from "./ai-settings";
+import { isEligibleForAiAnalysis, resolveMaxFileSizeMb } from "./ai-support";
+import {
+	refreshWorkspaceAiProgress,
+	updateWorkspaceAiSettings,
+} from "./ai-settings";
 
 type EnqueueTrigger =
 	| "upload"
@@ -18,13 +26,17 @@ type EnqueueTrigger =
 	| "backfill"
 	| "provider_sync";
 
+type EnqueueResult =
+	| { status: "queued" }
+	| { status: "skipped"; reason: string };
+
 export async function enqueueFileAnalysis(
 	db: Database,
 	fileId: string,
 	workspaceId: string,
 	trigger: EnqueueTrigger = "upload",
 	force = false,
-): Promise<void> {
+): Promise<EnqueueResult> {
 	const [file] = await db
 		.select({
 			id: files.id,
@@ -53,7 +65,7 @@ export async function enqueueFileAnalysis(
 			fileId,
 			workspaceId,
 		});
-		return;
+		return { status: "skipped", reason: "file_not_found" };
 	}
 
 	const [settings] = await db
@@ -68,10 +80,17 @@ export async function enqueueFileAnalysis(
 			fileId,
 			workspaceId,
 		});
-		return;
+		return { status: "skipped", reason: "ai_disabled" };
 	}
 
-	const isEligible = !file.vaultId && isEligibleForAiAnalysis(file.mimeType);
+	const maxSizeMb = resolveMaxFileSizeMb(
+		settings?.config,
+		Number.parseFloat(env.AI_MAX_FILE_SIZE_MB) || 50,
+	);
+	const maxBytes = Math.floor(maxSizeMb * 1024 * 1024);
+	const isOversized = file.size > maxBytes;
+	const isEligible =
+		!file.vaultId && !isOversized && isEligibleForAiAnalysis(file.mimeType);
 
 	const keyPayload = [
 		file.id,
@@ -90,11 +109,19 @@ export async function enqueueFileAnalysis(
 	const analysisKey = createHash("sha256").update(keyPayload).digest("hex");
 
 	if (!isEligible || file.vaultId) {
+		const skipReason = file.vaultId
+			? "encrypted_vault_file"
+			: isOversized
+				? "file_too_large"
+				: "unsupported_file_type";
 		logger.debug({
 			msg: "Skipping file analysis with terminal skipped run",
 			fileId: file.id,
 			workspaceId,
-			reason: file.vaultId ? "encrypted_vault_file" : "unsupported_file_type",
+			mimeType: file.mimeType,
+			reason: skipReason,
+			fileSizeBytes: file.size,
+			maxAllowedBytes: maxBytes,
 		});
 		await db
 			.insert(fileAnalysisRuns)
@@ -107,15 +134,9 @@ export async function enqueueFileAnalysis(
 				embeddingStatus: "skipped",
 				ocrStatus: "skipped",
 				objectDetectionStatus: "skipped",
-				embeddingError: file.vaultId
-					? "encrypted_vault_file"
-					: "unsupported_file_type",
-				ocrError: file.vaultId
-					? "encrypted_vault_file"
-					: "unsupported_file_type",
-				objectDetectionError: file.vaultId
-					? "encrypted_vault_file"
-					: "unsupported_file_type",
+				embeddingError: skipReason,
+				ocrError: skipReason,
+				objectDetectionError: skipReason,
 				tierEmbedding: settings?.embeddingTier ?? "medium",
 				tierOcr: settings?.ocrTier ?? "medium",
 				tierObject: settings?.objectTier ?? "medium",
@@ -125,7 +146,7 @@ export async function enqueueFileAnalysis(
 			})
 			.onConflictDoNothing({ target: fileAnalysisRuns.analysisKey });
 		await refreshWorkspaceAiProgress(db, workspaceId);
-		return;
+		return { status: "skipped", reason: skipReason };
 	}
 
 	const [run] = await db
@@ -152,7 +173,7 @@ export async function enqueueFileAnalysis(
 			fileId: file.id,
 			workspaceId,
 		});
-		return;
+		return { status: "skipped", reason: "duplicate_analysis_key" };
 	}
 
 	const queue = getAnalysisQueue();
@@ -163,7 +184,7 @@ export async function enqueueFileAnalysis(
 			workspaceId,
 			fileId: file.id,
 		},
-		{ jobId: `analysis-${run.analysisKey}` },
+		{ jobId: `analysis-${run.id}` },
 	);
 
 	logger.info({
@@ -174,6 +195,7 @@ export async function enqueueFileAnalysis(
 	});
 
 	await refreshWorkspaceAiProgress(db, workspaceId);
+	return { status: "queued" };
 }
 
 export async function enqueueWorkspaceBackfill(
@@ -193,9 +215,22 @@ export async function enqueueWorkspaceBackfill(
 		);
 
 	let queued = 0;
+	const skippedByReason = new Map<string, number>();
 	for (const row of fileRows) {
-		await enqueueFileAnalysis(db, row.id, workspaceId, "backfill");
-		queued += 1;
+		const result = await enqueueFileAnalysis(
+			db,
+			row.id,
+			workspaceId,
+			"backfill",
+		);
+		if (result.status === "queued") {
+			queued += 1;
+			continue;
+		}
+		skippedByReason.set(
+			result.reason,
+			(skippedByReason.get(result.reason) ?? 0) + 1,
+		);
 	}
 
 	logger.info({
@@ -203,7 +238,63 @@ export async function enqueueWorkspaceBackfill(
 		workspaceId,
 		totalFiles: fileRows.length,
 		queued,
+		skippedByReason: Object.fromEntries(skippedByReason.entries()),
 	});
 
 	return queued;
+}
+
+export async function stopWorkspaceAiProcessing(
+	db: Database,
+	workspaceId: string,
+): Promise<void> {
+	await updateWorkspaceAiSettings(db, workspaceId, { enabled: false });
+
+	const now = new Date();
+	await db
+		.update(fileAnalysisRuns)
+		.set({
+			status: "skipped",
+			embeddingStatus: "skipped",
+			ocrStatus: "skipped",
+			objectDetectionStatus: "skipped",
+			embeddingError: "stopped_by_user",
+			ocrError: "stopped_by_user",
+			objectDetectionError: "stopped_by_user",
+			completedAt: now,
+			updatedAt: now,
+		})
+		.where(
+			and(
+				eq(fileAnalysisRuns.workspaceId, workspaceId),
+				inArray(fileAnalysisRuns.status, ["pending"]),
+			),
+		);
+
+	await cancelWorkspaceAnalysisJobs(workspaceId);
+	await refreshWorkspaceAiProgress(db, workspaceId);
+
+	logger.info({
+		msg: "Stopped workspace AI processing",
+		workspaceId,
+	});
+}
+
+export async function deleteWorkspaceAiData(
+	db: Database,
+	workspaceId: string,
+): Promise<void> {
+	await stopWorkspaceAiProcessing(db, workspaceId);
+	await db
+		.delete(fileAnalysisRuns)
+		.where(eq(fileAnalysisRuns.workspaceId, workspaceId));
+	await db
+		.delete(workspaceAiProgress)
+		.where(eq(workspaceAiProgress.workspaceId, workspaceId));
+	await refreshWorkspaceAiProgress(db, workspaceId);
+
+	logger.info({
+		msg: "Deleted workspace AI data",
+		workspaceId,
+	});
 }

@@ -189,6 +189,10 @@ export const workspaceAiSettings = pgTable("workspace_ai_settings", {
 	ocrTier: analysisModelTierEnum("ocr_tier").notNull().default("medium"),
 	objectTier: analysisModelTierEnum("object_tier").notNull().default("medium"),
 	maxConcurrency: integer("max_concurrency").notNull().default(2),
+	config: jsonb("config")
+		.$type<Record<string, unknown>>()
+		.notNull()
+		.default({}),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.notNull()
 		.defaultNow(),

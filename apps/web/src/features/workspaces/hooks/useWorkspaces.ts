@@ -3,10 +3,12 @@ import {
 	ACCEPT_WORKSPACE_INVITE_MUTATION,
 	CREATE_WORKSPACE_INVITE_MUTATION,
 	CREATE_WORKSPACE_MUTATION,
+	DELETE_WORKSPACE_AI_DATA_MUTATION,
 	PREPARE_WORKSPACE_AI_MODELS_MUTATION,
 	REMOVE_WORKSPACE_MEMBER_MUTATION,
 	REVOKE_WORKSPACE_INVITE_MUTATION,
 	START_WORKSPACE_AI_PROCESSING_MUTATION,
+	STOP_WORKSPACE_AI_PROCESSING_MUTATION,
 	UPDATE_WORKSPACE_MEMBER_ROLE_MUTATION,
 	UPDATE_WORKSPACE_NAME_MUTATION,
 	UPDATE_WORKSPACE_AI_SETTINGS_MUTATION,
@@ -106,6 +108,16 @@ export function usePrepareWorkspaceAiModels() {
 
 export function useStartWorkspaceAiProcessing() {
 	const [result, execute] = useMutation(START_WORKSPACE_AI_PROCESSING_MUTATION);
+	return [result, execute] as const;
+}
+
+export function useStopWorkspaceAiProcessing() {
+	const [result, execute] = useMutation(STOP_WORKSPACE_AI_PROCESSING_MUTATION);
+	return [result, execute] as const;
+}
+
+export function useDeleteWorkspaceAiData() {
+	const [result, execute] = useMutation(DELETE_WORKSPACE_AI_DATA_MUTATION);
 	return [result, execute] as const;
 }
 

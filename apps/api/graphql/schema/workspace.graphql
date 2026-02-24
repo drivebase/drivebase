@@ -76,6 +76,7 @@ type WorkspaceAiSettings {
 	ocrTier: AnalysisModelTier!
 	objectTier: AnalysisModelTier!
 	maxConcurrency: Int!
+	config: JSON!
 	updatedAt: DateTime!
 }
 
@@ -124,6 +125,13 @@ extend type Query {
 	workspaceAiProgress(workspaceId: ID!): WorkspaceAiProgress!
 }
 
+extend type Subscription {
+	"""
+	Subscribe to AI processing progress updates for a workspace
+	"""
+	workspaceAiProgressUpdated(workspaceId: ID!): WorkspaceAiProgress!
+}
+
 input CreateWorkspaceInput {
 	name: String!
 	color: WorkspaceColor!
@@ -158,6 +166,7 @@ input UpdateWorkspaceAiSettingsInput {
 	ocrTier: AnalysisModelTier
 	objectTier: AnalysisModelTier
 	maxConcurrency: Int
+	config: JSON
 }
 
 extend type Mutation {
@@ -209,6 +218,16 @@ extend type Mutation {
 	Enable AI processing and enqueue workspace backfill analysis
 	"""
 	startWorkspaceAiProcessing(workspaceId: ID!): Boolean!
+
+	"""
+	Stop AI processing and cancel queued analysis jobs
+	"""
+	stopWorkspaceAiProcessing(workspaceId: ID!): Boolean!
+
+	"""
+	Delete all AI analysis data for the workspace
+	"""
+	deleteWorkspaceAiData(workspaceId: ID!): Boolean!
 
 	"""
 	Remove a member from workspace

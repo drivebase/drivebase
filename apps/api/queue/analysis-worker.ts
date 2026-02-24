@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import {
 	fileAnalysisRuns,
 	fileDetectedObjects,
@@ -6,23 +5,109 @@ import {
 	fileExtractedText,
 	files,
 	getDb,
+	storageProviders,
+	workspaceAiSettings,
 } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { and, eq } from "drizzle-orm";
 import { env } from "../config/env";
 import { createBullMQConnection } from "../redis/client";
+import { getAnalysisQueue } from "./analysis-queue";
 import { refreshWorkspaceAiProgress } from "../services/ai/ai-settings";
 import {
-	inferEmbedding,
-	inferObjects,
-	inferOcr,
+	inferEmbeddingStream,
+	inferObjectsStream,
+	inferOcrStream,
 } from "../services/ai/inference-client";
+import { getProviderInstance } from "../services/provider/provider-queries";
+import { resolveMaxFileSizeMb } from "../services/ai/ai-support";
 import { logger } from "../utils/logger";
 import type { FileAnalysisJobData } from "./analysis-queue";
 
-const EMBEDDING_DIM = 512;
-
 let analysisWorker: Worker<FileAnalysisJobData> | null = null;
+
+function toErrorDetails(error: unknown) {
+	if (error instanceof Error) {
+		return {
+			name: error.name,
+			message: error.message,
+			stack: error.stack,
+		};
+	}
+	return { message: String(error) };
+}
+
+async function recoverPendingRuns(limit = 1000): Promise<void> {
+	const db = getDb();
+	const queue = getAnalysisQueue();
+	const pendingRuns = await db
+		.select({
+			id: fileAnalysisRuns.id,
+			analysisKey: fileAnalysisRuns.analysisKey,
+			workspaceId: fileAnalysisRuns.workspaceId,
+			fileId: fileAnalysisRuns.fileId,
+		})
+		.from(fileAnalysisRuns)
+		.where(eq(fileAnalysisRuns.status, "pending"))
+		.limit(limit);
+
+	let requeued = 0;
+	for (const run of pendingRuns) {
+		try {
+			await queue.add(
+				"analyze-file",
+				{
+					runId: run.id,
+					workspaceId: run.workspaceId,
+					fileId: run.fileId,
+				},
+				{ jobId: `analysis-${run.id}` },
+			);
+			requeued += 1;
+		} catch (error) {
+			// Ignore duplicate job id conflicts; those are already queued.
+			const message = error instanceof Error ? error.message : String(error);
+			if (!message.toLowerCase().includes("jobid")) {
+				logger.warn({
+					msg: "Failed to requeue pending analysis run",
+					runId: run.id,
+					workspaceId: run.workspaceId,
+					fileId: run.fileId,
+					error: message,
+				});
+			}
+		}
+	}
+
+	logger.info({
+		msg: "Recovered pending analysis runs",
+		pendingFound: pendingRuns.length,
+		requeued,
+	});
+}
+
+async function ensureAnalysisQueueActive(): Promise<void> {
+	const queue = getAnalysisQueue();
+	try {
+		await queue.resume();
+		const counts = await queue.getJobCounts(
+			"waiting",
+			"active",
+			"delayed",
+			"paused",
+			"prioritized",
+		);
+		logger.info({
+			msg: "Analysis queue is active",
+			counts,
+		});
+	} catch (error) {
+		logger.warn({
+			msg: "Failed to ensure analysis queue active",
+			error: error instanceof Error ? error.message : String(error),
+		});
+	}
+}
 
 function isImageMime(mimeType: string): boolean {
 	return mimeType.toLowerCase().startsWith("image/");
@@ -41,14 +126,35 @@ function isTextMime(mimeType: string): boolean {
 	);
 }
 
-function fallbackEmbedding(seed: string): number[] {
-	const digest = createHash("sha256").update(seed).digest();
-	const result = new Array<number>(EMBEDDING_DIM);
-	for (let i = 0; i < EMBEDDING_DIM; i += 1) {
-		const byte = digest[i % digest.length] ?? 0;
-		result[i] = (byte / 255 - 0.5) * 2;
+async function streamFromProvider(input: {
+	providerId: string;
+	workspaceId: string;
+	remoteId: string;
+}) {
+	const db = getDb();
+	const [providerRecord] = await db
+		.select()
+		.from(storageProviders)
+		.where(
+			and(
+				eq(storageProviders.id, input.providerId),
+				eq(storageProviders.workspaceId, input.workspaceId),
+			),
+		)
+		.limit(1);
+
+	if (!providerRecord) {
+		throw new Error("Provider not found for analysis stream");
 	}
-	return result;
+
+	const provider = await getProviderInstance(providerRecord);
+	try {
+		const stream = await provider.downloadFile(input.remoteId);
+		return { stream, provider };
+	} catch (error) {
+		await provider.cleanup().catch(() => undefined);
+		throw error;
+	}
 }
 
 export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
@@ -89,18 +195,29 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 					id: files.id,
 					name: files.name,
 					mimeType: files.mimeType,
+					size: files.size,
+					providerId: files.providerId,
+					remoteId: files.remoteId,
 				})
 				.from(files)
+				.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
 				.where(
 					and(
 						eq(files.id, fileId),
-						eq(files.workspaceId, workspaceId),
+						eq(storageProviders.workspaceId, workspaceId),
 						eq(files.nodeType, "file"),
 					),
 				)
 				.limit(1);
 
 			if (!file) {
+				logger.error({
+					msg: "Analysis worker file lookup failed",
+					jobId: job.id,
+					runId,
+					workspaceId,
+					fileId,
+				});
 				await db
 					.update(fileAnalysisRuns)
 					.set({
@@ -136,45 +253,165 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				})
 				.where(eq(fileAnalysisRuns.id, runId));
 
-			try {
-				const embedding = env.AI_INFERENCE_URL
-					? await inferEmbedding({
-							fileId: file.id,
-							fileName: file.name,
-							mimeType: file.mimeType,
-							modelTier: run.tierEmbedding,
-						})
-					: {
-							embedding: fallbackEmbedding(
-								`${file.id}:${file.name}:${file.mimeType}`,
-							),
-							modelName: "fallback-local",
-						};
+			const [settings] = await db
+				.select()
+				.from(workspaceAiSettings)
+				.where(eq(workspaceAiSettings.workspaceId, workspaceId))
+				.limit(1);
 
-				await db.insert(fileEmbeddings).values({
-					fileId: file.id,
-					workspaceId,
+			const maxSizeMb = resolveMaxFileSizeMb(
+				settings?.config,
+				Number.parseFloat(env.AI_MAX_FILE_SIZE_MB) || 50,
+			);
+			if (settings && !settings.enabled) {
+				const reason = "ai_processing_disabled";
+				await db
+					.update(fileAnalysisRuns)
+					.set({
+						status: "skipped",
+						embeddingStatus: "skipped",
+						ocrStatus: "skipped",
+						objectDetectionStatus: "skipped",
+						embeddingError: reason,
+						ocrError: reason,
+						objectDetectionError: reason,
+						completedAt: new Date(),
+						updatedAt: new Date(),
+					})
+					.where(eq(fileAnalysisRuns.id, runId));
+				await refreshWorkspaceAiProgress(db, workspaceId);
+				logger.info({
+					msg: "Skipping analysis because workspace AI is disabled",
+					jobId: job.id,
 					runId,
-					modelName: embedding.modelName,
-					modelTier: run.tierEmbedding,
-					embedding: embedding.embedding,
+					workspaceId,
+					fileId,
 				});
-				embeddingStatus = "completed";
-			} catch (error) {
-				embeddingStatus = "failed";
-				embeddingError = error instanceof Error ? error.message : String(error);
+				return;
+			}
+			const maxBytes = Math.floor(maxSizeMb * 1024 * 1024);
+			if (file.size > maxBytes) {
+				const reason = `file_too_large:${file.size}>${maxBytes}`;
+				await db
+					.update(fileAnalysisRuns)
+					.set({
+						status: "skipped",
+						embeddingStatus: "skipped",
+						ocrStatus: "skipped",
+						objectDetectionStatus: "skipped",
+						embeddingError: reason,
+						ocrError: reason,
+						objectDetectionError: reason,
+						completedAt: new Date(),
+						updatedAt: new Date(),
+					})
+					.where(eq(fileAnalysisRuns.id, runId));
+				await refreshWorkspaceAiProgress(db, workspaceId);
+				logger.info({
+					msg: "Skipping analysis for oversized file",
+					jobId: job.id,
+					runId,
+					workspaceId,
+					fileId,
+					fileSizeBytes: file.size,
+					maxAllowedBytes: maxBytes,
+				});
+				return;
+			}
+
+			if (env.AI_INFERENCE_URL) {
+				try {
+					const startedAt = Date.now();
+					logger.debug({
+						msg: "Starting embedding inference stream",
+						runId,
+						fileId,
+						mimeType: file.mimeType,
+						fileSizeBytes: file.size,
+					});
+					const { stream, provider } = await streamFromProvider({
+						providerId: file.providerId,
+						workspaceId,
+						remoteId: file.remoteId,
+					});
+					const embedding = await (async () => {
+						try {
+							return await inferEmbeddingStream({
+								stream,
+								fileName: file.name,
+								mimeType: file.mimeType,
+								modelTier: run.tierEmbedding,
+							});
+						} finally {
+							await provider.cleanup().catch(() => undefined);
+						}
+					})();
+
+					await db.insert(fileEmbeddings).values({
+						fileId: file.id,
+						workspaceId,
+						runId,
+						modelName: embedding.modelName,
+						modelTier: run.tierEmbedding,
+						embedding: embedding.embedding,
+					});
+					logger.debug({
+						msg: "Embedding inference stream completed",
+						runId,
+						fileId,
+						durationMs: Date.now() - startedAt,
+					});
+					embeddingStatus = "completed";
+				} catch (error) {
+					embeddingStatus = "failed";
+					embeddingError =
+						error instanceof Error ? error.message : String(error);
+					logger.warn({
+						msg: "Embedding inference failed",
+						runId,
+						fileId,
+						error: toErrorDetails(error),
+					});
+				}
+			} else {
+				embeddingStatus = "skipped";
+				embeddingError = "inference_service_not_configured";
+				logger.warn({
+					msg: "Skipping embedding inference: AI inference URL not configured",
+					runId,
+					fileId,
+				});
 			}
 
 			const canOcr = isImageMime(file.mimeType) || isPdfMime(file.mimeType);
 			if (canOcr) {
 				if (env.AI_INFERENCE_URL) {
 					try {
-						const result = await inferOcr({
-							fileId: file.id,
-							fileName: file.name,
+						const startedAt = Date.now();
+						logger.debug({
+							msg: "Starting OCR inference stream",
+							runId,
+							fileId,
 							mimeType: file.mimeType,
-							modelTier: run.tierOcr,
+							fileSizeBytes: file.size,
 						});
+						const { stream, provider } = await streamFromProvider({
+							providerId: file.providerId,
+							workspaceId,
+							remoteId: file.remoteId,
+						});
+						const result = await (async () => {
+							try {
+								return await inferOcrStream({
+									stream,
+									fileName: file.name,
+									mimeType: file.mimeType,
+									modelTier: run.tierOcr,
+								});
+							} finally {
+								await provider.cleanup().catch(() => undefined);
+							}
+						})();
 						await db.insert(fileExtractedText).values({
 							fileId: file.id,
 							workspaceId,
@@ -183,14 +420,31 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 							language: result.language ?? null,
 							text: result.text,
 						});
+						logger.debug({
+							msg: "OCR inference stream completed",
+							runId,
+							fileId,
+							durationMs: Date.now() - startedAt,
+						});
 						ocrStatus = "completed";
 					} catch (error) {
 						ocrStatus = "failed";
 						ocrError = error instanceof Error ? error.message : String(error);
+						logger.warn({
+							msg: "OCR inference failed",
+							runId,
+							fileId,
+							error: toErrorDetails(error),
+						});
 					}
 				} else {
 					ocrStatus = "skipped";
 					ocrError = "inference_service_not_configured";
+					logger.warn({
+						msg: "Skipping OCR inference: AI inference URL not configured",
+						runId,
+						fileId,
+					});
 				}
 			} else if (isTextMime(file.mimeType)) {
 				await db.insert(fileExtractedText).values({
@@ -210,12 +464,31 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 			if (isImageMime(file.mimeType)) {
 				if (env.AI_INFERENCE_URL) {
 					try {
-						const result = await inferObjects({
-							fileId: file.id,
-							fileName: file.name,
+						const startedAt = Date.now();
+						logger.debug({
+							msg: "Starting object inference stream",
+							runId,
+							fileId,
 							mimeType: file.mimeType,
-							modelTier: run.tierObject,
+							fileSizeBytes: file.size,
 						});
+						const { stream, provider } = await streamFromProvider({
+							providerId: file.providerId,
+							workspaceId,
+							remoteId: file.remoteId,
+						});
+						const result = await (async () => {
+							try {
+								return await inferObjectsStream({
+									stream,
+									fileName: file.name,
+									mimeType: file.mimeType,
+									modelTier: run.tierObject,
+								});
+							} finally {
+								await provider.cleanup().catch(() => undefined);
+							}
+						})();
 
 						if (result.objects.length === 0) {
 							objectStatus = "completed";
@@ -233,14 +506,32 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 							}
 							objectStatus = "completed";
 						}
+						logger.debug({
+							msg: "Object inference stream completed",
+							runId,
+							fileId,
+							durationMs: Date.now() - startedAt,
+							objectCount: result.objects.length,
+						});
 					} catch (error) {
 						objectStatus = "failed";
 						objectError =
 							error instanceof Error ? error.message : String(error);
+						logger.warn({
+							msg: "Object inference failed",
+							runId,
+							fileId,
+							error: toErrorDetails(error),
+						});
 					}
 				} else {
 					objectStatus = "skipped";
 					objectError = "inference_service_not_configured";
+					logger.warn({
+						msg: "Skipping object inference: AI inference URL not configured",
+						runId,
+						fileId,
+					});
 				}
 			} else {
 				objectStatus = "skipped";
@@ -272,6 +563,18 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				.where(eq(fileAnalysisRuns.id, runId));
 
 			await refreshWorkspaceAiProgress(db, workspaceId);
+			if (runStatus === "failed") {
+				logger.error({
+					msg: "File analysis run failed",
+					jobId: job.id,
+					runId,
+					workspaceId,
+					fileId,
+					embeddingError,
+					ocrError,
+					objectError,
+				});
+			}
 			logger.info({
 				msg: "File analysis job completed",
 				jobId: job.id,
@@ -295,11 +598,19 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 			msg: "File analysis worker job failed",
 			jobId: job?.id,
 			runId: job?.data.runId,
+			error: toErrorDetails(error),
+		});
+	});
+	analysisWorker.on("error", (error) => {
+		logger.error({
+			msg: "File analysis worker error",
 			error: error.message,
 		});
 	});
 
 	logger.info("File analysis worker started");
+	void ensureAnalysisQueueActive();
+	void recoverPendingRuns();
 
 	return analysisWorker;
 }

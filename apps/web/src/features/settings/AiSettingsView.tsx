@@ -4,6 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
 	Select,
 	SelectContent,
@@ -18,8 +30,11 @@ import {
 } from "@/shared/api/activity";
 import {
 	getActiveWorkspaceId,
+	WORKSPACE_AI_PROGRESS_UPDATED_SUBSCRIPTION,
+	useDeleteWorkspaceAiData,
 	usePrepareWorkspaceAiModels,
 	useStartWorkspaceAiProcessing,
+	useStopWorkspaceAiProcessing,
 	useUpdateWorkspaceAiSettings,
 	useWorkspaceAiProgress,
 	useWorkspaceAiSettings,
@@ -28,7 +43,11 @@ import {
 } from "@/features/workspaces";
 import { AnalysisModelTier, WorkspaceMemberRole } from "@/gql/graphql";
 
-const TIER_OPTIONS: AnalysisModelTier[] = [AnalysisModelTier.Medium];
+const TIER_OPTIONS: AnalysisModelTier[] = [
+	AnalysisModelTier.Lightweight,
+	AnalysisModelTier.Medium,
+	AnalysisModelTier.Heavy,
+];
 
 function formatDate(value: string) {
 	const date = new Date(value);
@@ -71,6 +90,8 @@ export function AiSettingsView() {
 	const [prepareModelsResult, prepareModels] = usePrepareWorkspaceAiModels();
 	const [startProcessingResult, startProcessing] =
 		useStartWorkspaceAiProcessing();
+	const [stopProcessingResult, stopProcessing] = useStopWorkspaceAiProcessing();
+	const [deleteAiDataResult, deleteAiData] = useDeleteWorkspaceAiData();
 	const [{ data: activeJobsData }] = useQuery({
 		query: ACTIVE_JOBS_QUERY,
 		pause: !workspaceId,
@@ -79,26 +100,40 @@ export function AiSettingsView() {
 		query: JOB_UPDATED_SUBSCRIPTION,
 		pause: !workspaceId,
 	});
+	const [{ data: aiProgressSubData }] = useSubscription({
+		query: WORKSPACE_AI_PROGRESS_UPDATED_SUBSCRIPTION,
+		variables: { workspaceId },
+		pause: !workspaceId,
+	});
 
 	const settings = settingsResult.data?.workspaceAiSettings;
-	const progress = progressResult.data?.workspaceAiProgress;
+	const progress =
+		aiProgressSubData?.workspaceAiProgressUpdated ??
+		progressResult.data?.workspaceAiProgress;
+	const isProcessingActive =
+		(progress?.pendingFiles ?? 0) > 0 || (progress?.runningFiles ?? 0) > 0;
+	const isFullyProcessed = (progress?.completionPct ?? 0) >= 100;
+	const hasAiData =
+		(progress?.pendingFiles ?? 0) +
+			(progress?.runningFiles ?? 0) +
+			(progress?.completedFiles ?? 0) +
+			(progress?.failedFiles ?? 0) +
+			(progress?.skippedFiles ?? 0) >
+		0;
 
 	const [embeddingTier, setEmbeddingTier] = useState<AnalysisModelTier>(
 		AnalysisModelTier.Medium,
 	);
-	const [ocrTier, setOcrTier] = useState<AnalysisModelTier>(
-		AnalysisModelTier.Medium,
-	);
-	const [objectTier, setObjectTier] = useState<AnalysisModelTier>(
-		AnalysisModelTier.Medium,
-	);
 	const [maxConcurrency, setMaxConcurrency] = useState("2");
+	const requiresModelDownload = Boolean(
+		(settings?.embeddingTier && settings.embeddingTier !== embeddingTier) ||
+			(settings?.ocrTier && settings.ocrTier !== embeddingTier) ||
+			(settings?.objectTier && settings.objectTier !== embeddingTier),
+	);
 
 	useEffect(() => {
 		if (!settings) return;
 		setEmbeddingTier(settings.embeddingTier);
-		setOcrTier(settings.ocrTier);
-		setObjectTier(settings.objectTier);
 		setMaxConcurrency(String(settings.maxConcurrency));
 	}, [settings]);
 
@@ -147,6 +182,17 @@ export function AiSettingsView() {
 
 	const handleDownloadModels = async () => {
 		if (!workspaceId || !canManageWorkspace) return;
+		const persisted = await updateSettings({
+			input: {
+				workspaceId,
+				embeddingTier,
+				ocrTier: embeddingTier,
+				objectTier: embeddingTier,
+			},
+		});
+		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) {
+			return;
+		}
 		const result = await prepareModels({ workspaceId });
 		if (result.error || !result.data?.prepareWorkspaceAiModels) {
 			return;
@@ -166,8 +212,8 @@ export function AiSettingsView() {
 			input: {
 				workspaceId,
 				embeddingTier,
-				ocrTier,
-				objectTier,
+				ocrTier: embeddingTier,
+				objectTier: embeddingTier,
 				maxConcurrency: parsedConcurrency,
 			},
 		});
@@ -189,6 +235,41 @@ export function AiSettingsView() {
 		reexecuteProgress({ requestPolicy: "network-only" });
 	};
 
+	const handleStopProcessing = async () => {
+		if (!workspaceId || !canManageWorkspace) return;
+		const result = await stopProcessing({ workspaceId });
+		if (result.error || !result.data?.stopWorkspaceAiProcessing) {
+			return;
+		}
+		reexecuteSettings({ requestPolicy: "network-only" });
+		reexecuteProgress({ requestPolicy: "network-only" });
+	};
+
+	const handleToggleAiProcessing = async (enabled: boolean) => {
+		if (!workspaceId || !canManageWorkspace) return;
+		const result = await updateSettings({
+			input: {
+				workspaceId,
+				enabled,
+			},
+		});
+		if (result.error || !result.data?.updateWorkspaceAiSettings) {
+			return;
+		}
+		reexecuteSettings({ requestPolicy: "network-only" });
+		reexecuteProgress({ requestPolicy: "network-only" });
+	};
+
+	const handleDeleteAiData = async () => {
+		if (!workspaceId || !canManageWorkspace) return;
+		const result = await deleteAiData({ workspaceId });
+		if (result.error || !result.data?.deleteWorkspaceAiData) {
+			return;
+		}
+		reexecuteSettings({ requestPolicy: "network-only" });
+		reexecuteProgress({ requestPolicy: "network-only" });
+	};
+
 	if (!activeWorkspace) {
 		return (
 			<div className="space-y-2">
@@ -200,6 +281,23 @@ export function AiSettingsView() {
 
 	return (
 		<div className="space-y-8">
+			<section className="space-y-4">
+				<div className="flex items-center justify-between gap-4">
+					<div className="space-y-1">
+						<h3 className="text-lg font-medium">AI Processing</h3>
+						<p className="text-sm text-muted-foreground">
+							Turn AI processing on or off for this workspace.
+						</p>
+					</div>
+					<Switch
+						checked={Boolean(settings?.enabled)}
+						disabled={!canManageWorkspace || updateSettingsResult.fetching}
+						onCheckedChange={handleToggleAiProcessing}
+					/>
+				</div>
+			</section>
+			<Separator />
+
 			{hasModelsReady ? (
 				<section className="space-y-4">
 					<div className="space-y-1">
@@ -226,6 +324,34 @@ export function AiSettingsView() {
 							}
 						>
 							Refresh
+						</Button>
+					</div>
+					<div className="flex gap-2">
+						<Button
+							variant="outline"
+							onClick={handleStartProcessing}
+							disabled={
+								!canManageWorkspace ||
+								startProcessingResult.fetching ||
+								!settings?.enabled ||
+								!hasModelsReady ||
+								Boolean(requiresModelDownload) ||
+								isFullyProcessed ||
+								isProcessingActive
+							}
+						>
+							Start processing
+						</Button>
+						<Button
+							variant="outline"
+							onClick={handleStopProcessing}
+							disabled={
+								!canManageWorkspace ||
+								stopProcessingResult.fetching ||
+								!isProcessingActive
+							}
+						>
+							Stop processing
 						</Button>
 					</div>
 
@@ -292,21 +418,9 @@ export function AiSettingsView() {
 					</div>
 				) : (
 					<>
-						<div className="flex items-center justify-between">
-							<div className="space-y-1">
-								<Label>AI processing</Label>
-								<p className="text-xs text-muted-foreground">
-									Use start processing to enqueue analysis for eligible files.
-								</p>
-							</div>
-							<Badge variant={settings?.enabled ? "default" : "secondary"}>
-								{settings?.enabled ? "Enabled" : "Disabled"}
-							</Badge>
-						</div>
-
 						<div className="grid gap-4 md:grid-cols-2">
 							<div className="space-y-2">
-								<Label>Embeddings tier</Label>
+								<Label>Model size</Label>
 								<Select
 									value={embeddingTier}
 									onValueChange={(value) =>
@@ -326,74 +440,73 @@ export function AiSettingsView() {
 									</SelectContent>
 								</Select>
 							</div>
-							<div className="space-y-2">
-								<Label>OCR tier</Label>
-								<Select
-									value={ocrTier}
-									onValueChange={(value) =>
-										setOcrTier(value as AnalysisModelTier)
-									}
-									disabled={!canManageWorkspace}
-								>
-									<SelectTrigger>
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{TIER_OPTIONS.map((tier) => (
-											<SelectItem key={tier} value={tier}>
-												{tier}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-							<div className="space-y-2">
-								<Label>Object detection tier</Label>
-								<Select
-									value={objectTier}
-									onValueChange={(value) =>
-										setObjectTier(value as AnalysisModelTier)
-									}
-									disabled={!canManageWorkspace}
-								>
-									<SelectTrigger>
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{TIER_OPTIONS.map((tier) => (
-											<SelectItem key={tier} value={tier}>
-												{tier}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-							<div className="space-y-2">
-								<Label>Max concurrency</Label>
-								<input
-									className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-									value={maxConcurrency}
-									onChange={(event) => setMaxConcurrency(event.target.value)}
-									disabled={!canManageWorkspace}
-									inputMode="numeric"
-								/>
-							</div>
+						</div>
+
+						<div className="space-y-2 max-w-md">
+							<Label>Max concurrency</Label>
+							<input
+								className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+								value={maxConcurrency}
+								onChange={(event) => setMaxConcurrency(event.target.value)}
+								disabled={!canManageWorkspace}
+								inputMode="numeric"
+							/>
 						</div>
 
 						<div className="flex gap-2">
 							<Button
 								onClick={handleSave}
-								disabled={!canManageWorkspace || updateSettingsResult.fetching}
+								disabled={
+									!canManageWorkspace ||
+									updateSettingsResult.fetching ||
+									requiresModelDownload
+								}
 							>
 								Save AI settings
 							</Button>
-							<Button
-								variant="outline"
-								onClick={handleStartProcessing}
-								disabled={!canManageWorkspace || startProcessingResult.fetching}
-							>
-								Start processing
-							</Button>
+							{requiresModelDownload ? (
+								<Button
+									variant="outline"
+									onClick={handleDownloadModels}
+									disabled={!canManageWorkspace || prepareModelsResult.fetching}
+								>
+									Download selected model
+								</Button>
+							) : null}
+							<AlertDialog>
+								<AlertDialogTrigger asChild>
+									<Button
+										variant="destructive"
+										disabled={
+											!canManageWorkspace ||
+											deleteAiDataResult.fetching ||
+											isProcessingActive ||
+											!hasAiData
+										}
+									>
+										Delete AI data
+									</Button>
+								</AlertDialogTrigger>
+								<AlertDialogContent>
+									<AlertDialogHeader>
+										<AlertDialogTitle>Delete AI data?</AlertDialogTitle>
+										<AlertDialogDescription>
+											This will remove all AI analysis results for this
+											workspace, including embeddings, OCR text, detected
+											objects, and analysis run history.
+										</AlertDialogDescription>
+									</AlertDialogHeader>
+									<AlertDialogFooter>
+										<AlertDialogCancel>Cancel</AlertDialogCancel>
+										<AlertDialogAction
+											variant="destructive"
+											onClick={handleDeleteAiData}
+										>
+											Delete
+										</AlertDialogAction>
+									</AlertDialogFooter>
+								</AlertDialogContent>
+							</AlertDialog>
 						</div>
 					</>
 				)}

@@ -31,3 +31,17 @@ export function isEligibleForAiAnalysis(mimeType: string): boolean {
 
 	return false;
 }
+
+export function resolveMaxFileSizeMb(
+	config: Record<string, unknown> | null | undefined,
+	fallbackMb: number,
+): number {
+	const fromConfig =
+		typeof config?.maxFileSizeMb === "number"
+			? config.maxFileSizeMb
+			: typeof config?.maxFileSizeMb === "string"
+				? Number.parseFloat(config.maxFileSizeMb)
+				: Number.NaN;
+	if (!Number.isNaN(fromConfig) && fromConfig > 0) return fromConfig;
+	return fallbackMb;
+}

@@ -9,7 +9,11 @@ import {
 	getWorkspaceAiProgress,
 	updateWorkspaceAiSettings,
 } from "../../services/ai/ai-settings";
-import { enqueueWorkspaceBackfill } from "../../services/ai/analysis-jobs";
+import {
+	deleteWorkspaceAiData,
+	enqueueWorkspaceBackfill,
+	stopWorkspaceAiProcessing,
+} from "../../services/ai/analysis-jobs";
 import { scheduleModelPreparation } from "../../services/ai/model-download";
 import { getWorkspaceStats } from "../../services/workspace/workspace-stats";
 import {
@@ -26,6 +30,7 @@ import { AnalysisModelTier } from "../generated/types";
 import type {
 	MutationResolvers,
 	QueryResolvers,
+	SubscriptionResolvers,
 	WorkspaceColor,
 	WorkspaceAiProgress as WorkspaceAiProgressType,
 	WorkspaceAiSettings as WorkspaceAiSettingsType,
@@ -37,6 +42,7 @@ import type {
 	WorkspaceResolvers,
 	Workspace as WorkspaceType,
 } from "../generated/types";
+import { type PubSubChannels, pubSub } from "../pubsub";
 import { requireAuth } from "./auth-helpers";
 
 function toWorkspaceType(workspace: {
@@ -106,6 +112,7 @@ function toWorkspaceAiSettingsType(settings: {
 	objectTier: "lightweight" | "medium" | "heavy";
 	modelsReady: boolean;
 	maxConcurrency: number;
+	config: Record<string, unknown>;
 	updatedAt: Date;
 }): WorkspaceAiSettingsType {
 	return {
@@ -116,6 +123,7 @@ function toWorkspaceAiSettingsType(settings: {
 		ocrTier: toAnalysisModelTier(settings.ocrTier),
 		objectTier: toAnalysisModelTier(settings.objectTier),
 		maxConcurrency: settings.maxConcurrency,
+		config: settings.config,
 		updatedAt: settings.updatedAt,
 	};
 }
@@ -329,6 +337,7 @@ export const workspaceMutations: MutationResolvers = {
 				ocrTier: fromAnalysisModelTier(args.input.ocrTier),
 				objectTier: fromAnalysisModelTier(args.input.objectTier),
 				maxConcurrency: args.input.maxConcurrency ?? undefined,
+				config: args.input.config ?? undefined,
 			},
 		);
 
@@ -381,6 +390,28 @@ export const workspaceMutations: MutationResolvers = {
 		return true;
 	},
 
+	stopWorkspaceAiProcessing: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+		]);
+
+		await stopWorkspaceAiProcessing(context.db, args.workspaceId);
+		return true;
+	},
+
+	deleteWorkspaceAiData: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+		]);
+
+		await deleteWorkspaceAiData(context.db, args.workspaceId);
+		return true;
+	},
+
 	removeWorkspaceMember: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
@@ -402,6 +433,24 @@ export const workspaceMutations: MutationResolvers = {
 
 export const workspaceResolvers: WorkspaceResolvers = {
 	color: (parent) => parent.color.toUpperCase() as never,
+};
+
+export const workspaceSubscriptions: SubscriptionResolvers = {
+	workspaceAiProgressUpdated: {
+		subscribe: async (_parent, args, context) => {
+			const user = requireAuth(context);
+			await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+				"owner",
+				"admin",
+				"editor",
+				"viewer",
+			]);
+			return pubSub.subscribe("workspaceAiProgressUpdated", args.workspaceId);
+		},
+		resolve: (
+			payload: PubSubChannels["workspaceAiProgressUpdated"][1],
+		): WorkspaceAiProgressType => toWorkspaceAiProgressType(payload),
+	},
 };
 
 export const workspaceMemberResolvers: WorkspaceMemberResolvers = {

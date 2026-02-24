@@ -8,8 +8,10 @@ import {
 	type analysisModelTierEnum,
 } from "@drivebase/db";
 import { and, desc, eq, isNull } from "drizzle-orm";
+import { env } from "../../config/env";
+import { pubSub } from "../../graphql/pubsub";
 import { logger } from "../../utils/logger";
-import { isEligibleForAiAnalysis } from "./ai-support";
+import { isEligibleForAiAnalysis, resolveMaxFileSizeMb } from "./ai-support";
 
 type AnalysisModelTier = (typeof analysisModelTierEnum.enumValues)[number];
 
@@ -19,6 +21,7 @@ export interface WorkspaceAiSettingsInput {
 	ocrTier?: AnalysisModelTier;
 	objectTier?: AnalysisModelTier;
 	maxConcurrency?: number;
+	config?: Record<string, unknown>;
 }
 
 export async function getOrCreateWorkspaceAiSettings(
@@ -60,6 +63,7 @@ export async function updateWorkspaceAiSettings(
 			ocrTier: input.ocrTier ?? existing.ocrTier,
 			objectTier: input.objectTier ?? existing.objectTier,
 			maxConcurrency: input.maxConcurrency ?? existing.maxConcurrency,
+			config: input.config ?? existing.config,
 			updatedAt: new Date(),
 		})
 		.where(eq(workspaceAiSettings.workspaceId, workspaceId))
@@ -80,6 +84,7 @@ export async function refreshWorkspaceAiProgress(
 		.select({
 			id: files.id,
 			mimeType: files.mimeType,
+			size: files.size,
 		})
 		.from(files)
 		.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
@@ -92,10 +97,23 @@ export async function refreshWorkspaceAiProgress(
 			),
 		);
 
+	const [settings] = await db
+		.select()
+		.from(workspaceAiSettings)
+		.where(eq(workspaceAiSettings.workspaceId, workspaceId))
+		.limit(1);
+	const maxSizeMb = resolveMaxFileSizeMb(
+		settings?.config,
+		Number.parseFloat(env.AI_MAX_FILE_SIZE_MB) || 50,
+	);
+	const maxBytes = Math.floor(maxSizeMb * 1024 * 1024);
+
+	const eligibleFileIds = new Set<string>();
 	let eligibleFiles = 0;
 	for (const row of fileRows) {
-		if (isEligibleForAiAnalysis(row.mimeType)) {
+		if (isEligibleForAiAnalysis(row.mimeType) && row.size <= maxBytes) {
 			eligibleFiles += 1;
+			eligibleFileIds.add(row.id);
 		}
 	}
 
@@ -117,6 +135,9 @@ export async function refreshWorkspaceAiProgress(
 
 	const latestByFile = new Map<string, (typeof runRows)[number]["status"]>();
 	for (const row of runRows) {
+		if (!eligibleFileIds.has(row.fileId)) {
+			continue;
+		}
 		if (!latestByFile.has(row.fileId)) {
 			latestByFile.set(row.fileId, row.status);
 		}
@@ -166,6 +187,7 @@ export async function refreshWorkspaceAiProgress(
 		if (!created) {
 			throw new Error("Failed to create workspace AI progress");
 		}
+		await pubSub.publish("workspaceAiProgressUpdated", workspaceId, created);
 
 		return created;
 	}
@@ -189,19 +211,7 @@ export async function refreshWorkspaceAiProgress(
 	if (!updated) {
 		throw new Error("Failed to update workspace AI progress");
 	}
-
-	logger.debug({
-		msg: "Workspace AI progress refreshed",
-		workspaceId,
-		eligibleFiles,
-		processedFiles,
-		pendingFiles: aggregate.pendingFiles,
-		runningFiles: aggregate.runningFiles,
-		failedFiles: aggregate.failedFiles,
-		skippedFiles: aggregate.skippedFiles,
-		completedFiles: aggregate.completedFiles,
-		completionPct,
-	});
+	await pubSub.publish("workspaceAiProgressUpdated", workspaceId, updated);
 
 	return updated;
 }

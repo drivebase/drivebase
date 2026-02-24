@@ -1,5 +1,6 @@
 import { Queue } from "bullmq";
 import { createBullMQConnection } from "../redis/client";
+import { logger } from "../utils/logger";
 
 export interface FileAnalysisJobData {
 	runId: string;
@@ -26,6 +27,27 @@ export function getAnalysisQueue(): Queue<FileAnalysisJobData> {
 	}
 
 	return analysisQueue;
+}
+
+export async function cancelWorkspaceAnalysisJobs(
+	workspaceId: string,
+): Promise<number> {
+	const queue = getAnalysisQueue();
+	const jobs = await queue.getJobs(["waiting", "delayed", "prioritized"]);
+	let removed = 0;
+	for (const job of jobs) {
+		if (job.data.workspaceId !== workspaceId) {
+			continue;
+		}
+		await job.remove();
+		removed += 1;
+	}
+	logger.info({
+		msg: "Cancelled queued workspace analysis jobs",
+		workspaceId,
+		removed,
+	});
+	return removed;
 }
 
 export async function closeAnalysisQueue(): Promise<void> {

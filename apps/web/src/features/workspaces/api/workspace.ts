@@ -110,6 +110,7 @@ export const WORKSPACE_AI_SETTINGS_QUERY = graphql(`
       ocrTier
       objectTier
       maxConcurrency
+      config
       updatedAt
     }
   }
@@ -118,6 +119,23 @@ export const WORKSPACE_AI_SETTINGS_QUERY = graphql(`
 export const WORKSPACE_AI_PROGRESS_QUERY = graphql(`
   query GetWorkspaceAiProgress($workspaceId: ID!) {
     workspaceAiProgress(workspaceId: $workspaceId) {
+      workspaceId
+      eligibleFiles
+      processedFiles
+      pendingFiles
+      runningFiles
+      failedFiles
+      skippedFiles
+      completedFiles
+      completionPct
+      updatedAt
+    }
+  }
+`);
+
+export const WORKSPACE_AI_PROGRESS_UPDATED_SUBSCRIPTION = graphql(`
+  subscription WorkspaceAiProgressUpdated($workspaceId: ID!) {
+    workspaceAiProgressUpdated(workspaceId: $workspaceId) {
       workspaceId
       eligibleFiles
       processedFiles
@@ -142,6 +160,7 @@ export const UPDATE_WORKSPACE_AI_SETTINGS_MUTATION = graphql(`
       ocrTier
       objectTier
       maxConcurrency
+      config
       updatedAt
     }
   }
@@ -156,6 +175,18 @@ export const PREPARE_WORKSPACE_AI_MODELS_MUTATION = graphql(`
 export const START_WORKSPACE_AI_PROCESSING_MUTATION = graphql(`
   mutation StartWorkspaceAiProcessing($workspaceId: ID!) {
     startWorkspaceAiProcessing(workspaceId: $workspaceId)
+  }
+`);
+
+export const STOP_WORKSPACE_AI_PROCESSING_MUTATION = graphql(`
+  mutation StopWorkspaceAiProcessing($workspaceId: ID!) {
+    stopWorkspaceAiProcessing(workspaceId: $workspaceId)
+  }
+`);
+
+export const DELETE_WORKSPACE_AI_DATA_MUTATION = graphql(`
+  mutation DeleteWorkspaceAiData($workspaceId: ID!) {
+    deleteWorkspaceAiData(workspaceId: $workspaceId)
   }
 `);
 
