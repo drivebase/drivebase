@@ -4,13 +4,20 @@ import { files, folders, getDb } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { and, eq } from "drizzle-orm";
 import { env } from "../config/env";
-import { createBullMQConnection } from "../redis/client";
+import { createBullMQConnection, getRedis } from "../redis/client";
 import { ActivityService } from "../services/activity";
 import { ProviderService } from "../services/provider";
 import { logger } from "../utils/logger";
 import type { ProviderTransferJobData } from "./transfer-queue";
 
 const DEFAULT_TRANSFER_CHUNK_SIZE = 8 * 1024 * 1024;
+
+class TransferCancelledError extends Error {
+	constructor() {
+		super("Transfer cancelled");
+		this.name = "TransferCancelledError";
+	}
+}
 
 interface TransferManifest {
 	fileId: string;
@@ -30,6 +37,10 @@ let transferWorker: Worker<ProviderTransferJobData> | null = null;
 
 function getTransferCacheRoot(): string {
 	return env.TRANSFER_CACHE_DIR ?? join(env.DATA_DIR, "transfers");
+}
+
+function getTransferCancelKey(jobId: string): string {
+	return `transfer:cancel:${jobId}`;
 }
 
 function clampProgress(value: number): number {
@@ -81,6 +92,14 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 			const providerService = new ProviderService(db);
 			const { jobId, workspaceId, userId, fileId, targetProviderId } =
 				bullJob.data;
+			const redis = getRedis();
+
+			const assertNotCancelled = async () => {
+				const cancelled = await redis.get(getTransferCancelKey(jobId));
+				if (cancelled) {
+					throw new TransferCancelledError();
+				}
+			};
 
 			let sourceProvider: Awaited<
 				ReturnType<ProviderService["getProviderInstance"]>
@@ -103,6 +122,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 								: 1,
 					},
 				});
+				await assertNotCancelled();
 
 				const [file] = await db
 					.select()
@@ -125,6 +145,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				const manifestPath = join(transferDir, "manifest.json");
 
 				await mkdir(transferDir, { recursive: true });
+				await assertNotCancelled();
 
 				const sourceRecord = await providerService.getProvider(
 					file.providerId,
@@ -175,6 +196,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 
 					try {
 						while (true) {
+							await assertNotCancelled();
 							const { done, value } = await reader.read();
 							if (done) break;
 							if (!value) continue;
@@ -289,6 +311,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					);
 
 					for (let partNumber = 1; partNumber <= partCount; partNumber += 1) {
+						await assertNotCancelled();
 						if (uploadedParts.has(partNumber)) {
 							continue;
 						}
@@ -336,6 +359,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 						});
 					}
 
+					await assertNotCancelled();
 					await targetProvider.completeMultipartUpload(
 						manifest.multipart.uploadId,
 						manifest.multipart.remoteId,
@@ -398,6 +422,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					const readableStream = Bun.file(cachedFilePath)
 						.stream()
 						.pipeThrough(progressStream);
+					await assertNotCancelled();
 					const maybeRemoteId = await targetProvider.uploadFile(
 						uploadResponse.fileId,
 						readableStream,
@@ -411,6 +436,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					remoteId: file.remoteId,
 					isFolder: false,
 				});
+				await assertNotCancelled();
 
 				const [updated] = await db
 					.update(files)
@@ -430,6 +456,17 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				await rm(transferDir, { recursive: true, force: true });
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
+				if (error instanceof TransferCancelledError) {
+					await activityService.update(jobId, {
+						status: "error",
+						message: "Transfer cancelled",
+						metadata: {
+							phase: "cancelled",
+							cancelled: true,
+						},
+					});
+					return;
+				}
 				const currentAttempt = bullJob.attemptsMade + 1;
 				const maxAttempts =
 					typeof bullJob.opts.attempts === "number" ? bullJob.opts.attempts : 1;
@@ -473,6 +510,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				}
 				throw error;
 			} finally {
+				await redis.del(getTransferCancelKey(jobId)).catch(() => {});
 				if (sourceProvider) {
 					await sourceProvider.cleanup().catch(() => {});
 				}

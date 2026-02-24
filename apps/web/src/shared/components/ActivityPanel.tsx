@@ -7,9 +7,13 @@ import {
 	Loader2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { useMutation } from "urql";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { JobStatus, type Job } from "@/gql/graphql";
+import { CANCEL_TRANSFER_JOB_MUTATION } from "@/shared/api/activity";
+import { confirmDialog } from "@/shared/lib/confirmDialog";
 import { useActivityStore } from "@/shared/store/activityStore";
 
 function getStatusIcon(status: JobStatus) {
@@ -67,6 +71,10 @@ function getRetryLabel(job: Job): string | null {
 
 export function ActivityPanel() {
 	const [expanded, setExpanded] = useState(true);
+	const [cancellingJobIds, setCancellingJobIds] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [, cancelTransferJob] = useMutation(CANCEL_TRANSFER_JOB_MUTATION);
 	const jobsMap = useActivityStore((state) => state.jobs);
 	const clearCompleted = useActivityStore((state) => state.clearCompleted);
 
@@ -100,6 +108,36 @@ export function ActivityPanel() {
 			</button>
 		);
 	}
+
+	const handleCancelTransfer = async (job: Job) => {
+		const confirmed = await confirmDialog(
+			"Cancel transfer",
+			`Cancel "${job.title}"? This will stop the provider transfer.`,
+		);
+		if (!confirmed) return;
+
+		setCancellingJobIds((prev) => {
+			const next = new Set(prev);
+			next.add(job.id);
+			return next;
+		});
+		try {
+			const result = await cancelTransferJob({ jobId: job.id });
+			if (result.error || !result.data?.cancelTransferJob) {
+				throw new Error(result.error?.message ?? "Failed to cancel transfer");
+			}
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to cancel transfer",
+			);
+		} finally {
+			setCancellingJobIds((prev) => {
+				const next = new Set(prev);
+				next.delete(job.id);
+				return next;
+			});
+		}
+	};
 
 	return (
 		<div className="fixed right-6 bottom-6 z-50 w-96 border bg-background shadow-2xl">
@@ -138,7 +176,21 @@ export function ActivityPanel() {
 										{job.message ?? getStatusLabel(job)}
 									</div>
 								</div>
-								<div className="shrink-0">{getStatusIcon(job.status)}</div>
+								<div className="shrink-0 flex items-center gap-2">
+									{job.type === "provider_transfer" &&
+									(job.status === JobStatus.Pending ||
+										job.status === JobStatus.Running) ? (
+										<Button
+											size="sm"
+											variant="outline"
+											onClick={() => void handleCancelTransfer(job)}
+											disabled={cancellingJobIds.has(job.id)}
+										>
+											Cancel
+										</Button>
+									) : null}
+									{getStatusIcon(job.status)}
+								</div>
 							</div>
 							<Progress
 								value={progress}

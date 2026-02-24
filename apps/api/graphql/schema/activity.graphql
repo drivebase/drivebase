@@ -58,6 +58,13 @@ extend type Query {
 	activeJobs: [Job!]!
 }
 
+extend type Mutation {
+	"""
+	Cancel a queued or running provider transfer job
+	"""
+	cancelTransferJob(jobId: ID!): Boolean!
+}
+
 """
 Job status for trackable long-running operations
 """

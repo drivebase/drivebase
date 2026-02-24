@@ -59,3 +59,9 @@ export const JOB_UPDATED_SUBSCRIPTION = graphql(`
     }
   }
 `);
+
+export const CANCEL_TRANSFER_JOB_MUTATION = graphql(`
+  mutation CancelTransferJob($jobId: ID!) {
+    cancelTransferJob(jobId: $jobId)
+  }
+`);

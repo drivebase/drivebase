@@ -7,7 +7,10 @@ import {
 import type { Database } from "@drivebase/db";
 import { files, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { getTransferQueue } from "../../queue/transfer-queue";
+import {
+	buildTransferQueueJobId,
+	getTransferQueue,
+} from "../../queue/transfer-queue";
 import { getPublicApiBaseUrl } from "../../config/url";
 import { logger } from "../../utils/logger";
 import { ActivityService } from "../activity";
@@ -389,7 +392,7 @@ export async function moveFileToProvider(
 				targetProviderId,
 			},
 			{
-				jobId: `file-transfer:${file.id}:${targetProviderId}`,
+				jobId: buildTransferQueueJobId(file.id, targetProviderId),
 			},
 		);
 

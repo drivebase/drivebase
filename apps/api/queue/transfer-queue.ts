@@ -9,6 +9,13 @@ export interface ProviderTransferJobData {
 	targetProviderId: string;
 }
 
+export function buildTransferQueueJobId(
+	fileId: string,
+	targetProviderId: string,
+): string {
+	return `file-transfer:${fileId}:${targetProviderId}`;
+}
+
 let transferQueue: Queue<ProviderTransferJobData> | null = null;
 
 export function getTransferQueue(): Queue<ProviderTransferJobData> {

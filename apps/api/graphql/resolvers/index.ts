@@ -1,5 +1,9 @@
 import type { Resolvers } from "../generated/types";
-import { activityQueries, activitySubscriptions } from "./activity";
+import {
+	activityMutations,
+	activityQueries,
+	activitySubscriptions,
+} from "./activity";
 import { authMutations, authQueries, authResponseResolvers } from "./auth";
 import {
 	fileMutations,
@@ -61,6 +65,7 @@ export const resolvers: Resolvers = {
 		...ruleMutations,
 		...metadataMutations,
 		...vaultMutations,
+		...activityMutations,
 
 		// Placeholder resolvers for permissions (TODO)
 		grantFolderAccess: async () => {
