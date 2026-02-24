@@ -2,6 +2,7 @@
 
 import { Activity, ArrowRight, Check, Copy, Terminal } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { useState } from "react";
 
 function Badge({
@@ -138,7 +139,7 @@ export function HeroSection() {
                 href="#"
                 className="w-full sm:w-auto"
               >
-                Get Started Free
+                Get Started
               </Button>
               <Button
                 variant="outline"
@@ -156,34 +157,7 @@ export function HeroSection() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="lg:col-span-5"
-          >
-            <div className="aspect-square border border-border bg-secondary/20 p-2 relative">
-              <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary" />
-              <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary" />
-              <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary" />
-              <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary" />
-
-              <div className="w-full h-full bg-background border border-border flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[length:100%_4px] pointer-events-none opacity-20" />
-
-                <div className="text-center space-y-6 relative z-10">
-                  <div className="w-32 h-32 mx-auto border border-muted-foreground/20 flex items-center justify-center relative">
-                    <div className="absolute inset-0 border border-border animate-[spin_10s_linear_infinite]" />
-                    <div className="absolute inset-2 border border-dashed border-border animate-[spin_15s_linear_infinite_reverse]" />
-                    <Activity className="w-10 h-10 text-primary" />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-foreground">
-                      All systems operational
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      99.99% uptime • 12ms latency
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          ></motion.div>
         </div>
       </div>
     </div>
