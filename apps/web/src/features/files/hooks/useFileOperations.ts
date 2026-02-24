@@ -1,5 +1,4 @@
 import { toast } from "sonner";
-import { useClient } from "urql";
 import {
 	useDeleteFile,
 	useMoveFileToProvider,
@@ -14,10 +13,8 @@ import {
 	useUnstarFolder,
 } from "@/features/files/hooks/useFolders";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
-import { ACTIVE_JOBS_QUERY } from "@/shared/api/activity";
 import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
 import { promptDialog } from "@/shared/lib/promptDialog";
-import { useActivityStore } from "@/shared/store/activityStore";
 
 interface UseFileOperationsOptions {
 	serverFiles: FileItemFragment[] | undefined;
@@ -32,8 +29,6 @@ export function useFileOperations({
 }: UseFileOperationsOptions) {
 	const fileList = useOptimisticList<FileItemFragment>(serverFiles);
 	const folderList = useOptimisticList<FolderItemFragment>(serverFolders);
-	const client = useClient();
-	const setJob = useActivityStore((state) => state.setJob);
 
 	const [, deleteFile] = useDeleteFile();
 	const [, deleteFolder] = useDeleteFolder();
@@ -44,21 +39,6 @@ export function useFileOperations({
 	const [, unstarFile] = useUnstarFile();
 	const [, starFolder] = useStarFolder();
 	const [, unstarFolder] = useUnstarFolder();
-
-	const refreshActiveJobs = async () => {
-		const result = await client
-			.query(
-				ACTIVE_JOBS_QUERY,
-				{},
-				{
-					requestPolicy: "network-only",
-				},
-			)
-			.toPromise();
-		for (const job of result.data?.activeJobs ?? []) {
-			setJob(job);
-		}
-	};
 
 	const handleToggleFileFavorite = async (file: FileItemFragment) => {
 		const currentStarred =
@@ -176,7 +156,6 @@ export function useFileOperations({
 		if (result.error) {
 			toast.error(`Failed to move: ${result.error.message}`);
 		} else {
-			await refreshActiveJobs();
 			onMutationComplete?.();
 		}
 	};

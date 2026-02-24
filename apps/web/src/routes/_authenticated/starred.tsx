@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
-import { useClient } from "urql";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { FileSystemTable } from "@/features/files/FileSystemTable";
 import {
@@ -20,9 +19,7 @@ import { useProviders } from "@/features/providers/hooks/useProviders";
 import { can, getActiveWorkspaceId } from "@/features/workspaces";
 import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
-import { ACTIVE_JOBS_QUERY } from "@/shared/api/activity";
 import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
-import { useActivityStore } from "@/shared/store/activityStore";
 
 export const Route = createFileRoute("/_authenticated/starred")({
 	component: StarredPage,
@@ -30,8 +27,6 @@ export const Route = createFileRoute("/_authenticated/starred")({
 
 function StarredPage() {
 	const navigate = useNavigate();
-	const client = useClient();
-	const setJob = useActivityStore((state) => state.setJob);
 	const { downloadFile, showDetails } = useFileActions();
 	const { data: providersData } = useProviders();
 	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
@@ -63,21 +58,6 @@ function StarredPage() {
 	const [, unstarFolder] = useUnstarFolder();
 	const [, moveFileToProvider] = useMoveFileToProvider();
 
-	const refreshActiveJobs = async () => {
-		const result = await client
-			.query(
-				ACTIVE_JOBS_QUERY,
-				{},
-				{
-					requestPolicy: "network-only",
-				},
-			)
-			.toPromise();
-		for (const job of result.data?.activeJobs ?? []) {
-			setJob(job);
-		}
-	};
-
 	const handleMoveFileToProvider = async (
 		file: FileItemFragment,
 		providerId: string,
@@ -89,7 +69,6 @@ function StarredPage() {
 			if (result.data?.moveFileToProvider) {
 				fileList.updateItem(file.id, result.data.moveFileToProvider);
 			}
-			await refreshActiveJobs();
 		}
 	};
 

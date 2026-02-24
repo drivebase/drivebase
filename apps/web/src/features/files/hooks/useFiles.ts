@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "urql";
+import { useClient, useMutation, useQuery } from "urql";
 import {
 	CONTENTS_QUERY,
 	DELETE_FILE_MUTATION,
@@ -14,6 +14,8 @@ import {
 	STARRED_FILES_QUERY,
 	UNSTAR_FILE_MUTATION,
 } from "@/features/files/api/file";
+import { ACTIVE_JOBS_QUERY } from "@/shared/api/activity";
+import { useActivityStore } from "@/shared/store/activityStore";
 
 export function useFiles(folderId?: string | null, limit = 50, offset = 0) {
 	const [result] = useQuery({
@@ -81,8 +83,30 @@ export function useMoveFile() {
 }
 
 export function useMoveFileToProvider() {
+	const client = useClient();
+	const setJob = useActivityStore((state) => state.setJob);
 	const [result, execute] = useMutation(MOVE_FILE_TO_PROVIDER_MUTATION);
-	return [result, execute] as const;
+	const executeWithActivityRefresh = async (
+		variables: Parameters<typeof execute>[0],
+	) => {
+		const mutationResult = await execute(variables);
+		if (!mutationResult.error) {
+			const activeJobsResult = await client
+				.query(
+					ACTIVE_JOBS_QUERY,
+					{},
+					{
+						requestPolicy: "network-only",
+					},
+				)
+				.toPromise();
+			for (const job of activeJobsResult.data?.activeJobs ?? []) {
+				setJob(job);
+			}
+		}
+		return mutationResult;
+	};
+	return [result, executeWithActivityRefresh] as const;
 }
 
 export function useDeleteFile() {
