@@ -89,6 +89,8 @@ export async function handleDownloadProxy(
 			.log({
 				type: "download",
 				userId: user.userId,
+				workspaceId,
+				bytes: file.size,
 				fileId: file.id,
 				providerId: file.providerId,
 				folderId: file.folderId ?? undefined,

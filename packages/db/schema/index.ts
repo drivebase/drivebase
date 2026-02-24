@@ -14,4 +14,5 @@ export * from "./upload-sessions";
 export * from "./users";
 export * from "./vaults";
 export * from "./workspace-memberships";
+export * from "./workspace-stats";
 export * from "./workspaces";

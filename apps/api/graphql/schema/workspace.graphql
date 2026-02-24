@@ -43,6 +43,25 @@ type WorkspaceInvite {
 	createdAt: DateTime!
 }
 
+type WorkspaceStatsBucket {
+	bucketStart: DateTime!
+	uploadedBytes: Float!
+	downloadedBytes: Float!
+	bandwidthBytes: Float!
+}
+
+type WorkspaceStats {
+	workspaceId: ID!
+	days: Int!
+	totalFiles: Float!
+	totalSizeBytes: Float!
+	totalProviders: Float!
+	uploadedBytes: Float!
+	downloadedBytes: Float!
+	bandwidthBytes: Float!
+	buckets: [WorkspaceStatsBucket!]!
+}
+
 extend type Query {
 	"""
 	Get current user's workspaces
@@ -58,6 +77,11 @@ extend type Query {
 	List active invites for a workspace
 	"""
 	workspaceInvites(workspaceId: ID!): [WorkspaceInvite!]!
+
+	"""
+	Get workspace storage and bandwidth stats
+	"""
+	workspaceStats(workspaceId: ID!, days: Int = 30): WorkspaceStats!
 }
 
 input CreateWorkspaceInput {

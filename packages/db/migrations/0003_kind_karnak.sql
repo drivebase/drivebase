@@ -1,0 +1,2 @@
+CREATE INDEX "activities_workspace_created_idx" ON "activities" USING btree ("workspace_id","created_at");--> statement-breakpoint
+CREATE INDEX "activities_workspace_type_created_idx" ON "activities" USING btree ("workspace_id","type","created_at");

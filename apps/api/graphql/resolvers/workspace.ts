@@ -4,6 +4,7 @@ import {
 	updateWorkspaceSyncOperationsToProvider,
 	updateWorkspaceName,
 } from "../../services/workspace/workspace";
+import { getWorkspaceStats } from "../../services/workspace/workspace-stats";
 import {
 	acceptWorkspaceInvite,
 	createWorkspaceInvite,
@@ -100,6 +101,17 @@ export const workspaceQueries: QueryResolvers = {
 			args.workspaceId,
 		);
 		return invites.map(toWorkspaceInviteType);
+	},
+
+	workspaceStats: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+			"editor",
+			"viewer",
+		]);
+		return getWorkspaceStats(context.db, args.workspaceId, args.days ?? 30);
 	},
 };
 

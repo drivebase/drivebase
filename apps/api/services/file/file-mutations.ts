@@ -98,6 +98,7 @@ export async function renameFile(
 		await activityService.log({
 			type: "update",
 			userId,
+			workspaceId,
 			fileId: updated.id,
 			providerId: updated.providerId,
 			folderId: updated.folderId ?? undefined,
@@ -228,6 +229,7 @@ export async function moveFile(
 		await activityService.log({
 			type: "move",
 			userId,
+			workspaceId,
 			fileId: updated.id,
 			providerId: updated.providerId,
 			folderId: updated.folderId ?? undefined,
@@ -293,6 +295,7 @@ export async function deleteFile(
 		await activityService.log({
 			type: "delete",
 			userId,
+			workspaceId,
 			fileId,
 			providerId: file.providerId,
 			folderId: file.folderId ?? undefined,

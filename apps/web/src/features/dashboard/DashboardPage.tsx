@@ -1,7 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { formatBytes } from "@drivebase/utils";
+import { Activity, ArrowRight, Files, HardDrive, Server } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDashboardStats } from "@/features/dashboard/hooks/useDashboardStats";
 import { FileTable } from "@/features/files/FileTable";
 import { FolderCard } from "@/features/files/FolderCard";
 import {
@@ -11,15 +13,55 @@ import {
 } from "@/features/files/hooks/useFiles";
 import { useStarredFolders } from "@/features/files/hooks/useFolders";
 import { useFileActions } from "@/features/files/useFileActions";
+import { getActiveWorkspaceId, useWorkspaces } from "@/features/workspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 
 export function DashboardPage() {
+	const [workspacesResult] = useWorkspaces(false);
+	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
+	const activeWorkspace =
+		workspacesResult.data?.workspaces?.find(
+			(workspace) => workspace.id === activeWorkspaceId,
+		) ?? workspacesResult.data?.workspaces?.[0];
+	const workspaceId = activeWorkspace?.id ?? "";
+	const [statsResult] = useDashboardStats(workspaceId, !workspaceId);
 	const { data: starredData, fetching: starredFetching } = useStarredFolders();
 	const { data: filesData, fetching: filesFetching } = useFiles(null, 10); // Fetch recent files (limit 10)
 	const [, starFile] = useStarFile();
 	const [, unstarFile] = useUnstarFile();
 	const { downloadFile, showDetails } = useFileActions();
 	const navigate = useNavigate();
+	const stats = statsResult.data?.workspaceStats;
+	const statCards = [
+		{
+			id: "total-files",
+			title: "Total Files",
+			value: stats ? stats.totalFiles.toLocaleString() : "0",
+			icon: Files,
+			iconClassName: "bg-cyan-500/15 text-cyan-700",
+		},
+		{
+			id: "total-size",
+			title: "Total Size",
+			value: stats ? formatBytes(stats.totalSizeBytes) : formatBytes(0),
+			icon: HardDrive,
+			iconClassName: "bg-emerald-500/15 text-emerald-700",
+		},
+		{
+			id: "today-bandwidth",
+			title: "Today Bandwidth",
+			value: stats ? formatBytes(stats.bandwidthBytes) : formatBytes(0),
+			icon: Activity,
+			iconClassName: "bg-orange-500/15 text-orange-700",
+		},
+		{
+			id: "total-providers",
+			title: "Total Providers",
+			value: stats ? stats.totalProviders.toLocaleString() : "0",
+			icon: Server,
+			iconClassName: "bg-violet-500/15 text-violet-700",
+		},
+	];
 
 	const handleToggleFileFavorite = async (file: FileItemFragment) => {
 		try {
@@ -52,6 +94,43 @@ export function DashboardPage() {
 
 	return (
 		<div className="px-8 pb-8 flex flex-col gap-10 h-full overflow-y-auto">
+			<section>
+				<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+					{statsResult.fetching && !stats
+						? Array.from({ length: 4 }).map((_, idx) => (
+								<div
+									// biome-ignore lint/suspicious/noArrayIndexKey: skeleton loading
+									key={idx}
+									className="border p-5 space-y-4"
+								>
+									<Skeleton className="h-8 w-8" />
+									<Skeleton className="h-3 w-24" />
+									<Skeleton className="h-6 w-32" />
+								</div>
+							))
+						: statCards.map((card) => {
+								const Icon = card.icon;
+								return (
+									<div key={card.id} className="border p-5">
+										<div className="flex items-center gap-3 mb-4">
+											<div
+												className={`h-9 w-9 grid place-items-center ${card.iconClassName}`}
+											>
+												<Icon className="h-5 w-5" />
+											</div>
+											<p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+												{card.title}
+											</p>
+										</div>
+										<p className="text-4xl leading-none font-bold text-foreground">
+											{card.value}
+										</p>
+									</div>
+								);
+							})}
+				</div>
+			</section>
+
 			<section>
 				<div className="flex justify-between items-center mb-6">
 					<h3 className="text-xl font-bold text-foreground">Starred Folders</h3>

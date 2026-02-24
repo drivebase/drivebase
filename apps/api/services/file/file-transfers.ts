@@ -167,6 +167,8 @@ export async function requestUpload(
 		await activityService.log({
 			type: "upload",
 			userId,
+			workspaceId,
+			bytes: size,
 			fileId: fileRecord.id,
 			providerId,
 			folderId: folderId ?? undefined,
@@ -422,6 +424,7 @@ export async function moveFileToProvider(
 		await activityService.log({
 			type: "move",
 			userId,
+			workspaceId,
 			fileId: file.id,
 			providerId: targetProviderId,
 			folderId: file.folderId ?? undefined,
