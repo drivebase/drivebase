@@ -1,6 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { env } from "./config/env";
 import { mountPluginRoutes } from "./config/providers";
+import { closeAnalysisQueue } from "./queue/analysis-queue";
+import {
+	startAnalysisWorker,
+	stopAnalysisWorker,
+} from "./queue/analysis-worker";
 import { closeSyncQueue } from "./queue/sync-queue";
 import { startSyncWorker, stopSyncWorker } from "./queue/sync-worker";
 import { closeTransferQueue } from "./queue/transfer-queue";
@@ -78,6 +83,7 @@ const server = Bun.serve({
 startUploadWorker();
 startSyncWorker();
 startTransferWorker();
+startAnalysisWorker();
 
 logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
 
@@ -100,6 +106,8 @@ async function shutdown() {
 	await closeSyncQueue();
 	await stopTransferWorker();
 	await closeTransferQueue();
+	await stopAnalysisWorker();
+	await closeAnalysisQueue();
 	telemetry.capture("server_shutdown");
 	await telemetry.shutdown();
 	process.exit(0);

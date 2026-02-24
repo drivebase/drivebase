@@ -1,8 +1,9 @@
-import { files, getDb } from "@drivebase/db";
+import { files, getDb, storageProviders } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { eq } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
 import { createBullMQConnection } from "../redis/client";
+import { enqueueFileAnalysis } from "../services/ai/analysis-jobs";
 import { UploadSessionManager } from "../services/file/upload-session";
 import { ProviderService } from "../services/provider";
 import { fileSizeBucket, telemetry } from "../telemetry";
@@ -224,6 +225,29 @@ export function startUploadWorker(): Worker<UploadJobData> {
 
 				// Mark session completed
 				await sessionManager.markCompleted(sessionId);
+
+				if (fileId) {
+					const [uploadedFile] = await db
+						.select({
+							id: files.id,
+							workspaceId: storageProviders.workspaceId,
+						})
+						.from(files)
+						.innerJoin(
+							storageProviders,
+							eq(storageProviders.id, files.providerId),
+						)
+						.where(eq(files.id, fileId))
+						.limit(1);
+					if (uploadedFile?.workspaceId) {
+						await enqueueFileAnalysis(
+							db,
+							uploadedFile.id,
+							uploadedFile.workspaceId,
+							"upload",
+						);
+					}
+				}
 
 				// Publish final progress event
 				publishProgress(sessionId, {
