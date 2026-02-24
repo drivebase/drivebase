@@ -30,7 +30,9 @@ export const folderResolvers: FolderResolvers = {
 		const [folder] = await context.db
 			.select()
 			.from(folders)
-			.where(eq(folders.id, parent.parentId))
+			.where(
+				and(eq(folders.id, parent.parentId), eq(folders.nodeType, "folder")),
+			)
 			.limit(1);
 		return folder ?? null;
 	},
@@ -39,7 +41,13 @@ export const folderResolvers: FolderResolvers = {
 		return context.db
 			.select()
 			.from(folders)
-			.where(and(eq(folders.parentId, parent.id), eq(folders.isDeleted, false)))
+			.where(
+				and(
+					eq(folders.nodeType, "folder"),
+					eq(folders.parentId, parent.id),
+					eq(folders.isDeleted, false),
+				),
+			)
 			.orderBy(folders.name);
 	},
 
@@ -47,7 +55,13 @@ export const folderResolvers: FolderResolvers = {
 		return context.db
 			.select()
 			.from(files)
-			.where(and(eq(files.folderId, parent.id), eq(files.isDeleted, false)))
+			.where(
+				and(
+					eq(files.nodeType, "file"),
+					eq(files.folderId, parent.id),
+					eq(files.isDeleted, false),
+				),
+			)
 			.orderBy(files.name);
 	},
 

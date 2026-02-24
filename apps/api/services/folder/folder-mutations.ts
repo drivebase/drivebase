@@ -60,6 +60,7 @@ export async function createFolder(
 		const [folder] = await db
 			.insert(folders)
 			.values({
+				nodeType: "folder",
 				virtualPath,
 				name: sanitizedName,
 				remoteId,
@@ -108,6 +109,7 @@ export async function renameFolder(
 		.where(
 			and(
 				eq(folders.virtualPath, newVirtualPath),
+				eq(folders.nodeType, "folder"),
 				eq(folders.workspaceId, workspaceId),
 				eq(folders.isDeleted, false),
 			),
@@ -146,6 +148,7 @@ export async function renameFolder(
 		.where(
 			and(
 				like(folders.virtualPath, `${oldPathPrefix}%`),
+				eq(folders.nodeType, "folder"),
 				eq(folders.isDeleted, false),
 			),
 		);
@@ -159,6 +162,7 @@ export async function renameFolder(
 		.where(
 			and(
 				like(files.virtualPath, `${oldPathPrefix}%`),
+				eq(files.nodeType, "file"),
 				eq(files.isDeleted, false),
 			),
 		);
@@ -201,6 +205,7 @@ export async function moveFolder(
 		.where(
 			and(
 				eq(folders.virtualPath, newVirtualPath),
+				eq(folders.nodeType, "folder"),
 				eq(folders.workspaceId, workspaceId),
 				eq(folders.isDeleted, false),
 			),
@@ -239,6 +244,7 @@ export async function moveFolder(
 		.where(
 			and(
 				like(folders.virtualPath, `${oldPathPrefix}%`),
+				eq(folders.nodeType, "folder"),
 				eq(folders.isDeleted, false),
 			),
 		);
@@ -252,6 +258,7 @@ export async function moveFolder(
 		.where(
 			and(
 				like(files.virtualPath, `${oldPathPrefix}%`),
+				eq(files.nodeType, "file"),
 				eq(files.isDeleted, false),
 			),
 		);

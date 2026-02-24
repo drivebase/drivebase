@@ -7,6 +7,7 @@ export * from "./file-rules";
 export * from "./files";
 export * from "./folders";
 export * from "./jobs";
+export * from "./nodes";
 export * from "./permissions";
 export * from "./providers";
 export * from "./upload-sessions";

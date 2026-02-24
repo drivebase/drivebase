@@ -1,5 +1,5 @@
 {
-  "id": "93aee2ba-e43e-4e68-a4aa-f48bc42a8a8f",
+  "id": "5303bf37-c80f-4bed-96c2-f47967cfa346",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -86,10 +86,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "activities_file_id_files_id_fk": {
-          "name": "activities_file_id_files_id_fk",
+        "activities_file_id_nodes_id_fk": {
+          "name": "activities_file_id_nodes_id_fk",
           "tableFrom": "activities",
-          "tableTo": "files",
+          "tableTo": "nodes",
           "columnsFrom": [
             "file_id"
           ],
@@ -99,10 +99,10 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "activities_folder_id_folders_id_fk": {
-          "name": "activities_folder_id_folders_id_fk",
+        "activities_folder_id_nodes_id_fk": {
+          "name": "activities_folder_id_nodes_id_fk",
           "tableFrom": "activities",
-          "tableTo": "folders",
+          "tableTo": "nodes",
           "columnsFrom": [
             "folder_id"
           ],
@@ -228,10 +228,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "file_rules_destination_folder_id_folders_id_fk": {
-          "name": "file_rules_destination_folder_id_folders_id_fk",
+        "file_rules_destination_folder_id_nodes_id_fk": {
+          "name": "file_rules_destination_folder_id_nodes_id_fk",
           "tableFrom": "file_rules",
-          "tableTo": "folders",
+          "tableTo": "nodes",
           "columnsFrom": [
             "destination_folder_id"
           ],
@@ -274,14 +274,21 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.files": {
-      "name": "files",
+    "public.nodes": {
+      "name": "nodes",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
           "type": "text",
           "primaryKey": true,
+          "notNull": true
+        },
+        "node_type": {
+          "name": "node_type",
+          "type": "node_type",
+          "typeSchema": "public",
+          "primaryKey": false,
           "notNull": true
         },
         "virtual_path": {
@@ -296,24 +303,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "mime_type": {
-          "name": "mime_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "size": {
-          "name": "size",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "hash": {
-          "name": "hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "remote_id": {
           "name": "remote_id",
           "type": "text",
@@ -326,8 +315,20 @@
           "primaryKey": false,
           "notNull": true
         },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "folder_id": {
           "name": "folder_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_id": {
+          "name": "parent_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -336,10 +337,36 @@
           "name": "uploaded_by",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "vault_id": {
           "name": "vault_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "size": {
+          "name": "size",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "hash": {
+          "name": "hash",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -392,168 +419,54 @@
           "default": "now()"
         }
       },
-      "indexes": {},
-      "foreignKeys": {
-        "files_provider_id_storage_providers_id_fk": {
-          "name": "files_provider_id_storage_providers_id_fk",
-          "tableFrom": "files",
-          "tableTo": "storage_providers",
-          "columnsFrom": [
-            "provider_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "files_folder_id_folders_id_fk": {
-          "name": "files_folder_id_folders_id_fk",
-          "tableFrom": "files",
-          "tableTo": "folders",
-          "columnsFrom": [
-            "folder_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "files_uploaded_by_users_id_fk": {
-          "name": "files_uploaded_by_users_id_fk",
-          "tableFrom": "files",
-          "tableTo": "users",
-          "columnsFrom": [
-            "uploaded_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "files_vault_id_vaults_id_fk": {
-          "name": "files_vault_id_vaults_id_fk",
-          "tableFrom": "files",
-          "tableTo": "vaults",
-          "columnsFrom": [
-            "vault_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "files_virtual_path_provider_id_unique": {
-          "name": "files_virtual_path_provider_id_unique",
-          "nullsNotDistinct": false,
+      "indexes": {
+        "nodes_virtual_path_provider_id_unique": {
+          "name": "nodes_virtual_path_provider_id_unique",
           "columns": [
-            "virtual_path",
-            "provider_id"
-          ]
+            {
+              "expression": "virtual_path",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "provider_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "nodes_remote_id_provider_id_unique": {
+          "name": "nodes_remote_id_provider_id_unique",
+          "columns": [
+            {
+              "expression": "remote_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "provider_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.folders": {
-      "name": "folders",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "virtual_path": {
-          "name": "virtual_path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "remote_id": {
-          "name": "remote_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "provider_id": {
-          "name": "provider_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "workspace_id": {
-          "name": "workspace_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "parent_id": {
-          "name": "parent_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_by": {
-          "name": "created_by",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "vault_id": {
-          "name": "vault_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_deleted": {
-          "name": "is_deleted",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "starred": {
-          "name": "starred",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
       "foreignKeys": {
-        "folders_provider_id_storage_providers_id_fk": {
-          "name": "folders_provider_id_storage_providers_id_fk",
-          "tableFrom": "folders",
+        "nodes_provider_id_storage_providers_id_fk": {
+          "name": "nodes_provider_id_storage_providers_id_fk",
+          "tableFrom": "nodes",
           "tableTo": "storage_providers",
           "columnsFrom": [
             "provider_id"
@@ -564,9 +477,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "folders_workspace_id_workspaces_id_fk": {
-          "name": "folders_workspace_id_workspaces_id_fk",
-          "tableFrom": "folders",
+        "nodes_workspace_id_workspaces_id_fk": {
+          "name": "nodes_workspace_id_workspaces_id_fk",
+          "tableFrom": "nodes",
           "tableTo": "workspaces",
           "columnsFrom": [
             "workspace_id"
@@ -577,12 +490,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "folders_parent_id_folders_id_fk": {
-          "name": "folders_parent_id_folders_id_fk",
-          "tableFrom": "folders",
-          "tableTo": "folders",
+        "nodes_uploaded_by_users_id_fk": {
+          "name": "nodes_uploaded_by_users_id_fk",
+          "tableFrom": "nodes",
+          "tableTo": "users",
           "columnsFrom": [
-            "parent_id"
+            "uploaded_by"
           ],
           "columnsTo": [
             "id"
@@ -590,9 +503,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "folders_created_by_users_id_fk": {
-          "name": "folders_created_by_users_id_fk",
-          "tableFrom": "folders",
+        "nodes_created_by_users_id_fk": {
+          "name": "nodes_created_by_users_id_fk",
+          "tableFrom": "nodes",
           "tableTo": "users",
           "columnsFrom": [
             "created_by"
@@ -603,9 +516,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "folders_vault_id_vaults_id_fk": {
-          "name": "folders_vault_id_vaults_id_fk",
-          "tableFrom": "folders",
+        "nodes_vault_id_vaults_id_fk": {
+          "name": "nodes_vault_id_vaults_id_fk",
+          "tableFrom": "nodes",
           "tableTo": "vaults",
           "columnsFrom": [
             "vault_id"
@@ -618,16 +531,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "folders_remote_id_provider_id_unique": {
-          "name": "folders_remote_id_provider_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "remote_id",
-            "provider_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -776,10 +680,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "permissions_folder_id_folders_id_fk": {
-          "name": "permissions_folder_id_folders_id_fk",
+        "permissions_folder_id_nodes_id_fk": {
+          "name": "permissions_folder_id_nodes_id_fk",
           "tableFrom": "permissions",
-          "tableTo": "folders",
+          "tableTo": "nodes",
           "columnsFrom": [
             "folder_id"
           ],
@@ -1256,10 +1160,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "upload_sessions_folder_id_folders_id_fk": {
-          "name": "upload_sessions_folder_id_folders_id_fk",
+        "upload_sessions_folder_id_nodes_id_fk": {
+          "name": "upload_sessions_folder_id_nodes_id_fk",
           "tableFrom": "upload_sessions",
-          "tableTo": "folders",
+          "tableTo": "nodes",
           "columnsFrom": [
             "folder_id"
           ],
@@ -1269,10 +1173,10 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "upload_sessions_file_id_files_id_fk": {
-          "name": "upload_sessions_file_id_files_id_fk",
+        "upload_sessions_file_id_nodes_id_fk": {
+          "name": "upload_sessions_file_id_nodes_id_fk",
           "tableFrom": "upload_sessions",
-          "tableTo": "files",
+          "tableTo": "nodes",
           "columnsFrom": [
             "file_id"
           ],
@@ -1798,6 +1702,14 @@
         "running",
         "completed",
         "error"
+      ]
+    },
+    "public.node_type": {
+      "name": "node_type",
+      "schema": "public",
+      "values": [
+        "file",
+        "folder"
       ]
     },
     "public.permission_role": {

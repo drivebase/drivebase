@@ -18,6 +18,7 @@ export async function getFolder(
 		.where(
 			and(
 				eq(folders.id, folderId),
+				eq(folders.nodeType, "folder"),
 				eq(folders.isDeleted, false),
 				eq(folders.workspaceId, workspaceId),
 				isNull(folders.vaultId),
@@ -43,6 +44,7 @@ export async function listFolders(
 	providerIds?: string[],
 ) {
 	const conditions = [
+		eq(folders.nodeType, "folder"),
 		eq(folders.isDeleted, false),
 		eq(folders.workspaceId, workspaceId),
 		isNull(folders.vaultId),
@@ -78,6 +80,7 @@ export async function getStarredFolders(
 		.from(folders)
 		.where(
 			and(
+				eq(folders.nodeType, "folder"),
 				eq(folders.starred, true),
 				eq(folders.isDeleted, false),
 				eq(folders.workspaceId, workspaceId),

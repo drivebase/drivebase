@@ -1,7 +1,7 @@
 import { NotFoundError, ValidationError } from "@drivebase/core";
 import { files, folders, storageProviders, users } from "@drivebase/db";
 import { S3Provider } from "@drivebase/s3";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getUploadQueue } from "../../queue/upload-queue";
 import { FileService } from "../../services/file";
 import { UploadSessionManager } from "../../services/file/upload-session";
@@ -41,13 +41,18 @@ export const fileResolvers: FileResolvers = {
 		const [folder] = await context.db
 			.select()
 			.from(folders)
-			.where(eq(folders.id, parent.folderId))
+			.where(
+				and(eq(folders.id, parent.folderId), eq(folders.nodeType, "folder")),
+			)
 			.limit(1);
 
 		return folder || null;
 	},
 
 	user: async (parent, _args, context) => {
+		if (!parent.uploadedBy) {
+			throw new NotFoundError("User");
+		}
 		const [user] = await context.db
 			.select()
 			.from(users)

@@ -86,7 +86,11 @@ export async function buildExportPayload(
 		})
 		.from(folders)
 		.where(
-			and(eq(folders.workspaceId, workspaceId), eq(folders.isDeleted, false)),
+			and(
+				eq(folders.workspaceId, workspaceId),
+				eq(folders.nodeType, "folder"),
+				eq(folders.isDeleted, false),
+			),
 		);
 
 	// Query non-deleted files belonging to workspace providers
@@ -115,6 +119,7 @@ export async function buildExportPayload(
 					.where(
 						and(
 							eq(storageProviders.workspaceId, workspaceId),
+							eq(files.nodeType, "file"),
 							eq(files.isDeleted, false),
 						),
 					)

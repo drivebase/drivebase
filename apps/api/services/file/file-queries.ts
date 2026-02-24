@@ -47,6 +47,7 @@ async function refreshSingleFolderCache(
 						and(
 							eq(folders.remoteId, folder.remoteId),
 							eq(folders.providerId, providerRecord.id),
+							eq(folders.nodeType, "folder"),
 						),
 					)
 					.limit(1);
@@ -64,6 +65,7 @@ async function refreshSingleFolderCache(
 						.where(eq(folders.id, existingFolder.id));
 				} else {
 					await db.insert(folders).values({
+						nodeType: "folder",
 						name: cleanName,
 						virtualPath,
 						remoteId: folder.remoteId,
@@ -90,6 +92,7 @@ async function refreshSingleFolderCache(
 						and(
 							eq(files.remoteId, file.remoteId),
 							eq(files.providerId, providerRecord.id),
+							eq(files.nodeType, "file"),
 						),
 					)
 					.limit(1);
@@ -116,6 +119,7 @@ async function refreshSingleFolderCache(
 							and(
 								eq(files.virtualPath, virtualPath),
 								eq(files.providerId, providerRecord.id),
+								eq(files.nodeType, "file"),
 								isNull(files.vaultId),
 							),
 						)
@@ -140,6 +144,7 @@ async function refreshSingleFolderCache(
 							.where(eq(files.id, existingPathFile.id));
 					} else {
 						await db.insert(files).values({
+							nodeType: "file",
 							name: cleanName,
 							virtualPath,
 							mimeType: file.mimeType,
@@ -161,6 +166,7 @@ async function refreshSingleFolderCache(
 		} while (pageToken);
 
 		const fileScope = [
+			eq(files.nodeType, "file"),
 			eq(files.providerId, providerRecord.id),
 			isNull(files.vaultId),
 			normalizedParentDbId
@@ -179,6 +185,7 @@ async function refreshSingleFolderCache(
 		}
 
 		const folderScope = [
+			eq(folders.nodeType, "folder"),
 			eq(folders.providerId, providerRecord.id),
 			eq(folders.workspaceId, workspaceId),
 			isNull(folders.vaultId),
@@ -216,6 +223,7 @@ async function hasCachedRootItemsForProvider(
 			.where(
 				and(
 					eq(files.providerId, providerId),
+					eq(files.nodeType, "file"),
 					eq(files.isDeleted, false),
 					isNull(files.vaultId),
 					isNull(files.folderId),
@@ -228,6 +236,7 @@ async function hasCachedRootItemsForProvider(
 			.where(
 				and(
 					eq(folders.providerId, providerId),
+					eq(folders.nodeType, "folder"),
 					eq(folders.workspaceId, workspaceId),
 					eq(folders.isDeleted, false),
 					isNull(folders.vaultId),
@@ -253,6 +262,7 @@ async function hasCachedChildrenForFolder(
 			.where(
 				and(
 					eq(files.providerId, providerId),
+					eq(files.nodeType, "file"),
 					eq(files.folderId, folderId),
 					eq(files.isDeleted, false),
 					isNull(files.vaultId),
@@ -265,6 +275,7 @@ async function hasCachedChildrenForFolder(
 			.where(
 				and(
 					eq(folders.providerId, providerId),
+					eq(folders.nodeType, "folder"),
 					eq(folders.workspaceId, workspaceId),
 					eq(folders.parentId, folderId),
 					eq(folders.isDeleted, false),
@@ -293,6 +304,7 @@ export async function getFile(
 		.where(
 			and(
 				eq(files.id, fileId),
+				eq(files.nodeType, "file"),
 				eq(files.isDeleted, false),
 				isNull(files.vaultId),
 				eq(storageProviders.workspaceId, workspaceId),
@@ -300,11 +312,11 @@ export async function getFile(
 		)
 		.limit(1);
 
-	if (!file?.files) {
+	if (!file?.nodes) {
 		throw new NotFoundError("File");
 	}
 
-	return file.files;
+	return file.nodes;
 }
 
 /**
@@ -323,17 +335,18 @@ export async function getFileForProxy(
 		.where(
 			and(
 				eq(files.id, fileId),
+				eq(files.nodeType, "file"),
 				eq(files.isDeleted, false),
 				eq(storageProviders.workspaceId, workspaceId),
 			),
 		)
 		.limit(1);
 
-	if (!file?.files) {
+	if (!file?.nodes) {
 		throw new NotFoundError("File");
 	}
 
-	return file.files;
+	return file.nodes;
 }
 
 /**
@@ -367,6 +380,7 @@ export async function listFiles(
 					)
 					.where(
 						and(
+							eq(files.nodeType, "file"),
 							eq(files.folderId, folderId),
 							eq(files.isDeleted, false),
 							isNull(files.vaultId),
@@ -386,6 +400,7 @@ export async function listFiles(
 					)
 					.where(
 						and(
+							eq(files.nodeType, "file"),
 							isNull(files.folderId),
 							eq(files.isDeleted, false),
 							isNull(files.vaultId),
@@ -430,6 +445,7 @@ export async function searchFiles(
 			.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
 			.where(
 				and(
+					eq(files.nodeType, "file"),
 					like(files.name, searchPattern),
 					eq(files.isDeleted, false),
 					isNull(files.vaultId),
@@ -501,6 +517,7 @@ export async function getContents(
 
 	if (isRoot) {
 		const fileConditions = [
+			eq(files.nodeType, "file"),
 			isNull(files.folderId),
 			eq(files.isDeleted, false),
 			isNull(files.vaultId),
@@ -511,6 +528,7 @@ export async function getContents(
 		}
 
 		const folderConditions = [
+			eq(folders.nodeType, "folder"),
 			isNull(folders.parentId),
 			eq(folders.isDeleted, false),
 			isNull(folders.vaultId),
@@ -544,6 +562,7 @@ export async function getContents(
 		.where(
 			and(
 				eq(folders.id, folderId),
+				eq(folders.nodeType, "folder"),
 				eq(folders.isDeleted, false),
 				isNull(folders.vaultId),
 				eq(folders.workspaceId, workspaceId),
@@ -591,6 +610,7 @@ export async function getContents(
 	}
 
 	const fileConditions = [
+		eq(files.nodeType, "file"),
 		eq(files.folderId, targetFolder.id),
 		eq(files.isDeleted, false),
 		isNull(files.vaultId),
@@ -601,6 +621,7 @@ export async function getContents(
 	}
 
 	const folderConditions = [
+		eq(folders.nodeType, "folder"),
 		eq(folders.parentId, targetFolder.id),
 		eq(folders.isDeleted, false),
 		isNull(folders.vaultId),
@@ -642,6 +663,7 @@ export async function getStarredFiles(
 		.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
 		.where(
 			and(
+				eq(files.nodeType, "file"),
 				eq(files.starred, true),
 				eq(files.isDeleted, false),
 				isNull(files.vaultId),

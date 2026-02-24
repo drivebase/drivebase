@@ -129,6 +129,7 @@ export async function requestUpload(
 			: await db
 					.insert(files)
 					.values({
+						nodeType: "file",
 						virtualPath,
 						name: sanitizedName,
 						mimeType,

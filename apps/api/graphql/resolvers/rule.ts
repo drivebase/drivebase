@@ -1,6 +1,6 @@
 import type { RuleConditionGroups } from "@drivebase/db";
 import { folders, storageProviders } from "@drivebase/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
 	createRule,
 	deleteRule,
@@ -39,7 +39,12 @@ export const fileRuleResolvers: FileRuleResolvers = {
 		const [folder] = await context.db
 			.select()
 			.from(folders)
-			.where(eq(folders.id, parent.destinationFolderId))
+			.where(
+				and(
+					eq(folders.id, parent.destinationFolderId),
+					eq(folders.nodeType, "folder"),
+				),
+			)
 			.limit(1);
 
 		return folder ?? null;

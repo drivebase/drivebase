@@ -97,6 +97,7 @@ export class VaultService {
 					.from(files)
 					.where(
 						and(
+							eq(files.nodeType, "file"),
 							eq(files.vaultId, vault.id),
 							isNull(files.folderId),
 							eq(files.isDeleted, false),
@@ -108,6 +109,7 @@ export class VaultService {
 					.from(folders)
 					.where(
 						and(
+							eq(folders.nodeType, "folder"),
 							eq(folders.vaultId, vault.id),
 							isNull(folders.parentId),
 							eq(folders.isDeleted, false),
@@ -125,6 +127,7 @@ export class VaultService {
 			.where(
 				and(
 					eq(folders.id, folderId),
+					eq(folders.nodeType, "folder"),
 					eq(folders.vaultId, vault.id),
 					eq(folders.isDeleted, false),
 				),
@@ -141,6 +144,7 @@ export class VaultService {
 				.from(files)
 				.where(
 					and(
+						eq(files.nodeType, "file"),
 						eq(files.vaultId, vault.id),
 						eq(files.folderId, targetFolder.id),
 						eq(files.isDeleted, false),
@@ -152,6 +156,7 @@ export class VaultService {
 				.from(folders)
 				.where(
 					and(
+						eq(folders.nodeType, "folder"),
 						eq(folders.vaultId, vault.id),
 						eq(folders.parentId, targetFolder.id),
 						eq(folders.isDeleted, false),
@@ -197,6 +202,7 @@ export class VaultService {
 				.where(
 					and(
 						eq(folders.id, folderId),
+						eq(folders.nodeType, "folder"),
 						eq(folders.vaultId, vault.id),
 						eq(folders.isDeleted, false),
 					),
@@ -216,7 +222,9 @@ export class VaultService {
 		const [existing] = await this.db
 			.select()
 			.from(files)
-			.where(eq(files.virtualPath, virtualPath))
+			.where(
+				and(eq(files.virtualPath, virtualPath), eq(files.nodeType, "file")),
+			)
 			.limit(1);
 
 		if (existing && !existing.isDeleted) {
@@ -262,6 +270,7 @@ export class VaultService {
 			: await this.db
 					.insert(files)
 					.values({
+						nodeType: "file",
 						virtualPath,
 						name: sanitizedName,
 						mimeType,
@@ -310,6 +319,7 @@ export class VaultService {
 			.where(
 				and(
 					eq(files.id, fileId),
+					eq(files.nodeType, "file"),
 					eq(files.vaultId, vault.id),
 					eq(files.isDeleted, false),
 				),
@@ -373,6 +383,7 @@ export class VaultService {
 				.where(
 					and(
 						eq(folders.id, parentId),
+						eq(folders.nodeType, "folder"),
 						eq(folders.vaultId, vault.id),
 						eq(folders.isDeleted, false),
 					),
@@ -394,6 +405,7 @@ export class VaultService {
 		const [folder] = await this.db
 			.insert(folders)
 			.values({
+				nodeType: "folder",
 				virtualPath,
 				name: sanitizedName,
 				remoteId: syntheticRemoteId,
@@ -425,6 +437,7 @@ export class VaultService {
 			.where(
 				and(
 					eq(files.id, fileId),
+					eq(files.nodeType, "file"),
 					eq(files.vaultId, vault.id),
 					eq(files.isDeleted, false),
 				),
@@ -453,6 +466,7 @@ export class VaultService {
 			.where(
 				and(
 					eq(files.id, fileId),
+					eq(files.nodeType, "file"),
 					eq(files.vaultId, vault.id),
 					eq(files.isDeleted, false),
 				),
@@ -538,6 +552,7 @@ export class VaultService {
 				.where(
 					and(
 						eq(folders.id, folderId),
+						eq(folders.nodeType, "folder"),
 						eq(folders.vaultId, vault.id),
 						eq(folders.isDeleted, false),
 					),
@@ -556,7 +571,9 @@ export class VaultService {
 		const [existing] = await this.db
 			.select()
 			.from(files)
-			.where(eq(files.virtualPath, virtualPath))
+			.where(
+				and(eq(files.virtualPath, virtualPath), eq(files.nodeType, "file")),
+			)
 			.limit(1);
 
 		if (existing && !existing.isDeleted) {
@@ -603,6 +620,7 @@ export class VaultService {
 			: await this.db
 					.insert(files)
 					.values({
+						nodeType: "file",
 						virtualPath,
 						name: sanitizedName,
 						mimeType,
@@ -646,6 +664,7 @@ export class VaultService {
 			.where(
 				and(
 					eq(files.id, fileId),
+					eq(files.nodeType, "file"),
 					eq(files.vaultId, vaultId),
 					eq(files.isDeleted, false),
 				),

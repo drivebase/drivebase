@@ -90,6 +90,7 @@ export async function syncProvider(
 						and(
 							eq(folders.remoteId, folder.remoteId),
 							eq(folders.providerId, providerId),
+							eq(folders.nodeType, "folder"),
 						),
 					)
 					.limit(1);
@@ -99,6 +100,7 @@ export async function syncProvider(
 						[dbFolder] = await db
 							.insert(folders)
 							.values({
+								nodeType: "folder",
 								name: cleanName,
 								virtualPath,
 								remoteId: folder.remoteId,
@@ -161,6 +163,7 @@ export async function syncProvider(
 							and(
 								eq(files.remoteId, file.remoteId),
 								eq(files.providerId, providerId),
+								eq(files.nodeType, "file"),
 							),
 						)
 						.limit(1);
@@ -183,6 +186,7 @@ export async function syncProvider(
 						await db
 							.insert(files)
 							.values({
+								nodeType: "file",
 								name: cleanName,
 								virtualPath,
 								mimeType: file.mimeType,
@@ -243,6 +247,7 @@ export async function syncProvider(
 				.where(
 					and(
 						eq(files.providerId, providerId),
+						eq(files.nodeType, "file"),
 						isNull(files.vaultId),
 						notInArray(files.remoteId, seenFileRemoteIds),
 					),

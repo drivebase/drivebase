@@ -1,6 +1,6 @@
 import type { Database } from "@drivebase/db";
 import { files } from "@drivebase/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { logger } from "../../utils/logger";
 import { getFile } from "./file-queries";
 
@@ -23,7 +23,7 @@ export async function starFile(
 				starred: true,
 				updatedAt: new Date(),
 			})
-			.where(eq(files.id, fileId))
+			.where(and(eq(files.id, fileId), eq(files.nodeType, "file")))
 			.returning();
 
 		if (!updated) {
@@ -56,7 +56,7 @@ export async function unstarFile(
 				starred: false,
 				updatedAt: new Date(),
 			})
-			.where(eq(files.id, fileId))
+			.where(and(eq(files.id, fileId), eq(files.nodeType, "file")))
 			.returning();
 
 		if (!updated) {

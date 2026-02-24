@@ -210,6 +210,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 						.where(
 							and(
 								eq(folders.id, file.folderId),
+								eq(folders.nodeType, "folder"),
 								eq(folders.providerId, targetProviderId),
 							),
 						)

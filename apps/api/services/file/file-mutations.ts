@@ -45,6 +45,7 @@ export async function renameFile(
 			.where(
 				and(
 					eq(files.virtualPath, newVirtualPath),
+					eq(files.nodeType, "file"),
 					eq(storageProviders.workspaceId, workspaceId),
 					eq(files.isDeleted, false),
 				),
@@ -141,6 +142,7 @@ export async function moveFile(
 			.where(
 				and(
 					eq(files.virtualPath, newVirtualPath),
+					eq(files.nodeType, "file"),
 					eq(storageProviders.workspaceId, workspaceId),
 					eq(files.isDeleted, false),
 				),
@@ -214,7 +216,9 @@ export async function deleteFile(
 
 		await provider.cleanup();
 
-		await db.delete(files).where(eq(files.id, fileId));
+		await db
+			.delete(files)
+			.where(and(eq(files.id, fileId), eq(files.nodeType, "file")));
 
 		logger.debug({ msg: "File deleted", fileId });
 		telemetry.capture("file_deleted");

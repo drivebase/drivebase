@@ -1,6 +1,6 @@
 import type { Database } from "@drivebase/db";
 import { folders } from "@drivebase/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getFolder } from "./folder-queries";
 
 /**
@@ -20,7 +20,7 @@ export async function starFolder(
 			starred: true,
 			updatedAt: new Date(),
 		})
-		.where(eq(folders.id, folderId))
+		.where(and(eq(folders.id, folderId), eq(folders.nodeType, "folder")))
 		.returning();
 
 	if (!updated) {
@@ -47,7 +47,7 @@ export async function unstarFolder(
 			starred: false,
 			updatedAt: new Date(),
 		})
-		.where(eq(folders.id, folderId))
+		.where(and(eq(folders.id, folderId), eq(folders.nodeType, "folder")))
 		.returning();
 
 	if (!updated) {
