@@ -144,4 +144,12 @@ export class ActivityService {
 			.limit(safeLimit)
 			.offset(safeOffset);
 	}
+
+	async deleteForUser(userId: string, ids: string[]) {
+		if (ids.length === 0) return 0;
+		const result = await this.db
+			.delete(activities)
+			.where(and(eq(activities.userId, userId), inArray(activities.id, ids)));
+		return result.rowCount ?? 0;
+	}
 }

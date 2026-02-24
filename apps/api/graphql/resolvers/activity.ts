@@ -209,6 +209,12 @@ export const activityMutations: MutationResolvers = {
 		});
 		return true;
 	},
+
+	deleteActivities: async (_parent, { ids }, context) => {
+		const user = requireAuth(context);
+		const activityService = new ActivityService(context.db);
+		return activityService.deleteForUser(user.userId, ids as string[]);
+	},
 };
 
 export const activitySubscriptions: SubscriptionResolvers = {

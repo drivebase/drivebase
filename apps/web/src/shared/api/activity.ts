@@ -54,6 +54,9 @@ export const RECENT_ACTIVITIES_QUERY = graphql(`
       providerId
       metadata
       createdAt
+      provider {
+        type
+      }
     }
   }
 `);
@@ -80,6 +83,12 @@ export const CANCEL_TRANSFER_JOB_MUTATION = graphql(`
   }
 `);
 
+export const DELETE_ACTIVITIES_MUTATION = graphql(`
+  mutation DeleteActivities($ids: [ID!]!) {
+    deleteActivities(ids: $ids)
+  }
+`);
+
 export const ACTIVITY_CREATED_SUBSCRIPTION = graphql(`
   subscription ActivityCreated {
     activityCreated {
@@ -90,6 +99,9 @@ export const ACTIVITY_CREATED_SUBSCRIPTION = graphql(`
       providerId
       metadata
       createdAt
+      provider {
+        type
+      }
     }
   }
 `);
