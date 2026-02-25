@@ -57,6 +57,12 @@ export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 
 			<div className="space-y-3 text-sm">
 				<div className="flex justify-between gap-4">
+					<span className="text-muted-foreground">File ID</span>
+					<span className="text-right break-all font-mono text-xs">
+						{file.id}
+					</span>
+				</div>
+				<div className="flex justify-between gap-4">
 					<span className="text-muted-foreground">MIME Type</span>
 					<span className="text-right break-all">{file.mimeType}</span>
 				</div>

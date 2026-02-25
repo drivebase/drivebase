@@ -31,14 +31,16 @@ export function AiProgressSection({
 	const settings = useAiSettingsStore((state) => state.settings);
 	const progress = useAiSettingsStore((state) => state.progress);
 	const embeddingTier = useAiSettingsStore((state) => state.embeddingTier);
+	const ocrTier = useAiSettingsStore((state) => state.ocrTier);
+	const objectTier = useAiSettingsStore((state) => state.objectTier);
 
 	const isProcessingActive =
 		(progress?.pendingFiles ?? 0) > 0 || (progress?.runningFiles ?? 0) > 0;
 	const isFullyProcessed = (progress?.completionPct ?? 0) >= 100;
 	const requiresModelDownload = Boolean(
 		(settings?.embeddingTier && settings.embeddingTier !== embeddingTier) ||
-			(settings?.ocrTier && settings.ocrTier !== embeddingTier) ||
-			(settings?.objectTier && settings.objectTier !== embeddingTier),
+			(settings?.ocrTier && settings.ocrTier !== ocrTier) ||
+			(settings?.objectTier && settings.objectTier !== objectTier),
 	);
 
 	return (
