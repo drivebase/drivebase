@@ -7,8 +7,8 @@ import {
 	getRecentFiles,
 	getStarredFiles,
 	listFiles,
-	searchFilesAi,
 	searchFiles,
+	searchFilesAi,
 	searchFolders,
 } from "./file/file-queries";
 import { starFile, unstarFile } from "./file/file-stars";

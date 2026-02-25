@@ -30,8 +30,8 @@ import { useDownload } from "@/features/files/hooks/useDownload";
 import {
 	useDeleteFile,
 	useRecentFiles,
-	useSearchFilesAi,
 	useSearchFiles,
+	useSearchFilesAi,
 	useSearchFolders,
 	useStarFile,
 	useUnstarFile,
@@ -53,7 +53,7 @@ const NAVIGATION_ITEMS = [
 	{ label: "Settings", to: "/settings/general", icon: Settings },
 ] as const;
 
-function debounceValue(value: string, delay = 200) {
+function useDebouncedValue(value: string, delay = 200) {
 	const [debounced, setDebounced] = useState(value);
 
 	useEffect(() => {
@@ -80,7 +80,7 @@ export function HeaderCommandPalette() {
 	);
 	const [deletedFileIds, setDeletedFileIds] = useState<Set<string>>(new Set());
 
-	const debouncedQuery = debounceValue(query.trim(), 200);
+	const debouncedQuery = useDebouncedValue(query.trim(), 200);
 	const hasQuery = debouncedQuery.length > 0;
 
 	const { data: recentData } = useRecentFiles(RECENT_LIMIT);

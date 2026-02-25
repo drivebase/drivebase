@@ -3,8 +3,8 @@ import {
 	fileDetectedObjects,
 	fileEmbeddings,
 	fileExtractedText,
-	fileTextChunks,
 	files,
+	fileTextChunks,
 	getDb,
 	storageProviders,
 	workspaceAiSettings,
@@ -13,8 +13,11 @@ import { Worker } from "bullmq";
 import { and, eq } from "drizzle-orm";
 import { env } from "../config/env";
 import { createBullMQConnection } from "../redis/client";
-import { getAnalysisQueue } from "./analysis-queue";
 import { refreshWorkspaceAiProgress } from "../services/ai/ai-settings";
+import {
+	resolveAiFeatureToggles,
+	resolveMaxFileSizeMb,
+} from "../services/ai/ai-support";
 import {
 	inferEmbeddingStream,
 	inferObjectsStream,
@@ -22,12 +25,9 @@ import {
 	inferTextEmbedding,
 } from "../services/ai/inference-client";
 import { getProviderInstance } from "../services/provider/provider-queries";
-import {
-	resolveAiFeatureToggles,
-	resolveMaxFileSizeMb,
-} from "../services/ai/ai-support";
 import { logger } from "../utils/logger";
 import type { FileAnalysisJobData } from "./analysis-queue";
+import { getAnalysisQueue } from "./analysis-queue";
 
 let analysisWorker: Worker<FileAnalysisJobData> | null = null;
 

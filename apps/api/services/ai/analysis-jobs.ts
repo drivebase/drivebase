@@ -8,21 +8,21 @@ import {
 	workspaceAiSettings,
 } from "@drivebase/db";
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { env } from "../../config/env";
 import {
 	cancelWorkspaceAnalysisJobs,
 	getAnalysisQueue,
 } from "../../queue/analysis-queue";
-import { env } from "../../config/env";
 import { logger } from "../../utils/logger";
+import {
+	refreshWorkspaceAiProgress,
+	updateWorkspaceAiSettings,
+} from "./ai-settings";
 import {
 	isEligibleForAiAnalysis,
 	resolveAiFeatureToggles,
 	resolveMaxFileSizeMb,
 } from "./ai-support";
-import {
-	refreshWorkspaceAiProgress,
-	updateWorkspaceAiSettings,
-} from "./ai-settings";
 
 type EnqueueTrigger =
 	| "upload"

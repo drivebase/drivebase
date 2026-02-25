@@ -1,8 +1,8 @@
 "use client";
 
 import { Cpu, LinkIcon, PianoIcon } from "lucide-react";
-import Image from "next/image";
 import { motion } from "motion/react";
+import Image from "next/image";
 
 function Section({
   children,

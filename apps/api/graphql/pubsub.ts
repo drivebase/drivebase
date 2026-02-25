@@ -1,5 +1,4 @@
-import type { Activity, Job } from "@drivebase/db";
-import type { WorkspaceAiProgress } from "@drivebase/db";
+import type { Activity, Job, WorkspaceAiProgress } from "@drivebase/db";
 import { createPubSub } from "graphql-yoga";
 
 export type UploadProgressPayload = {

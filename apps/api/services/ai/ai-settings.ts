@@ -1,16 +1,15 @@
 import type { Database } from "@drivebase/db";
 import {
+	type analysisModelTierEnum,
 	fileAnalysisRuns,
 	files,
 	storageProviders,
 	workspaceAiProgress,
 	workspaceAiSettings,
-	type analysisModelTierEnum,
 } from "@drivebase/db";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { env } from "../../config/env";
 import { pubSub } from "../../graphql/pubsub";
-import { logger } from "../../utils/logger";
 import { isEligibleForAiAnalysis, resolveMaxFileSizeMb } from "./ai-support";
 
 type AnalysisModelTier = (typeof analysisModelTierEnum.enumValues)[number];

@@ -3,7 +3,6 @@ import { useQuery, useSubscription } from "urql";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import {
 	getActiveWorkspaceId,
-	WORKSPACE_AI_PROGRESS_UPDATED_SUBSCRIPTION,
 	useDeleteWorkspaceAiData,
 	usePrepareWorkspaceAiModels,
 	useRetryWorkspaceAiFailedFiles,
@@ -14,6 +13,7 @@ import {
 	useWorkspaceAiSettings,
 	useWorkspaceMembers,
 	useWorkspaces,
+	WORKSPACE_AI_PROGRESS_UPDATED_SUBSCRIPTION,
 } from "@/features/workspaces";
 import { WorkspaceMemberRole } from "@/gql/graphql";
 import {

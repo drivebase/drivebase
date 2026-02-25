@@ -1,3 +1,4 @@
+import { Info } from "lucide-react";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -19,7 +20,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
 import { useAiSettingsStore } from "@/features/ai/store/aiSettingsStore";
 
 interface AiProcessingSectionProps {

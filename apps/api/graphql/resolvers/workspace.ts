@@ -1,10 +1,4 @@
 import {
-	createWorkspace,
-	listAccessibleWorkspaces,
-	updateWorkspaceSyncOperationsToProvider,
-	updateWorkspaceName,
-} from "../../services/workspace/workspace";
-import {
 	getOrCreateWorkspaceAiSettings,
 	getWorkspaceAiProgress,
 	updateWorkspaceAiSettings,
@@ -19,7 +13,12 @@ import {
 	scheduleModelPreparation,
 	syncWorkspaceModelReadiness,
 } from "../../services/ai/model-download";
-import { getWorkspaceStats } from "../../services/workspace/workspace-stats";
+import {
+	createWorkspace,
+	listAccessibleWorkspaces,
+	updateWorkspaceName,
+	updateWorkspaceSyncOperationsToProvider,
+} from "../../services/workspace/workspace";
 import {
 	acceptWorkspaceInvite,
 	createWorkspaceInvite,
@@ -30,14 +29,14 @@ import {
 	revokeWorkspaceInvite,
 	updateWorkspaceMemberRole,
 } from "../../services/workspace/workspace-members";
-import { AnalysisModelTier } from "../generated/types";
+import { getWorkspaceStats } from "../../services/workspace/workspace-stats";
 import type {
 	MutationResolvers,
 	QueryResolvers,
 	SubscriptionResolvers,
-	WorkspaceColor,
 	WorkspaceAiProgress as WorkspaceAiProgressType,
 	WorkspaceAiSettings as WorkspaceAiSettingsType,
+	WorkspaceColor,
 	WorkspaceInvite,
 	WorkspaceInviteResolvers,
 	WorkspaceMember,
@@ -46,6 +45,7 @@ import type {
 	WorkspaceResolvers,
 	Workspace as WorkspaceType,
 } from "../generated/types";
+import { AnalysisModelTier } from "../generated/types";
 import { type PubSubChannels, pubSub } from "../pubsub";
 import { requireAuth } from "./auth-helpers";
 

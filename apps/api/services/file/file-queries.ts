@@ -17,8 +17,8 @@ import {
 	sql,
 } from "drizzle-orm";
 import { logger } from "../../utils/logger";
-import { inferTextEmbedding } from "../ai/inference-client";
 import { resolveAiFeatureToggles } from "../ai/ai-support";
+import { inferTextEmbedding } from "../ai/inference-client";
 import { getProviderInstance } from "../provider/provider-queries";
 
 function normalizeNullableId(value: string | null | undefined): string | null {

@@ -1,12 +1,12 @@
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { CreateFolderDialog } from "@/features/files/CreateFolderDialog";
 import { FileDropZone } from "@/features/files/components/FileDropZone";
 import { FilesToolbar } from "@/features/files/components/FilesToolbar";
-import { FilesSettingsDialog } from "@/features/files/settings/FilesSettingsDialog";
 import {
 	DragOverlayContent,
 	FileSystemTable,
@@ -18,7 +18,7 @@ import { useFileOperations } from "@/features/files/hooks/useFileOperations";
 import { useContents } from "@/features/files/hooks/useFiles";
 import { useUpload } from "@/features/files/hooks/useUpload";
 import { useUploadSessionRestore } from "@/features/files/hooks/useUploadSessionRestore";
-
+import { FilesSettingsDialog } from "@/features/files/settings/FilesSettingsDialog";
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
@@ -30,7 +30,6 @@ import {
 } from "@/features/workspaces";
 import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
-import { toast } from "sonner";
 
 const searchSchema = z.object({
 	folderId: z.string().optional().catch(undefined),

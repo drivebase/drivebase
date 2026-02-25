@@ -1,9 +1,9 @@
 import {
 	boolean,
 	customType,
+	index,
 	integer,
 	jsonb,
-	index,
 	pgEnum,
 	pgTable,
 	real,
