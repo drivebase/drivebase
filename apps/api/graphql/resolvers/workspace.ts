@@ -18,7 +18,7 @@ import {
 	listAccessibleWorkspaces,
 	updateWorkspaceName,
 	updateWorkspaceSyncOperationsToProvider,
-} from "../../services/workspace/workspace";
+} from "../../services/workspace";
 import {
 	acceptWorkspaceInvite,
 	createWorkspaceInvite,
@@ -28,8 +28,8 @@ import {
 	requireWorkspaceRole,
 	revokeWorkspaceInvite,
 	updateWorkspaceMemberRole,
-} from "../../services/workspace/workspace-members";
-import { getWorkspaceStats } from "../../services/workspace/workspace-stats";
+} from "../../services/workspace";
+import { getWorkspaceStats } from "../../services/workspace";
 import type {
 	MutationResolvers,
 	QueryResolvers,

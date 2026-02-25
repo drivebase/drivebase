@@ -20,7 +20,7 @@ import {
 	starFile,
 	unstarFile,
 } from "./file/index";
-import { getAccessibleWorkspaceId } from "./workspace/workspace";
+import { getAccessibleWorkspaceId } from "./workspace";
 
 export class FileService {
 	constructor(private db: Database) {}

@@ -55,7 +55,7 @@ export const vaultMutations: MutationResolvers = {
 			? workspaceId
 			: await (async () => {
 					const { getAccessibleWorkspaceId } = await import(
-						"../../services/workspace/workspace"
+						"../../services/workspace"
 					);
 					return getAccessibleWorkspaceId(context.db, user.userId);
 				})();
@@ -81,7 +81,7 @@ export const vaultMutations: MutationResolvers = {
 			? workspaceId
 			: await (async () => {
 					const { getAccessibleWorkspaceId } = await import(
-						"../../services/workspace/workspace"
+						"../../services/workspace"
 					);
 					return getAccessibleWorkspaceId(context.db, user.userId);
 				})();
@@ -109,7 +109,7 @@ export const vaultMutations: MutationResolvers = {
 			? workspaceId
 			: await (async () => {
 					const { getAccessibleWorkspaceId } = await import(
-						"../../services/workspace/workspace"
+						"../../services/workspace"
 					);
 					return getAccessibleWorkspaceId(context.db, user.userId);
 				})();
@@ -157,7 +157,7 @@ export const vaultMutations: MutationResolvers = {
 			? workspaceId
 			: await (async () => {
 					const { getAccessibleWorkspaceId } = await import(
-						"../../services/workspace/workspace"
+						"../../services/workspace"
 					);
 					return getAccessibleWorkspaceId(context.db, user.userId);
 				})();

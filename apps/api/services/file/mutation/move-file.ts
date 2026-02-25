@@ -6,7 +6,7 @@ import { logger } from "../../../utils/logger";
 import { ActivityService } from "../../activity";
 import { FolderService } from "../../folder";
 import { ProviderService } from "../../provider";
-import { getWorkspaceSyncOperationsToProvider } from "../../workspace/workspace";
+import { getWorkspaceSyncOperationsToProvider } from "../../workspace";
 import { getFile } from "../query/file-read";
 
 // Move a file within workspace folders and optionally provider-side.

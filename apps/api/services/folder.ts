@@ -11,7 +11,7 @@ import {
 	listFolders,
 } from "./folder/folder-queries";
 import { starFolder, unstarFolder } from "./folder/folder-stars";
-import { getAccessibleWorkspaceId } from "./workspace/workspace";
+import { getAccessibleWorkspaceId } from "./workspace";
 
 export class FolderService {
 	constructor(private db: Database) {}

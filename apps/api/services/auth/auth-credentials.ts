@@ -16,7 +16,7 @@ import {
 	validatePassword,
 	verifyPassword,
 } from "../../utils/password";
-import { createDefaultWorkspace } from "../workspace/workspace";
+import { createDefaultWorkspace } from "../workspace";
 
 /**
  * Register a new user (only owner can register)

@@ -22,7 +22,7 @@ const unstarFile = mock();
 const getContents = mock();
 const getStarredFiles = mock();
 
-mock.module("../../../services/workspace/workspace", () => ({
+mock.module("../../../services/workspace", () => ({
 	getAccessibleWorkspaceId,
 }));
 

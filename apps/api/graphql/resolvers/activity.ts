@@ -15,7 +15,7 @@ import {
 } from "../../queue/transfer-queue";
 import { getRedis } from "../../redis/client";
 import { ActivityService } from "../../services/activity";
-import { getAccessibleWorkspaceId } from "../../services/workspace/workspace";
+import { getAccessibleWorkspaceId } from "../../services/workspace";
 import {
 	type ActivityResolvers,
 	ActivityType,

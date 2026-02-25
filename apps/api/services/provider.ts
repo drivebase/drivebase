@@ -24,7 +24,7 @@ import {
 	getProviders,
 	listOAuthProviderCredentials,
 } from "@/services/provider/query";
-import { getAccessibleWorkspaceId } from "./workspace/workspace";
+import { getAccessibleWorkspaceId } from "./workspace";
 
 export class ProviderService {
 	constructor(private db: Database) {}

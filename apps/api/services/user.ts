@@ -9,7 +9,7 @@ import { users } from "@drivebase/db";
 import { eq } from "drizzle-orm";
 import { logger } from "../utils/logger";
 import { hashPassword, validatePassword } from "../utils/password";
-import { createDefaultWorkspace } from "./workspace/workspace";
+import { createDefaultWorkspace } from "./workspace";
 
 export class UserService {
 	constructor(private db: Database) {}

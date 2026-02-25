@@ -32,22 +32,6 @@ function toNumber(value: unknown): number {
 	return 0;
 }
 
-function toDayKey(date: Date): string {
-	return date.toISOString().slice(0, 10);
-}
-
-function rangeBuckets(start: Date, endExclusive: Date): Date[] {
-	const buckets: Date[] = [];
-	for (
-		let cursor = start;
-		cursor < endExclusive;
-		cursor = addDaysUtc(cursor, 1)
-	) {
-		buckets.push(cursor);
-	}
-	return buckets;
-}
-
 async function upsertWorkspaceStatsRange(
 	db: Database,
 	workspaceId: string,
@@ -78,24 +62,38 @@ async function upsertWorkspaceStatsRange(
 		{ uploadedBytes: number; downloadedBytes: number }
 	>();
 	for (const row of aggregated) {
-		const bucket = startOfUtcDay(new Date(row.bucketStart));
-		byDay.set(toDayKey(bucket), {
+		const key = startOfUtcDay(new Date(row.bucketStart))
+			.toISOString()
+			.slice(0, 10);
+		byDay.set(key, {
 			uploadedBytes: toNumber(row.uploadedBytes),
 			downloadedBytes: toNumber(row.downloadedBytes),
 		});
 	}
 
-	const upsertRows = rangeBuckets(start, endExclusive).map((bucketStart) => {
-		const day = toDayKey(bucketStart);
-		const values = byDay.get(day) ?? { uploadedBytes: 0, downloadedBytes: 0 };
-		return {
+	const upsertRows = [] as Array<{
+		workspaceId: string;
+		bucketStart: Date;
+		uploadedBytes: number;
+		downloadedBytes: number;
+		updatedAt: Date;
+	}>;
+
+	for (
+		let cursor = start;
+		cursor < endExclusive;
+		cursor = addDaysUtc(cursor, 1)
+	) {
+		const key = cursor.toISOString().slice(0, 10);
+		const values = byDay.get(key) ?? { uploadedBytes: 0, downloadedBytes: 0 };
+		upsertRows.push({
 			workspaceId,
-			bucketStart,
+			bucketStart: cursor,
 			uploadedBytes: values.uploadedBytes,
 			downloadedBytes: values.downloadedBytes,
 			updatedAt: new Date(),
-		};
-	});
+		});
+	}
 
 	if (upsertRows.length === 0) return;
 
@@ -112,6 +110,7 @@ async function upsertWorkspaceStatsRange(
 		});
 }
 
+// Build current and historical workspace usage stats.
 export async function getWorkspaceStats(
 	db: Database,
 	workspaceId: string,
@@ -139,9 +138,7 @@ export async function getWorkspaceStats(
 		);
 
 	const [providerTotals] = await db
-		.select({
-			totalProviders: sql<number>`count(*)::bigint`,
-		})
+		.select({ totalProviders: sql<number>`count(*)::bigint` })
 		.from(storageProviders)
 		.where(
 			and(
@@ -177,12 +174,9 @@ export async function getWorkspaceStats(
 		};
 	});
 
-	const uploadedBytes = history.reduce(
-		(sum, bucket) => sum + bucket.uploadedBytes,
-		0,
-	);
+	const uploadedBytes = history.reduce((sum, b) => sum + b.uploadedBytes, 0);
 	const downloadedBytes = history.reduce(
-		(sum, bucket) => sum + bucket.downloadedBytes,
+		(sum, b) => sum + b.downloadedBytes,
 		0,
 	);
 

@@ -1,7 +1,7 @@
 import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
 import { buildExportPayload } from "../../services/export/export";
-import { getAccessibleWorkspaceId } from "../../services/workspace/workspace";
+import { getAccessibleWorkspaceId } from "../../services/workspace";
 import { encryptWithPassword } from "../../utils/export-crypto";
 import type { AppEnv } from "../app";
 
