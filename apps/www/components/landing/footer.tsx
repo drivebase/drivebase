@@ -22,14 +22,6 @@ const footerLinks = [
       { label: "DeepWiki", href: "https://deepwiki.com/drivebase/drivebase" },
     ],
   },
-  {
-    title: "Company",
-    links: [
-      { label: "About", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Privacy Policy", href: "#" },
-    ],
-  },
 ];
 
 const socialLinks = [
