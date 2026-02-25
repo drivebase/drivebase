@@ -1,7 +1,8 @@
 import type { Database } from "@drivebase/db";
-import { files, folders, storageProviders } from "@drivebase/db";
+import { files, folders, type storageProviders } from "@drivebase/db";
 import { and, eq, isNull, notInArray } from "drizzle-orm";
-import { getProviderInstance } from "../../provider/provider-queries";
+import { getProviderInstance } from "@/services/provider/query";
+
 function normalizeNullableId(value: string | null | undefined): string | null {
 	if (!value) return null;
 	const trimmed = value.trim();

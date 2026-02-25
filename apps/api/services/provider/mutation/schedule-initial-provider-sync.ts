@@ -1,7 +1,7 @@
 import type { Database } from "@drivebase/db";
-import { enqueueSyncJob } from "../../queue/sync-queue";
-import { logger } from "../../utils/logger";
-import { syncProvider } from "./provider-sync";
+import { enqueueSyncJob } from "@/queue/sync-queue";
+import { logger } from "@/utils/logger";
+import { syncProvider } from "./sync-provider";
 
 interface InitialSyncParams {
 	db: Database;
@@ -11,11 +11,7 @@ interface InitialSyncParams {
 	context: string;
 }
 
-/**
- * Schedule initial provider sync.
- * Preferred path is BullMQ. If queue enqueue fails (e.g. transient Redis issue),
- * fall back to an in-process background sync so we don't lose first sync.
- */
+// Schedule initial sync and fall back to in-process sync on queue failure.
 export async function scheduleInitialProviderSync({
 	db,
 	providerId,
@@ -45,8 +41,6 @@ export async function scheduleInitialProviderSync({
 		});
 	}
 
-	// Fire-and-forget fallback. This keeps connect/callback responses fast while
-	// still ensuring an initial sync gets attempted.
 	void syncProvider(db, providerId, workspaceId, userId, {
 		recursive: true,
 		pruneDeleted: false,

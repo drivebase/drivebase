@@ -12,6 +12,10 @@
 		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,
 		"verbatimModuleSyntax": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./*"]
+		},
 		"noEmit": true,
 
 		// Best practices

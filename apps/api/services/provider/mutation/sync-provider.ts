@@ -2,18 +2,16 @@ import { NotFoundError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders } from "@drivebase/db";
 import { and, eq, isNull, notInArray } from "drizzle-orm";
-import { telemetry } from "../../telemetry";
-import { ActivityService } from "../activity";
-import { getProviderInstance } from "./provider-queries";
+import { telemetry } from "@/telemetry";
+import { ActivityService } from "@/services/activity";
+import { getProviderInstance } from "../query";
 
 function getSyncProgress(processedCount: number): number {
 	if (processedCount <= 0) return 0;
 	return Math.min(0.95, processedCount / (processedCount + 20));
 }
 
-/**
- * Sync provider quota and files
- */
+// Sync provider content and quota into database.
 export async function syncProvider(
 	db: Database,
 	providerId: string,
@@ -33,10 +31,7 @@ export async function syncProvider(
 			),
 		)
 		.limit(1);
-
-	if (!providerRecord) {
-		throw new NotFoundError("Provider");
-	}
+	if (!providerRecord) throw new NotFoundError("Provider");
 
 	const syncStartTime = Date.now();
 	const activityService = new ActivityService(db);
@@ -44,13 +39,8 @@ export async function syncProvider(
 		type: "sync",
 		title: `Syncing ${providerRecord.name}`,
 		message: "Starting sync...",
-		metadata: {
-			providerId,
-			recursive,
-			pruneDeleted,
-		},
+		metadata: { providerId, recursive, pruneDeleted },
 	});
-
 	await activityService.update(job.id, {
 		status: "running",
 		message: "Starting sync...",
@@ -58,31 +48,24 @@ export async function syncProvider(
 	});
 
 	const provider = await getProviderInstance(providerRecord);
-
 	const seenFileRemoteIds: string[] = [];
 	let processedCount = 0;
 
-	// Helper to sync a folder recursively
 	const syncFolder = async (
 		remoteFolderId: string | undefined,
 		parentDbId: string | null,
 		parentPath: string,
 	) => {
 		let pageToken: string | undefined;
-
 		do {
 			const listResult = await provider.list({
 				folderId: remoteFolderId,
 				pageToken,
 				limit: 100,
 			});
-
-			// Process Folders - matched by (remoteId, providerId)
 			for (const folder of listResult.folders) {
 				const cleanName = folder.name.replace(/\//g, "-");
 				const virtualPath = `${parentPath}${cleanName}/`;
-
-				// Check if folder exists by remoteId + providerId
 				let [dbFolder] = await db
 					.select()
 					.from(folders)
@@ -112,8 +95,7 @@ export async function syncProvider(
 								createdAt: folder.modifiedAt,
 							})
 							.returning();
-					} catch (error) {
-						console.warn(`Failed to insert folder ${virtualPath}: ${error}`);
+					} catch {
 						continue;
 					}
 				} else {
@@ -129,9 +111,7 @@ export async function syncProvider(
 							})
 							.where(eq(folders.id, dbFolder.id))
 							.returning();
-					} catch (error) {
-						console.warn(`Failed to update folder ${virtualPath}: ${error}`);
-					}
+					} catch {}
 				}
 
 				processedCount++;
@@ -148,13 +128,10 @@ export async function syncProvider(
 				}
 			}
 
-			// Process Files
 			for (const file of listResult.files) {
 				const cleanName = file.name.replace(/\//g, "-");
 				const virtualPath = `${parentPath}${cleanName}`;
-
 				seenFileRemoteIds.push(file.remoteId);
-
 				try {
 					const [existingFile] = await db
 						.select()
@@ -213,9 +190,7 @@ export async function syncProvider(
 								},
 							});
 					}
-				} catch (error) {
-					console.warn(`Failed to sync file ${virtualPath}: ${error}`);
-				}
+				} catch {}
 
 				processedCount++;
 				if (processedCount % 10 === 0) {
@@ -226,7 +201,6 @@ export async function syncProvider(
 					});
 				}
 			}
-
 			pageToken = listResult.nextPageToken;
 		} while (pageToken);
 	};
@@ -234,14 +208,12 @@ export async function syncProvider(
 	try {
 		await syncFolder(undefined, null, "/");
 
-		// Prune deleted files if requested (only files are tied to providers)
 		if (pruneDeleted && seenFileRemoteIds.length > 0) {
 			await activityService.update(job.id, {
 				status: "running",
 				progress: getSyncProgress(processedCount),
 				message: "Pruning deleted items...",
 			});
-
 			await db
 				.delete(files)
 				.where(
@@ -255,7 +227,6 @@ export async function syncProvider(
 		}
 
 		const quota = await provider.getQuota();
-
 		const [updated] = await db
 			.update(storageProviders)
 			.set({
@@ -267,20 +238,15 @@ export async function syncProvider(
 			.where(eq(storageProviders.id, providerId))
 			.returning();
 
-		if (!updated) {
-			throw new Error("Failed to update provider");
-		}
-
+		if (!updated) throw new Error("Failed to update provider");
 		await activityService.complete(
 			job.id,
 			`Sync completed successfully (${processedCount} items)`,
 		);
-
 		telemetry.capture("provider_sync_completed", {
 			type: providerRecord.type,
 			duration_ms: Date.now() - syncStartTime,
 		});
-
 		return updated;
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);

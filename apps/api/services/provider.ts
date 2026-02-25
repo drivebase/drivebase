@@ -6,28 +6,24 @@ import type {
 } from "@drivebase/db";
 import { logger } from "../utils/logger";
 import {
-	createOAuthProviderCredential,
-	listOAuthProviderCredentials,
-} from "./provider/provider-credentials";
-import {
 	connectProvider,
+	createOAuthProviderCredential,
 	disconnectProvider,
-	renameProvider,
-	updateProviderQuota,
-} from "./provider/provider-lifecycle";
-import {
 	handleOAuthCallback,
 	initiateOAuth,
 	pollProviderAuth,
-} from "./provider/provider-oauth";
+	renameProvider,
+	scheduleInitialProviderSync,
+	syncProvider,
+	updateProviderQuota,
+} from "@/services/provider/mutation";
 import {
+	getProviderConfigPreview,
 	getProvider,
 	getProviderInstance,
 	getProviders,
-} from "./provider/provider-queries";
-import { syncProvider } from "./provider/provider-sync";
-import { scheduleInitialProviderSync } from "./provider/provider-sync-scheduler";
-import { getProviderConfigPreview } from "./provider/provider-utils";
+	listOAuthProviderCredentials,
+} from "@/services/provider/query";
 import { getAccessibleWorkspaceId } from "./workspace/workspace";
 
 export class ProviderService {

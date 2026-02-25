@@ -24,7 +24,7 @@ import {
 	inferOcrStream,
 	inferTextEmbedding,
 } from "../services/ai/inference-client";
-import { getProviderInstance } from "../services/provider/provider-queries";
+import { getProviderInstance } from "@/services/provider/query";
 import { logger } from "../utils/logger";
 import type { FileAnalysisJobData } from "./analysis-queue";
 import { getAnalysisQueue } from "./analysis-queue";
