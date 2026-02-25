@@ -14,6 +14,8 @@ coverage
 __pycache__
 *.pyc
 .venv
+*.pt
+.drivebase
 
 # logs
 logs
