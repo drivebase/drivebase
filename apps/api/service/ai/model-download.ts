@@ -26,6 +26,10 @@ function wait(ms: number) {
 async function waitForDownloadCompletion(
 	downloadId: string,
 	maxAttempts = 600,
+	onProgress?: (status: {
+		progress: number;
+		message?: string;
+	}) => Promise<void>,
 ): Promise<{
 	status: "completed" | "failed";
 	progress: number;
@@ -33,6 +37,12 @@ async function waitForDownloadCompletion(
 }> {
 	for (let i = 0; i < maxAttempts; i += 1) {
 		const status = await getModelDownloadStatus(downloadId);
+		if (onProgress && status.status !== "failed") {
+			await onProgress({
+				progress: status.progress,
+				message: status.message,
+			});
+		}
 		if (status.status === "completed") {
 			return {
 				status: "completed",
@@ -66,6 +76,7 @@ export async function scheduleModelPreparation(
 		ocrTier: TierType;
 		objectTier: TierType;
 	},
+	selectedTasks?: TaskType[],
 ) {
 	if (!env.AI_INFERENCE_URL) {
 		logger.warn({
@@ -99,7 +110,7 @@ export async function scheduleModelPreparation(
 		},
 	});
 
-	const tasks: ModelTaskConfig[] = [
+	const allTasks: ModelTaskConfig[] = [
 		{
 			task: "embedding",
 			tier: settings.embeddingTier,
@@ -116,6 +127,16 @@ export async function scheduleModelPreparation(
 			label: `Object detection (${settings.objectTier})`,
 		},
 	];
+	const taskSet =
+		selectedTasks && selectedTasks.length > 0
+			? new Set<TaskType>(selectedTasks)
+			: null;
+	const tasks = taskSet
+		? allTasks.filter((task) => taskSet.has(task.task))
+		: allTasks;
+	if (tasks.length === 0) {
+		return;
+	}
 
 	void (async () => {
 		try {
@@ -168,7 +189,48 @@ export async function scheduleModelPreparation(
 					continue;
 				}
 
-				const completion = await waitForDownloadCompletion(ensure.downloadId);
+				const initialTaskProgress = Math.max(0, Math.min(1, ensure.progress));
+				await activityService.update(job.id, {
+					status: "running",
+					progress: Math.min(
+						0.999,
+						taskBase + initialTaskProgress * taskWeight,
+					),
+					message: ensure.message ?? `Downloading ${task.label}`,
+					metadata: {
+						workspaceId,
+						task: task.task,
+						tier: task.tier,
+						taskIndex: idx + 1,
+						taskTotal: tasks.length,
+						modelId: ensure.modelId,
+						downloadId: ensure.downloadId,
+						downloadProgress: initialTaskProgress,
+					},
+				});
+
+				const completion = await waitForDownloadCompletion(
+					ensure.downloadId,
+					600,
+					async ({ progress, message }) => {
+						const taskProgress = Math.max(0, Math.min(1, progress));
+						await activityService.update(job.id, {
+							status: "running",
+							progress: Math.min(0.999, taskBase + taskProgress * taskWeight),
+							message: message ?? `Downloading ${task.label}`,
+							metadata: {
+								workspaceId,
+								task: task.task,
+								tier: task.tier,
+								taskIndex: idx + 1,
+								taskTotal: tasks.length,
+								modelId: ensure.modelId,
+								downloadId: ensure.downloadId,
+								downloadProgress: taskProgress,
+							},
+						});
+					},
+				);
 				if (completion.status === "failed") {
 					await activityService.fail(
 						job.id,

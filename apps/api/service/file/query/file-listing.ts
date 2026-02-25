@@ -1,5 +1,10 @@
 import type { Database } from "@drivebase/db";
-import { files, folders, storageProviders } from "@drivebase/db";
+import {
+	fileExtractedText,
+	files,
+	folders,
+	storageProviders,
+} from "@drivebase/db";
 import { and, desc, eq, ilike, isNull, sql } from "drizzle-orm";
 import { logger } from "../../../utils/logger";
 
@@ -78,6 +83,91 @@ export async function searchFiles(
 			.then((rows) => rows.map((row) => row.file));
 	} catch (error) {
 		logger.error({ msg: "Search files failed", userId, query, error });
+		throw error;
+	}
+}
+
+export async function searchFilesAi(
+	db: Database,
+	userId: string,
+	workspaceId: string,
+	query: string,
+	limit: number = 50,
+) {
+	logger.debug({
+		msg: "Searching files with AI index",
+		userId,
+		workspaceId,
+		query,
+	});
+
+	const normalizedQuery = query.trim();
+	if (!normalizedQuery) {
+		return [];
+	}
+
+	const safeLimit = Math.max(1, Math.min(limit, 100));
+
+	try {
+		const textRows = await db
+			.select({ file: files })
+			.from(fileExtractedText)
+			.innerJoin(files, eq(files.id, fileExtractedText.fileId))
+			.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
+			.where(
+				and(
+					ilike(fileExtractedText.text, `%${normalizedQuery}%`),
+					eq(files.nodeType, "file"),
+					eq(files.isDeleted, false),
+					isNull(files.vaultId),
+					eq(storageProviders.workspaceId, workspaceId),
+				),
+			)
+			.limit(safeLimit * 3)
+			.orderBy(desc(fileExtractedText.createdAt));
+
+		const byId = new Map<string, (typeof textRows)[number]["file"]>();
+		for (const row of textRows) {
+			if (!byId.has(row.file.id)) {
+				byId.set(row.file.id, row.file);
+			}
+			if (byId.size >= safeLimit) {
+				break;
+			}
+		}
+
+		if (byId.size >= safeLimit) {
+			return Array.from(byId.values());
+		}
+
+		const nameRows = await db
+			.select({ file: files })
+			.from(files)
+			.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
+			.where(
+				and(
+					eq(files.nodeType, "file"),
+					ilike(files.name, `%${normalizedQuery}%`),
+					eq(files.isDeleted, false),
+					isNull(files.vaultId),
+					eq(storageProviders.workspaceId, workspaceId),
+				),
+			)
+			.limit(safeLimit * 2)
+			.orderBy(files.name);
+
+		for (const row of nameRows) {
+			if (!byId.has(row.file.id)) {
+				byId.set(row.file.id, row.file);
+			}
+			if (byId.size >= safeLimit) {
+				break;
+			}
+		}
+
+		return Array.from(byId.values());
+	} catch (error) {
+		logger.error({ msg: "AI search files failed", userId, query, error });
 		throw error;
 	}
 }

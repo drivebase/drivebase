@@ -29,6 +29,7 @@ import {
 	updateWorkspaceSyncOperationsToProvider,
 } from "../../service/workspace";
 import type {
+	AiModelTask,
 	MutationResolvers,
 	QueryResolvers,
 	SubscriptionResolvers,
@@ -104,6 +105,14 @@ function fromAnalysisModelTier(
 	if (tier === "LIGHTWEIGHT") return "lightweight";
 	if (tier === "HEAVY") return "heavy";
 	return "medium";
+}
+
+function fromAiModelTask(
+	task: AiModelTask,
+): "embedding" | "ocr" | "object_detection" {
+	if (task === "EMBEDDING") return "embedding";
+	if (task === "OCR") return "ocr";
+	return "object_detection";
 }
 
 function toWorkspaceAiSettingsType(settings: {
@@ -361,12 +370,17 @@ export const workspaceMutations: MutationResolvers = {
 			args.workspaceId,
 		);
 
-		await scheduleModelPreparation(context.db, args.workspaceId, {
-			enabled: settings.enabled,
-			embeddingTier: settings.embeddingTier,
-			ocrTier: settings.ocrTier,
-			objectTier: settings.objectTier,
-		});
+		await scheduleModelPreparation(
+			context.db,
+			args.workspaceId,
+			{
+				enabled: settings.enabled,
+				embeddingTier: settings.embeddingTier,
+				ocrTier: settings.ocrTier,
+				objectTier: settings.objectTier,
+			},
+			args.tasks?.map(fromAiModelTask),
+		);
 
 		return true;
 	},
