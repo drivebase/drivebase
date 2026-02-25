@@ -15,7 +15,10 @@ import {
 	retryWorkspaceFailedAiFiles,
 	stopWorkspaceAiProcessing,
 } from "../../services/ai/analysis-jobs";
-import { scheduleModelPreparation } from "../../services/ai/model-download";
+import {
+	scheduleModelPreparation,
+	syncWorkspaceModelReadiness,
+} from "../../services/ai/model-download";
 import { getWorkspaceStats } from "../../services/workspace/workspace-stats";
 import {
 	acceptWorkspaceInvite,
@@ -210,7 +213,10 @@ export const workspaceQueries: QueryResolvers = {
 			context.db,
 			args.workspaceId,
 		);
-		return toWorkspaceAiSettingsType(settings);
+		const synced =
+			(await syncWorkspaceModelReadiness(context.db, args.workspaceId)) ??
+			settings;
+		return toWorkspaceAiSettingsType(synced);
 	},
 
 	workspaceAiProgress: async (_parent, args, context) => {

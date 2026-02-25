@@ -4,7 +4,11 @@ import { eq } from "drizzle-orm";
 import { env } from "../../config/env";
 import { logger } from "../../utils/logger";
 import { ActivityService } from "../activity";
-import { ensureModel, getModelDownloadStatus } from "./inference-client";
+import {
+	ensureModel,
+	getModelDownloadStatus,
+	getModelReadyStatus,
+} from "./inference-client";
 
 type TaskType = "embedding" | "ocr" | "object_detection";
 type TierType = "lightweight" | "medium" | "heavy";
@@ -207,4 +211,68 @@ export async function scheduleModelPreparation(
 			await activityService.fail(job.id, message);
 		}
 	})();
+}
+
+export async function syncWorkspaceModelReadiness(
+	db: Database,
+	workspaceId: string,
+) {
+	const [settings] = await db
+		.select()
+		.from(workspaceAiSettings)
+		.where(eq(workspaceAiSettings.workspaceId, workspaceId))
+		.limit(1);
+	if (!settings) return null;
+
+	if (!env.AI_INFERENCE_URL) {
+		return settings;
+	}
+
+	try {
+		const [embedding, ocr, object] = await Promise.all([
+			getModelReadyStatus({
+				task: "embedding",
+				tier: settings.embeddingTier,
+			}),
+			getModelReadyStatus({
+				task: "ocr",
+				tier: settings.ocrTier,
+			}),
+			getModelReadyStatus({
+				task: "object_detection",
+				tier: settings.objectTier,
+			}),
+		]);
+
+		const allReady = embedding.ready && ocr.ready && object.ready;
+		const existingConfig =
+			settings.config && typeof settings.config === "object"
+				? settings.config
+				: {};
+		const [updated] = await db
+			.update(workspaceAiSettings)
+			.set({
+				modelsReady: allReady,
+				config: {
+					...existingConfig,
+					aiModelReady: {
+						embedding: embedding.ready,
+						ocr: ocr.ready,
+						objectDetection: object.ready,
+					},
+				},
+				updatedAt: new Date(),
+			})
+			.where(eq(workspaceAiSettings.workspaceId, workspaceId))
+			.returning();
+
+		return updated ?? settings;
+	} catch (error) {
+		logger.warn({
+			msg: "Failed to sync workspace model readiness",
+			workspaceId,
+			error: error instanceof Error ? error.message : String(error),
+		});
+		return settings;
+	}
 }

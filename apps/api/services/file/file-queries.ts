@@ -518,6 +518,18 @@ function getMimeFilterSql(intent: AiSearchIntent) {
 const AI_MIN_RELEVANCE_SCORE = 0.12;
 const AI_MIN_HIGH_CONF_SEMANTIC_SCORE = 0.72;
 
+function tokenizeQuery(query: string): string[] {
+	return Array.from(
+		new Set(
+			query
+				.toLowerCase()
+				.split(/[^a-z0-9]+/g)
+				.map((token) => token.trim())
+				.filter((token) => token.length >= 2),
+		),
+	).slice(0, 10);
+}
+
 async function searchFilesAiLexicalFallback(
 	db: Database,
 	workspaceId: string,
@@ -525,18 +537,26 @@ async function searchFilesAiLexicalFallback(
 	limit: number,
 ) {
 	const queryLike = `%${query.toLowerCase()}%`;
+	const queryTokens = tokenizeQuery(query);
+	const tokenValues =
+		queryTokens.length > 0
+			? sql.join(
+					queryTokens.map((token) => sql`(${token})`),
+					sql`,`,
+				)
+			: sql`('')`;
+	const hasQueryRoot = query.trim().length >= 6;
 	const personAliasMatch =
 		/\b(person|people|woman|women|female|girl|lady|man|men|male|boy|guy)\b/.test(
 			query.toLowerCase(),
 		);
-	const queryRoot =
-		query.trim().length >= 6
-			? `%${query
-					.trim()
-					.toLowerCase()
-					.replace(/[^a-z0-9]/g, "")
-					.slice(0, 6)}%`
-			: null;
+	const queryRoot = hasQueryRoot
+		? `%${query
+				.trim()
+				.toLowerCase()
+				.replace(/[^a-z0-9]/g, "")
+				.slice(0, 6)}%`
+		: queryLike;
 	const rows = await db.execute(sql`
 		with workspace_files as (
 			select f.id, f.name
@@ -547,38 +567,55 @@ async function searchFilesAiLexicalFallback(
 				and f.vault_id is null
 				and sp.workspace_id = ${workspaceId}
 		),
+		query_tokens(token) as (
+			values ${tokenValues}
+		),
 		name_hits as (
 			select
 				wf.id as file_id,
 				greatest(
 					case when lower(wf.name) like ${queryLike} then 1.0 else 0 end,
-					case when ${queryRoot} is not null and lower(wf.name) like ${queryRoot} then 0.65 else 0 end
+					case when ${hasQueryRoot} and lower(wf.name) like ${queryRoot} then 0.65 else 0 end
 				)::float4 as score
 			from workspace_files wf
 			where lower(wf.name) like ${queryLike}
-				or (${queryRoot} is not null and lower(wf.name) like ${queryRoot})
+				or (${hasQueryRoot} and lower(wf.name) like ${queryRoot})
 		),
 		text_hits as (
 			select
 				fet.file_id,
 				greatest(
 					case when lower(fet.text) like ${queryLike} then 1.2 else 0 end,
-					case when ${queryRoot} is not null and lower(fet.text) like ${queryRoot} then 0.85 else 0 end
+					case when ${hasQueryRoot} and lower(fet.text) like ${queryRoot} then 0.85 else 0 end
 				)::float4 as score
 			from file_extracted_text fet
 			join workspace_files wf on wf.id = fet.file_id
 			where fet.workspace_id = ${workspaceId}
 				and (
 					lower(fet.text) like ${queryLike}
-					or (${queryRoot} is not null and lower(fet.text) like ${queryRoot})
+					or (${hasQueryRoot} and lower(fet.text) like ${queryRoot})
 				)
+		),
+		text_token_hits as (
+			select
+				fet.file_id,
+				least(
+					1.3::float4,
+					(count(distinct qt.token)::float4 / greatest(1, ${queryTokens.length})::float4) * 1.3
+				) as score
+			from file_extracted_text fet
+			join workspace_files wf on wf.id = fet.file_id
+			join query_tokens qt on length(qt.token) >= 2
+			where fet.workspace_id = ${workspaceId}
+				and lower(fet.text) like ('%' || qt.token || '%')
+			group by fet.file_id
 		),
 		object_hits as (
 			select
 				fdo.file_id,
 				greatest(
 					case when lower(fdo.label) like ${queryLike} then 1.1 else 0 end,
-					case when ${queryRoot} is not null and lower(fdo.label) like ${queryRoot} then 0.8 else 0 end,
+					case when ${hasQueryRoot} and lower(fdo.label) like ${queryRoot} then 0.8 else 0 end,
 					case when ${personAliasMatch} and lower(fdo.label) = 'person' then 1.15 else 0 end
 				)::float4 as score
 			from file_detected_objects fdo
@@ -586,7 +623,7 @@ async function searchFilesAiLexicalFallback(
 			where fdo.workspace_id = ${workspaceId}
 				and (
 					lower(fdo.label) like ${queryLike}
-					or (${queryRoot} is not null and lower(fdo.label) like ${queryRoot})
+					or (${hasQueryRoot} and lower(fdo.label) like ${queryRoot})
 					or (${personAliasMatch} and lower(fdo.label) = 'person')
 				)
 		),
@@ -596,6 +633,8 @@ async function searchFilesAiLexicalFallback(
 				select * from name_hits
 				union all
 				select * from text_hits
+				union all
+				select * from text_token_hits
 				union all
 				select * from object_hits
 			) all_hits
@@ -639,6 +678,15 @@ export async function searchFilesAi(
 	limit: number = 20,
 ) {
 	logger.debug({ msg: "Semantic searching files", userId, workspaceId, query });
+	const normalizedQuery = query.trim();
+	if (normalizedQuery.length < 3) {
+		logger.debug({
+			msg: "Short query routed to lexical AI search",
+			workspaceId,
+			query,
+		});
+		return searchFilesAiLexicalFallback(db, workspaceId, query, limit);
+	}
 	try {
 		const intent = detectAiSearchIntent(query);
 		const mimeFilterSql = getMimeFilterSql(intent);

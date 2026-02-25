@@ -128,12 +128,27 @@ export function AiModelsSection({
 	const ocrTier = useAiSettingsStore((state) => state.ocrTier);
 	const objectTier = useAiSettingsStore((state) => state.objectTier);
 
+	const readyMap =
+		settings?.config &&
+		typeof settings.config === "object" &&
+		(settings.config as Record<string, unknown>).aiModelReady &&
+		typeof (settings.config as Record<string, unknown>).aiModelReady ===
+			"object"
+			? ((settings.config as Record<string, unknown>).aiModelReady as Record<
+					string,
+					unknown
+				>)
+			: {};
+
 	const embeddingReady =
-		Boolean(settings?.modelsReady) && settings?.embeddingTier === embeddingTier;
+		settings?.embeddingTier === embeddingTier &&
+		(readyMap.embedding === true || settings?.modelsReady === true);
 	const ocrReady =
-		Boolean(settings?.modelsReady) && settings?.ocrTier === ocrTier;
+		settings?.ocrTier === ocrTier &&
+		(readyMap.ocr === true || settings?.modelsReady === true);
 	const objectReady =
-		Boolean(settings?.modelsReady) && settings?.objectTier === objectTier;
+		settings?.objectTier === objectTier &&
+		(readyMap.objectDetection === true || settings?.modelsReady === true);
 
 	return (
 		<>

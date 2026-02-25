@@ -36,6 +36,13 @@ interface ModelDownloadStatusResponse {
 	message?: string;
 }
 
+interface ModelReadyStatusResponse {
+	task: "embedding" | "ocr" | "object_detection";
+	tier: "lightweight" | "medium" | "heavy";
+	modelId: string;
+	ready: boolean;
+}
+
 async function postJson<T>(
 	path: string,
 	body: Record<string, unknown>,
@@ -195,4 +202,33 @@ export async function getModelDownloadStatus(
 	}
 
 	return (await response.json()) as ModelDownloadStatusResponse;
+}
+
+export async function getModelReadyStatus(input: {
+	task: "embedding" | "ocr" | "object_detection";
+	tier: "lightweight" | "medium" | "heavy";
+}): Promise<ModelReadyStatusResponse> {
+	if (!env.AI_INFERENCE_URL) {
+		throw new Error("AI inference service is not configured");
+	}
+
+	const url = new URL(`${env.AI_INFERENCE_URL}/models/ready`);
+	url.searchParams.set("task", input.task);
+	url.searchParams.set("tier", input.tier);
+
+	const response = await fetch(url.toString(), {
+		method: "GET",
+		headers: {
+			...(env.AI_INFERENCE_TOKEN
+				? { Authorization: `Bearer ${env.AI_INFERENCE_TOKEN}` }
+				: {}),
+		},
+	});
+
+	if (!response.ok) {
+		const text = await response.text();
+		throw new Error(`Model ready request failed (${response.status}): ${text}`);
+	}
+
+	return (await response.json()) as ModelReadyStatusResponse;
 }

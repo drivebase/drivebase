@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 
 from ai_inference.config import MODEL_REGISTRY, MODELS_DIR, TaskType, TierType
-from ai_inference.downloads import ensure_download, get_download_status
+from ai_inference.downloads import ensure_download, get_download_status, is_model_ready
 from ai_inference.embeddings import embedding_from_seed
 from ai_inference.extractors import extract_text_for_file
 from ai_inference.object_detection import detect_objects_from_image_bytes
@@ -106,6 +106,17 @@ def download_status(download_id: str):
         return get_download_status(download_id)
     except KeyError:
         raise HTTPException(status_code=404, detail="Download not found")
+
+
+@app.get("/models/ready")
+def model_ready(task: TaskType, tier: TierType):
+    model_id = MODEL_REGISTRY[tier][task]
+    return {
+        "task": task,
+        "tier": tier,
+        "modelId": model_id,
+        "ready": is_model_ready(model_id),
+    }
 
 
 @app.post("/embed", response_model=EmbedResponse)
