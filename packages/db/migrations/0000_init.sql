@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TYPE "public"."activity_type" AS ENUM('upload', 'download', 'create', 'update', 'delete', 'move', 'copy', 'share', 'unshare');--> statement-breakpoint
 CREATE TYPE "public"."analysis_model_tier" AS ENUM('lightweight', 'medium', 'heavy');--> statement-breakpoint
 CREATE TYPE "public"."analysis_status" AS ENUM('pending', 'running', 'completed', 'failed', 'skipped');--> statement-breakpoint
