@@ -1,6 +1,7 @@
 export { ArchitectureSection } from "./architecture-section";
 export { CapabilitiesGrid } from "./capabilities-grid";
 export { CTASection } from "./cta-section";
+export { FAQSection } from "./faq-section";
 export { Footer } from "./footer";
 export { HeroSection } from "./hero-section";
 export { InstallationSteps } from "./installation-steps";
