@@ -68,9 +68,40 @@ def extract_text_pdf(payload: bytes) -> ExtractionResult:
             pages.append(content.strip())
 
     text = "\n\n".join(pages).strip()
-    if not text:
+    if text:
+        return ExtractionResult(text=text, language=None, source="pdf_text")
+
+    ocr_text = _extract_text_pdf_ocr_fallback(payload).strip()
+    if not ocr_text:
         raise ValueError("empty_text")
-    return ExtractionResult(text=text, language=None, source="pdf_text")
+    return ExtractionResult(text=ocr_text, language="en", source="pdf_ocr")
+
+
+def _extract_text_pdf_ocr_fallback(payload: bytes) -> str:
+    try:
+        from pdf2image import convert_from_bytes
+        import pytesseract
+    except Exception as exc:
+        raise RuntimeError("missing_pdf_ocr_dependency:pdf2image+pytesseract") from exc
+
+    try:
+        images = convert_from_bytes(payload)
+    except Exception as exc:
+        error_name = exc.__class__.__name__.lower()
+        if "pdfinfo" in error_name or "poppler" in str(exc).lower():
+            raise RuntimeError("missing_system_dependency:poppler") from exc
+        raise RuntimeError("pdf_render_failed") from exc
+
+    lines: list[str] = []
+    for image in images:
+        try:
+            page_text = pytesseract.image_to_string(image).strip()
+        except pytesseract.pytesseract.TesseractNotFoundError as exc:
+            raise RuntimeError("missing_system_dependency:tesseract") from exc
+        if page_text:
+            lines.append(page_text)
+
+    return "\n\n".join(lines)
 
 
 def extract_text_docx(payload: bytes) -> ExtractionResult:
