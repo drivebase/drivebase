@@ -3,6 +3,7 @@ import {
 	customType,
 	integer,
 	jsonb,
+	index,
 	pgEnum,
 	pgTable,
 	real,
@@ -177,6 +178,42 @@ export const fileDetectedObjects = pgTable("file_detected_objects", {
 		.defaultNow(),
 });
 
+export const fileTextChunks = pgTable(
+	"file_text_chunks",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn(() => createId()),
+		fileId: text("file_id")
+			.notNull()
+			.references(() => files.id, { onDelete: "cascade" }),
+		workspaceId: text("workspace_id")
+			.notNull()
+			.references(() => workspaces.id, { onDelete: "cascade" }),
+		runId: text("run_id")
+			.notNull()
+			.references(() => fileAnalysisRuns.id, { onDelete: "cascade" }),
+		source: text("source").notNull(),
+		chunkIndex: integer("chunk_index").notNull(),
+		text: text("text").notNull(),
+		modelName: text("model_name").notNull(),
+		modelTier: analysisModelTierEnum("model_tier").notNull(),
+		embedding: vector("embedding", 512).notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("file_text_chunks_file_run_chunk_idx").on(
+			table.fileId,
+			table.runId,
+			table.chunkIndex,
+		),
+		index("file_text_chunks_workspace_idx").on(table.workspaceId),
+		index("file_text_chunks_file_idx").on(table.fileId),
+	],
+);
+
 export const workspaceAiSettings = pgTable("workspace_ai_settings", {
 	workspaceId: text("workspace_id")
 		.primaryKey()
@@ -226,6 +263,8 @@ export type FileExtractedText = typeof fileExtractedText.$inferSelect;
 export type NewFileExtractedText = typeof fileExtractedText.$inferInsert;
 export type FileDetectedObject = typeof fileDetectedObjects.$inferSelect;
 export type NewFileDetectedObject = typeof fileDetectedObjects.$inferInsert;
+export type FileTextChunk = typeof fileTextChunks.$inferSelect;
+export type NewFileTextChunk = typeof fileTextChunks.$inferInsert;
 export type WorkspaceAiSetting = typeof workspaceAiSettings.$inferSelect;
 export type NewWorkspaceAiSetting = typeof workspaceAiSettings.$inferInsert;
 export type WorkspaceAiProgress = typeof workspaceAiProgress.$inferSelect;

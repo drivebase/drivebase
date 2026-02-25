@@ -15,6 +15,13 @@
       "when": 1771967570274,
       "tag": "0001_perpetual_fixer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771974540187,
+      "tag": "0002_glossy_power_pack",
+      "breakpoints": true
     }
   ]
 }
