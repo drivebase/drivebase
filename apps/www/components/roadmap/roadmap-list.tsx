@@ -7,23 +7,26 @@ import { useEffect, useRef, useState } from "react";
 const statusConfig = {
   released: {
     icon: CheckCircle2,
-    color: "text-green-400",
-    bg: "bg-green-400/10",
-    border: "border-green-400/20",
+    color: "text-chart-2",
+    bg: "bg-chart-2/10",
+    border: "border-chart-2/50",
+    dotBorder: "border-chart-2/70",
     label: "Released",
   },
   "in-progress": {
     icon: Clock,
-    color: "text-indigo-400",
-    bg: "bg-indigo-400/10",
-    border: "border-indigo-400/20",
+    color: "text-primary",
+    bg: "bg-primary/10",
+    border: "border-primary/50",
+    dotBorder: "border-primary/70",
     label: "In Progress",
   },
   planned: {
     icon: Circle,
-    color: "text-gray-400",
-    bg: "bg-gray-400/10",
-    border: "border-gray-400/20",
+    color: "text-muted-foreground",
+    bg: "bg-muted",
+    border: "border-border",
+    dotBorder: "border-border",
     label: "Planned",
   },
 };
@@ -113,9 +116,9 @@ export function RoadmapList({ items }: { items: RoadmapItem[] }) {
   return (
     <div ref={containerRef} className="relative mx-auto max-w-4xl">
       {/* Vertical line */}
-      <div className="absolute left-7 top-0 bottom-0 w-px bg-gray-800/70 hidden sm:block" />
+      <div className="absolute left-7 top-0 bottom-0 w-px bg-border hidden sm:block" />
       <div
-        className="absolute left-7 w-px bg-indigo-500/50 hidden sm:block"
+        className="absolute left-7 w-px bg-primary/70 hidden sm:block"
         style={{
           top: `${releasedLine.top}px`,
           height: `${releasedLine.height}px`,
@@ -153,11 +156,11 @@ export function RoadmapList({ items }: { items: RoadmapItem[] }) {
 
               {/* Timeline dot */}
               <div
-                className={`absolute left-6 sm:left-7 top-1.5 -translate-x-1/2 w-3 h-3 rounded-full bg-[#050505] border-2 ${status.color.replace("text", "border")} z-20 hidden sm:block`}
+                className={`absolute left-6 sm:left-7 top-1.5 -translate-x-1/2 size-3 bg-background border-2 ${status.dotBorder} z-20 hidden sm:block`}
               />
 
               <div
-                className={`group relative rounded-2xl border ${status.border} bg-foreground/2 p-6 transition-all hover:bg-foreground/4`}
+                className={`group relative border ${status.border} bg-background p-6 transition-colors hover:bg-secondary/40`}
               >
                 <div className="flex flex-wrap items-center gap-4 mb-4">
                   <div className="flex items-center gap-3">
@@ -183,7 +186,7 @@ export function RoadmapList({ items }: { items: RoadmapItem[] }) {
                   {item.data.features.map((feature) => (
                     <div
                       key={`${item.url}-${feature.title}`}
-                      className="rounded-2xl border border-border/60 bg-background/80 px-6 py-5"
+                      className="border border-border bg-card/40 px-6 py-5 transition-colors hover:bg-card/60"
                     >
                       <h3 className="text-lg font-semibold text-foreground">
                         {feature.title}

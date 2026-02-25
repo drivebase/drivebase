@@ -32,23 +32,26 @@ export default function RoadmapPage() {
   }));
 
   return (
-    <main className="relative min-h-screen pt-24 pb-16 sm:pb-24 lg:pb-32 overflow-hidden">
-      {/* Background patterns matching Hero */}
-      <div className="absolute inset-0 z-0 h-full w-full bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_60%,rgba(120,119,255,0.1),transparent)]" />
+    <main className="min-h-screen pb-16 sm:pb-24 lg:pb-32 bg-background border-b border-border">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 border-l border-r border-border">
+        <div className="pt-16">
+          <div className="px-6 py-12 sm:py-16">
+            <div className="mx-auto max-w-3xl text-center">
+              <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
+                Roadmap
+              </h1>
+              <p className="mt-4 text-lg text-muted-foreground">
+                The future of Drivebase. See what we've built and what's coming
+                next.
+              </p>
+            </div>
+          </div>
+          <div className="h-px w-full bg-border" />
 
-      <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
-        <div className="mx-auto max-w-2xl text-center mb-16">
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-gray-400 pb-2">
-            Roadmap
-          </h1>
-          <p className="mt-4 text-lg text-gray-400">
-            The future of Drivebase. See what we've built and what's coming
-            next.
-          </p>
+          <div className="px-6 py-10 sm:py-12">
+            <RoadmapList items={items as any} />
+          </div>
         </div>
-
-        <RoadmapList items={items as any} />
       </div>
     </main>
   );
