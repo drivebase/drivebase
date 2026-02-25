@@ -9,7 +9,6 @@ function formatDate(value: string) {
 }
 
 interface AiProgressSectionProps {
-	onRefresh: () => void;
 	onStart: () => void;
 	onStop: () => void;
 	onRetryFailed: () => void;
@@ -19,7 +18,6 @@ interface AiProgressSectionProps {
 }
 
 export function AiProgressSection({
-	onRefresh,
 	onStart,
 	onStop,
 	onRetryFailed,
@@ -64,9 +62,6 @@ export function AiProgressSection({
 						eligible files processed
 					</p>
 				</div>
-				<Button variant="outline" size="sm" onClick={onRefresh}>
-					Refresh
-				</Button>
 			</div>
 			<div className="flex gap-2">
 				<Button

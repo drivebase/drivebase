@@ -1,15 +1,5 @@
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -31,29 +21,24 @@ const TIER_OPTIONS: AnalysisModelTier[] = [
 interface AiModelsSectionProps {
 	updateFetching: boolean;
 	prepareFetching: boolean;
-	deleteFetching: boolean;
 	onTierChange: (tier: AnalysisModelTier) => void;
 	onMaxConcurrencyChange: (value: string) => void;
 	onDownloadModels: () => void;
 	onSave: () => void;
-	onDeleteAiData: () => void;
 }
 
 export function AiModelsSection({
 	updateFetching,
 	prepareFetching,
-	deleteFetching,
 	onTierChange,
 	onMaxConcurrencyChange,
 	onDownloadModels,
 	onSave,
-	onDeleteAiData,
 }: AiModelsSectionProps) {
 	const canManageWorkspace = useAiSettingsStore(
 		(state) => state.canManageWorkspace,
 	);
 	const settings = useAiSettingsStore((state) => state.settings);
-	const progress = useAiSettingsStore((state) => state.progress);
 	const latestModelJob = useAiSettingsStore((state) => state.latestModelJob);
 	const embeddingTier = useAiSettingsStore((state) => state.embeddingTier);
 	const maxConcurrency = useAiSettingsStore((state) => state.maxConcurrency);
@@ -64,15 +49,6 @@ export function AiModelsSection({
 			(settings?.ocrTier && settings.ocrTier !== embeddingTier) ||
 			(settings?.objectTier && settings.objectTier !== embeddingTier),
 	);
-	const isProcessingActive =
-		(progress?.pendingFiles ?? 0) > 0 || (progress?.runningFiles ?? 0) > 0;
-	const hasAiData =
-		(progress?.pendingFiles ?? 0) +
-			(progress?.runningFiles ?? 0) +
-			(progress?.completedFiles ?? 0) +
-			(progress?.failedFiles ?? 0) +
-			(progress?.skippedFiles ?? 0) >
-		0;
 
 	return (
 		<>
@@ -139,12 +115,12 @@ export function AiModelsSection({
 
 						<div className="space-y-2 max-w-md">
 							<Label>Max concurrency</Label>
-							<input
-								className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+							<Input
 								value={maxConcurrency}
 								onChange={(event) => onMaxConcurrencyChange(event.target.value)}
 								disabled={!canManageWorkspace}
 								inputMode="numeric"
+								className="h-10 text-sm"
 							/>
 						</div>
 
@@ -166,40 +142,6 @@ export function AiModelsSection({
 									Download selected model
 								</Button>
 							) : null}
-							<AlertDialog>
-								<AlertDialogTrigger asChild>
-									<Button
-										variant="destructive"
-										disabled={
-											!canManageWorkspace ||
-											deleteFetching ||
-											isProcessingActive ||
-											!hasAiData
-										}
-									>
-										Delete AI data
-									</Button>
-								</AlertDialogTrigger>
-								<AlertDialogContent>
-									<AlertDialogHeader>
-										<AlertDialogTitle>Delete AI data?</AlertDialogTitle>
-										<AlertDialogDescription>
-											This will remove all AI analysis results for this
-											workspace, including embeddings, OCR text, detected
-											objects, and analysis run history.
-										</AlertDialogDescription>
-									</AlertDialogHeader>
-									<AlertDialogFooter>
-										<AlertDialogCancel>Cancel</AlertDialogCancel>
-										<AlertDialogAction
-											variant="destructive"
-											onClick={onDeleteAiData}
-										>
-											Delete
-										</AlertDialogAction>
-									</AlertDialogFooter>
-								</AlertDialogContent>
-							</AlertDialog>
 						</div>
 					</>
 				)}

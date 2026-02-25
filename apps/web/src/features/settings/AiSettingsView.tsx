@@ -19,10 +19,16 @@ export function AiSettingsView() {
 		<div className="space-y-8">
 			<AiProcessingSection
 				isUpdating={controller.updateSettingsFetching}
+				deleteFetching={controller.deleteAiDataFetching}
 				onToggle={controller.handleToggleAiProcessing}
+				onFeatureEmbeddingChange={controller.handleFeatureEmbeddingToggle}
+				onFeatureOcrChange={controller.handleFeatureOcrToggle}
+				onFeatureObjectDetectionChange={
+					controller.handleFeatureObjectDetectionToggle
+				}
+				onDeleteAiData={controller.handleDeleteAiData}
 			/>
 			<AiProgressSection
-				onRefresh={controller.refreshProgress}
 				onStart={controller.handleStartProcessing}
 				onStop={controller.handleStopProcessing}
 				onRetryFailed={controller.handleRetryFailedFiles}
@@ -33,12 +39,10 @@ export function AiSettingsView() {
 			<AiModelsSection
 				updateFetching={controller.updateSettingsFetching}
 				prepareFetching={controller.prepareModelsFetching}
-				deleteFetching={controller.deleteAiDataFetching}
 				onTierChange={controller.setEmbeddingTier}
 				onMaxConcurrencyChange={controller.setMaxConcurrency}
 				onDownloadModels={controller.handleDownloadModels}
 				onSave={controller.handleSave}
-				onDeleteAiData={controller.handleDeleteAiData}
 			/>
 		</div>
 	);
