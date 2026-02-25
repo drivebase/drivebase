@@ -2,6 +2,7 @@ import {
   ArchitectureSection,
   CapabilitiesGrid,
   CTASection,
+  FAQSection,
   HeroSection,
   InstallationSteps,
   ProblemSolution,
@@ -20,6 +21,7 @@ export default function HomePage() {
       <ArchitectureSection />
       <UserTypesSection />
       <CTASection />
+      <FAQSection />
     </main>
   );
 }
