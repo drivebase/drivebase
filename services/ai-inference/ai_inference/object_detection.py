@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import io
+import os
 from collections import defaultdict
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
+from .config import MODELS_DIR
 
 TierType = Literal["lightweight", "medium", "heavy"]
 
@@ -15,13 +18,22 @@ YOLO_MODEL_BY_TIER: dict[TierType, str] = {
 }
 
 
+YOLO_MODELS_DIR = MODELS_DIR / "yolo"
+YOLO_MODELS_DIR.mkdir(parents=True, exist_ok=True)
+os.environ.setdefault("YOLO_CONFIG_DIR", str(YOLO_MODELS_DIR))
+
+
 @lru_cache(maxsize=3)
-def _load_yolo(model_name: str):
+def _load_yolo(model_path: str):
     try:
         from ultralytics import YOLO
     except Exception as exc:
         raise RuntimeError("missing_object_detection_dependency:ultralytics") from exc
-    return YOLO(model_name)
+    return YOLO(model_path)
+
+
+def _resolve_model_path(model_name: str) -> Path:
+    return YOLO_MODELS_DIR / model_name
 
 
 def _normalize_label(label: str) -> str:
@@ -35,7 +47,10 @@ def detect_objects_from_image_bytes(payload: bytes, tier: TierType) -> list[dict
         raise RuntimeError("missing_object_detection_dependency:pillow") from exc
 
     model_name = YOLO_MODEL_BY_TIER[tier]
-    model = _load_yolo(model_name)
+    model_path = _resolve_model_path(model_name)
+    # First run will download into this path. Subsequent runs reuse the same
+    # file from the mounted models volume.
+    model = _load_yolo(str(model_path))
 
     image = Image.open(io.BytesIO(payload)).convert("RGB")
     results = model.predict(image, verbose=False)
@@ -84,4 +99,3 @@ def detect_objects_from_image_bytes(payload: bytes, tier: TierType) -> list[dict
             grouped[label]["count"] = int(count)
 
     return list(grouped.values())
-
