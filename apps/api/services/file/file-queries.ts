@@ -486,7 +486,7 @@ type AiSearchIntent = "general" | "image" | "document";
 function detectAiSearchIntent(query: string): AiSearchIntent {
 	const normalized = query.toLowerCase();
 	const imageHints =
-		/\b(image|images|photo|photos|picture|pictures|pic|screenshot|logo|icon)\b/.test(
+		/\b(image|images|photo|photos|picture|pictures|pic|screenshot|logo|icon|person|people|woman|women|female|girl|lady|man|men|male|boy|guy)\b/.test(
 			normalized,
 		);
 	const documentHints =
@@ -525,6 +525,10 @@ async function searchFilesAiLexicalFallback(
 	limit: number,
 ) {
 	const queryLike = `%${query.toLowerCase()}%`;
+	const personAliasMatch =
+		/\b(person|people|woman|women|female|girl|lady|man|men|male|boy|guy)\b/.test(
+			query.toLowerCase(),
+		);
 	const queryRoot =
 		query.trim().length >= 6
 			? `%${query
@@ -574,7 +578,8 @@ async function searchFilesAiLexicalFallback(
 				fdo.file_id,
 				greatest(
 					case when lower(fdo.label) like ${queryLike} then 1.1 else 0 end,
-					case when ${queryRoot} is not null and lower(fdo.label) like ${queryRoot} then 0.8 else 0 end
+					case when ${queryRoot} is not null and lower(fdo.label) like ${queryRoot} then 0.8 else 0 end,
+					case when ${personAliasMatch} and lower(fdo.label) = 'person' then 1.15 else 0 end
 				)::float4 as score
 			from file_detected_objects fdo
 			join workspace_files wf on wf.id = fdo.file_id
@@ -582,6 +587,7 @@ async function searchFilesAiLexicalFallback(
 				and (
 					lower(fdo.label) like ${queryLike}
 					or (${queryRoot} is not null and lower(fdo.label) like ${queryRoot})
+					or (${personAliasMatch} and lower(fdo.label) = 'person')
 				)
 		),
 		scored as (
@@ -655,6 +661,10 @@ export async function searchFilesAi(
 		});
 		const vectorLiteral = toVectorLiteral(embed.embedding);
 		const queryLike = `%${query.toLowerCase()}%`;
+		const personAliasMatch =
+			/\b(person|people|woman|women|female|girl|lady|man|men|male|boy|guy)\b/.test(
+				query.toLowerCase(),
+			);
 		const queryRoot =
 			query.trim().length >= 6
 				? `%${query
@@ -669,7 +679,8 @@ export async function searchFilesAi(
 				select
 					plainto_tsquery('simple', ${query}) as qts,
 					${queryLike}::text as qlike,
-					${queryRoot}::text as qroot
+					${queryRoot}::text as qroot,
+					${personAliasMatch}::boolean as qperson
 			),
 			workspace_files as (
 				select f.id, f.name, f.mime_type
@@ -761,7 +772,8 @@ export async function searchFilesAi(
 						greatest(
 							ts_rank_cd(to_tsvector('simple', coalesce(fdo.label, '')), qp.qts),
 							case when lower(fdo.label) like qp.qlike then 0.8 else 0 end,
-							case when qp.qroot is not null and lower(fdo.label) like qp.qroot then 0.5 else 0 end
+							case when qp.qroot is not null and lower(fdo.label) like qp.qroot then 0.5 else 0 end,
+							case when qp.qperson and lower(fdo.label) = 'person' then 0.9 else 0 end
 						)
 					)::float4 as score
 				from file_detected_objects fdo
@@ -772,6 +784,7 @@ export async function searchFilesAi(
 						to_tsvector('simple', coalesce(fdo.label, '')) @@ qp.qts
 						or lower(fdo.label) like qp.qlike
 						or (qp.qroot is not null and lower(fdo.label) like qp.qroot)
+						or (qp.qperson and lower(fdo.label) = 'person')
 					)
 				group by fdo.file_id
 				order by score desc
