@@ -10,7 +10,7 @@ export function Header() {
 	const pageTitle = getPageTitle(location.pathname, i18n);
 
 	return (
-		<header className="flex items-center justify-between px-8 py-5 border-b">
+		<header className="flex items-center justify-between px-4 py-5 border-b">
 			<h1 className="text-3xl font-bold text-foreground">{pageTitle}</h1>
 			<div className="flex items-center gap-4 flex-1 ml-8 justify-end">
 				<HeaderCommandPalette />

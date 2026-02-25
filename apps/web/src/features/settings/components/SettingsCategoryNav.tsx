@@ -1,9 +1,9 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import {
-	Brain,
 	Filter,
 	SlidersHorizontal,
+	Sparkle,
 	User,
 	Users,
 	Wrench,
@@ -33,7 +33,7 @@ const categories = [
 	},
 	{
 		to: "/settings/ai",
-		icon: Brain,
+		icon: Sparkle,
 		label: <Trans>AI</Trans>,
 	},
 	{
