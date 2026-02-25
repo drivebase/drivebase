@@ -12,16 +12,20 @@ interface AiProgressSectionProps {
 	onRefresh: () => void;
 	onStart: () => void;
 	onStop: () => void;
+	onRetryFailed: () => void;
 	startFetching: boolean;
 	stopFetching: boolean;
+	retryFetching: boolean;
 }
 
 export function AiProgressSection({
 	onRefresh,
 	onStart,
 	onStop,
+	onRetryFailed,
 	startFetching,
 	stopFetching,
+	retryFetching,
 }: AiProgressSectionProps) {
 	const canManageWorkspace = useAiSettingsStore(
 		(state) => state.canManageWorkspace,
@@ -86,6 +90,17 @@ export function AiProgressSection({
 					disabled={!canManageWorkspace || stopFetching || !isProcessingActive}
 				>
 					Stop processing
+				</Button>
+				<Button
+					variant="outline"
+					onClick={onRetryFailed}
+					disabled={
+						!canManageWorkspace ||
+						retryFetching ||
+						(progress?.failedFiles ?? 0) === 0
+					}
+				>
+					Retry failed files
 				</Button>
 			</div>
 

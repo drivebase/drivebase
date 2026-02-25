@@ -6,6 +6,7 @@ import {
 	WORKSPACE_AI_PROGRESS_UPDATED_SUBSCRIPTION,
 	useDeleteWorkspaceAiData,
 	usePrepareWorkspaceAiModels,
+	useRetryWorkspaceAiFailedFiles,
 	useStartWorkspaceAiProcessing,
 	useStopWorkspaceAiProcessing,
 	useUpdateWorkspaceAiSettings,
@@ -73,6 +74,7 @@ export function useAiSettingsController() {
 	const [startProcessingResult, startProcessing] =
 		useStartWorkspaceAiProcessing();
 	const [stopProcessingResult, stopProcessing] = useStopWorkspaceAiProcessing();
+	const [retryFailedResult, retryFailed] = useRetryWorkspaceAiFailedFiles();
 	const [deleteAiDataResult, deleteAiData] = useDeleteWorkspaceAiData();
 
 	const [{ data: activeJobsData }] = useQuery({
@@ -225,6 +227,14 @@ export function useAiSettingsController() {
 		reexecuteProgress({ requestPolicy: "network-only" });
 	};
 
+	const handleRetryFailedFiles = async () => {
+		if (!workspaceId || !canManageWorkspace) return;
+		const result = await retryFailed({ workspaceId });
+		if (result.error || !result.data?.retryWorkspaceAiFailedFiles) return;
+		reexecuteSettings({ requestPolicy: "network-only" });
+		reexecuteProgress({ requestPolicy: "network-only" });
+	};
+
 	return {
 		activeWorkspace,
 		setEmbeddingTier,
@@ -235,11 +245,13 @@ export function useAiSettingsController() {
 		handleStopProcessing,
 		handleToggleAiProcessing,
 		handleDeleteAiData,
+		handleRetryFailedFiles,
 		refreshProgress: () => reexecuteProgress({ requestPolicy: "network-only" }),
 		updateSettingsFetching: updateSettingsResult.fetching,
 		prepareModelsFetching: prepareModelsResult.fetching,
 		startProcessingFetching: startProcessingResult.fetching,
 		stopProcessingFetching: stopProcessingResult.fetching,
+		retryFailedFetching: retryFailedResult.fetching,
 		deleteAiDataFetching: deleteAiDataResult.fetching,
 	};
 }

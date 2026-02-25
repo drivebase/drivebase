@@ -25,8 +25,10 @@ export function AiSettingsView() {
 				onRefresh={controller.refreshProgress}
 				onStart={controller.handleStartProcessing}
 				onStop={controller.handleStopProcessing}
+				onRetryFailed={controller.handleRetryFailedFiles}
 				startFetching={controller.startProcessingFetching}
 				stopFetching={controller.stopProcessingFetching}
+				retryFetching={controller.retryFailedFetching}
 			/>
 			<AiModelsSection
 				updateFetching={controller.updateSettingsFetching}

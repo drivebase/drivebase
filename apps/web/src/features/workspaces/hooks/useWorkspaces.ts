@@ -5,6 +5,7 @@ import {
 	CREATE_WORKSPACE_MUTATION,
 	DELETE_WORKSPACE_AI_DATA_MUTATION,
 	PREPARE_WORKSPACE_AI_MODELS_MUTATION,
+	RETRY_WORKSPACE_AI_FAILED_FILES_MUTATION,
 	REMOVE_WORKSPACE_MEMBER_MUTATION,
 	REVOKE_WORKSPACE_INVITE_MUTATION,
 	START_WORKSPACE_AI_PROCESSING_MUTATION,
@@ -118,6 +119,13 @@ export function useStopWorkspaceAiProcessing() {
 
 export function useDeleteWorkspaceAiData() {
 	const [result, execute] = useMutation(DELETE_WORKSPACE_AI_DATA_MUTATION);
+	return [result, execute] as const;
+}
+
+export function useRetryWorkspaceAiFailedFiles() {
+	const [result, execute] = useMutation(
+		RETRY_WORKSPACE_AI_FAILED_FILES_MUTATION,
+	);
 	return [result, execute] as const;
 }
 

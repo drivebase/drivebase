@@ -190,6 +190,12 @@ export const DELETE_WORKSPACE_AI_DATA_MUTATION = graphql(`
   }
 `);
 
+export const RETRY_WORKSPACE_AI_FAILED_FILES_MUTATION = graphql(`
+  mutation RetryWorkspaceAiFailedFiles($workspaceId: ID!) {
+    retryWorkspaceAiFailedFiles(workspaceId: $workspaceId)
+  }
+`);
+
 export const REMOVE_WORKSPACE_MEMBER_MUTATION = graphql(`
   mutation RemoveWorkspaceMember($workspaceId: ID!, $userId: ID!) {
     removeWorkspaceMember(workspaceId: $workspaceId, userId: $userId)
