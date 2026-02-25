@@ -18,6 +18,7 @@ import {
 } from "drizzle-orm";
 import { logger } from "../../utils/logger";
 import { inferTextEmbedding } from "../ai/inference-client";
+import { resolveAiFeatureToggles } from "../ai/ai-support";
 import { getProviderInstance } from "../provider/provider-queries";
 
 function normalizeNullableId(value: string | null | undefined): string | null {
@@ -638,10 +639,15 @@ export async function searchFilesAi(
 		const [aiSettings] = await db
 			.select({
 				embeddingTier: workspaceAiSettings.embeddingTier,
+				config: workspaceAiSettings.config,
 			})
 			.from(workspaceAiSettings)
 			.where(eq(workspaceAiSettings.workspaceId, workspaceId))
 			.limit(1);
+		const featureToggles = resolveAiFeatureToggles(aiSettings?.config);
+		if (!featureToggles.embedding) {
+			return searchFilesAiLexicalFallback(db, workspaceId, query, limit);
+		}
 
 		const embed = await inferTextEmbedding({
 			text: query,

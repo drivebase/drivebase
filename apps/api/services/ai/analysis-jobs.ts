@@ -14,7 +14,11 @@ import {
 } from "../../queue/analysis-queue";
 import { env } from "../../config/env";
 import { logger } from "../../utils/logger";
-import { isEligibleForAiAnalysis, resolveMaxFileSizeMb } from "./ai-support";
+import {
+	isEligibleForAiAnalysis,
+	resolveAiFeatureToggles,
+	resolveMaxFileSizeMb,
+} from "./ai-support";
 import {
 	refreshWorkspaceAiProgress,
 	updateWorkspaceAiSettings,
@@ -87,6 +91,19 @@ export async function enqueueFileAnalysis(
 		settings?.config,
 		Number.parseFloat(env.AI_MAX_FILE_SIZE_MB) || 50,
 	);
+	const featureToggles = resolveAiFeatureToggles(settings?.config);
+	if (
+		!featureToggles.embedding &&
+		!featureToggles.ocr &&
+		!featureToggles.objectDetection
+	) {
+		logger.debug({
+			msg: "Skipping file analysis enqueue: all AI features disabled",
+			fileId,
+			workspaceId,
+		});
+		return { status: "skipped", reason: "all_features_disabled" };
+	}
 	const maxBytes = Math.floor(maxSizeMb * 1024 * 1024);
 	const isOversized = file.size > maxBytes;
 	const isEligible =

@@ -22,7 +22,10 @@ import {
 	inferTextEmbedding,
 } from "../services/ai/inference-client";
 import { getProviderInstance } from "../services/provider/provider-queries";
-import { resolveMaxFileSizeMb } from "../services/ai/ai-support";
+import {
+	resolveAiFeatureToggles,
+	resolveMaxFileSizeMb,
+} from "../services/ai/ai-support";
 import { logger } from "../utils/logger";
 import type { FileAnalysisJobData } from "./analysis-queue";
 
@@ -361,6 +364,7 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				settings?.config,
 				Number.parseFloat(env.AI_MAX_FILE_SIZE_MB) || 50,
 			);
+			const featureToggles = resolveAiFeatureToggles(settings?.config);
 			if (settings && !settings.enabled) {
 				const reason = "ai_processing_disabled";
 				await db
@@ -417,7 +421,10 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				return;
 			}
 
-			if (env.AI_INFERENCE_URL) {
+			if (!featureToggles.embedding) {
+				embeddingStatus = "skipped";
+				embeddingError = "feature_disabled";
+			} else if (env.AI_INFERENCE_URL) {
 				try {
 					const startedAt = Date.now();
 					logger.debug({
@@ -485,7 +492,10 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				isImageMime(file.mimeType) ||
 				isPdfMime(file.mimeType) ||
 				isDocxMime(file.mimeType);
-			if (canOcr) {
+			if (!featureToggles.ocr) {
+				ocrStatus = "skipped";
+				ocrError = "feature_disabled";
+			} else if (canOcr) {
 				if (env.AI_INFERENCE_URL) {
 					try {
 						const startedAt = Date.now();
@@ -604,7 +614,10 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				ocrError = "unsupported_file_type";
 			}
 
-			if (isImageMime(file.mimeType)) {
+			if (!featureToggles.objectDetection) {
+				objectStatus = "skipped";
+				objectError = "feature_disabled";
+			} else if (isImageMime(file.mimeType)) {
 				if (env.AI_INFERENCE_URL) {
 					try {
 						const startedAt = Date.now();
