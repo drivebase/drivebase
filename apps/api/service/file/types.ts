@@ -1,4 +1,4 @@
-import { files, folders } from "@drivebase/db";
+import type { files, folders } from "@drivebase/db";
 
 export type FileRecord = typeof files.$inferSelect;
 export type FolderRecord = typeof folders.$inferSelect;
