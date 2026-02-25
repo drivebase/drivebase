@@ -13,6 +13,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  applicationName: "Drivebase",
   title: {
     template: "%s | Drivebase",
     default: "Drivebase - Self-Hosted Cloud File Manager",
@@ -29,18 +30,25 @@ export const metadata: Metadata = {
     "file manager",
     "drivebase",
   ],
-  metadataBase: new URL("https://drivebase.app"),
+  metadataBase: new URL("https://drivebase.io"),
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title: "Drivebase - Self-Hosted Cloud File Manager",
     description: "The unified file storage API for modern applications.",
-    url: "https://drivebase.app",
+    url: "https://drivebase.io",
     siteName: "Drivebase",
     images: [
       {
-        url: "/app/all-files.png",
+        url: "/drivebase-banner.png",
         width: 1200,
         height: 630,
-        alt: "Drivebase Dashboard",
+        alt: "Drivebase banner",
       },
     ],
     locale: "en_US",
@@ -50,13 +58,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Drivebase - Self-Hosted Cloud File Manager",
     description: "The unified file storage API for modern applications.",
-    images: ["/app/all-files.png"],
-    creator: "@drivebase_app", // Assuming handle, or remove if unknown
+    images: ["/drivebase-banner.png"],
   },
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/logo192.png", // Assuming these exist or will exist, but let's stick to what we know
+    apple: "/drivebase-light.svg",
   },
 };
 
