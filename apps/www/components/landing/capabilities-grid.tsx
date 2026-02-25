@@ -1,14 +1,22 @@
 "use client";
 
-import { Activity, FileText, Layout, Lock, Search, Shield } from "lucide-react";
+import {
+  Activity,
+  Bot,
+  FileText,
+  Layout,
+  Lock,
+  Search,
+  Shield,
+} from "lucide-react";
 import { motion } from "motion/react";
 
 const capabilities = [
   {
-    label: "Search",
-    title: "Global Search",
-    desc: "Find any file across all your storage providers instantly",
-    icon: Search,
+    label: "AI",
+    title: "AI Powered Search",
+    desc: "Leverage AI to find files faster and smarter",
+    icon: Bot,
   },
   {
     label: "Monitor",
@@ -25,7 +33,7 @@ const capabilities = [
   {
     label: "Security",
     title: "Role-based Access",
-    desc: "Fine-grained permissions for your team members",
+    desc: "Fine-grained permissions for collaborations",
     icon: Shield,
   },
   {
