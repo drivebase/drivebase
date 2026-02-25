@@ -40,6 +40,9 @@ const envSchema = z.object({
 	AI_INFERENCE_URL: z.string().url().optional(),
 	AI_INFERENCE_TOKEN: z.string().optional(),
 	AI_MAX_FILE_SIZE_MB: z.string().default("50"),
+
+	// Logging
+	LOG_FILE_PATH: z.string().optional(),
 });
 
 /**
