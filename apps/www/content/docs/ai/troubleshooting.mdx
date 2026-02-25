@@ -1,0 +1,94 @@
+---
+title: AI Troubleshooting
+description: Fix common AI setup, model, and indexing issues.
+---
+
+## No results from PDF content
+
+Possible causes:
+
+- OCR is disabled
+- Required models are not downloaded
+- File analysis failed
+- File was not processed
+
+What to do:
+
+1. Confirm OCR is enabled.
+2. Confirm required models show **Downloaded**.
+3. Start processing or retry failed files.
+4. Check Progress counts for failures.
+
+## Models appear unavailable after switching workspace
+
+Model files are global, but each workspace validates readiness for its selected model tiers.
+
+What to do:
+
+- Ensure selected tiers match downloaded models.
+- Re-open AI settings to refresh readiness.
+
+## Processing stays at 0%
+
+Possible causes:
+
+- AI processing is disabled
+- No eligible files
+- Worker or inference service is unreachable
+- Missing inference runtime dependencies
+
+What to do:
+
+1. Confirm AI Processing is ON.
+2. Confirm model downloads are complete.
+3. Confirm inference service is running.
+4. Retry failed files.
+
+## Image OCR not working
+
+Possible causes:
+
+- OCR disabled
+- OCR dependencies missing in runtime
+
+What to do:
+
+- Enable OCR in AI Processing.
+- Verify inference runtime dependencies are installed.
+
+## Object search quality is weak
+
+Possible causes:
+
+- Object detection disabled
+- Object model not downloaded
+- Files not reprocessed after changes
+
+What to do:
+
+1. Enable object detection.
+2. Download object detection model.
+3. Re-run processing.
+
+## Results look noisy or irrelevant
+
+Possible causes:
+
+- Query is too short
+- Extraction data is missing for target files
+- Model and feature setup mismatch
+
+What to do:
+
+- Use slightly longer, clearer queries.
+- Confirm extraction features are enabled.
+- Retry failed files.
+
+## Reset path
+
+If setup gets out of sync:
+
+1. Delete AI data.
+2. Verify feature toggles.
+3. Download required models.
+4. Start processing again.
