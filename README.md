@@ -1,4 +1,4 @@
-<img width="2167" height="1579" alt="drivebase-banner" src="https://github.com/user-attachments/assets/8fababdb-ac49-424e-8b22-935f8c64e73f" />
+<img width="2167" height="1579" alt="drivebase-banner" src="https://github.com/user-attachments/assets/77f0b47e-6230-42ef-bd07-368a7de36a48" />
 
 
 <p align="center">
