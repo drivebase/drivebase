@@ -7,14 +7,11 @@ import {
 	storageProviders,
 } from "@drivebase/db";
 import { and, asc, eq } from "drizzle-orm";
-import { logger } from "../../utils/logger";
+import { logger } from "@/utils/logger";
 
 export type { FileAttributes };
 
-/**
- * Evaluate all enabled rules for a workspace and return the first matching rule.
- * Rules are evaluated in priority order (lower number = higher priority).
- */
+// Return first matching enabled rule by priority.
 export async function evaluateRules(
 	db: Database,
 	workspaceId: string,
@@ -37,10 +34,7 @@ export async function evaluateRules(
 		.orderBy(asc(fileRules.priority));
 
 	for (const { rule, providerActive } of rules) {
-		if (!providerActive) {
-			continue;
-		}
-
+		if (!providerActive) continue;
 		if (matchesRule(rule.conditions, file)) {
 			logger.debug({
 				msg: "File matched rule",

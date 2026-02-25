@@ -12,7 +12,7 @@ import { logger } from "../../../utils/logger";
 import { ActivityService } from "../../activity";
 import { FolderService } from "../../folder";
 import { ProviderService } from "../../provider";
-import { evaluateRules } from "../../rules";
+import { evaluateRules } from "../../rule";
 
 // Request upload target and create/update file metadata.
 export async function requestUpload(
