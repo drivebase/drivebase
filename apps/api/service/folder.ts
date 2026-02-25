@@ -4,13 +4,10 @@ import {
 	deleteFolder,
 	moveFolder,
 	renameFolder,
-} from "./folder/folder-mutations";
-import {
-	getFolder,
-	getStarredFolders,
-	listFolders,
-} from "./folder/folder-queries";
-import { starFolder, unstarFolder } from "./folder/folder-stars";
+	starFolder,
+	unstarFolder,
+} from "./folder/mutation";
+import { getFolder, getStarredFolders, listFolders } from "./folder/query";
 import { getAccessibleWorkspaceId } from "./workspace";
 
 export class FolderService {
