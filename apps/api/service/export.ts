@@ -1,8 +1,8 @@
 import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders, workspaces } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { getSensitiveFields } from "../../config/providers";
-import { decryptConfig } from "../../utils/encryption";
+import { getSensitiveFields } from "../config/providers";
+import { decryptConfig } from "../utils/encryption";
 
 interface ExportOptions {
 	includeProviders: boolean;
