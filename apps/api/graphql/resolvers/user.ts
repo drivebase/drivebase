@@ -1,5 +1,5 @@
 import type { UserRole } from "@drivebase/core";
-import { UserService } from "../../services/user";
+import { UserService } from "../../service/user";
 import type {
 	UserRole as GQLUserRole,
 	MutationResolvers,

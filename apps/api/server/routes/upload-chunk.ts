@@ -1,7 +1,8 @@
 import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
+import { pubSub } from "../../graphql/pubsub";
 import { getUploadQueue } from "../../queue/upload-queue";
-import { UploadSessionManager } from "../../services/file/upload-session";
+import { UploadSessionManager } from "../../service/file/upload";
 import { logger } from "../../utils/logger";
 import type { AppEnv } from "../app";
 
@@ -36,6 +37,20 @@ export async function handleUploadChunk(c: Context<AppEnv>): Promise<Response> {
 			data,
 			user.userId,
 		);
+
+		const state = await sessionManager.getSessionState(sessionId);
+		if (state) {
+			pubSub.publish("uploadProgress", sessionId, {
+				sessionId,
+				status: state.status,
+				phase: state.phase,
+				receivedChunks: state.receivedChunks,
+				totalChunks: state.totalChunks,
+				providerBytesTransferred: state.providerBytesTransferred,
+				totalSize: state.totalSize,
+				errorMessage: state.errorMessage,
+			});
+		}
 
 		// If all chunks received, assemble and enqueue BullMQ job
 		if (result.isComplete) {

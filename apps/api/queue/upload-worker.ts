@@ -1,10 +1,11 @@
-import { files, getDb } from "@drivebase/db";
+import { files, getDb, storageProviders } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { eq } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
 import { createBullMQConnection } from "../redis/client";
-import { UploadSessionManager } from "../services/file/upload-session";
-import { ProviderService } from "../services/provider";
+import { enqueueFileAnalysis } from "../service/ai/analysis-jobs";
+import { UploadSessionManager } from "../service/file/upload";
+import { ProviderService } from "../service/provider";
 import { fileSizeBucket, telemetry } from "../telemetry";
 import { logger } from "../utils/logger";
 import type { UploadJobData } from "./upload-queue";
@@ -87,7 +88,7 @@ export function startUploadWorker(): Worker<UploadJobData> {
 				) {
 					// Native chunked upload path (Google Drive, etc.)
 					// S3 direct multipart is handled client-side — this path is for proxy providers
-					const parentId = providerRecord.rootFolderId ?? undefined;
+					const parentId: string | undefined = undefined;
 
 					const multipart = await provider.initiateMultipartUpload({
 						name: fileName,
@@ -224,6 +225,29 @@ export function startUploadWorker(): Worker<UploadJobData> {
 
 				// Mark session completed
 				await sessionManager.markCompleted(sessionId);
+
+				if (fileId) {
+					const [uploadedFile] = await db
+						.select({
+							id: files.id,
+							workspaceId: storageProviders.workspaceId,
+						})
+						.from(files)
+						.innerJoin(
+							storageProviders,
+							eq(storageProviders.id, files.providerId),
+						)
+						.where(eq(files.id, fileId))
+						.limit(1);
+					if (uploadedFile?.workspaceId) {
+						await enqueueFileAnalysis(
+							db,
+							uploadedFile.id,
+							uploadedFile.workspaceId,
+							"upload",
+						);
+					}
+				}
 
 				// Publish final progress event
 				publishProgress(sessionId, {

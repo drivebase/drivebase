@@ -1,8 +1,8 @@
 import { S3Provider } from "@drivebase/s3";
 import { getRedis } from "../../redis/client";
-import { UploadSessionManager } from "../../services/file/upload-session";
-import { ProviderService } from "../../services/provider";
-import { VaultService } from "../../services/vault";
+import { UploadSessionManager } from "../../service/file/upload";
+import { ProviderService } from "../../service/provider";
+import { VaultService } from "../../service/vault";
 import type { MutationResolvers, QueryResolvers } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
 
@@ -16,7 +16,10 @@ export const vaultQueries: QueryResolvers = {
 	vaultContents: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const vaultService = new VaultService(context.db);
-		return vaultService.getVaultContents(user.userId, args.path);
+		return vaultService.getVaultContents(
+			user.userId,
+			args.folderId ?? undefined,
+		);
 	},
 };
 
@@ -52,7 +55,7 @@ export const vaultMutations: MutationResolvers = {
 			? workspaceId
 			: await (async () => {
 					const { getAccessibleWorkspaceId } = await import(
-						"../../services/workspace/workspace"
+						"../../service/workspace"
 					);
 					return getAccessibleWorkspaceId(context.db, user.userId);
 				})();
@@ -78,7 +81,7 @@ export const vaultMutations: MutationResolvers = {
 			? workspaceId
 			: await (async () => {
 					const { getAccessibleWorkspaceId } = await import(
-						"../../services/workspace/workspace"
+						"../../service/workspace"
 					);
 					return getAccessibleWorkspaceId(context.db, user.userId);
 				})();
@@ -106,7 +109,7 @@ export const vaultMutations: MutationResolvers = {
 			? workspaceId
 			: await (async () => {
 					const { getAccessibleWorkspaceId } = await import(
-						"../../services/workspace/workspace"
+						"../../service/workspace"
 					);
 					return getAccessibleWorkspaceId(context.db, user.userId);
 				})();
@@ -115,6 +118,7 @@ export const vaultMutations: MutationResolvers = {
 			user.userId,
 			resolvedWorkspaceId,
 			args.name,
+			args.providerId,
 			args.parentId ?? undefined,
 		);
 	},
@@ -153,7 +157,7 @@ export const vaultMutations: MutationResolvers = {
 			? workspaceId
 			: await (async () => {
 					const { getAccessibleWorkspaceId } = await import(
-						"../../services/workspace/workspace"
+						"../../service/workspace"
 					);
 					return getAccessibleWorkspaceId(context.db, user.userId);
 				})();
@@ -197,7 +201,7 @@ export const vaultMutations: MutationResolvers = {
 				name: input.name,
 				mimeType: input.mimeType,
 				size: input.totalSize,
-				parentId: providerRecord.rootFolderId ?? undefined,
+				parentId: undefined,
 			});
 
 			presignedPartUrls = await provider.generatePresignedPartUrls(

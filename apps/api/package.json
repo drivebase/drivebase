@@ -8,7 +8,7 @@
 	"scripts": {
 		"dev": "bun --hot index.ts",
 		"start": "bun index.ts",
-		"test": "bun test",
+		"test": "bun codegen && bun test",
 		"test:watch": "bun test --watch",
 		"check-types": "tsc --noEmit",
 		"codegen": "graphql-codegen --config codegen.yml",

@@ -11,7 +11,7 @@ const providerServiceMock = {
 	getProviderConfigPreview: mock(),
 };
 
-mock.module("../../services/provider", () => ({
+mock.module("../../service/provider", () => ({
 	ProviderService: mock(() => providerServiceMock),
 }));
 

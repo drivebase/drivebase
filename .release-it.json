@@ -10,8 +10,18 @@
 	},
 	"plugins": {
 		"@release-it/conventional-changelog": {
-			"preset": "angular",
-			"infile": "CHANGELOG.md"
+			"preset": {
+				"name": "conventionalcommits",
+				"types": [
+					{ "type": "feat", "section": "✨ Features", "hidden": false },
+					{ "type": "fix", "section": "🐛 Fixes", "hidden": false },
+					{ "type": "style", "section": "🎨 Styling", "hidden": false },
+					{ "type": "docs", "section": "📝 Docs", "hidden": false },
+					{}
+				]
+			},
+			"infile": "CHANGELOG.md",
+			"strictSemVer": true
 		},
 		"@release-it/bumper": {
 			"out": [
@@ -23,7 +33,7 @@
 					"file": "render.yaml",
 					"type": "text/plain"
 				},
-				"apps/www/components/landing/hero.tsx"
+				"apps/www/components/landing/hero-section.tsx"
 			]
 		}
 	}

@@ -27,3 +27,81 @@ export const ACTIVITIES_QUERY = graphql(`
     }
   }
 `);
+
+export const ACTIVE_JOBS_QUERY = graphql(`
+  query ActiveJobs {
+    activeJobs {
+      id
+      type
+      title
+      message
+      progress
+      status
+      metadata
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const RECENT_ACTIVITIES_QUERY = graphql(`
+  query RecentActivities($limit: Int, $offset: Int) {
+    activities(limit: $limit, offset: $offset) {
+      id
+      type
+      fileId
+      folderId
+      providerId
+      metadata
+      createdAt
+      provider {
+        type
+      }
+    }
+  }
+`);
+
+export const JOB_UPDATED_SUBSCRIPTION = graphql(`
+  subscription JobUpdated {
+    jobUpdated {
+      id
+      type
+      title
+      message
+      progress
+      status
+      metadata
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const CANCEL_TRANSFER_JOB_MUTATION = graphql(`
+  mutation CancelTransferJob($jobId: ID!) {
+    cancelTransferJob(jobId: $jobId)
+  }
+`);
+
+export const DELETE_ACTIVITIES_MUTATION = graphql(`
+  mutation DeleteActivities($ids: [ID!]!) {
+    deleteActivities(ids: $ids)
+  }
+`);
+
+export const ACTIVITY_CREATED_SUBSCRIPTION = graphql(`
+  subscription ActivityCreated {
+    activityCreated {
+      id
+      type
+      fileId
+      folderId
+      providerId
+      metadata
+      createdAt
+      provider {
+        type
+      }
+    }
+  }
+`);

@@ -12,13 +12,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuthStore } from "@/features/auth/store/authStore";
 import { FileDropZone } from "@/features/files/components/FileDropZone";
 import { FilesToolbar } from "@/features/files/components/FilesToolbar";
 import { FileSystemTable } from "@/features/files/FileSystemTable";
 import { useBreadcrumbs } from "@/features/files/hooks/useBreadcrumbs";
 import { useFileDrop } from "@/features/files/hooks/useFileDrop";
-import { UploadProgressPanel } from "@/features/files/UploadProgressPanel";
+
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useProviders } from "@/features/providers/hooks/useProviders";
 import { VaultSetupWizard } from "@/features/vault/components/VaultSetupWizard";
@@ -40,7 +39,7 @@ import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
 import { promptDialog } from "@/shared/lib/promptDialog";
 
 const searchSchema = z.object({
-	path: z.string().optional().catch(undefined),
+	folderId: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_authenticated/vault")({
@@ -49,10 +48,9 @@ export const Route = createFileRoute("/_authenticated/vault")({
 });
 
 function VaultPage() {
-	const { path: searchPath } = Route.useSearch();
+	const { folderId } = Route.useSearch();
 	const { isUnlocked } = useVaultStore();
 	const [{ data, fetching }] = useMyVault();
-	const currentPath = searchPath ?? "/";
 
 	if (fetching) {
 		return (
@@ -78,12 +76,11 @@ function VaultPage() {
 		);
 	}
 
-	return <VaultBrowser currentPath={currentPath} />;
+	return <VaultBrowser folderId={folderId} />;
 }
 
-function VaultBrowser({ currentPath }: { currentPath: string }) {
+function VaultBrowser({ folderId }: { folderId?: string }) {
 	const navigate = Route.useNavigate();
-	const { user } = useAuthStore();
 	const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
 	const [newFolderName, setNewFolderName] = useState("");
 	const [isCreatingFolder, setIsCreatingFolder] = useState(false);
@@ -97,7 +94,7 @@ function VaultBrowser({ currentPath }: { currentPath: string }) {
 	) ?? []) as StorageProvider[];
 
 	const [{ data: contentsData, fetching: contentsFetching }, refreshContents] =
-		useVaultContents(currentPath);
+		useVaultContents(folderId ?? null);
 
 	const currentFolder = contentsData?.vaultContents?.folder as
 		| FolderItemFragment
@@ -112,7 +109,7 @@ function VaultBrowser({ currentPath }: { currentPath: string }) {
 
 	const refresh = () => refreshContents({ requestPolicy: "network-only" });
 
-	const { uploadFiles, uploadQueue, isUploading, clearQueue } = useVaultUpload({
+	const { uploadFiles, isUploading } = useVaultUpload({
 		currentFolderId: currentFolder?.id,
 		onUploadComplete: refresh,
 	});
@@ -122,7 +119,9 @@ function VaultBrowser({ currentPath }: { currentPath: string }) {
 
 	const [, createVaultFolder] = useCreateVaultFolder();
 
-	const breadcrumbs = useBreadcrumbs(currentPath, currentFolder);
+	const breadcrumbs = useBreadcrumbs(currentFolder);
+
+	const isRoot = !folderId;
 
 	const handleFilesSelected = (files: File[]) => {
 		if (!files.length) return;
@@ -142,16 +141,12 @@ function VaultBrowser({ currentPath }: { currentPath: string }) {
 		onDrop: handleFilesSelected,
 	});
 
-	// Strip vault path prefix so the URL stays clean (e.g. /docs not /vault/{userId}/docs)
-	const vaultPathPrefix = `/vault/${user?.id}`;
-	const handleNavigate = (folderId: string) => {
-		const targetFolder = folderList.items.find((f) => f.id === folderId);
-		if (targetFolder) {
-			const displayPath = targetFolder.virtualPath.startsWith(vaultPathPrefix)
-				? targetFolder.virtualPath.slice(vaultPathPrefix.length) || "/"
-				: targetFolder.virtualPath;
-			navigate({ search: { path: displayPath } });
-		}
+	const handleNavigate = (targetFolderId: string) => {
+		navigate({ search: { folderId: targetFolderId } });
+	};
+
+	const handleBreadcrumbClick = (targetFolderId: string | null) => {
+		navigate({ search: { folderId: targetFolderId ?? undefined } });
 	};
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -195,12 +190,13 @@ function VaultBrowser({ currentPath }: { currentPath: string }) {
 	};
 
 	const handleCreateFolder = async () => {
-		if (!newFolderName.trim()) return;
+		if (!newFolderName.trim() || activeProviders.length === 0) return;
 		setIsCreatingFolder(true);
 		try {
 			const result = await createVaultFolder({
 				name: newFolderName.trim(),
 				parentId: currentFolder?.id,
+				providerId: activeProviders[0].id,
 			});
 			if (result.error) throw new Error(result.error.message);
 			setIsCreateFolderOpen(false);
@@ -218,14 +214,19 @@ function VaultBrowser({ currentPath }: { currentPath: string }) {
 	return (
 		<div className="px-8 flex flex-col gap-6 h-full relative" {...dragHandlers}>
 			<FilesToolbar
-				currentPath={currentPath}
+				isRoot={isRoot}
 				breadcrumbs={breadcrumbs}
 				canWriteFiles={true}
 				isUploading={isUploading}
 				isLoading={contentsFetching}
-				onBreadcrumbClick={(path) => navigate({ search: { path } })}
+				providers={activeProviders}
+				filterProviderIds={[]}
+				onFilterChange={() => {}}
+				onBreadcrumbClick={handleBreadcrumbClick}
 				onUploadClick={() => fileInputRef.current?.click()}
 				onNewFolder={() => setIsCreateFolderOpen(true)}
+				onOpenSettings={() => {}}
+				canManageSettings={false}
 				fileInputRef={fileInputRef}
 				onFileChange={handleFileChange}
 			/>
@@ -301,13 +302,6 @@ function VaultBrowser({ currentPath }: { currentPath: string }) {
 			/>
 
 			<FileDropZone isDragActive={isDragActive} />
-
-			<UploadProgressPanel
-				items={uploadQueue}
-				onClose={clearQueue}
-				onCancel={() => {}}
-				onRetry={() => {}}
-			/>
 		</div>
 	);
 }

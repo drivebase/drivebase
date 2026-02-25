@@ -1,9 +1,8 @@
-import { Footer } from "@/components/landing/footer";
-import { Navbar } from "@/components/landing/navbar";
+import { Footer, Navbar } from "@/components/landing";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col min-h-screen bg-[#050505]">
+    <div className="landing flex flex-col min-h-screen">
       <Navbar />
       {children}
       <Footer />

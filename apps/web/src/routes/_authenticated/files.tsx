@@ -1,6 +1,7 @@
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { CreateFolderDialog } from "@/features/files/CreateFolderDialog";
@@ -17,16 +18,21 @@ import { useFileOperations } from "@/features/files/hooks/useFileOperations";
 import { useContents } from "@/features/files/hooks/useFiles";
 import { useUpload } from "@/features/files/hooks/useUpload";
 import { useUploadSessionRestore } from "@/features/files/hooks/useUploadSessionRestore";
-import { UploadProgressPanel } from "@/features/files/UploadProgressPanel";
+import { FilesSettingsDialog } from "@/features/files/settings/FilesSettingsDialog";
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
-import { can, getActiveWorkspaceId } from "@/features/workspaces";
+import {
+	can,
+	getActiveWorkspaceId,
+	useUpdateWorkspaceSyncOperations,
+	useWorkspaces,
+} from "@/features/workspaces";
 import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 
 const searchSchema = z.object({
-	path: z.string().optional().catch(undefined),
+	folderId: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_authenticated/files")({
@@ -35,11 +41,14 @@ export const Route = createFileRoute("/_authenticated/files")({
 });
 
 function FilesPage() {
-	const { path: searchPath } = Route.useSearch();
+	const { folderId } = Route.useSearch();
 	const navigate = Route.useNavigate();
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+	const [isFilesSettingsOpen, setIsFilesSettingsOpen] = useState(false);
+	const [filterProviderIds, setFilterProviderIds] = useState<string[]>([]);
 	const { downloadFile, showDetails } = useFileActions();
 	const { data: providersData } = useProviders();
+	const [workspacesResult, reexecuteWorkspaces] = useWorkspaces(false);
 	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
 	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
 	const [membersResult] = useWorkspaceMembers(
@@ -51,11 +60,18 @@ function FilesPage() {
 			(member) => member.userId === currentUserId,
 		)?.role ?? null;
 	const canWriteFiles = can(currentWorkspaceRole, "files.write");
+	const canManageSettings =
+		currentWorkspaceRole === "OWNER" || currentWorkspaceRole === "ADMIN";
+	const [updateSyncResult, updateWorkspaceSyncOperations] =
+		useUpdateWorkspaceSyncOperations();
 
-	const currentPath = searchPath || "/";
+	const isRoot = !folderId;
 
 	const [{ data: contentsData, fetching: contentsFetching }, refreshContents] =
-		useContents(currentPath);
+		useContents(
+			folderId ?? null,
+			filterProviderIds.length ? filterProviderIds : undefined,
+		);
 
 	const currentFolder = contentsData?.contents?.folder as
 		| FolderItemFragment
@@ -75,39 +91,65 @@ function FilesPage() {
 
 	const upload = useUpload({
 		currentFolderId: currentFolder?.id,
-		currentFolderPath: currentFolder?.virtualPath,
 		onUploadComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 
 	// Restore active upload sessions on page load
-	useUploadSessionRestore({
-		onRestoreSessions: upload.restoreSessions,
-		onUpdateItem: upload.updateQueueItem,
-	});
+	useUploadSessionRestore();
 
-	const breadcrumbs = useBreadcrumbs(currentPath, currentFolder);
+	const breadcrumbs = useBreadcrumbs(currentFolder);
 
 	const { isDragActive, dragHandlers } = useFileDrop({
 		onDrop: upload.handleFilesSelected,
 	});
 
+	const syncEnabledInWorkspace =
+		(
+			workspacesResult.data?.workspaces?.find(
+				(w) => w.id === activeWorkspaceId,
+			) ?? workspacesResult.data?.workspaces?.[0]
+		)?.syncOperationsToProvider ?? false;
+
 	const dnd = useDragAndDrop({
 		fileList,
 		folderList,
+		syncEnabled: syncEnabledInWorkspace,
 		onMoveComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 
-	const handleNavigate = (folderId: string) => {
-		const targetFolder = folders.find(
-			(f: FolderItemFragment) => f.id === folderId,
-		);
-		if (targetFolder) {
-			navigate({ search: { path: targetFolder.virtualPath } });
-		}
+	const handleNavigate = (targetFolderId: string) => {
+		navigate({ search: { folderId: targetFolderId } });
 	};
 
-	const handleBreadcrumbClick = (path: string) => {
-		navigate({ search: { path } });
+	const handleBreadcrumbClick = (targetFolderId: string | null) => {
+		navigate({ search: { folderId: targetFolderId ?? undefined } });
+	};
+
+	const activeWorkspace =
+		workspacesResult.data?.workspaces?.find(
+			(w) => w.id === activeWorkspaceId,
+		) ??
+		workspacesResult.data?.workspaces?.[0] ??
+		null;
+
+	const handleUpdateSync = async (enabled: boolean) => {
+		if (!activeWorkspace?.id || !canManageSettings) {
+			return;
+		}
+
+		const result = await updateWorkspaceSyncOperations({
+			input: {
+				workspaceId: activeWorkspace.id,
+				enabled,
+			},
+		});
+
+		if (result.error || !result.data?.updateWorkspaceSyncOperations) {
+			toast.error(result.error?.message ?? "Failed to update sync setting");
+			return;
+		}
+
+		toast.success(enabled ? "Sync enabled" : "Sync disabled");
 	};
 
 	return (
@@ -122,11 +164,16 @@ function FilesPage() {
 				{...dragHandlers}
 			>
 				<FilesToolbar
-					currentPath={currentPath}
+					isRoot={isRoot}
 					breadcrumbs={breadcrumbs}
 					canWriteFiles={canWriteFiles}
 					isUploading={upload.isUploading}
 					isLoading={contentsFetching}
+					providers={
+						providersData?.storageProviders?.filter((p) => p.isActive) ?? []
+					}
+					filterProviderIds={filterProviderIds}
+					onFilterChange={setFilterProviderIds}
 					onBreadcrumbClick={handleBreadcrumbClick}
 					onUploadClick={() => {
 						if (!canWriteFiles) {
@@ -140,6 +187,8 @@ function FilesPage() {
 						}
 						setIsCreateDialogOpen(true);
 					}}
+					onOpenSettings={() => setIsFilesSettingsOpen(true)}
+					canManageSettings={canManageSettings}
 					fileInputRef={upload.fileInputRef}
 					onFileChange={upload.handleFileChange}
 				/>
@@ -170,7 +219,7 @@ function FilesPage() {
 						onDeleteSelection={
 							canWriteFiles ? operations.handleDeleteSelection : undefined
 						}
-						isLoading={contentsFetching && !contentsData}
+						isLoading={contentsFetching}
 						showSharedColumn
 					/>
 				</div>
@@ -180,6 +229,7 @@ function FilesPage() {
 						isOpen={isCreateDialogOpen}
 						onClose={() => setIsCreateDialogOpen(false)}
 						parentId={currentFolder?.id}
+						providers={providersData?.storageProviders}
 						onCreated={(folder) => {
 							folderList.addItem(folder as FolderItemFragment);
 							refreshContents({ requestPolicy: "network-only" });
@@ -199,14 +249,19 @@ function FilesPage() {
 					}
 				/>
 
-				<FileDropZone isDragActive={isDragActive} />
-
-				<UploadProgressPanel
-					items={upload.uploadQueue}
-					onClose={upload.clearUploadQueue}
-					onCancel={upload.cancelSession}
-					onRetry={upload.retrySession}
+				<FilesSettingsDialog
+					isOpen={isFilesSettingsOpen}
+					onClose={() => setIsFilesSettingsOpen(false)}
+					syncEnabled={activeWorkspace?.syncOperationsToProvider ?? false}
+					canManageSettings={canManageSettings}
+					isSaving={updateSyncResult.fetching}
+					onSyncToggle={async (enabled) => {
+						await handleUpdateSync(enabled);
+						reexecuteWorkspaces({ requestPolicy: "network-only" });
+					}}
 				/>
+
+				<FileDropZone isDragActive={isDragActive} />
 			</div>
 
 			<DragOverlay dropAnimation={null}>

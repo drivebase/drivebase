@@ -13,8 +13,8 @@ export const FILES_QUERY = graphql(`
 `);
 
 export const CONTENTS_QUERY = graphql(`
-  query GetContents($path: String!) {
-    contents(path: $path) {
+  query GetContents($folderId: ID, $providerIds: [ID!]) {
+    contents(folderId: $folderId, providerIds: $providerIds) {
       files {
         ...FileItem
       }
@@ -61,6 +61,30 @@ export const FILE_QUERY = graphql(`
 export const SEARCH_FILES_QUERY = graphql(`
   query SearchFiles($query: String!, $limit: Int) {
     searchFiles(query: $query, limit: $limit) {
+      ...FileItem
+    }
+  }
+`);
+
+export const SEARCH_FILES_AI_QUERY = graphql(`
+  query SearchFilesAi($query: String!, $limit: Int) {
+    searchFilesAi(query: $query, limit: $limit) {
+      ...FileItem
+    }
+  }
+`);
+
+export const SEARCH_FOLDERS_QUERY = graphql(`
+  query SearchFolders($query: String!, $limit: Int) {
+    searchFolders(query: $query, limit: $limit) {
+      ...FolderItem
+    }
+  }
+`);
+
+export const RECENT_FILES_QUERY = graphql(`
+  query RecentFiles($limit: Int) {
+    recentFiles(limit: $limit) {
       ...FileItem
     }
   }

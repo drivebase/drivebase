@@ -21,10 +21,10 @@ export function useMyVault() {
 	});
 }
 
-export function useVaultContents(path: string) {
+export function useVaultContents(folderId?: string | null) {
 	return useQuery({
 		query: VAULT_CONTENTS_QUERY,
-		variables: { path },
+		variables: { folderId: folderId ?? null },
 		requestPolicy: "cache-and-network",
 	});
 }

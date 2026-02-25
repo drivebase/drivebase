@@ -4,11 +4,7 @@ import { FolderIcon, Star } from "lucide-react";
 import { useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileMimeIcon } from "@/features/files/FileMimeIcon";
-import {
-	formatFileTypeLabel,
-	formatProviderTypeLabel,
-	formatSize,
-} from "@/features/files/utils";
+import { formatFileTypeLabel, formatSize } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import { FileSystemRowActions } from "../components/file-system-table/FileSystemRowActions";
 import type {
@@ -38,9 +34,9 @@ export function useFileSystemColumns({
 			{
 				id: "select",
 				enableHiding: false,
-				size: 44,
-				minSize: 44,
-				maxSize: 44,
+				size: 20,
+				minSize: 20,
+				maxSize: 20,
 				header: ({ table }) => (
 					<div className="w-4 h-4 flex items-center justify-center">
 						<Checkbox
@@ -72,8 +68,9 @@ export function useFileSystemColumns({
 			},
 			{
 				id: "name",
-				size: 360,
-				minSize: 260,
+				size: 220,
+				minSize: 400,
+				maxSize: 500,
 				accessorFn: (row) =>
 					row.kind === "file" ? row.file.name : row.folder.name,
 				header: "Name",
@@ -124,24 +121,27 @@ export function useFileSystemColumns({
 			},
 			{
 				id: "provider",
-				size: 150,
-				minSize: 120,
+				size: 120,
+				minSize: 80,
 				header: "Provider",
 				accessorFn: (row) =>
 					row.kind === "file"
-						? (row.file.provider?.type ?? "Unknown")
-						: "Folder",
+						? (row.file.provider?.name ?? "Unknown")
+						: (row.folder.provider?.name ?? "Unknown"),
 				cell: ({ row }) => {
-					if (row.original.kind === "folder") return "-";
-					const file = row.original.file;
+					const provider =
+						row.original.kind === "file"
+							? row.original.file.provider
+							: row.original.folder.provider;
+
 					return (
 						<div className="flex items-center gap-2">
 							<ProviderIcon
-								type={file.provider?.type ?? "unknown"}
+								type={provider?.type ?? "unknown"}
 								className="h-4 w-4"
 							/>
 							<span className="text-sm text-muted-foreground">
-								{formatProviderTypeLabel(file.provider?.type)}
+								{provider?.name ?? "Unknown"}
 							</span>
 						</div>
 					);
@@ -149,20 +149,31 @@ export function useFileSystemColumns({
 			},
 			{
 				id: "type",
-				size: 60,
-				minSize: 80,
+				size: 90,
+				minSize: 70,
+				maxSize: 110,
 				header: "Type",
 				accessorFn: (row) =>
 					row.kind === "file" ? row.file.mimeType : "folder",
-				cell: ({ row }) =>
-					row.original.kind === "file"
-						? formatFileTypeLabel(row.original.file.mimeType)
-						: "Folder",
+				cell: ({ row }) => (
+					<span
+						className="block truncate"
+						title={
+							row.original.kind === "file"
+								? formatFileTypeLabel(row.original.file.mimeType)
+								: "Folder"
+						}
+					>
+						{row.original.kind === "file"
+							? formatFileTypeLabel(row.original.file.mimeType)
+							: "Folder"}
+					</span>
+				),
 			},
 			{
 				id: "updatedAt",
-				size: 170,
-				minSize: 150,
+				size: 120,
+				minSize: 80,
 				header: () => <div className="text-right">Last Modified</div>,
 				accessorFn: (row) =>
 					row.kind === "file" ? row.file.updatedAt : row.folder.updatedAt,

@@ -16,11 +16,18 @@ enum WorkspaceMemberRole {
 	VIEWER
 }
 
+enum AnalysisModelTier {
+	LIGHTWEIGHT
+	MEDIUM
+	HEAVY
+}
+
 type Workspace {
 	id: ID!
 	name: String!
 	color: WorkspaceColor!
 	ownerId: ID!
+	syncOperationsToProvider: Boolean!
 	createdAt: DateTime!
 	updatedAt: DateTime!
 }
@@ -42,6 +49,50 @@ type WorkspaceInvite {
 	createdAt: DateTime!
 }
 
+type WorkspaceStatsBucket {
+	bucketStart: DateTime!
+	uploadedBytes: Float!
+	downloadedBytes: Float!
+	bandwidthBytes: Float!
+}
+
+type WorkspaceStats {
+	workspaceId: ID!
+	days: Int!
+	totalFiles: Float!
+	totalSizeBytes: Float!
+	totalProviders: Float!
+	uploadedBytes: Float!
+	downloadedBytes: Float!
+	bandwidthBytes: Float!
+	buckets: [WorkspaceStatsBucket!]!
+}
+
+type WorkspaceAiSettings {
+	workspaceId: ID!
+	enabled: Boolean!
+	modelsReady: Boolean!
+	embeddingTier: AnalysisModelTier!
+	ocrTier: AnalysisModelTier!
+	objectTier: AnalysisModelTier!
+	maxConcurrency: Int!
+	config: JSON!
+	updatedAt: DateTime!
+}
+
+type WorkspaceAiProgress {
+	workspaceId: ID!
+	eligibleFiles: Int!
+	processedFiles: Int!
+	pendingFiles: Int!
+	runningFiles: Int!
+	failedFiles: Int!
+	skippedFiles: Int!
+	completedFiles: Int!
+	completionPct: Float!
+	updatedAt: DateTime!
+}
+
 extend type Query {
 	"""
 	Get current user's workspaces
@@ -57,6 +108,28 @@ extend type Query {
 	List active invites for a workspace
 	"""
 	workspaceInvites(workspaceId: ID!): [WorkspaceInvite!]!
+
+	"""
+	Get workspace storage and bandwidth stats
+	"""
+	workspaceStats(workspaceId: ID!, days: Int = 30): WorkspaceStats!
+
+	"""
+	Get workspace AI settings
+	"""
+	workspaceAiSettings(workspaceId: ID!): WorkspaceAiSettings!
+
+	"""
+	Get workspace AI processing progress
+	"""
+	workspaceAiProgress(workspaceId: ID!): WorkspaceAiProgress!
+}
+
+extend type Subscription {
+	"""
+	Subscribe to AI processing progress updates for a workspace
+	"""
+	workspaceAiProgressUpdated(workspaceId: ID!): WorkspaceAiProgress!
 }
 
 input CreateWorkspaceInput {
@@ -79,6 +152,21 @@ input UpdateWorkspaceMemberRoleInput {
 input UpdateWorkspaceNameInput {
 	workspaceId: ID!
 	name: String!
+}
+
+input UpdateWorkspaceSyncOperationsInput {
+	workspaceId: ID!
+	enabled: Boolean!
+}
+
+input UpdateWorkspaceAiSettingsInput {
+	workspaceId: ID!
+	enabled: Boolean
+	embeddingTier: AnalysisModelTier
+	ocrTier: AnalysisModelTier
+	objectTier: AnalysisModelTier
+	maxConcurrency: Int
+	config: JSON
 }
 
 extend type Mutation {
@@ -106,6 +194,45 @@ extend type Mutation {
 	Update workspace name
 	"""
 	updateWorkspaceName(input: UpdateWorkspaceNameInput!): Workspace!
+
+	"""
+	Update workspace sync behavior for move/rename operations
+	"""
+	updateWorkspaceSyncOperations(
+		input: UpdateWorkspaceSyncOperationsInput!
+	): Workspace!
+
+	"""
+	Update workspace AI settings
+	"""
+	updateWorkspaceAiSettings(
+		input: UpdateWorkspaceAiSettingsInput!
+	): WorkspaceAiSettings!
+
+	"""
+	Download/prepare AI models for current workspace settings
+	"""
+	prepareWorkspaceAiModels(workspaceId: ID!): Boolean!
+
+	"""
+	Enable AI processing and enqueue workspace backfill analysis
+	"""
+	startWorkspaceAiProcessing(workspaceId: ID!): Boolean!
+
+	"""
+	Stop AI processing and cancel queued analysis jobs
+	"""
+	stopWorkspaceAiProcessing(workspaceId: ID!): Boolean!
+
+	"""
+	Delete all AI analysis data for the workspace
+	"""
+	deleteWorkspaceAiData(workspaceId: ID!): Boolean!
+
+	"""
+	Retry AI processing for files whose latest run failed
+	"""
+	retryWorkspaceAiFailedFiles(workspaceId: ID!): Boolean!
 
 	"""
 	Remove a member from workspace

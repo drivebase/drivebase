@@ -153,15 +153,3 @@ export const POLL_PROVIDER_AUTH_MUTATION = graphql(`
     }
   }
 `);
-
-export const PROVIDER_SYNC_PROGRESS_SUBSCRIPTION = graphql(`
-  subscription OnProviderSyncProgress($providerId: ID!) {
-    providerSyncProgress(providerId: $providerId) {
-      providerId
-      processed
-      total
-      message
-      status
-    }
-  }
-`);

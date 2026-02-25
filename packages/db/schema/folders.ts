@@ -1,58 +1,10 @@
-import {
-	type AnyPgColumn,
-	boolean,
-	pgTable,
-	text,
-	timestamp,
-	unique,
-} from "drizzle-orm/pg-core";
-import { createId } from "../utils";
-import { users } from "./users";
-import { vaults } from "./vaults";
-import { workspaces } from "./workspaces";
+import { nodes } from "./nodes";
 
 /**
- * Folders table
- *
- * Folders are virtual/organizational and independent from providers.
- * Only files get uploaded to providers.
+ * Compatibility export during files/folders -> nodes migration.
+ * `folders` now points to the unified `nodes` table.
  */
-export const folders = pgTable(
-	"folders",
-	{
-		id: text("id")
-			.primaryKey()
-			.$defaultFn(() => createId()),
-		virtualPath: text("virtual_path").notNull(),
-		name: text("name").notNull(),
-		workspaceId: text("workspace_id")
-			.notNull()
-			.references(() => workspaces.id, { onDelete: "cascade" }),
-		parentId: text("parent_id").references((): AnyPgColumn => folders.id, {
-			onDelete: "cascade",
-		}),
-		createdBy: text("created_by")
-			.notNull()
-			.references(() => users.id, { onDelete: "cascade" }),
-		vaultId: text("vault_id").references(() => vaults.id, {
-			onDelete: "cascade",
-		}),
-		isDeleted: boolean("is_deleted").notNull().default(false),
-		starred: boolean("starred").notNull().default(false),
-		createdAt: timestamp("created_at", { withTimezone: true })
-			.notNull()
-			.defaultNow(),
-		updatedAt: timestamp("updated_at", { withTimezone: true })
-			.notNull()
-			.defaultNow(),
-	},
-	(t) => [
-		unique("folders_virtual_path_workspace_id_unique").on(
-			t.virtualPath,
-			t.workspaceId,
-		),
-	],
-);
+export const folders = nodes;
 
 export type Folder = typeof folders.$inferSelect;
 export type NewFolder = typeof folders.$inferInsert;

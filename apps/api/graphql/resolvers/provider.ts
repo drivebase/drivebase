@@ -1,5 +1,5 @@
 import { getAvailableProviders } from "../../config/providers";
-import { ProviderService } from "../../services/provider";
+import { ProviderService } from "../../service/provider";
 import type {
 	AvailableProvider,
 	AuthType as GQLAuthType,
@@ -9,9 +9,7 @@ import type {
 	ProviderConfigFieldResolvers,
 	QueryResolvers,
 	StorageProviderResolvers,
-	SubscriptionResolvers,
 } from "../generated/types";
-import { type PubSubChannels, pubSub } from "../pubsub";
 import { requireAuth } from "./auth-helpers";
 
 /**
@@ -115,6 +113,19 @@ export const providerMutations: MutationResolvers = {
 		);
 	},
 
+	renameProvider: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const providerService = new ProviderService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		return providerService.renameProvider(
+			args.id,
+			user.userId,
+			args.name,
+			workspaceId,
+		);
+	},
+
 	initiateProviderOAuth: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const providerService = new ProviderService(context.db);
@@ -134,14 +145,6 @@ export const providerMutations: MutationResolvers = {
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return providerService.pollProviderAuth(args.id, user.userId, workspaceId);
-	},
-};
-
-export const providerSubscriptions: SubscriptionResolvers = {
-	providerSyncProgress: {
-		subscribe: (_parent, args, _context) =>
-			pubSub.subscribe("providerSyncProgress", args.providerId),
-		resolve: (payload: PubSubChannels["providerSyncProgress"][1]) => payload,
 	},
 };
 
