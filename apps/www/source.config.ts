@@ -34,18 +34,15 @@ export const roadmaps = defineCollections({
   type: "doc",
   dir: "content/roadmaps",
   schema: pageSchema.extend({
+    title: z.string(),
     version: z.string(),
-    date: z.string().or(z.date()).optional(),
-    status: z.enum(["released", "in-progress", "planned"]),
-    description: z.string(),
-    features: z
-      .array(
-        z.object({
-          title: z.string(),
-          description: z.string(),
-        }),
-      )
-      .optional(),
+    date: z.string(),
+    features: z.array(
+      z.object({
+        title: z.string(),
+        description: z.string(),
+      }),
+    ),
   }),
 });
 

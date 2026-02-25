@@ -51,4 +51,58 @@ extend type Query {
 	Get activity log (recent activities)
 	"""
 	activities(limit: Int, offset: Int): [Activity!]!
+
+	"""
+	Get active jobs (pending or running) for the current workspace
+	"""
+	activeJobs: [Job!]!
+}
+
+extend type Mutation {
+	"""
+	Cancel a queued or running provider transfer job
+	"""
+	cancelTransferJob(jobId: ID!): Boolean!
+
+	"""
+	Delete activity log entries by ID (own activities only)
+	"""
+	deleteActivities(ids: [ID!]!): Int!
+}
+
+"""
+Job status for trackable long-running operations
+"""
+enum JobStatus {
+	PENDING
+	RUNNING
+	COMPLETED
+	ERROR
+}
+
+"""
+A trackable job representing a long-running operation (sync, upload, etc.)
+"""
+type Job {
+	id: ID!
+	type: String!
+	title: String!
+	message: String
+	progress: Float!
+	status: JobStatus!
+	metadata: JSON
+	createdAt: DateTime!
+	updatedAt: DateTime!
+}
+
+type Subscription {
+	"""
+	Subscribe to job updates for the current workspace
+	"""
+	jobUpdated: Job!
+
+	"""
+	Subscribe to newly created activities for the current user
+	"""
+	activityCreated: Activity!
 }

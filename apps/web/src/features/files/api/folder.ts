@@ -18,8 +18,8 @@ export const FOLDER_QUERY = graphql(`
 `);
 
 export const FOLDERS_QUERY = graphql(`
-  query GetFolders($path: String, $parentId: ID) {
-    folders(path: $path, parentId: $parentId) {
+  query GetFolders($parentId: ID, $providerIds: [ID!]) {
+    folders(parentId: $parentId, providerIds: $providerIds) {
       ...FolderItem
     }
   }

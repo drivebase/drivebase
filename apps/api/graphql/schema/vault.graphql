@@ -33,9 +33,9 @@ extend type Query {
 	myVault: Vault
 
 	"""
-	Get files and folders inside the vault at a given path
+	Get files and folders inside the vault at a given location
 	"""
-	vaultContents(path: String!): PathContents!
+	vaultContents(folderId: ID): PathContents!
 }
 
 extend type Mutation {
@@ -62,7 +62,7 @@ extend type Mutation {
 	"""
 	Create a folder inside the vault
 	"""
-	createVaultFolder(name: String!, parentId: ID): Folder!
+	createVaultFolder(name: String!, providerId: ID!, parentId: ID): Folder!
 
 	"""
 	Delete a vault file (soft delete)

@@ -39,6 +39,14 @@ export function DraggableTableRow({ row, children }: DraggableTableRowProps) {
 	const { setNodeRef: setDropRef, isOver } = useDroppable({
 		id: original.id,
 		disabled: original.kind !== "folder",
+		data:
+			original.kind === "folder"
+				? {
+						kind: "folder",
+						folderId: original.folder.id,
+						providerId: original.folder.providerId,
+					}
+				: undefined,
 	});
 
 	const setRef = (el: HTMLTableRowElement | null) => {

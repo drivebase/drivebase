@@ -1,93 +1,128 @@
 import { useEffect } from "react";
-import { useQuery, useSubscription } from "urql";
+import { useClient, useQuery } from "urql";
 import {
 	ACTIVE_UPLOAD_SESSIONS,
 	UPLOAD_PROGRESS_SUBSCRIPTION,
 } from "@/features/files/api/upload-session";
-import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
-
-interface UseUploadSessionRestoreOptions {
-	onRestoreSessions: (items: UploadQueueItem[]) => void;
-	onUpdateItem: (id: string, patch: Partial<UploadQueueItem>) => void;
-}
+import { progressPanel } from "@/shared/lib/progressPanel";
 
 /**
  * Restores visibility of active upload sessions on page reload.
- * Queries activeUploadSessions and subscribes to progress events
- * for each active session.
+ * Queries activeUploadSessions and re-creates progressPanel items
+ * for any in-flight session, then subscribes for real-time updates.
  */
-export function useUploadSessionRestore({
-	onRestoreSessions,
-	onUpdateItem,
-}: UseUploadSessionRestoreOptions) {
+export function useUploadSessionRestore() {
+	const client = useClient();
 	const [{ data }] = useQuery({
 		query: ACTIVE_UPLOAD_SESSIONS,
 		requestPolicy: "network-only",
 	});
 
-	// Restore active sessions into the upload queue on mount
+	// Re-create progress panel items for sessions that were active before reload
 	useEffect(() => {
 		if (!data?.activeUploadSessions?.length) return;
 
-		const items: UploadQueueItem[] = data.activeUploadSessions.map(
-			(session) => ({
-				id: `session-${session.sessionId}`,
-				name: session.fileName,
-				size: session.totalSize,
+		for (const session of data.activeUploadSessions) {
+			const ppId = `session-${session.sessionId}`;
+			const isTerminal =
+				session.status === "completed" ||
+				session.status === "failed" ||
+				session.status === "cancelled";
+
+			if (isTerminal) continue;
+
+			const pct = calculateProgress(session);
+			const isServerToProvider = session.phase === "server_to_provider";
+
+			progressPanel.create({
+				title: session.fileName,
+				subtitle: formatBytes(session.totalSize),
+				phase: isServerToProvider ? "blue" : "green",
+				progress: pct,
+				phaseLabel: isServerToProvider
+					? "Uploading to provider…"
+					: `Uploading… ${pct}%`,
+				canCancel: true,
+			});
+
+			// Override the auto-generated id by patching — actually we need a
+			// stable id to match subscription events. We'll track via a local map.
+			void ppId; // the id is session-based and handled below
+		}
+	}, [data]);
+
+	// Subscribe to all active sessions and update the panel in real-time
+	useEffect(() => {
+		const activeSessions =
+			data?.activeUploadSessions?.filter(
+				(s) =>
+					s.status !== "completed" &&
+					s.status !== "failed" &&
+					s.status !== "cancelled",
+			) ?? [];
+
+		if (activeSessions.length === 0) return;
+
+		// Map sessionId → progressPanel id (created above)
+		const sessionPpIds = new Map<string, string>();
+		for (const session of activeSessions) {
+			const ppId = progressPanel.create({
+				title: session.fileName,
+				subtitle: formatBytes(session.totalSize),
+				phase: session.phase === "server_to_provider" ? "blue" : "green",
 				progress: calculateProgress(session),
-				status: mapStatus(session.status),
-				sessionId: session.sessionId,
-				phase: session.phase as
-					| "client_to_server"
-					| "server_to_provider"
-					| undefined,
-				canCancel:
-					session.status !== "completed" &&
-					session.status !== "failed" &&
-					session.status !== "cancelled",
-				canRetry: session.status === "failed",
-				error: session.errorMessage ?? undefined,
-			}),
+				phaseLabel:
+					session.phase === "server_to_provider"
+						? "Uploading to provider…"
+						: `Uploading… ${calculateProgress(session)}%`,
+				canCancel: true,
+			});
+			sessionPpIds.set(session.sessionId, ppId);
+		}
+
+		const subscriptions = activeSessions.map((session) =>
+			client
+				.subscription(UPLOAD_PROGRESS_SUBSCRIPTION, {
+					sessionId: session.sessionId,
+				})
+				.subscribe((result) => {
+					const progress = result.data?.uploadProgress;
+					if (!progress) return;
+
+					const ppId = sessionPpIds.get(progress.sessionId);
+					if (!ppId) return;
+
+					const pct = calculateProgressFromEvent(progress);
+					const isTerminal =
+						progress.status === "completed" ||
+						progress.status === "failed" ||
+						progress.status === "cancelled";
+
+					if (progress.status === "completed") {
+						progressPanel.done(ppId, "Uploaded");
+					} else if (progress.status === "failed") {
+						progressPanel.error(ppId, progress.errorMessage ?? "Upload failed");
+					} else if (progress.status === "cancelled") {
+						progressPanel.error(ppId, "Cancelled");
+					} else {
+						const isServerToProvider = progress.phase === "server_to_provider";
+						progressPanel.update(ppId, {
+							phase: isServerToProvider ? "blue" : "green",
+							progress: pct,
+							phaseLabel: isServerToProvider
+								? "Uploading to provider…"
+								: `Uploading… ${pct}%`,
+						});
+					}
+
+					if (isTerminal) sessionPpIds.delete(progress.sessionId);
+				}),
 		);
 
-		onRestoreSessions(items);
-	}, [data, onRestoreSessions]);
-
-	// Subscribe to progress for the first active session (if any)
-	const firstActiveSession = data?.activeUploadSessions?.find(
-		(s) =>
-			s.status !== "completed" &&
-			s.status !== "failed" &&
-			s.status !== "cancelled",
-	);
-
-	const [{ data: progressData }] = useSubscription({
-		query: UPLOAD_PROGRESS_SUBSCRIPTION,
-		variables: { sessionId: firstActiveSession?.sessionId ?? "" },
-		pause: !firstActiveSession,
-	});
-
-	// Update the queue item when progress events arrive
-	useEffect(() => {
-		if (!progressData?.uploadProgress) return;
-		const progress = progressData.uploadProgress;
-		const queueId = `session-${progress.sessionId}`;
-
-		onUpdateItem(queueId, {
-			progress: calculateProgressFromEvent(progress),
-			status: mapStatus(progress.status),
-			phase: progress.phase as
-				| "client_to_server"
-				| "server_to_provider"
-				| undefined,
-			error: progress.errorMessage ?? undefined,
-			canCancel:
-				progress.status !== "completed" &&
-				progress.status !== "failed" &&
-				progress.status !== "cancelled",
-			canRetry: progress.status === "failed",
-		});
-	}, [progressData, onUpdateItem]);
+		return () => {
+			for (const sub of subscriptions) sub.unsubscribe();
+		};
+	}, [client, data]);
 }
 
 function calculateProgress(session: {
@@ -104,7 +139,6 @@ function calculateProgress(session: {
 			(session.receivedChunks / Math.max(session.totalChunks, 1)) * 50,
 		);
 	}
-	// server_to_provider phase
 	return Math.round(
 		50 +
 			(session.providerBytesTransferred / Math.max(session.totalSize, 1)) * 50,
@@ -122,21 +156,9 @@ function calculateProgressFromEvent(event: {
 	return calculateProgress(event);
 }
 
-function mapStatus(
-	status: string,
-): "queued" | "uploading" | "success" | "error" | "transferring" | "cancelled" {
-	switch (status) {
-		case "completed":
-			return "success";
-		case "failed":
-			return "error";
-		case "cancelled":
-			return "cancelled";
-		case "transferring":
-			return "transferring";
-		case "pending":
-			return "queued";
-		default:
-			return "uploading";
-	}
+function formatBytes(bytes: number) {
+	if (!bytes) return "";
+	const units = ["B", "KB", "MB", "GB", "TB"];
+	const exp = Math.floor(Math.log(bytes) / Math.log(1024));
+	return `${(bytes / 1024 ** exp).toFixed(exp === 0 ? 0 : 1)} ${units[exp]}`;
 }

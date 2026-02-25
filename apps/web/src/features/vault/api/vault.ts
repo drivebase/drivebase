@@ -15,8 +15,8 @@ export const MY_VAULT_QUERY = graphql(`
 `);
 
 export const VAULT_CONTENTS_QUERY = graphql(`
-  query VaultContents($path: String!) {
-    vaultContents(path: $path) {
+  query VaultContents($folderId: ID) {
+    vaultContents(folderId: $folderId) {
       files {
         id
         virtualPath
@@ -103,8 +103,8 @@ export const REQUEST_VAULT_DOWNLOAD_MUTATION = graphql(`
 `);
 
 export const CREATE_VAULT_FOLDER_MUTATION = graphql(`
-  mutation CreateVaultFolder($name: String!, $parentId: ID) {
-    createVaultFolder(name: $name, parentId: $parentId) {
+  mutation CreateVaultFolder($name: String!, $parentId: ID, $providerId: ID!) {
+    createVaultFolder(name: $name, parentId: $parentId, providerId: $providerId) {
       id
       virtualPath
       name

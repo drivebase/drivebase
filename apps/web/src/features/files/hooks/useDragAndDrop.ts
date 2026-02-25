@@ -13,12 +13,14 @@ interface UseDragAndDropOptions {
 	folderList: {
 		removeItems: (ids: Set<string>) => void;
 	};
+	syncEnabled: boolean;
 	onMoveComplete: () => void;
 }
 
 export function useDragAndDrop({
 	fileList,
 	folderList,
+	syncEnabled,
 	onMoveComplete,
 }: UseDragAndDropOptions) {
 	const [, moveFile] = useMoveFile();
@@ -66,6 +68,24 @@ export function useDragAndDrop({
 				breadcrumbFolderId === "__root__" ? null : breadcrumbFolderId;
 		} else {
 			return;
+		}
+
+		if (syncEnabled && targetFolderId) {
+			const targetProviderId = (
+				over.data.current as { providerId?: string } | undefined
+			)?.providerId;
+			const sourceProviderId = dragData.item.providerId;
+
+			if (
+				targetProviderId &&
+				sourceProviderId &&
+				targetProviderId !== sourceProviderId
+			) {
+				toast.error(
+					"Sync is enabled. Moving items across different providers is blocked.",
+				);
+				return;
+			}
 		}
 
 		handleMoveItems([dragData], targetFolderId);

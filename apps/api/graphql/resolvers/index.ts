@@ -1,4 +1,10 @@
 import type { Resolvers } from "../generated/types";
+import {
+	activityMutations,
+	activityQueries,
+	activityResolvers,
+	activitySubscriptions,
+} from "./activity";
 import { authMutations, authQueries, authResponseResolvers } from "./auth";
 import {
 	fileMutations,
@@ -6,7 +12,7 @@ import {
 	fileResolvers,
 	fileSubscriptions,
 } from "./file";
-import { folderMutations, folderQueries } from "./folder";
+import { folderMutations, folderQueries, folderResolvers } from "./folder";
 import { metadataMutations, metadataQueries } from "./metadata";
 import {
 	availableProviderResolvers,
@@ -14,7 +20,6 @@ import {
 	providerConfigFieldResolvers,
 	providerMutations,
 	providerQueries,
-	providerSubscriptions,
 	storageProviderResolvers,
 } from "./provider";
 import { fileRuleResolvers, ruleMutations, ruleQueries } from "./rule";
@@ -27,6 +32,7 @@ import {
 	workspaceMutations,
 	workspaceQueries,
 	workspaceResolvers,
+	workspaceSubscriptions,
 } from "./workspace";
 
 /**
@@ -45,9 +51,7 @@ export const resolvers: Resolvers = {
 		...metadataQueries,
 		...workspaceQueries,
 		...vaultQueries,
-
-		// Placeholder resolvers for unimplemented features
-		activities: async () => [],
+		...activityQueries,
 	},
 
 	Mutation: {
@@ -60,6 +64,7 @@ export const resolvers: Resolvers = {
 		...ruleMutations,
 		...metadataMutations,
 		...vaultMutations,
+		...activityMutations,
 
 		// Placeholder resolvers for permissions (TODO)
 		grantFolderAccess: async () => {
@@ -71,17 +76,20 @@ export const resolvers: Resolvers = {
 	},
 
 	Subscription: {
-		...providerSubscriptions,
+		...activitySubscriptions,
 		...fileSubscriptions,
+		...workspaceSubscriptions,
 	},
 
 	AuthResponse: authResponseResolvers,
+	Activity: activityResolvers,
 	User: userResolvers,
 	StorageProvider: storageProviderResolvers,
 	AvailableProvider: availableProviderResolvers,
 	ProviderConfigField: providerConfigFieldResolvers,
 	OAuthProviderCredential: oauthProviderCredentialResolvers,
 	File: fileResolvers,
+	Folder: folderResolvers,
 	FileRule: fileRuleResolvers,
 	Workspace: workspaceResolvers,
 	WorkspaceMember: workspaceMemberResolvers,

@@ -226,23 +226,17 @@ export function FileSystemTable({
 								{headerGroup.headers.map((header) => (
 									<TableHead
 										key={header.id}
-										style={
-											header.column.id === "name"
-												? { minWidth: header.column.columnDef.minSize }
-												: {
-														width: header.getSize(),
-														minWidth: header.column.columnDef.minSize,
-														maxWidth: header.column.columnDef.maxSize,
-													}
-										}
+										style={{
+											width: header.getSize(),
+											minWidth: header.column.columnDef.minSize,
+											maxWidth: header.column.columnDef.maxSize,
+										}}
 										className={
 											header.column.id === "select"
 												? "w-11 min-w-11 max-w-11 px-2"
 												: header.column.id === "actions"
 													? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-20 bg-background"
-													: header.column.id === "name"
-														? "w-full min-w-50"
-														: undefined
+													: undefined
 										}
 									>
 										{header.isPlaceholder
@@ -263,23 +257,17 @@ export function FileSystemTable({
 									{row.getVisibleCells().map((cell) => (
 										<TableCell
 											key={cell.id}
-											style={
-												cell.column.id === "name"
-													? { minWidth: cell.column.columnDef.minSize }
-													: {
-															width: cell.column.getSize(),
-															minWidth: cell.column.columnDef.minSize,
-															maxWidth: cell.column.columnDef.maxSize,
-														}
-											}
+											style={{
+												width: cell.column.getSize(),
+												minWidth: cell.column.columnDef.minSize,
+												maxWidth: cell.column.columnDef.maxSize,
+											}}
 											className={
 												cell.column.id === "select"
 													? "w-11 min-w-11 max-w-11 px-2"
 													: cell.column.id === "actions"
 														? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-10 bg-background group-hover:bg-muted/50 group-data-[state=selected]:bg-muted"
-														: cell.column.id === "name"
-															? "w-full min-w-50"
-															: undefined
+														: undefined
 											}
 										>
 											{flexRender(

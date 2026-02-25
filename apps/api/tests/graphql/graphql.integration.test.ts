@@ -11,7 +11,7 @@ import { resolvers } from "../../graphql/resolvers";
 
 const thisDir = dirname(fileURLToPath(import.meta.url));
 
-function createTestYoga() {
+function createTestYoga(user: { userId: string; role: string } | null = null) {
 	const typeDefs = loadSchemaSync(
 		join(thisDir, "../../graphql/schema/**/*.graphql"),
 		{
@@ -29,7 +29,7 @@ function createTestYoga() {
 		context: async () =>
 			({
 				db: {},
-				user: null,
+				user,
 				headers: new Headers(),
 				ip: "127.0.0.1",
 			}) as any,
@@ -73,11 +73,11 @@ async function executeQuery(
 
 describe("GraphQL integration", () => {
 	it("executes query resolvers through Yoga", async () => {
-		const yoga = createTestYoga();
-		const result = await executeQuery(yoga, "{ activities { id } }");
+		const yoga = createTestYoga({ userId: "u1", role: "admin" });
+		const result = await executeQuery(yoga, "{ availableProviders { id } }");
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data.activities).toEqual([]);
+		expect(Array.isArray(result.data.availableProviders)).toBe(true);
 	});
 
 	it("returns auth error for protected me query without user context", async () => {

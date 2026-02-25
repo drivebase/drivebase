@@ -356,7 +356,7 @@ export class DarkiboxProvider implements IStorageProvider {
 	async createFolder(options: CreateFolderOptions): Promise<string> {
 		const params: Record<string, string> = { name: options.name };
 		if (options.parentId && options.parentId !== ROOT_FOLDER_REMOTE_ID) {
-			params["parent_id"] = getFolderId(options.parentId);
+			params.parent_id = getFolderId(options.parentId);
 		}
 
 		const result = await this.apiGet<DarkiboxFolderCreateResult>(
@@ -388,17 +388,17 @@ export class DarkiboxProvider implements IStorageProvider {
 			const params: Record<string, string> = {
 				fld_id: getFolderId(options.remoteId),
 			};
-			if (options.newName) params["name"] = options.newName;
+			if (options.newName) params.name = options.newName;
 			if (options.newParentId)
-				params["parent_id"] = getFolderId(options.newParentId);
+				params.parent_id = getFolderId(options.newParentId);
 			await this.apiGet<boolean>("folder/edit", params);
 		} else {
 			const params: Record<string, string> = {
 				file_code: options.remoteId,
 			};
-			if (options.newName) params["file_title"] = options.newName;
+			if (options.newName) params.file_title = options.newName;
 			if (options.newParentId)
-				params["file_fld_id"] = getFolderId(options.newParentId);
+				params.file_fld_id = getFolderId(options.newParentId);
 			await this.apiGet<boolean>("file/edit", params);
 		}
 	}
@@ -413,9 +413,9 @@ export class DarkiboxProvider implements IStorageProvider {
 		}
 
 		const params: Record<string, string> = { file_code: options.remoteId };
-		if (options.newName) params["file_title"] = options.newName;
+		if (options.newName) params.file_title = options.newName;
 		if (options.targetParentId)
-			params["fld_id"] = getFolderId(options.targetParentId);
+			params.fld_id = getFolderId(options.targetParentId);
 
 		const result = await this.apiGet<DarkiboxFileCloneResult>(
 			"file/clone",
@@ -431,7 +431,7 @@ export class DarkiboxProvider implements IStorageProvider {
 
 		// Get subfolders (folder/list returns immediate children of the given folder)
 		const folderParams: Record<string, string> = {};
-		if (!isRoot) folderParams["fld_id"] = fldId;
+		if (!isRoot) folderParams.fld_id = fldId;
 
 		const folderResult = await this.apiGet<
 			DarkiboxFolderEntry[] | DarkiboxFolderEntry
@@ -454,7 +454,7 @@ export class DarkiboxProvider implements IStorageProvider {
 			fld_id: fldId,
 			per_page: String(options.limit ?? 100),
 		};
-		if (options.pageToken) fileParams["page"] = options.pageToken;
+		if (options.pageToken) fileParams.page = options.pageToken;
 
 		const fileResult = await this.apiGet<DarkiboxFileListResult>(
 			"file/list",

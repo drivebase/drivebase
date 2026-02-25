@@ -30,6 +30,7 @@ import { ConnectProviderDialog } from "@/features/providers/ConnectProviderDialo
 import { useProviderConnect } from "@/features/providers/hooks/useProviderConnect";
 import { useProviderDisconnect } from "@/features/providers/hooks/useProviderDisconnect";
 import { useProviderQuota } from "@/features/providers/hooks/useProviderQuota";
+import { useProviderRename } from "@/features/providers/hooks/useProviderRename";
 import { useProviderSync } from "@/features/providers/hooks/useProviderSync";
 import { ProviderInfoPanel } from "@/features/providers/ProviderInfoPanel";
 import { QuotaSettingsDialog } from "@/features/providers/QuotaSettingsDialog";
@@ -37,6 +38,7 @@ import { SyncProviderDialog } from "@/features/providers/SyncProviderDialog";
 import { can, getActiveWorkspaceId } from "@/features/workspaces";
 import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { AvailableProvider, StorageProvider } from "@/gql/graphql";
+import { promptDialog } from "@/shared/lib/promptDialog";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
 export const Route = createFileRoute("/_authenticated/providers")({
@@ -80,6 +82,7 @@ function ProvidersPage() {
 
 	const connect = useProviderConnect({ onSuccess: refresh });
 	const disconnect = useProviderDisconnect({ onSuccess: refresh, onError });
+	const rename = useProviderRename({ onSuccess: refresh, onError });
 	const sync = useProviderSync({ onSuccess: refresh, onError });
 	const quota = useProviderQuota({ onSuccess: refresh, onError });
 
@@ -102,6 +105,28 @@ function ProvidersPage() {
 			return;
 		}
 		setRightPanelContent(<ProviderInfoPanel providerId={provider.id} />);
+	};
+
+	const handleRenameProvider = async (provider: StorageProvider) => {
+		if (!canManageProviders) {
+			return;
+		}
+
+		const newName = await promptDialog(
+			"Rename Provider",
+			`Rename "${provider.name}"`,
+			{
+				defaultValue: provider.name,
+				placeholder: "Enter provider display name",
+				submitLabel: "Rename",
+			},
+		);
+
+		if (!newName || newName === provider.name) {
+			return;
+		}
+
+		await rename.handleRenameProvider(provider.id, newName);
 	};
 
 	const availableProviders = (availableData?.availableProviders ||
@@ -168,6 +193,7 @@ function ProvidersPage() {
 								onDisconnect={disconnect.setDisconnectId}
 								onQuota={quota.setSettingsProvider}
 								onInfo={handleOpenProviderInfo}
+								onRename={handleRenameProvider}
 								onSync={sync.setSyncDialogProvider}
 								isDisconnecting={
 									disconnect.isDisconnecting &&

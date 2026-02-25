@@ -69,7 +69,6 @@ function StarredPage() {
 			if (result.data?.moveFileToProvider) {
 				fileList.updateItem(file.id, result.data.moveFileToProvider);
 			}
-			toast.success(`Moved "${file.name}" to new provider`);
 		}
 	};
 
@@ -166,13 +165,9 @@ function StarredPage() {
 					providers={providersData?.storageProviders}
 					isLoading={filesFetching || foldersFetching}
 					onNavigate={(folderId) => {
-						const folder = folderList.items.find(
-							(item) => item.id === folderId,
-						);
-						if (!folder) return;
 						navigate({
 							to: "/files",
-							search: { path: folder.virtualPath },
+							search: { folderId },
 						});
 					}}
 					onDownloadFile={downloadFile}

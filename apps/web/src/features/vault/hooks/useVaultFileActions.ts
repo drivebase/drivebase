@@ -16,6 +16,16 @@ interface VaultFile {
 	mimeType: string;
 }
 
+function mergeChunks(chunks: Uint8Array[], totalLength: number): ArrayBuffer {
+	const merged = new Uint8Array(totalLength);
+	let offset = 0;
+	for (const chunk of chunks) {
+		merged.set(chunk, offset);
+		offset += chunk.length;
+	}
+	return merged.buffer;
+}
+
 export function useVaultFileActions(onRefresh?: () => void) {
 	const { token } = useAuthStore();
 	const { decryptDownload } = useVaultCrypto();
@@ -30,7 +40,10 @@ export function useVaultFileActions(onRefresh?: () => void) {
 	 */
 	const downloadFile = useCallback(
 		async (file: VaultFile) => {
+			const toastId = `vault-download-${file.id}-${Date.now()}`;
 			try {
+				toast.loading(`Downloading ${file.name}... 0%`, { id: toastId });
+
 				// Get download URL + encrypted file key from server
 				const result = await requestVaultDownload({ id: file.id });
 
@@ -55,9 +68,38 @@ export function useVaultFileActions(onRefresh?: () => void) {
 					throw new Error(`Failed to fetch encrypted file: ${response.status}`);
 				}
 
-				const encryptedBuffer = await response.arrayBuffer();
+				let encryptedBuffer: ArrayBuffer;
+				const totalBytes = Number(
+					response.headers.get("content-length") ?? "0",
+				);
+				if (response.body && totalBytes > 0) {
+					const reader = response.body.getReader();
+					const chunks: Uint8Array[] = [];
+					let loaded = 0;
+
+					while (true) {
+						const { done, value } = await reader.read();
+						if (done) break;
+						if (!value) continue;
+						chunks.push(value);
+						loaded += value.length;
+						const percent = Math.min(
+							90,
+							Math.round((loaded / totalBytes) * 90),
+						);
+						toast.loading(`Downloading ${file.name}... ${percent}%`, {
+							id: toastId,
+						});
+					}
+
+					encryptedBuffer = mergeChunks(chunks, loaded);
+				} else {
+					encryptedBuffer = await response.arrayBuffer();
+					toast.loading(`Downloading ${file.name}...`, { id: toastId });
+				}
 
 				// Decrypt client-side
+				toast.loading(`Decrypting ${file.name}...`, { id: toastId });
 				const decryptedBuffer = await decryptDownload(
 					encryptedBuffer,
 					encryptedFileKey,
@@ -71,10 +113,13 @@ export function useVaultFileActions(onRefresh?: () => void) {
 				a.download = file.name;
 				a.click();
 				URL.revokeObjectURL(url);
+				toast.success(`Downloaded ${file.name}`, { id: toastId });
 			} catch (error) {
 				const message =
 					error instanceof Error ? error.message : "Download failed";
-				toast.error(`Failed to download ${file.name}: ${message}`);
+				toast.error(`Failed to download ${file.name}: ${message}`, {
+					id: toastId,
+				});
 			}
 		},
 		[requestVaultDownload, decryptDownload, token],

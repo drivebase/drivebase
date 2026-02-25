@@ -2,7 +2,7 @@ import { getDb, users, workspaces } from "@drivebase/db";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { env } from "../../config/env";
-import { ProviderService } from "../../services/provider";
+import { ProviderService } from "../../service/provider";
 import { logger } from "../../utils/logger";
 
 /**

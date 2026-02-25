@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
 import { users } from "./users";
 
@@ -14,6 +14,9 @@ export const workspaces = pgTable("workspaces", {
 	ownerId: text("owner_id")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
+	syncOperationsToProvider: boolean("sync_operations_to_provider")
+		.notNull()
+		.default(false),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.notNull()
 		.defaultNow(),

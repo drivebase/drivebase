@@ -58,6 +58,9 @@ jobs:
             packages/*/node_modules
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
 
+      - name: Codegen
+        run: bun --filter api codegen
+
       - name: Run tests
         run: bun test
 

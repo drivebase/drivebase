@@ -1,5 +1,5 @@
 import type { UserRole } from "@drivebase/core";
-import { AuthService } from "../../services/auth";
+import { AuthService } from "../../service/auth";
 import type {
 	AuthResponseResolvers,
 	MutationResolvers,

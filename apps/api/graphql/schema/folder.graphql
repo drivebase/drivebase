@@ -1,10 +1,12 @@
 """
-Folder management
+Folder management — folders are provider-backed
 """
 type Folder {
 	id: ID!
 	virtualPath: String!
 	name: String!
+	remoteId: String!
+	providerId: ID!
 	workspaceId: ID!
 	parentId: ID
 	createdBy: ID!
@@ -12,6 +14,11 @@ type Folder {
 	starred: Boolean!
 	createdAt: DateTime!
 	updatedAt: DateTime!
+
+	"""
+	Storage provider that owns this folder
+	"""
+	provider: StorageProvider!
 
 	"""
 	Parent folder (if any)
@@ -41,9 +48,9 @@ extend type Query {
 	folder(id: ID!): Folder
 
 	"""
-	Get folders in a path
+	Get folders by parent
 	"""
-	folders(path: String, parentId: ID): [Folder!]!
+	folders(parentId: ID, providerIds: [ID!]): [Folder!]!
 
 	"""
 	Get starred folders
@@ -53,7 +60,7 @@ extend type Query {
 
 extend type Mutation {
 	"""
-	Create a new folder
+	Create a new folder on a storage provider
 	"""
 	createFolder(input: CreateFolderInput!): Folder!
 
@@ -86,4 +93,5 @@ extend type Mutation {
 input CreateFolderInput {
 	name: String!
 	parentId: ID
+	providerId: ID!
 }

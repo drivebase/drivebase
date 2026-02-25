@@ -20,10 +20,13 @@ export function useFolder(id: string) {
 	return result;
 }
 
-export function useFolders(parentId?: string | null, path?: string) {
+export function useFolders(parentId?: string | null, providerIds?: string[]) {
 	const [result] = useQuery({
 		query: FOLDERS_QUERY,
-		variables: { parentId, path },
+		variables: {
+			parentId,
+			providerIds: providerIds?.length ? providerIds : null,
+		},
 	});
 	return result;
 }

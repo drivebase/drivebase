@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { useMutation } from "urql";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { COMPLETE_S3_MULTIPART } from "@/features/files/api/upload-session";
-import type { UploadQueueItem } from "@/features/files/UploadProgressPanel";
 import {
 	useInitiateVaultChunkedUpload,
 	useRequestVaultUpload,
@@ -12,6 +11,7 @@ import {
 import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
 import { encryptChunk } from "@/features/vault/lib/crypto";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
+import { progressPanel } from "@/shared/lib/progressPanel";
 
 const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
 const DEFAULT_CHUNK_SIZE = 50 * 1024 * 1024; // 50MB (plaintext chunk size)
@@ -32,30 +32,13 @@ export function useVaultUpload({
 	const [, initiateVaultChunkedUpload] = useInitiateVaultChunkedUpload();
 	const [, completeS3Multipart] = useMutation(COMPLETE_S3_MULTIPART);
 
-	const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([]);
 	const [isUploading, setIsUploading] = useState(false);
 
-	const updateQueueItem = useCallback(
-		(id: string, patch: Partial<UploadQueueItem>) => {
-			setUploadQueue((prev) =>
-				prev.map((item) => (item.id === id ? { ...item, ...patch } : item)),
-			);
-		},
-		[],
-	);
-
 	const uploadSmallFile = useCallback(
-		async (
-			file: File,
-			providerId: string,
-			queueId: string,
-			folderId?: string,
-		) => {
-			// Encrypt the file client-side
+		async (file: File, providerId: string, ppId: string, folderId?: string) => {
 			const { encryptedBlob, encryptedFileKey } = await encryptForUpload(file);
 			const encryptedSize = encryptedBlob.size;
 
-			// Request upload slot
 			const result = await requestVaultUpload({
 				input: {
 					name: file.name,
@@ -77,7 +60,6 @@ export function useVaultUpload({
 				result.data.requestVaultUpload;
 
 			if (useDirectUpload && uploadUrl) {
-				// Direct upload (S3 presigned URL)
 				if (uploadFields) {
 					const formData = new FormData();
 					const fields = uploadFields as Record<string, string>;
@@ -85,26 +67,22 @@ export function useVaultUpload({
 						formData.append(key, value);
 					}
 					formData.append("file", encryptedBlob);
-
 					const response = await fetch(uploadUrl, {
 						method: "POST",
 						body: formData,
 					});
-
-					if (!response.ok) {
+					if (!response.ok)
 						throw new Error(`Direct upload failed: ${response.status}`);
-					}
 				} else {
 					const response = await fetch(uploadUrl, {
 						method: "PUT",
 						body: encryptedBlob,
 					});
-					if (!response.ok) {
+					if (!response.ok)
 						throw new Error(`Direct upload failed: ${response.status}`);
-					}
 				}
 			} else if (uploadUrl) {
-				// Proxy upload — must be POST (proxy endpoint accepts POST only)
+				// Proxy upload
 				const workspaceId = localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY);
 				await axios.post(uploadUrl, encryptedBlob, {
 					headers: {
@@ -114,8 +92,11 @@ export function useVaultUpload({
 					},
 					onUploadProgress: (evt) => {
 						if (evt.total) {
-							const progress = Math.round((evt.loaded / evt.total) * 100);
-							updateQueueItem(queueId, { progress });
+							const pct = Math.round((evt.loaded / evt.total) * 100);
+							progressPanel.update(ppId, {
+								progress: pct,
+								phaseLabel: `Uploading… ${pct}%`,
+							});
 						}
 					},
 				});
@@ -123,16 +104,11 @@ export function useVaultUpload({
 
 			return fileId;
 		},
-		[encryptForUpload, requestVaultUpload, token, updateQueueItem],
+		[encryptForUpload, requestVaultUpload, token],
 	);
 
 	const uploadLargeFileChunked = useCallback(
-		async (
-			file: File,
-			providerId: string,
-			queueId: string,
-			folderId?: string,
-		) => {
+		async (file: File, providerId: string, ppId: string, folderId?: string) => {
 			const { generateFileKey, encryptFileKey, importPublicKey } = await import(
 				"@/features/vault/lib/crypto"
 			);
@@ -141,25 +117,21 @@ export function useVaultUpload({
 			);
 
 			const store = useVaultStore.getState();
-			if (!store.publicKey) {
-				throw new Error("Vault not set up");
-			}
+			if (!store.publicKey) throw new Error("Vault not set up");
 
 			const publicKeyJwk: JsonWebKey = JSON.parse(store.publicKey);
 			const publicKey = await importPublicKey(publicKeyJwk);
 			const fileKey = await generateFileKey();
 			const encryptedFileKey = await encryptFileKey(fileKey, publicKey);
 
-			// Encrypted chunk size = plaintext chunk size + 12 (IV) + 16 (AES-GCM tag)
 			const encryptedChunkSize = DEFAULT_CHUNK_SIZE + 28;
 			const totalChunks = Math.ceil(file.size / DEFAULT_CHUNK_SIZE);
 
-			// Initiate vault chunked upload
 			const initResult = await initiateVaultChunkedUpload({
 				input: {
 					name: file.name,
 					mimeType: file.type,
-					totalSize: file.size + totalChunks * 28, // total encrypted size
+					totalSize: file.size + totalChunks * 28,
 					chunkSize: encryptedChunkSize,
 					folderId,
 					providerId,
@@ -182,11 +154,10 @@ export function useVaultUpload({
 				presignedPartUrls,
 			} = initResult.data.initiateVaultChunkedUpload;
 
-			updateQueueItem(queueId, {
-				status: "uploading",
+			progressPanel.update(ppId, {
+				phase: "green",
 				progress: 0,
-				sessionId,
-				phase: "client_to_server",
+				phaseLabel: "Uploading…",
 				canCancel: true,
 			});
 
@@ -205,9 +176,8 @@ export function useVaultUpload({
 					);
 
 					const partUrl = presignedPartUrls[i];
-					if (!partUrl) {
+					if (!partUrl)
 						throw new Error(`Missing presigned URL for part ${i + 1}`);
-					}
 
 					let etag: string | undefined;
 					let lastError: Error | undefined;
@@ -218,24 +188,17 @@ export function useVaultUpload({
 								method: "PUT",
 								body: encryptedChunkBuffer,
 							});
-
-							if (!response.ok) {
+							if (!response.ok)
 								throw new Error(`S3 part upload failed: ${response.status}`);
-							}
-
 							etag = response.headers.get("etag") ?? undefined;
-							if (!etag) {
-								throw new Error("S3 did not return ETag for part");
-							}
+							if (!etag) throw new Error("S3 did not return ETag for part");
 							lastError = undefined;
 							break;
 						} catch (error) {
 							lastError =
 								error instanceof Error ? error : new Error(String(error));
 							if (attempt < MAX_RETRIES - 1) {
-								await new Promise((resolve) =>
-									setTimeout(resolve, 1000 * 2 ** attempt),
-								);
+								await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
 							}
 						}
 					}
@@ -243,11 +206,13 @@ export function useVaultUpload({
 					if (lastError) throw lastError;
 					parts.push({ partNumber: partUrl.partNumber, etag: etag as string });
 
-					const progress = Math.round(((i + 1) / serverTotalChunks) * 100);
-					updateQueueItem(queueId, { progress, phase: "client_to_server" });
+					const pct = Math.round(((i + 1) / serverTotalChunks) * 100);
+					progressPanel.update(ppId, {
+						progress: pct,
+						phaseLabel: `Uploading… ${pct}%`,
+					});
 				}
 
-				// Complete S3 multipart
 				const completeResult = await completeS3Multipart({ sessionId, parts });
 				if (completeResult.error) {
 					throw new Error(
@@ -287,77 +252,63 @@ export function useVaultUpload({
 									body: encryptedChunkBuffer,
 								},
 							);
-
-							if (!response.ok) {
+							if (!response.ok)
 								throw new Error(`Chunk upload failed: ${response.status}`);
-							}
-
 							lastError = undefined;
 							break;
 						} catch (error) {
 							lastError =
 								error instanceof Error ? error : new Error(String(error));
 							if (attempt < MAX_RETRIES - 1) {
-								await new Promise((resolve) =>
-									setTimeout(resolve, 1000 * 2 ** attempt),
-								);
+								await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
 							}
 						}
 					}
 
 					if (lastError) throw lastError;
 
-					const progress = Math.round(((i + 1) / serverTotalChunks) * 50);
-					updateQueueItem(queueId, { progress, phase: "client_to_server" });
+					const pct = Math.round(((i + 1) / serverTotalChunks) * 50);
+					progressPanel.update(ppId, {
+						progress: pct,
+						phaseLabel: `Uploading… ${pct}%`,
+					});
 				}
 
-				updateQueueItem(queueId, {
-					status: "uploading",
+				progressPanel.update(ppId, {
+					phase: "blue",
 					progress: 50,
-					phase: "server_to_provider",
+					phaseLabel: "Uploading to provider…",
 				});
 			}
 
 			return sessionId;
 		},
-		[initiateVaultChunkedUpload, completeS3Multipart, token, updateQueueItem],
+		[initiateVaultChunkedUpload, completeS3Multipart, token],
 	);
 
 	const uploadFile = useCallback(
 		async (file: File, providerId: string) => {
-			const queueId = `vault-${Date.now()}-${file.name}`;
-
-			setUploadQueue((prev) => [
-				...prev,
-				{
-					id: queueId,
-					name: file.name,
-					size: file.size,
-					progress: 0,
-					status: "queued",
-				},
-			]);
+			const ppId = progressPanel.create({
+				title: file.name,
+				subtitle: formatBytes(file.size),
+				phase: "green",
+				progress: 0,
+				phaseLabel: "Encrypting…",
+			});
 
 			try {
-				updateQueueItem(queueId, { status: "uploading", progress: 0 });
-
 				if (file.size > CHUNK_THRESHOLD) {
-					await uploadLargeFileChunked(
-						file,
-						providerId,
-						queueId,
-						currentFolderId,
-					);
+					await uploadLargeFileChunked(file, providerId, ppId, currentFolderId);
 				} else {
-					await uploadSmallFile(file, providerId, queueId, currentFolderId);
+					await uploadSmallFile(file, providerId, ppId, currentFolderId);
 				}
 
-				updateQueueItem(queueId, { status: "success", progress: 100 });
+				progressPanel.done(ppId, "Uploaded");
 				onUploadComplete();
 			} catch (error) {
 				const message =
 					error instanceof Error ? error.message : "Upload failed";
-				updateQueueItem(queueId, { status: "error", error: message });
+				progressPanel.error(ppId, message);
 				toast.error(`Failed to upload ${file.name}: ${message}`);
 			}
 		},
@@ -365,7 +316,6 @@ export function useVaultUpload({
 			currentFolderId,
 			uploadSmallFile,
 			uploadLargeFileChunked,
-			updateQueueItem,
 			onUploadComplete,
 		],
 	);
@@ -384,16 +334,12 @@ export function useVaultUpload({
 		[uploadFile],
 	);
 
-	const clearQueue = useCallback(() => {
-		setUploadQueue((prev) =>
-			prev.filter((item) => item.status === "uploading"),
-		);
-	}, []);
+	return { uploadFiles, isUploading };
+}
 
-	return {
-		uploadFiles,
-		uploadQueue,
-		isUploading,
-		clearQueue,
-	};
+function formatBytes(bytes: number) {
+	if (!bytes) return "";
+	const units = ["B", "KB", "MB", "GB", "TB"];
+	const exp = Math.floor(Math.log(bytes) / Math.log(1024));
+	return `${(bytes / 1024 ** exp).toFixed(exp === 0 ? 0 : 1)} ${units[exp]}`;
 }

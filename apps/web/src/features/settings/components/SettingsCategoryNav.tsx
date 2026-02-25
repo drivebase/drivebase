@@ -1,6 +1,13 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { Filter, SlidersHorizontal, User, Users, Wrench } from "lucide-react";
+import {
+	Brain,
+	Filter,
+	SlidersHorizontal,
+	User,
+	Users,
+	Wrench,
+} from "lucide-react";
 
 const categories = [
 	{
@@ -22,6 +29,11 @@ const categories = [
 		to: "/settings/rules",
 		icon: Filter,
 		label: <Trans>Rules</Trans>,
+	},
+	{
+		to: "/settings/ai",
+		icon: Brain,
+		label: <Trans>AI</Trans>,
 	},
 	{
 		to: "/settings/advanced",

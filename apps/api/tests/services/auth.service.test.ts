@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
-import { AuthService } from "../../services/auth";
+import { AuthService } from "../../service/auth";
 
 // Mock dependencies
 mock.module("@drivebase/db", () => ({

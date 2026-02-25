@@ -156,10 +156,6 @@ export function useFileOperations({
 		if (result.error) {
 			toast.error(`Failed to move: ${result.error.message}`);
 		} else {
-			if (result.data?.moveFileToProvider) {
-				fileList.updateItem(file.id, result.data.moveFileToProvider);
-			}
-			toast.success(`Moved "${file.name}" to new provider`);
 			onMutationComplete?.();
 		}
 	};

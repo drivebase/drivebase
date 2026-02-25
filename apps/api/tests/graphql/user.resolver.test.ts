@@ -8,7 +8,7 @@ const userServiceMock = {
 	delete: mock(),
 };
 
-mock.module("../../services/user", () => ({
+mock.module("../../service/user", () => ({
 	UserService: mock(() => userServiceMock),
 }));
 

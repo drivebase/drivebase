@@ -1,11 +1,12 @@
 import { NotFoundError, ValidationError } from "@drivebase/core";
 import { files, folders, storageProviders, users } from "@drivebase/db";
 import { S3Provider } from "@drivebase/s3";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getUploadQueue } from "../../queue/upload-queue";
-import { FileService } from "../../services/file";
-import { UploadSessionManager } from "../../services/file/upload-session";
-import { ProviderService } from "../../services/provider";
+import { enqueueFileAnalysis } from "../../service/ai/analysis-jobs";
+import { FileService } from "../../service/file";
+import { UploadSessionManager } from "../../service/file/upload";
+import { ProviderService } from "../../service/provider";
 import type {
 	FileResolvers,
 	MutationResolvers,
@@ -41,13 +42,18 @@ export const fileResolvers: FileResolvers = {
 		const [folder] = await context.db
 			.select()
 			.from(folders)
-			.where(eq(folders.id, parent.folderId))
+			.where(
+				and(eq(folders.id, parent.folderId), eq(folders.nodeType, "folder")),
+			)
 			.limit(1);
 
 		return folder || null;
 	},
 
 	user: async (parent, _args, context) => {
+		if (!parent.uploadedBy) {
+			throw new NotFoundError("User");
+		}
 		const [user] = await context.db
 			.select()
 			.from(users)
@@ -87,7 +93,12 @@ export const fileQueries: QueryResolvers = {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
-		return fileService.getContents(args.path, user.userId, workspaceId);
+		return fileService.getContents(
+			user.userId,
+			workspaceId,
+			args.folderId ?? undefined,
+			args.providerIds ?? undefined,
+		);
 	},
 
 	searchFiles: async (_parent, args, context) => {
@@ -98,6 +109,44 @@ export const fileQueries: QueryResolvers = {
 		return fileService.searchFiles(
 			user.userId,
 			args.query,
+			args.limit ?? undefined,
+			workspaceId,
+		);
+	},
+
+	searchFilesAi: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		return fileService.searchFilesAi(
+			user.userId,
+			args.query,
+			args.limit ?? undefined,
+			workspaceId,
+		);
+	},
+
+	searchFolders: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		return fileService.searchFolders(
+			user.userId,
+			args.query,
+			args.limit ?? undefined,
+			workspaceId,
+		);
+	},
+
+	recentFiles: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		return fileService.getRecentFiles(
+			user.userId,
 			args.limit ?? undefined,
 			workspaceId,
 		);
@@ -262,7 +311,7 @@ export const fileMutations: MutationResolvers = {
 
 		if (provider instanceof S3Provider && provider.supportsChunkedUpload) {
 			// For S3, initiate native multipart and generate presigned part URLs
-			const parentId = providerRecord.rootFolderId ?? undefined;
+			const parentId: string | undefined = undefined;
 
 			const multipart = await provider.initiateMultipartUpload({
 				name: input.name,
@@ -416,6 +465,18 @@ export const fileMutations: MutationResolvers = {
 
 		// Mark session completed
 		await sessionManager.markCompleted(args.sessionId);
+
+		if (session.fileId && context.headers) {
+			const workspaceHeaderId = context.headers.get("x-workspace-id");
+			if (workspaceHeaderId) {
+				await enqueueFileAnalysis(
+					context.db,
+					session.fileId,
+					workspaceHeaderId,
+					"upload",
+				);
+			}
+		}
 
 		// Clean up Redis
 		await redis.del(`upload:s3multipart:${args.sessionId}`);

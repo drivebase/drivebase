@@ -5,6 +5,7 @@ import {
 	Info,
 	Link2,
 	MoreVertical,
+	Pencil,
 	RefreshCw,
 	Settings,
 	Trash2,
@@ -21,8 +22,9 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
-import { AuthType, type StorageProvider } from "@/gql/graphql";
+import { AuthType, JobStatus, type StorageProvider } from "@/gql/graphql";
 import { cn } from "@/shared/lib/utils";
+import { useActivityStore } from "@/shared/store/activityStore";
 import { ProviderIcon } from "./ProviderIcon";
 
 interface ConnectedProviderCardProps {
@@ -30,6 +32,7 @@ interface ConnectedProviderCardProps {
 	onDisconnect: (id: string) => void;
 	onQuota: (provider: StorageProvider) => void;
 	onInfo: (provider: StorageProvider) => void;
+	onRename: (provider: StorageProvider) => void;
 	onSync: (provider: StorageProvider) => void;
 	canManageProviders: boolean;
 	isDisconnecting: boolean;
@@ -43,6 +46,7 @@ export function ConnectedProviderCard({
 	onDisconnect,
 	onQuota,
 	onInfo,
+	onRename,
 	onSync,
 	canManageProviders,
 	isDisconnecting,
@@ -50,6 +54,30 @@ export function ConnectedProviderCard({
 	onReconnect,
 	isReconnecting,
 }: ConnectedProviderCardProps) {
+	const isSyncingByActivity = useActivityStore((state) =>
+		Array.from(state.jobs.values()).some((job) => {
+			if (job.type !== "sync") {
+				return false;
+			}
+
+			if (
+				job.status !== JobStatus.Pending &&
+				job.status !== JobStatus.Running
+			) {
+				return false;
+			}
+
+			const providerId =
+				typeof job.metadata === "object" && job.metadata !== null
+					? (job.metadata as { providerId?: unknown }).providerId
+					: undefined;
+
+			return providerId === provider.id;
+		}),
+	);
+
+	const syncInProgress = isSyncing ?? isSyncingByActivity;
+
 	const usagePercent = provider.quotaTotal
 		? Math.min((provider.quotaUsed / provider.quotaTotal) * 100, 100)
 		: 0;
@@ -105,9 +133,12 @@ export function ConnectedProviderCard({
 								<DropdownMenuItem onClick={() => onInfo(provider)}>
 									<Info className="mr-2 h-4 w-4" /> View
 								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => onRename(provider)}>
+									<Pencil className="mr-2 h-4 w-4" /> Rename
+								</DropdownMenuItem>
 								<DropdownMenuItem
 									onClick={() => onSync(provider)}
-									disabled={isSyncing}
+									disabled={syncInProgress}
 								>
 									<RefreshCw className="mr-2 h-4 w-4" /> Sync
 								</DropdownMenuItem>
