@@ -140,6 +140,12 @@ export function Navbar() {
             >
               Blogs
             </Link>
+            <Link
+              href="/roadmap"
+              className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+            >
+              Roadmap
+            </Link>
           </div>
           <div className="flex items-center gap-4">
             <Link
