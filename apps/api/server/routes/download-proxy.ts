@@ -87,14 +87,19 @@ export async function handleDownloadProxy(
 		// Fire-and-forget so we don't delay the stream response.
 		new ActivityService(db)
 			.log({
-				type: "download",
+				kind: "file.downloaded",
+				title: "File downloaded",
+				summary: file.name,
+				status: "success",
 				userId: user.userId,
 				workspaceId,
-				bytes: file.size,
-				fileId: file.id,
-				providerId: file.providerId,
-				folderId: file.folderId ?? undefined,
-				metadata: { name: file.name, size: file.size },
+				details: {
+					fileId: file.id,
+					providerId: file.providerId,
+					folderId: file.folderId ?? undefined,
+					name: file.name,
+					size: file.size,
+				},
 			})
 			.catch(() => {});
 

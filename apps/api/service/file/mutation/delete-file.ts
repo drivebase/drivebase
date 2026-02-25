@@ -34,13 +34,19 @@ export async function deleteFile(
 		telemetry.capture("file_deleted");
 
 		await new ActivityService(db).log({
-			type: "delete",
+			kind: "file.deleted",
+			title: "File deleted",
+			summary: file.name,
+			status: "success",
 			userId,
 			workspaceId,
-			fileId,
-			providerId: file.providerId,
-			folderId: file.folderId ?? undefined,
-			metadata: { name: file.name, virtualPath: file.virtualPath },
+			details: {
+				fileId,
+				providerId: file.providerId,
+				folderId: file.folderId ?? undefined,
+				name: file.name,
+				virtualPath: file.virtualPath,
+			},
 		});
 	} catch (error) {
 		logger.error({ msg: "Delete file failed", userId, fileId, error });

@@ -100,13 +100,16 @@ export async function moveFile(
 		if (!updated) throw new Error("Failed to move file");
 
 		await new ActivityService(db).log({
-			type: "move",
+			kind: "file.moved",
+			title: "File moved",
+			summary: updated.name,
+			status: "success",
 			userId,
 			workspaceId,
-			fileId: updated.id,
-			providerId: updated.providerId,
-			folderId: updated.folderId ?? undefined,
-			metadata: {
+			details: {
+				fileId: updated.id,
+				providerId: updated.providerId,
+				folderId: updated.folderId ?? undefined,
 				action: "move_folder",
 				oldPath: file.virtualPath,
 				newPath: newVirtualPath,

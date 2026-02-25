@@ -1,6 +1,6 @@
 import type { Database } from "@drivebase/db";
-import { activities, jobs, workspaceStats } from "@drivebase/db";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { activities, jobs } from "@drivebase/db";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
 
 interface CreateJobInput {
@@ -18,25 +18,14 @@ interface UpdateJobInput {
 }
 
 interface LogActivityInput {
-	type:
-		| "upload"
-		| "download"
-		| "create"
-		| "update"
-		| "delete"
-		| "move"
-		| "copy"
-		| "share"
-		| "unshare";
+	kind: string;
+	title: string;
+	summary?: string;
+	status?: "info" | "success" | "warning" | "error";
 	userId: string;
-	fileId?: string;
-	folderId?: string;
-	providerId?: string;
 	workspaceId?: string;
-	bytes?: number;
-	metadata?: Record<string, unknown>;
-	ipAddress?: string;
-	userAgent?: string;
+	details?: Record<string, unknown>;
+	occurredAt?: Date;
 }
 
 export class ActivityService {
@@ -113,57 +102,22 @@ export class ActivityService {
 	}
 
 	async log(input: LogActivityInput) {
-		const bytes = Math.max(0, input.bytes ?? 0);
 		const [activity] = await this.db
 			.insert(activities)
 			.values({
-				type: input.type,
+				kind: input.kind,
+				title: input.title,
+				summary: input.summary ?? null,
+				status: input.status ?? null,
 				userId: input.userId,
-				fileId: input.fileId ?? null,
-				folderId: input.folderId ?? null,
-				providerId: input.providerId ?? null,
 				workspaceId: input.workspaceId ?? null,
-				bytes,
-				metadata: input.metadata ?? null,
-				ipAddress: input.ipAddress ?? null,
-				userAgent: input.userAgent ?? null,
+				details: input.details ?? null,
+				occurredAt: input.occurredAt ?? new Date(),
 			})
 			.returning();
 
 		if (!activity) {
 			throw new Error("Failed to log activity");
-		}
-
-		if (
-			input.workspaceId &&
-			bytes > 0 &&
-			(input.type === "upload" || input.type === "download")
-		) {
-			const now = new Date();
-			const bucketStart = new Date(
-				Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-			);
-			await this.db
-				.insert(workspaceStats)
-				.values({
-					workspaceId: input.workspaceId,
-					bucketStart,
-					uploadedBytes: input.type === "upload" ? bytes : 0,
-					downloadedBytes: input.type === "download" ? bytes : 0,
-				})
-				.onConflictDoUpdate({
-					target: [workspaceStats.workspaceId, workspaceStats.bucketStart],
-					set:
-						input.type === "upload"
-							? {
-									uploadedBytes: sql`${workspaceStats.uploadedBytes} + ${bytes}`,
-									updatedAt: now,
-								}
-							: {
-									downloadedBytes: sql`${workspaceStats.downloadedBytes} + ${bytes}`,
-									updatedAt: now,
-								},
-				});
 		}
 
 		pubSub.publish("activityCreated", input.userId, activity);
@@ -177,7 +131,7 @@ export class ActivityService {
 			.select()
 			.from(activities)
 			.where(eq(activities.userId, userId))
-			.orderBy(desc(activities.createdAt))
+			.orderBy(desc(activities.occurredAt), desc(activities.createdAt))
 			.limit(safeLimit)
 			.offset(safeOffset);
 	}

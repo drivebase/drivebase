@@ -127,14 +127,16 @@ export async function requestUpload(
 			: proxyUrl;
 
 		await new ActivityService(db).log({
-			type: "upload",
+			kind: "file.upload.requested",
+			title: "Upload requested",
+			summary: sanitizedName,
+			status: "info",
 			userId,
 			workspaceId,
-			bytes: size,
-			fileId: fileRecord.id,
-			providerId,
-			folderId: folderId ?? undefined,
-			metadata: {
+			details: {
+				fileId: fileRecord.id,
+				providerId,
+				folderId: folderId ?? undefined,
 				name: sanitizedName,
 				size,
 				mimeType,

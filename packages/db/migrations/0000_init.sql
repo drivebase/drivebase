@@ -1,6 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 
-CREATE TYPE "public"."activity_type" AS ENUM('upload', 'download', 'create', 'update', 'delete', 'move', 'copy', 'share', 'unshare');--> statement-breakpoint
 CREATE TYPE "public"."analysis_model_tier" AS ENUM('lightweight', 'medium', 'heavy');--> statement-breakpoint
 CREATE TYPE "public"."analysis_status" AS ENUM('pending', 'running', 'completed', 'failed', 'skipped');--> statement-breakpoint
 CREATE TYPE "public"."analysis_task_type" AS ENUM('embedding', 'ocr');--> statement-breakpoint
@@ -15,16 +14,14 @@ CREATE TYPE "public"."user_role" AS ENUM('viewer', 'editor', 'admin', 'owner');-
 CREATE TYPE "public"."workspace_role" AS ENUM('owner', 'admin', 'editor', 'viewer');--> statement-breakpoint
 CREATE TABLE "activities" (
 	"id" text PRIMARY KEY NOT NULL,
-	"type" "activity_type" NOT NULL,
+	"kind" text NOT NULL,
+	"title" text NOT NULL,
+	"summary" text,
+	"status" text,
 	"user_id" text NOT NULL,
-	"file_id" text,
-	"folder_id" text,
-	"provider_id" text,
 	"workspace_id" text,
-	"bytes" bigint DEFAULT 0 NOT NULL,
-	"metadata" jsonb,
-	"ip_address" text,
-	"user_agent" text,
+	"details" jsonb,
+	"occurred_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -303,9 +300,6 @@ CREATE TABLE "workspaces" (
 );
 --> statement-breakpoint
 ALTER TABLE "activities" ADD CONSTRAINT "activities_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "activities" ADD CONSTRAINT "activities_file_id_nodes_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."nodes"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "activities" ADD CONSTRAINT "activities_folder_id_nodes_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."nodes"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "activities" ADD CONSTRAINT "activities_provider_id_storage_providers_id_fk" FOREIGN KEY ("provider_id") REFERENCES "public"."storage_providers"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "activities" ADD CONSTRAINT "activities_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "file_analysis_runs" ADD CONSTRAINT "file_analysis_runs_file_id_nodes_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."nodes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "file_analysis_runs" ADD CONSTRAINT "file_analysis_runs_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -350,7 +344,7 @@ ALTER TABLE "workspace_memberships" ADD CONSTRAINT "workspace_memberships_invite
 ALTER TABLE "workspace_stats" ADD CONSTRAINT "workspace_stats_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspaces" ADD CONSTRAINT "workspaces_owner_id_users_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "activities_workspace_created_idx" ON "activities" USING btree ("workspace_id","created_at");--> statement-breakpoint
-CREATE INDEX "activities_workspace_type_created_idx" ON "activities" USING btree ("workspace_id","type","created_at");--> statement-breakpoint
+CREATE INDEX "activities_workspace_type_created_idx" ON "activities" USING btree ("workspace_id","kind","occurred_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "file_analysis_runs_analysis_key_idx" ON "file_analysis_runs" USING btree ("analysis_key");--> statement-breakpoint
 CREATE UNIQUE INDEX "file_embeddings_file_model_run_idx" ON "file_embeddings" USING btree ("file_id","model_name","run_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "file_text_chunks_file_run_chunk_idx" ON "file_text_chunks" USING btree ("file_id","run_id","chunk_index");--> statement-breakpoint
