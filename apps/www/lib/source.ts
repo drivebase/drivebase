@@ -1,4 +1,4 @@
-import { blogPosts, docs } from "fumadocs-mdx:collections/server";
+import { blogPosts, docs, roadmaps } from "fumadocs-mdx:collections/server";
 import { type InferPageType, loader } from "fumadocs-core/source";
 import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
 import { toFumadocsSource } from "fumadocs-mdx/runtime/server";
@@ -13,6 +13,11 @@ export const source = loader({
 export const blog = loader({
   baseUrl: "/blogs",
   source: toFumadocsSource(blogPosts, []),
+});
+
+export const roadmap = loader({
+  baseUrl: "/roadmap",
+  source: toFumadocsSource(roadmaps, []),
 });
 
 export function getPageImage(page: InferPageType<typeof source>) {
