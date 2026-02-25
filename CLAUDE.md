@@ -1,223 +1,94 @@
 ---
-description: Use Bun instead of Node.js, npm, pnpm, or vite.
+description: Strict engineering standards for Drivebase (Bun-first, API/Web conventions, refactor/file-change rules)
 globs: "*.ts, *.tsx, *.html, *.css, *.js, *.jsx, package.json"
 alwaysApply: false
 ---
 
-Default to using Bun instead of Node.js.
+# Runtime and Tooling (Bun-first)
 
-- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+- Use Bun by default.
+- Use `bun <file>` instead of `node`/`ts-node`.
+- Use `bun test` for tests.
+- Use `bun install` for dependencies.
+- Use `bun run <script>` for package scripts.
+- Use `bunx <pkg> <cmd>` instead of `npx`.
+- Do not add `dotenv` unless explicitly required (Bun loads `.env`).
 
-## APIs
+# Repository Scope
 
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- Use `ioredis` for Redis (Bun.redis has typing issues).
-- Use `drizzle-orm/node-postgres` with `pg` driver for PostgreSQL.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
+- The repo has two primary app areas:
+- `apps/api` for backend/API code.
+- `apps/web` for frontend/web app code.
+- Keep domain boundaries clear; avoid cross-app coupling.
 
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+# TypeScript and Safety Rules
 
-## Drivebase Project Conventions
+- Never use `any`.
+- Never use non-null assertion (`!`) to bypass checks.
+- Validate inputs and throw descriptive errors.
+- Prefer explicit return types for exported functions.
+- Convert nullable DB/API values to optional params using `value ?? undefined` where needed.
+- Keep `bunx tsc --noEmit -p apps/api/tsconfig.json` and web typecheck clean when touching related areas.
 
-### Type Safety
+# Import and Path Rules
 
-- NEVER use `any` type - always use proper TypeScript types
-- NEVER use non-null assertions (`!`) - validate and throw errors instead
-- Goal: Zero TypeScript errors (`bunx tsc --noEmit` should pass)
-- Use GraphQLContext type for resolver helpers, not `any`
-- Convert `null` to `undefined` for optional params: `value ?? undefined`
-- When optional fields are required, validate and throw descriptive errors
+- Use path alias imports with the generic `@/*` mapping where configured.
+- Prefer stable domain imports over deep relative chains when possible.
+- Public module surfaces should be exported through `index.ts` barrels.
+- Avoid `export-file.ts` patterns; use `index.ts` in each module boundary.
 
-### GraphQL Development
+# API Architecture Rules (`apps/api`)
 
-- Schema-first approach: write `.graphql` files in `apps/api/graphql/schema/`
-- Run `bun run codegen` to generate TypeScript types
-- Resolvers must use generated types from `graphql/generated/types.ts`
-- Use GraphQL Yoga for the server
+- Keep GraphQL schema and resolver signatures backward compatible unless a change is explicitly requested.
+- Use schema-first GraphQL workflow and regenerate types after schema/document changes.
+- Use Drizzle ORM patterns consistently and preserve soft-delete behavior.
+- Use shared errors from `@drivebase/core` (`ValidationError`, `NotFoundError`, `ConflictError`, etc.).
+- Always clean up provider instances (`provider.cleanup()`) in `finally` blocks.
 
-### Database Patterns
+# Refactor and File-Change Standards
 
-- Use Drizzle ORM with `drizzle-orm/node-postgres` and `pg` driver
-- Soft deletes: set `isDeleted: true` instead of removing records
-- Always check for undefined returns: `if (!result) throw new Error(...)`
-- Use workspace packages: `@drivebase/db`, `@drivebase/core`
+- For refactors, preserve external behavior and public APIs.
+- Prefer domain split by responsibility:
+- `query/` for read operations.
+- `mutation/` for write operations (including star/unstar style state changes).
+- `shared/` only for reusable internal helpers.
+- For large domains, use one exported function per file.
+- Keep touched non-generated source files at or below `200 LOC` when practical.
+- Generated files are exempt from LOC limits.
+- Add short comments only where needed; max 1-2 lines per function, no obvious narration.
+- Remove obsolete grouped files after migration and update imports in the same change.
 
-### Storage Provider System
+# Naming and Consistency Rules
 
-- All providers implement `IStorageProvider` from `@drivebase/core`
-- Register providers in `apps/api/config/providers.ts`
-- Use virtual paths separate from provider-specific remote IDs
-- Encrypt sensitive credentials with AES-256-GCM (see `utils/encryption.ts`)
-- Always call `provider.cleanup()` after operations
+- Use singular domain naming where the codebase standard is singular (example: `rule`, not `rules`).
+- Keep naming consistent across service, query, and mutation modules.
+- Do not introduce parallel naming schemes for the same domain.
 
-### Error Handling
+# Testing and Validation Rules
 
-- Use custom errors from `@drivebase/core`: NotFoundError, ValidationError, etc.
-- ProviderError requires provider type as first param: `ProviderError("google_drive", ...)`
-- Throw errors early, don't return null/undefined for error cases
+- Run targeted tests for touched domains.
+- Run GraphQL regression tests when resolver/service internals are changed.
+- If typecheck has pre-existing failures, do not hide them; report clearly what is pre-existing vs new.
+- Refactor PRs should include verification commands and outcomes.
 
-### Monorepo Structure
+# Database and Migration Rules
 
-- `packages/core` - shared types, interfaces, utilities
-- `packages/db` - Drizzle schema and database client
-- `packages/google-drive` - Google Drive provider
-- `packages/s3` - S3-compatible provider (AWS SDK v3)
-- `packages/local` - local filesystem provider
-- `apps/api` - GraphQL API server
-- `apps/web` - React web app (TanStack Router, urql, Zustand)
+- Any schema change must include:
+- schema updates in `packages/db/schema/*`.
+- SQL migration in `packages/db/migrations/*`.
+- migration journal updates when required.
+- For required new fields, use safe rollout strategy: add nullable -> backfill -> enforce not null.
 
-### Web App Architecture (`apps/web/src/`)
+# Web App Rules (`apps/web`)
 
-The web app uses a **feature-based architecture**. All domain logic lives in self-contained feature directories. Route files are thin composition layers that wire hooks and components together.
+- Keep route files thin; business logic belongs in feature hooks/services.
+- Reuse shared primitives before creating new variants.
+- Keep optimistic UI behavior consistent where already established.
+- Preserve UX stability: avoid loading/layout flicker and maintain consistent action placement.
 
-```
-apps/web/src/
-├── features/           # Domain-specific modules (self-contained)
-│   ├── files/          # File/folder management
-│   │   ├── api/        # GraphQL queries & mutations (file.ts, folder.ts)
-│   │   ├── hooks/      # useFiles, useFolders, useUpload, useFileDrop,
-│   │   │               # useFileOperations, useDragAndDrop, useBreadcrumbs
-│   │   ├── components/ # DroppableBreadcrumb, FilesToolbar, FileDropZone
-│   │   └── index.ts    # Barrel export
-│   ├── providers/      # Storage provider management
-│   │   ├── api/        # provider.ts (queries, mutations, subscriptions)
-│   │   ├── hooks/      # useProviders, useProviderConnect, useProviderSync,
-│   │   │               # useProviderDisconnect, useProviderQuota
-│   │   └── index.ts
-│   ├── auth/           # Authentication
-│   │   ├── api/        # auth.ts
-│   │   ├── hooks/      # useAuth (useMe, useLogin, useRegister, useLogout)
-│   │   ├── store/      # authStore (Zustand)
-│   │   └── index.ts
-│   ├── dashboard/      # Dashboard page
-│   ├── settings/       # Settings page
-│   ├── onboarding/     # Onboarding wizard
-│   └── telegram/       # Telegram auth flow
-├── shared/             # Cross-feature utilities
-│   ├── hooks/          # useOptimisticList, useAppUpdate
-│   ├── components/     # InfoPanel (base component)
-│   ├── api/            # fragments, activity, metadata, permission, user
-│   ├── store/          # rightPanelStore, filesStore
-│   └── lib/            # urql client, confirmDialog, promptDialog, utils
-├── components/         # UI layer (unchanged)
-│   ├── layout/         # DashboardLayout, Header, Sidebar, RightPanel
-│   └── ui/             # shadcn components
-├── gql/                # GraphQL codegen output (do not edit)
-├── routes/             # TanStack Router route files (thin composition)
-└── config/             # Static configuration
-```
+# PR/Change Hygiene
 
-#### Web App Rules
-
-- **Feature isolation**: Domain logic (API calls, hooks, components) belongs in `features/<domain>/`. Never put business logic directly in route files.
-- **Thin route files**: Route components should only compose hooks and render components. All state management, mutations, and side effects go in hooks.
-- **Import paths**: Use `@/features/<domain>/...` for feature code, `@/shared/...` for cross-cutting concerns. The `@/` alias maps to `./src/`.
-- **Optimistic updates**: Use `useOptimisticList` from `@/shared/hooks/useOptimisticList` for lists that need optimistic mutations with rollback.
-- **New features**: Create a new directory under `features/` with `api/`, `hooks/`, `components/` subdirectories and an `index.ts` barrel export.
-- **Shared code**: Only put code in `shared/` if it's used by 2+ features. Feature-specific code stays in the feature directory.
-- **Barrel exports**: Each feature has an `index.ts` that re-exports its public API. Internal implementation details should not be exported.
-
-## Current Product Standards (Must Follow)
-
-### General Architecture
-
-- Keep provider-specific logic modular inside each package (`packages/google-drive`, `packages/s3`, `packages/local`).
-- Avoid hardcoded provider configuration values; always load from DB-stored encrypted config.
-- Prefer extending existing shared components/hooks over creating route-specific variants.
-
-### Providers & Storage
-
-- Use `@aws-sdk/client-s3` for S3 provider integration.
-- Always return upload/download contract via provider interface:
-  - `requestUpload`, `uploadFile`
-  - `requestDownload`, `downloadFile`
-- For non-direct upload/download providers, always use API proxy endpoints.
-- Always cleanup failed upload file records (DB) when upload transport fails.
-- Google Drive auth:
-  - rely on `refresh_token` for token refresh (do not depend on stale stored access token),
-  - store connected account metadata (email/name) in DB for UI display.
-- Local provider must support: upload, download, list, move, copy, delete, quota, metadata.
-
-### GraphQL/API Practices
-
-- Use schema-first development and run codegen after GraphQL schema or document updates:
-  - `apps/api`: `bun run codegen`
-  - `apps/web`: `bun run codegen`
-- Add new app-level info queries under generic metadata naming:
-  - use `appMetadata` (not one-off naming like `appVersion` query/file).
-- For authenticated proxy routes (`/api/upload/proxy`, `/api/download/proxy`), ensure:
-  - bearer token validation,
-  - CORS/OPTIONS handling,
-  - clear error messages.
-
-### Database & Migrations
-
-- Any DB schema change must include:
-  - schema updates in `packages/db/schema/*`,
-  - SQL migration in `packages/db/migrations/*`,
-  - `_journal.json` entry update.
-- Prefer safe backfill steps for new required fields (nullable add -> populate -> set not null).
-
-### Files UI
-
-- Use one unified file/folder table component everywhere.
-- No route-specific action logic forks; behavior parity across Dashboard/Files/Favorites.
-- “Details” action must open right panel file details view.
-- “Download” must work for both direct URL and proxy URL flows.
-- Favorites toggles must use optimistic UI updates (no full table refetch flicker).
-
-### Data Table Standards
-
-- File table is a unified Data Table (`@tanstack/react-table`) with:
-  - row selection,
-  - column visibility selection.
-- Use shadcn checkbox component for selection controls.
-- Keep selection and actions columns fixed-width.
-- Keep actions menu trigger (three dots) right-aligned consistently.
-- Avoid layout shift during loading:
-  - keep top toolbar (selected count + columns button) visible in loading state.
-
-### Search UX
-
-- Header search must query DB-backed file search (`searchFiles`) with top 5 results.
-- Selecting a result should navigate to the file’s parent folder path in `/files`.
-- Use debounced input for query dispatch.
-
-### Right Panel & Account UX
-
-- Right panel content is configurable through Zustand store.
-- When custom right-panel content is open, show a close button that restores default account view.
-- Default account view should show:
-  - avatar,
-  - name,
-  - email,
-  - `My Account` button,
-  - `Sign out` button,
-  - Activity section with “No recent activity”.
-- My Account page:
-  - use clean settings-like layout (no card wrapper),
-  - allow updating user `name`.
-
-### Auth, Loading, and Error UX
-
-- Never flash authenticated dashboard UI before auth bootstrap completes.
-- Show full-screen branded loader (Drivebase logo) while loading current user.
-- If API is unreachable during auth bootstrap, show full-screen retryable error state.
-- Include root-level fallback error UI for unrecoverable route/render failures.
-
-### Version Update UX
-
-- On app load:
-  - fetch current app version from API metadata query (`appMetadata.version`),
-  - fetch latest GitHub release version,
-  - compare against locally stored version,
-  - show “Update available” indicator when versions differ.
-- Persist local version and latest seen GitHub version in `localStorage`.
+- Keep changes scoped to requested domains.
+- Do not mix unrelated refactors with behavior changes.
+- Document assumptions and follow-ups when deferring work.
+- Prefer incremental, reviewable commits with clear `refactor:` messages for structural-only changes.
