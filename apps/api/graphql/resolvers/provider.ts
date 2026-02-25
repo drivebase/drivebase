@@ -1,5 +1,5 @@
 import { getAvailableProviders } from "../../config/providers";
-import { ProviderService } from "../../services/provider";
+import { ProviderService } from "../../service/provider";
 import type {
 	AvailableProvider,
 	AuthType as GQLAuthType,

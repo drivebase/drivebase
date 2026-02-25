@@ -3,7 +3,7 @@ import { getDb, users } from "@drivebase/db";
 import { sql } from "drizzle-orm";
 import { getAvailableProviders } from "../config/providers";
 import { getRedis } from "../redis/client";
-import { UserService } from "../services/user";
+import { UserService } from "../service/user";
 import { logger } from "./logger";
 
 /**

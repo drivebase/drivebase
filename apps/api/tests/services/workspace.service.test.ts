@@ -19,7 +19,7 @@ mock.module("@drivebase/db", () => ({
 import {
 	createDefaultWorkspace,
 	getOwnedWorkspaceId,
-} from "../../services/workspace";
+} from "../../service/workspace";
 
 type WorkspaceRow = {
 	id: string;

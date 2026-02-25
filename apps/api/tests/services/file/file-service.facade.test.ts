@@ -22,11 +22,11 @@ const unstarFile = mock();
 const getContents = mock();
 const getStarredFiles = mock();
 
-mock.module("../../../services/workspace", () => ({
+mock.module("../../../service/workspace", () => ({
 	getAccessibleWorkspaceId,
 }));
 
-mock.module("../../../services/file/index", () => ({
+mock.module("../../../service/file/index", () => ({
 	requestUpload,
 	getFile,
 	getFileForProxy,
@@ -48,7 +48,7 @@ mock.module("../../../services/file/index", () => ({
 	getStarredFiles,
 }));
 
-import { FileService } from "../../../services/file.ts";
+import { FileService } from "../../../service/file.ts";
 
 describe("FileService facade", () => {
 	const db = { marker: "db" };

@@ -5,7 +5,7 @@ import {
 	listFiles,
 	searchFiles,
 	searchFolders,
-} from "../../../services/file/query/file-listing";
+} from "../../../service/file/query/file-listing";
 
 describe("file query listing/search", () => {
 	it("exports file listing and search functions", () => {

@@ -1,8 +1,8 @@
 import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
-import { ActivityService } from "../../services/activity";
-import { FileService } from "../../services/file";
-import { ProviderService } from "../../services/provider";
+import { ActivityService } from "../../service/activity";
+import { FileService } from "../../service/file";
+import { ProviderService } from "../../service/provider";
 import { telemetry } from "../../telemetry";
 import { logger } from "../../utils/logger";
 import type { AppEnv } from "../app";

@@ -2,7 +2,7 @@ import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
 import { pubSub } from "../../graphql/pubsub";
 import { getUploadQueue } from "../../queue/upload-queue";
-import { UploadSessionManager } from "../../services/file/upload";
+import { UploadSessionManager } from "../../service/file/upload";
 import { logger } from "../../utils/logger";
 import type { AppEnv } from "../app";
 

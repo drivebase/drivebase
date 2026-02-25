@@ -1,7 +1,7 @@
 import { getDb } from "@drivebase/db";
 import { Worker } from "bullmq";
+import { syncProvider } from "@/service/provider/mutation";
 import { createBullMQConnection } from "../redis/client";
-import { syncProvider } from "@/services/provider/mutation";
 import { logger } from "../utils/logger";
 import type { SyncJobData } from "./sync-queue";
 

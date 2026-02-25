@@ -1,9 +1,9 @@
 import { files, getDb } from "@drivebase/db";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
-import { enqueueFileAnalysis } from "../../services/ai/analysis-jobs";
-import { FileService } from "../../services/file";
-import { ProviderService } from "../../services/provider";
+import { enqueueFileAnalysis } from "../../service/ai/analysis-jobs";
+import { FileService } from "../../service/file";
+import { ProviderService } from "../../service/provider";
 import { fileSizeBucket, telemetry } from "../../telemetry";
 import { logger } from "../../utils/logger";
 import type { AppEnv } from "../app";

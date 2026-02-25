@@ -3,10 +3,10 @@ import { files, folders, storageProviders, users } from "@drivebase/db";
 import { S3Provider } from "@drivebase/s3";
 import { and, eq } from "drizzle-orm";
 import { getUploadQueue } from "../../queue/upload-queue";
-import { enqueueFileAnalysis } from "../../services/ai/analysis-jobs";
-import { FileService } from "../../services/file";
-import { UploadSessionManager } from "../../services/file/upload";
-import { ProviderService } from "../../services/provider";
+import { enqueueFileAnalysis } from "../../service/ai/analysis-jobs";
+import { FileService } from "../../service/file";
+import { UploadSessionManager } from "../../service/file/upload";
+import { ProviderService } from "../../service/provider";
 import type {
 	FileResolvers,
 	MutationResolvers,

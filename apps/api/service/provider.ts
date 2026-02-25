@@ -4,7 +4,6 @@ import type {
 	oauthProviderCredentials,
 	storageProviders,
 } from "@drivebase/db";
-import { logger } from "../utils/logger";
 import {
 	connectProvider,
 	createOAuthProviderCredential,
@@ -16,14 +15,15 @@ import {
 	scheduleInitialProviderSync,
 	syncProvider,
 	updateProviderQuota,
-} from "@/services/provider/mutation";
+} from "@/service/provider/mutation";
 import {
-	getProviderConfigPreview,
 	getProvider,
+	getProviderConfigPreview,
 	getProviderInstance,
 	getProviders,
 	listOAuthProviderCredentials,
-} from "@/services/provider/query";
+} from "@/service/provider/query";
+import { logger } from "../utils/logger";
 import { getAccessibleWorkspaceId } from "./workspace";
 
 export class ProviderService {

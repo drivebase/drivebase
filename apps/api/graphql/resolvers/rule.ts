@@ -8,7 +8,7 @@ import {
 	listRules,
 	reorderRules,
 	updateRule,
-} from "../../services/rule";
+} from "../../service/rule";
 import type {
 	FileRuleResolvers,
 	MutationResolvers,

@@ -2,8 +2,8 @@ import { NotFoundError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders } from "@drivebase/db";
 import { and, eq, isNull, notInArray } from "drizzle-orm";
+import { ActivityService } from "@/service/activity";
 import { telemetry } from "@/telemetry";
-import { ActivityService } from "@/services/activity";
 import { getProviderInstance } from "../query";
 
 function getSyncProgress(processedCount: number): number {

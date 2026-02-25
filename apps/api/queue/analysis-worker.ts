@@ -11,20 +11,20 @@ import {
 } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { and, eq } from "drizzle-orm";
+import { getProviderInstance } from "@/service/provider/query";
 import { env } from "../config/env";
 import { createBullMQConnection } from "../redis/client";
-import { refreshWorkspaceAiProgress } from "../services/ai/ai-settings";
+import { refreshWorkspaceAiProgress } from "../service/ai/ai-settings";
 import {
 	resolveAiFeatureToggles,
 	resolveMaxFileSizeMb,
-} from "../services/ai/ai-support";
+} from "../service/ai/ai-support";
 import {
 	inferEmbeddingStream,
 	inferObjectsStream,
 	inferOcrStream,
 	inferTextEmbedding,
-} from "../services/ai/inference-client";
-import { getProviderInstance } from "@/services/provider/query";
+} from "../service/ai/inference-client";
 import { logger } from "../utils/logger";
 import type { FileAnalysisJobData } from "./analysis-queue";
 import { getAnalysisQueue } from "./analysis-queue";

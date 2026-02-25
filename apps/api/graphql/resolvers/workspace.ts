@@ -2,34 +2,32 @@ import {
 	getOrCreateWorkspaceAiSettings,
 	getWorkspaceAiProgress,
 	updateWorkspaceAiSettings,
-} from "../../services/ai/ai-settings";
+} from "../../service/ai/ai-settings";
 import {
 	deleteWorkspaceAiData,
 	enqueueWorkspaceBackfill,
 	retryWorkspaceFailedAiFiles,
 	stopWorkspaceAiProcessing,
-} from "../../services/ai/analysis-jobs";
+} from "../../service/ai/analysis-jobs";
 import {
 	scheduleModelPreparation,
 	syncWorkspaceModelReadiness,
-} from "../../services/ai/model-download";
-import {
-	createWorkspace,
-	listAccessibleWorkspaces,
-	updateWorkspaceName,
-	updateWorkspaceSyncOperationsToProvider,
-} from "../../services/workspace";
+} from "../../service/ai/model-download";
 import {
 	acceptWorkspaceInvite,
+	createWorkspace,
 	createWorkspaceInvite,
+	getWorkspaceStats,
+	listAccessibleWorkspaces,
 	listActiveWorkspaceInvites,
 	listWorkspaceMembers,
 	removeWorkspaceMember,
 	requireWorkspaceRole,
 	revokeWorkspaceInvite,
 	updateWorkspaceMemberRole,
-} from "../../services/workspace";
-import { getWorkspaceStats } from "../../services/workspace";
+	updateWorkspaceName,
+	updateWorkspaceSyncOperationsToProvider,
+} from "../../service/workspace";
 import type {
 	MutationResolvers,
 	QueryResolvers,

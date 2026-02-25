@@ -5,8 +5,8 @@ import { Worker } from "bullmq";
 import { and, eq } from "drizzle-orm";
 import { env } from "../config/env";
 import { createBullMQConnection, getRedis } from "../redis/client";
-import { ActivityService } from "../services/activity";
-import { ProviderService } from "../services/provider";
+import { ActivityService } from "../service/activity";
+import { ProviderService } from "../service/provider";
 import { logger } from "../utils/logger";
 import type { ProviderTransferJobData } from "./transfer-queue";
 

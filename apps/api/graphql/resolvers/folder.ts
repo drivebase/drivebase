@@ -1,7 +1,7 @@
 import { NotFoundError } from "@drivebase/core";
 import { files, folders, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { FolderService } from "../../services/folder";
+import { FolderService } from "../../service/folder";
 import type {
 	FolderResolvers,
 	MutationResolvers,

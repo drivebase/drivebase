@@ -7,8 +7,8 @@ import {
 import type { Database } from "@drivebase/db";
 import { files, folders } from "@drivebase/db";
 import { and, eq, like, sql } from "drizzle-orm";
-import { ProviderService } from "../../services/provider";
-import { getWorkspaceSyncOperationsToProvider } from "../../services/workspace";
+import { ProviderService } from "../../service/provider";
+import { getWorkspaceSyncOperationsToProvider } from "../../service/workspace";
 import { getFolder } from "./folder-queries";
 
 /**
