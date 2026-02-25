@@ -138,7 +138,7 @@ export function RoadmapList({ items }: { items: RoadmapListItem[] }) {
                   {formattedDate}
                 </div>
                 <div className="mt-1 text-xl font-semibold text-foreground">
-                  {item.data.title}
+                  {item.data.version}
                 </div>
               </div>
 
