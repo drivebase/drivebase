@@ -10,6 +10,7 @@ from ai_inference.config import MODEL_REGISTRY, MODELS_DIR, TaskType, TierType
 from ai_inference.downloads import ensure_download, get_download_status
 from ai_inference.embeddings import embedding_from_seed
 from ai_inference.extractors import extract_text_for_file
+from ai_inference.object_detection import detect_objects_from_image_bytes
 
 
 class EnsureModelRequest(BaseModel):
@@ -77,30 +78,6 @@ def _resolve_tier(value: str | None) -> TierType:
     if value == "heavy":
         return "heavy"
     return "medium"
-
-
-def _objects_from_text(text: str) -> list[dict]:
-    lower = text.lower()
-    objects: list[dict] = []
-    if "cat" in lower:
-        objects.append(
-            {
-                "label": "cat",
-                "confidence": 0.82,
-                "bbox": {"x": 0.2, "y": 0.2, "width": 0.4, "height": 0.4},
-                "count": 1,
-            }
-        )
-    if "dog" in lower:
-        objects.append(
-            {
-                "label": "dog",
-                "confidence": 0.79,
-                "bbox": {"x": 0.3, "y": 0.25, "width": 0.35, "height": 0.35},
-                "count": 1,
-            }
-        )
-    return objects
 
 
 @app.get("/health")
@@ -226,7 +203,9 @@ def detect_objects(payload: DetectObjectsRequest):
         payload.modelTier,
     )
     _ = MODEL_REGISTRY[payload.modelTier]["object_detection"]
-    return DetectObjectsResponse(objects=_objects_from_text(payload.fileName))
+    # Request endpoint does not include image bytes. Keep empty result for
+    # compatibility and use /detect-objects/stream for actual inference.
+    return DetectObjectsResponse(objects=[])
 
 
 @app.post("/detect-objects/stream", response_model=DetectObjectsResponse)
@@ -234,13 +213,27 @@ async def detect_objects_stream(request: Request):
     tier = _resolve_tier(request.headers.get("x-model-tier"))
     _ = MODEL_REGISTRY[tier]["object_detection"]
     file_name = request.headers.get("x-file-name", "file")
+    mime_type = request.headers.get("x-mime-type", "application/octet-stream")
     body = await request.body()
     logger.info(
-        "Object stream requested file=%s tier=%s bytes=%s",
+        "Object stream requested file=%s tier=%s mime=%s bytes=%s",
         file_name,
         tier,
+        mime_type,
         len(body),
     )
-    sha = hashlib.sha256(body).hexdigest()
-    objects = _objects_from_text(f"{file_name} {sha}")
+
+    if not mime_type.lower().startswith("image/"):
+        raise HTTPException(status_code=422, detail="unsupported_file_type")
+
+    try:
+        objects = detect_objects_from_image_bytes(body, tier)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    logger.info(
+        "Object detection completed file=%s detected=%s",
+        file_name,
+        len(objects),
+    )
     return DetectObjectsResponse(objects=objects)

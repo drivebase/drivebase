@@ -5,3 +5,4 @@ pypdf==4.3.1
 python-docx==1.1.2
 Pillow==10.4.0
 pytesseract==0.3.10
+ultralytics==8.3.78
