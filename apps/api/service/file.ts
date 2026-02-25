@@ -16,6 +16,7 @@ import {
 	requestDownload,
 	requestUpload,
 	searchFiles,
+	searchFilesAi,
 	searchFolders,
 	starFile,
 	unstarFile,
@@ -106,7 +107,9 @@ export class FileService {
 		limit?: number,
 		preferredWorkspaceId?: string,
 	) {
-		return this.searchFiles(userId, query, limit, preferredWorkspaceId);
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			searchFilesAi(this.db, userId, workspaceId, query, limit),
+		);
 	}
 
 	searchFolders(
