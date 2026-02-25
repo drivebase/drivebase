@@ -54,20 +54,22 @@ export function AiProcessingSection({
 	return (
 		<>
 			<section className="space-y-4">
-				<div className="flex w-full items-center justify-between gap-4">
+				<div className="flex items-center justify-between gap-4">
 					<div className="space-y-1">
 						<h3 className="text-lg font-medium">AI Processing</h3>
 						<p className="text-sm text-muted-foreground">
 							Turn AI processing on or off for this workspace.
 						</p>
 					</div>
-					<Switch
-						checked={isMainEnabled}
-						disabled={!canManageWorkspace || isUpdating}
-						onCheckedChange={onToggle}
-					/>
+					<div>
+						<Switch
+							checked={isMainEnabled}
+							disabled={!canManageWorkspace || isUpdating}
+							onCheckedChange={onToggle}
+						/>
+					</div>
 				</div>
-				<div className="w-full max-w-md space-y-2">
+				<div className="w-full max-w-xs space-y-2">
 					<span className="text-sm font-medium">Max concurrency</span>
 					<div className="flex items-center gap-2">
 						<Input
