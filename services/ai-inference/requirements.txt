@@ -1,3 +1,7 @@
 fastapi==0.116.1
 uvicorn[standard]==0.35.0
 requests==2.32.4
+pypdf==4.3.1
+python-docx==1.1.2
+Pillow==10.4.0
+pytesseract==0.3.10
