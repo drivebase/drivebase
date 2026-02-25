@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useAiSettingsStore } from "@/features/ai/store/aiSettingsStore";
-import { AnalysisModelTier } from "@/gql/graphql";
+import { AnalysisModelTier, JobStatus } from "@/gql/graphql";
 
 const TIER_OPTIONS: AnalysisModelTier[] = [
 	AnalysisModelTier.Lightweight,
@@ -53,6 +53,9 @@ interface ModelRowProps {
 	isReady: boolean;
 	canManageWorkspace: boolean;
 	prepareFetching: boolean;
+	isModelDownloadInFlight: boolean;
+	isTaskDownloading: boolean;
+	downloadProgressPct: number;
 	onTierChange: (tier: AnalysisModelTier) => void;
 	onDownload: () => void;
 }
@@ -64,9 +67,16 @@ function ModelRow({
 	isReady,
 	canManageWorkspace,
 	prepareFetching,
+	isModelDownloadInFlight,
+	isTaskDownloading,
+	downloadProgressPct,
 	onTierChange,
 	onDownload,
 }: ModelRowProps) {
+	const downloadLabel = isTaskDownloading
+		? `Downloading... ${downloadProgressPct}%`
+		: "Download";
+
 	return (
 		<div className="border border-border/60 p-3 space-y-3">
 			<div className="space-y-2">
@@ -101,10 +111,15 @@ function ModelRow({
 				<Button
 					variant="outline"
 					onClick={onDownload}
-					disabled={!canManageWorkspace || prepareFetching || isReady}
+					disabled={
+						!canManageWorkspace ||
+						prepareFetching ||
+						isReady ||
+						isModelDownloadInFlight
+					}
 					className="w-full"
 				>
-					Download
+					{downloadLabel}
 				</Button>
 			</div>
 		</div>
@@ -127,6 +142,7 @@ export function AiModelsSection({
 	const embeddingTier = useAiSettingsStore((state) => state.embeddingTier);
 	const ocrTier = useAiSettingsStore((state) => state.ocrTier);
 	const objectTier = useAiSettingsStore((state) => state.objectTier);
+	const latestModelJob = useAiSettingsStore((state) => state.latestModelJob);
 
 	const readyMap =
 		settings?.config &&
@@ -149,6 +165,21 @@ export function AiModelsSection({
 	const objectReady =
 		settings?.objectTier === objectTier &&
 		(readyMap.objectDetection === true || settings?.modelsReady === true);
+	const modelDownloadInFlight =
+		latestModelJob?.status === JobStatus.Pending ||
+		latestModelJob?.status === JobStatus.Running;
+	const activeTask =
+		typeof latestModelJob?.metadata?.task === "string"
+			? latestModelJob.metadata.task
+			: null;
+	const activeTaskProgress =
+		typeof latestModelJob?.metadata?.downloadProgress === "number"
+			? latestModelJob.metadata.downloadProgress
+			: 0;
+	const activeTaskProgressPct = Math.max(
+		0,
+		Math.min(100, Math.round(activeTaskProgress * 100)),
+	);
 
 	return (
 		<>
@@ -169,6 +200,13 @@ export function AiModelsSection({
 						isReady={embeddingReady}
 						canManageWorkspace={canManageWorkspace}
 						prepareFetching={prepareFetching}
+						isModelDownloadInFlight={modelDownloadInFlight}
+						isTaskDownloading={
+							activeTask === "embedding" && modelDownloadInFlight
+						}
+						downloadProgressPct={
+							activeTask === "embedding" ? activeTaskProgressPct : 0
+						}
 						onTierChange={onEmbeddingTierChange}
 						onDownload={onDownloadEmbeddingModel}
 					/>
@@ -179,6 +217,11 @@ export function AiModelsSection({
 						isReady={ocrReady}
 						canManageWorkspace={canManageWorkspace}
 						prepareFetching={prepareFetching}
+						isModelDownloadInFlight={modelDownloadInFlight}
+						isTaskDownloading={activeTask === "ocr" && modelDownloadInFlight}
+						downloadProgressPct={
+							activeTask === "ocr" ? activeTaskProgressPct : 0
+						}
 						onTierChange={onOcrTierChange}
 						onDownload={onDownloadOcrModel}
 					/>
@@ -189,6 +232,13 @@ export function AiModelsSection({
 						isReady={objectReady}
 						canManageWorkspace={canManageWorkspace}
 						prepareFetching={prepareFetching}
+						isModelDownloadInFlight={modelDownloadInFlight}
+						isTaskDownloading={
+							activeTask === "object_detection" && modelDownloadInFlight
+						}
+						downloadProgressPct={
+							activeTask === "object_detection" ? activeTaskProgressPct : 0
+						}
 						onTierChange={onObjectTierChange}
 						onDownload={onDownloadObjectModel}
 					/>

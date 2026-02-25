@@ -8,6 +8,7 @@ import {
 	Users,
 	Wrench,
 } from "lucide-react";
+import { getActiveWorkspaceId } from "@/features/workspaces";
 
 const categories = [
 	{
@@ -43,8 +44,10 @@ const categories = [
 ] as const;
 
 export function SettingsCategoryNav() {
+	const workspaceId = getActiveWorkspaceId();
+
 	return (
-		<nav className="w-72 shrink-0 pr-4">
+		<nav className="w-72 shrink-0 pr-4 h-full flex flex-col">
 			<ul className="space-y-1">
 				{categories.map((category) => (
 					<li key={category.to}>
@@ -65,6 +68,12 @@ export function SettingsCategoryNav() {
 					</li>
 				))}
 			</ul>
+			<div className="mt-auto px-3 py-4 text-xs border-t text-muted-foreground">
+				<div className="uppercase tracking-wide mb-1">Workspace ID</div>
+				<div className="font-mono break-all">
+					{workspaceId ?? "No workspace selected"}
+				</div>
+			</div>
 		</nav>
 	);
 }

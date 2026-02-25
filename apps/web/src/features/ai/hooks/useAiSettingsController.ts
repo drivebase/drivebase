@@ -16,6 +16,7 @@ import {
 	WORKSPACE_AI_PROGRESS_UPDATED_SUBSCRIPTION,
 } from "@/features/workspaces";
 import { WorkspaceMemberRole } from "@/gql/graphql";
+import { AiModelTask } from "@/gql/graphql";
 import {
 	ACTIVE_JOBS_QUERY,
 	JOB_UPDATED_SUBSCRIPTION,
@@ -179,6 +180,10 @@ export function useAiSettingsController() {
 	}, [latestModelJob, reexecuteProgress, reexecuteSettings]);
 
 	const handleDownloadModels = async () => {
+		await persistTiersAndPrepare();
+	};
+
+	const persistTiersAndPrepare = async (tasks?: AiModelTask[]) => {
 		if (!workspaceId || !canManageWorkspace) return;
 		const persisted = await updateSettings({
 			input: {
@@ -189,7 +194,7 @@ export function useAiSettingsController() {
 			},
 		});
 		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) return;
-		const result = await prepareModels({ workspaceId });
+		const result = await prepareModels({ workspaceId, tasks });
 		if (result.error || !result.data?.prepareWorkspaceAiModels) return;
 		reexecuteSettings({ requestPolicy: "network-only" });
 	};
@@ -335,51 +340,15 @@ export function useAiSettingsController() {
 	};
 
 	const handleDownloadEmbeddingModel = async () => {
-		if (!workspaceId || !canManageWorkspace) return;
-		const persisted = await updateSettings({
-			input: {
-				workspaceId,
-				embeddingTier,
-				ocrTier,
-				objectTier,
-			},
-		});
-		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) return;
-		const result = await prepareModels({ workspaceId });
-		if (result.error || !result.data?.prepareWorkspaceAiModels) return;
-		reexecuteSettings({ requestPolicy: "network-only" });
+		await persistTiersAndPrepare([AiModelTask.Embedding]);
 	};
 
 	const handleDownloadOcrModel = async () => {
-		if (!workspaceId || !canManageWorkspace) return;
-		const persisted = await updateSettings({
-			input: {
-				workspaceId,
-				embeddingTier,
-				ocrTier,
-				objectTier,
-			},
-		});
-		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) return;
-		const result = await prepareModels({ workspaceId });
-		if (result.error || !result.data?.prepareWorkspaceAiModels) return;
-		reexecuteSettings({ requestPolicy: "network-only" });
+		await persistTiersAndPrepare([AiModelTask.Ocr]);
 	};
 
 	const handleDownloadObjectModel = async () => {
-		if (!workspaceId || !canManageWorkspace) return;
-		const persisted = await updateSettings({
-			input: {
-				workspaceId,
-				embeddingTier,
-				ocrTier,
-				objectTier,
-			},
-		});
-		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) return;
-		const result = await prepareModels({ workspaceId });
-		if (result.error || !result.data?.prepareWorkspaceAiModels) return;
-		reexecuteSettings({ requestPolicy: "network-only" });
+		await persistTiersAndPrepare([AiModelTask.ObjectDetection]);
 	};
 
 	return {

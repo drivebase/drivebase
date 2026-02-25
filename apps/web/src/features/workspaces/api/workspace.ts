@@ -167,8 +167,8 @@ export const UPDATE_WORKSPACE_AI_SETTINGS_MUTATION = graphql(`
 `);
 
 export const PREPARE_WORKSPACE_AI_MODELS_MUTATION = graphql(`
-  mutation PrepareWorkspaceAiModels($workspaceId: ID!) {
-    prepareWorkspaceAiModels(workspaceId: $workspaceId)
+  mutation PrepareWorkspaceAiModels($workspaceId: ID!, $tasks: [AiModelTask!]) {
+    prepareWorkspaceAiModels(workspaceId: $workspaceId, tasks: $tasks)
   }
 `);
 
