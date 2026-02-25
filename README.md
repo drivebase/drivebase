@@ -13,7 +13,7 @@
   </a>
 </p>
 
-Drivebase is a next-generation cloud-agnostic file management application that empowers users to organize, upload, and access files across multiple cloud providers — all under one unified folder structure. It includes Vault for end-to-end encrypted uploads and Smart Uploads for rule-based routing across providers. With Drivebase, users can break free from cloud provider lock-in and take full control of where their files are stored.
+Drivebase is a cloud-agnostic file management platform for people and teams using multiple storage providers. It gives you one unified file and folder workspace across providers, with Vault for end-to-end encrypted uploads and Smart Uploads for rule-based file routing. The goal is to reduce provider lock-in while keeping storage ownership and control in your hands.
 
 <a href="https://deepwiki.com/drivebase/drivebase">
   <img src="https://deepwiki.com/badge.svg" alt="Documentation" />
