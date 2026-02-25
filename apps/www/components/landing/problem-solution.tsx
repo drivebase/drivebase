@@ -3,15 +3,15 @@
 import { motion } from "motion/react";
 
 const problemItems = [
+  "No unified search across all your storage providers",
   "Managing multiple cloud accounts and login credentials",
   "Copying files manually between different services",
-  "No unified search across all your storage providers",
 ];
 
 const solutionItems = [
-  "Single sign-on access to all your cloud storage",
-  "Automatic file synchronization between providers",
-  "Powerful search that finds files anywhere",
+  "AI powered search that finds files anywhere",
+  "Access to all your cloud storage from a single dashboard",
+  "Background file transfers arcross multiple providers",
 ];
 
 export function ProblemSolution() {

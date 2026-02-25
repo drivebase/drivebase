@@ -1,0 +1,53 @@
+---
+title: Collaboration
+description: Manage workspace members, roles, and invite links in Drivebase.
+---
+
+Drivebase collaboration is workspace-based. Members are added to a workspace with a role, and that role controls what they can do.
+
+## Workspace Roles
+
+Drivebase supports four workspace roles:
+
+- **Owner**
+- **Admin**
+- **Editor**
+- **Viewer**
+
+Current permission behavior:
+
+- **Owner/Admin**: can manage workspace members and providers.
+- **Owner/Admin/Editor**: can create, update, and delete files.
+- **Viewer**: read-only access to files.
+
+## Inviting Teammates
+
+In **Settings → Users**, owners and admins can generate invite links with:
+
+- A preset role (`admin`, `editor`, or `viewer`).
+- An expiration window.
+
+Invite rules enforced by the backend:
+
+- `owner` cannot be assigned through invites.
+- Invite expiration must be between **1 and 30 days**.
+- Invite links can be accepted once and can be revoked.
+
+## Managing Members
+
+In the same **Users** settings section, owners and admins can:
+
+- View all workspace members.
+- Change member roles (except the owner role).
+- Remove members from the workspace.
+
+When an invite is accepted, Drivebase creates or updates that user’s workspace membership for the target workspace.
+
+## Collaboration Data Model
+
+Collaboration state is stored with:
+
+- `workspace_memberships`: links users to workspaces with a role.
+- `workspace_invites`: invite token, role, inviter, expiration, and acceptance/revocation state.
+
+Each user can have only one membership per workspace (`workspace_id + user_id` is unique).

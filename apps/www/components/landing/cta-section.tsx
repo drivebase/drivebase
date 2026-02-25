@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import Link from "next/link";
 
 export function CTASection() {
   return (
@@ -16,21 +17,23 @@ export function CTASection() {
           Take control of your cloud storage today
         </h2>
         <p className="text-muted-foreground mb-10 text-lg">
-          Join 10,000+ users managing their files with 99.99% uptime
+          No vendor lock-in, just pure control and flexibility.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-          <button
-            type="button"
+          <Link
+            href="/docs/quick-start"
             className="px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-colors w-full sm:w-auto"
           >
-            Get Started Free
-          </button>
-          <button
-            type="button"
+            Get Started
+          </Link>
+          <Link
+            href="https://github.com/drivebase/drivebase"
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-8 py-4 bg-transparent border border-border hover:border-muted-foreground text-foreground transition-colors w-full sm:w-auto"
           >
-            Contact Sales
-          </button>
+            Source code
+          </Link>
         </div>
       </motion.div>
     </div>

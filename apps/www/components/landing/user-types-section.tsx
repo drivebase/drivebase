@@ -13,8 +13,11 @@ export function UserTypesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="p-12 hover:bg-secondary transition-colors"
+          className="relative p-12 hover:bg-secondary transition-colors"
         >
+          <span className="absolute top-4 right-4 inline-flex items-center border border-border bg-secondary px-2 py-1 text-xs font-medium text-muted-foreground">
+            Coming Soon
+          </span>
           <Code2 className="w-10 h-10 text-primary mb-6" />
           <h3 className="text-xl font-bold text-foreground mb-3">Developers</h3>
           <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -22,7 +25,9 @@ export function UserTypesSection() {
             powerful applications without managing credentials.
           </p>
           <Link
-            href="#"
+            href="https://github.com/drivebase/drivebase/issues/86"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-sm font-medium text-primary hover:underline"
           >
             View API Docs →
@@ -42,7 +47,7 @@ export function UserTypesSection() {
             securely with granular permissions.
           </p>
           <Link
-            href="#"
+            href="/docs/using-drivebase/collaboration"
             className="text-sm font-medium text-primary hover:underline"
           >
             Team Features →
@@ -60,14 +65,14 @@ export function UserTypesSection() {
             Self-Hosted
           </h3>
           <p className="text-muted-foreground mb-6 leading-relaxed">
-            Integrate NAS nodes with cloud mirror protocols. Full control over
-            your infrastructure.
+            Deploy Drivebase on your own infrastructure with full control over
+            security, data residency, and operations.
           </p>
           <Link
-            href="#"
+            href="/docs/deployment"
             className="text-sm font-medium text-primary hover:underline"
           >
-            Self-Host Options →
+            Deployment Guide →
           </Link>
         </motion.div>
       </div>
