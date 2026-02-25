@@ -38,6 +38,10 @@ import {
 } from "@/features/files/hooks/useFiles";
 import { formatSize } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
+import {
+	getActiveWorkspaceId,
+	useWorkspaceAiSettings,
+} from "@/features/workspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
@@ -82,6 +86,16 @@ export function HeaderCommandPalette() {
 
 	const debouncedQuery = useDebouncedValue(query.trim(), 200);
 	const hasQuery = debouncedQuery.length > 0;
+	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
+	const [workspaceAiSettingsResult] = useWorkspaceAiSettings(
+		activeWorkspaceId,
+		!open || !isAiMode || !activeWorkspaceId,
+	);
+	const aiProcessingEnabled =
+		workspaceAiSettingsResult.data?.workspaceAiSettings?.enabled === true;
+	const aiProcessingDisabled =
+		workspaceAiSettingsResult.data?.workspaceAiSettings?.enabled === false;
+	const canRunAiSearch = hasQuery && isAiMode && aiProcessingEnabled;
 
 	const { data: recentData } = useRecentFiles(RECENT_LIMIT);
 	const filesSearchResult = useSearchFiles(
@@ -89,7 +103,7 @@ export function HeaderCommandPalette() {
 		SEARCH_LIMIT,
 	);
 	const filesAiSearchResult = useSearchFilesAi(
-		hasQuery && isAiMode ? debouncedQuery : "",
+		canRunAiSearch ? debouncedQuery : "",
 		SEARCH_LIMIT,
 	);
 	const foldersSearchResult = useSearchFolders(
@@ -397,7 +411,21 @@ export function HeaderCommandPalette() {
 											))}
 										</CommandGroup>
 									) : null}
-									{isAiMode && visibleAiFileResults.length === 0 ? (
+									{isAiMode && aiProcessingDisabled ? (
+										<CommandEmpty asChild>
+											<div className="space-y-2">
+												<h1 className="font-medium">
+													AI processing is disabled.
+												</h1>
+												<p className="text-muted-foreground">
+													Enable from Settings &gt; AI
+												</p>
+											</div>
+										</CommandEmpty>
+									) : null}
+									{isAiMode &&
+									!aiProcessingDisabled &&
+									visibleAiFileResults.length === 0 ? (
 										<CommandEmpty>No AI results found.</CommandEmpty>
 									) : null}
 									{!isAiMode && mergedResults.length === 0 ? (
@@ -405,7 +433,22 @@ export function HeaderCommandPalette() {
 									) : null}
 								</>
 							) : isAiMode ? (
-								<CommandEmpty>Type a query to search in AI mode.</CommandEmpty>
+								aiProcessingDisabled ? (
+									<CommandEmpty asChild>
+										<div className="space-y-2">
+											<h1 className="font-medium">
+												AI processing is disabled.
+											</h1>
+											<p className="text-muted-foreground">
+												Enable from Settings &gt; AI
+											</p>
+										</div>
+									</CommandEmpty>
+								) : (
+									<CommandEmpty>
+										Type a query to search in AI mode.
+									</CommandEmpty>
+								)
 							) : (
 								<>
 									<CommandGroup heading="Navigation">
