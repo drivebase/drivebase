@@ -20,12 +20,15 @@ export function AiSettingsView() {
 			<AiProcessingSection
 				isUpdating={controller.updateSettingsFetching}
 				deleteFetching={controller.deleteAiDataFetching}
+				saveFetching={controller.updateSettingsFetching}
 				onToggle={controller.handleToggleAiProcessing}
 				onFeatureEmbeddingChange={controller.handleFeatureEmbeddingToggle}
 				onFeatureOcrChange={controller.handleFeatureOcrToggle}
 				onFeatureObjectDetectionChange={
 					controller.handleFeatureObjectDetectionToggle
 				}
+				onMaxConcurrencyChange={controller.setMaxConcurrency}
+				onSaveProcessingSettings={controller.handleSave}
 				onDeleteAiData={controller.handleDeleteAiData}
 			/>
 			<AiProgressSection
@@ -37,12 +40,13 @@ export function AiSettingsView() {
 				retryFetching={controller.retryFailedFetching}
 			/>
 			<AiModelsSection
-				updateFetching={controller.updateSettingsFetching}
 				prepareFetching={controller.prepareModelsFetching}
-				onTierChange={controller.setEmbeddingTier}
-				onMaxConcurrencyChange={controller.setMaxConcurrency}
-				onDownloadModels={controller.handleDownloadModels}
-				onSave={controller.handleSave}
+				onEmbeddingTierChange={controller.setEmbeddingTier}
+				onOcrTierChange={controller.setOcrTier}
+				onObjectTierChange={controller.setObjectTier}
+				onDownloadEmbeddingModel={controller.handleDownloadEmbeddingModel}
+				onDownloadOcrModel={controller.handleDownloadOcrModel}
+				onDownloadObjectModel={controller.handleDownloadObjectModel}
 			/>
 		</div>
 	);

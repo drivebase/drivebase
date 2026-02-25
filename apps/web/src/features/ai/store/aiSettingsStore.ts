@@ -25,6 +25,8 @@ interface AiSettingsState {
 	progress: WorkspaceAiProgress | null;
 	latestModelJob: Job | null;
 	embeddingTier: AnalysisModelTier;
+	ocrTier: AnalysisModelTier;
+	objectTier: AnalysisModelTier;
 	maxConcurrency: string;
 	featureEmbeddingEnabled: boolean;
 	featureOcrEnabled: boolean;
@@ -37,6 +39,8 @@ interface AiSettingsState {
 	setProgress: (progress: WorkspaceAiProgress | null) => void;
 	setLatestModelJob: (job: Job | null) => void;
 	setEmbeddingTier: (tier: AnalysisModelTier) => void;
+	setOcrTier: (tier: AnalysisModelTier) => void;
+	setObjectTier: (tier: AnalysisModelTier) => void;
 	setMaxConcurrency: (value: string) => void;
 	setFeatureEmbeddingEnabled: (enabled: boolean) => void;
 	setFeatureOcrEnabled: (enabled: boolean) => void;
@@ -50,6 +54,8 @@ export const useAiSettingsStore = create<AiSettingsState>((set) => ({
 	progress: null,
 	latestModelJob: null,
 	embeddingTier: AnalysisModelTier.Medium,
+	ocrTier: AnalysisModelTier.Medium,
+	objectTier: AnalysisModelTier.Medium,
 	maxConcurrency: "2",
 	featureEmbeddingEnabled: true,
 	featureOcrEnabled: true,
@@ -60,6 +66,8 @@ export const useAiSettingsStore = create<AiSettingsState>((set) => ({
 		set((state) => ({
 			settings,
 			embeddingTier: settings?.embeddingTier ?? state.embeddingTier,
+			ocrTier: settings?.ocrTier ?? state.ocrTier,
+			objectTier: settings?.objectTier ?? state.objectTier,
 			maxConcurrency: settings
 				? String(settings.maxConcurrency)
 				: state.maxConcurrency,
@@ -73,6 +81,8 @@ export const useAiSettingsStore = create<AiSettingsState>((set) => ({
 	setProgress: (progress) => set({ progress }),
 	setLatestModelJob: (latestModelJob) => set({ latestModelJob }),
 	setEmbeddingTier: (embeddingTier) => set({ embeddingTier }),
+	setOcrTier: (ocrTier) => set({ ocrTier }),
+	setObjectTier: (objectTier) => set({ objectTier }),
 	setMaxConcurrency: (maxConcurrency) => set({ maxConcurrency }),
 	setFeatureEmbeddingEnabled: (featureEmbeddingEnabled) =>
 		set({ featureEmbeddingEnabled }),

@@ -37,6 +37,8 @@ export function useAiSettingsController() {
 	const setEmbeddingTier = useAiSettingsStore(
 		(state) => state.setEmbeddingTier,
 	);
+	const setOcrTier = useAiSettingsStore((state) => state.setOcrTier);
+	const setObjectTier = useAiSettingsStore((state) => state.setObjectTier);
 	const setMaxConcurrency = useAiSettingsStore(
 		(state) => state.setMaxConcurrency,
 	);
@@ -50,6 +52,8 @@ export function useAiSettingsController() {
 		(state) => state.setFeatureObjectDetectionEnabled,
 	);
 	const embeddingTier = useAiSettingsStore((state) => state.embeddingTier);
+	const ocrTier = useAiSettingsStore((state) => state.ocrTier);
+	const objectTier = useAiSettingsStore((state) => state.objectTier);
 	const maxConcurrency = useAiSettingsStore((state) => state.maxConcurrency);
 	const featureEmbeddingEnabled = useAiSettingsStore(
 		(state) => state.featureEmbeddingEnabled,
@@ -180,8 +184,8 @@ export function useAiSettingsController() {
 			input: {
 				workspaceId,
 				embeddingTier,
-				ocrTier: embeddingTier,
-				objectTier: embeddingTier,
+				ocrTier,
+				objectTier,
 			},
 		});
 		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) return;
@@ -210,9 +214,6 @@ export function useAiSettingsController() {
 		const result = await updateSettings({
 			input: {
 				workspaceId,
-				embeddingTier,
-				ocrTier: embeddingTier,
-				objectTier: embeddingTier,
 				maxConcurrency: parsedConcurrency,
 				config: {
 					...currentConfig,
@@ -333,11 +334,64 @@ export function useAiSettingsController() {
 		reexecuteProgress({ requestPolicy: "network-only" });
 	};
 
+	const handleDownloadEmbeddingModel = async () => {
+		if (!workspaceId || !canManageWorkspace) return;
+		const persisted = await updateSettings({
+			input: {
+				workspaceId,
+				embeddingTier,
+				ocrTier,
+				objectTier,
+			},
+		});
+		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) return;
+		const result = await prepareModels({ workspaceId });
+		if (result.error || !result.data?.prepareWorkspaceAiModels) return;
+		reexecuteSettings({ requestPolicy: "network-only" });
+	};
+
+	const handleDownloadOcrModel = async () => {
+		if (!workspaceId || !canManageWorkspace) return;
+		const persisted = await updateSettings({
+			input: {
+				workspaceId,
+				embeddingTier,
+				ocrTier,
+				objectTier,
+			},
+		});
+		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) return;
+		const result = await prepareModels({ workspaceId });
+		if (result.error || !result.data?.prepareWorkspaceAiModels) return;
+		reexecuteSettings({ requestPolicy: "network-only" });
+	};
+
+	const handleDownloadObjectModel = async () => {
+		if (!workspaceId || !canManageWorkspace) return;
+		const persisted = await updateSettings({
+			input: {
+				workspaceId,
+				embeddingTier,
+				ocrTier,
+				objectTier,
+			},
+		});
+		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) return;
+		const result = await prepareModels({ workspaceId });
+		if (result.error || !result.data?.prepareWorkspaceAiModels) return;
+		reexecuteSettings({ requestPolicy: "network-only" });
+	};
+
 	return {
 		activeWorkspace,
 		setEmbeddingTier,
+		setOcrTier,
+		setObjectTier,
 		setMaxConcurrency,
 		handleDownloadModels,
+		handleDownloadEmbeddingModel,
+		handleDownloadOcrModel,
+		handleDownloadObjectModel,
 		handleSave,
 		handleStartProcessing,
 		handleStopProcessing,

@@ -10,6 +10,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -24,20 +25,26 @@ import { useAiSettingsStore } from "@/features/ai/store/aiSettingsStore";
 interface AiProcessingSectionProps {
 	isUpdating: boolean;
 	deleteFetching: boolean;
+	saveFetching: boolean;
 	onToggle: (enabled: boolean) => void;
 	onFeatureEmbeddingChange: (enabled: boolean) => void;
 	onFeatureOcrChange: (enabled: boolean) => void;
 	onFeatureObjectDetectionChange: (enabled: boolean) => void;
+	onMaxConcurrencyChange: (value: string) => void;
+	onSaveProcessingSettings: () => void;
 	onDeleteAiData: () => void;
 }
 
 export function AiProcessingSection({
 	isUpdating,
 	deleteFetching,
+	saveFetching,
 	onToggle,
 	onFeatureEmbeddingChange,
 	onFeatureOcrChange,
 	onFeatureObjectDetectionChange,
+	onMaxConcurrencyChange,
+	onSaveProcessingSettings,
 	onDeleteAiData,
 }: AiProcessingSectionProps) {
 	const canManageWorkspace = useAiSettingsStore(
@@ -54,6 +61,7 @@ export function AiProcessingSection({
 	const featureObjectDetectionEnabled = useAiSettingsStore(
 		(state) => state.featureObjectDetectionEnabled,
 	);
+	const maxConcurrency = useAiSettingsStore((state) => state.maxConcurrency);
 	const isMainEnabled = Boolean(settings?.enabled);
 	const isProcessingActive =
 		(progress?.pendingFiles ?? 0) > 0 || (progress?.runningFiles ?? 0) > 0;
@@ -159,6 +167,24 @@ export function AiProcessingSection({
 							onCheckedChange={onFeatureObjectDetectionChange}
 							disabled={!canManageWorkspace || isUpdating || !isMainEnabled}
 						/>
+					</div>
+				</div>
+				<div className="w-full max-w-md space-y-2">
+					<span className="text-sm font-medium">Max concurrency</span>
+					<div className="flex items-center gap-2">
+						<Input
+							value={maxConcurrency}
+							onChange={(event) => onMaxConcurrencyChange(event.target.value)}
+							disabled={!canManageWorkspace}
+							inputMode="numeric"
+							className="h-10 text-sm"
+						/>
+						<Button
+							onClick={onSaveProcessingSettings}
+							disabled={!canManageWorkspace || saveFetching}
+						>
+							Save
+						</Button>
 					</div>
 				</div>
 				<div className="flex">

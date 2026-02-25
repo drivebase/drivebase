@@ -35,14 +35,11 @@ export function AiProgressSection({
 	const isProcessingActive =
 		(progress?.pendingFiles ?? 0) > 0 || (progress?.runningFiles ?? 0) > 0;
 	const isFullyProcessed = (progress?.completionPct ?? 0) >= 100;
-	const hasModelsReady = settings?.modelsReady ?? false;
 	const requiresModelDownload = Boolean(
 		(settings?.embeddingTier && settings.embeddingTier !== embeddingTier) ||
 			(settings?.ocrTier && settings.ocrTier !== embeddingTier) ||
 			(settings?.objectTier && settings.objectTier !== embeddingTier),
 	);
-
-	if (!hasModelsReady) return null;
 
 	return (
 		<section className="space-y-4">
@@ -71,7 +68,6 @@ export function AiProgressSection({
 						!canManageWorkspace ||
 						startFetching ||
 						!settings?.enabled ||
-						!hasModelsReady ||
 						requiresModelDownload ||
 						isFullyProcessed ||
 						isProcessingActive

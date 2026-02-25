@@ -265,15 +265,7 @@ export function HeaderCommandPalette() {
 				description="Search files, folders, and navigation"
 			>
 				<div className="w-full">
-					<Command
-						key={
-							selectedFile
-								? `file-actions:${selectedFile.id}`
-								: "search-results"
-						}
-						shouldFilter={false}
-						className="w-full"
-					>
+					<Command shouldFilter={false} className="w-full">
 						<CommandInput
 							placeholder={
 								isAiMode
