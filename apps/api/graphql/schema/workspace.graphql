@@ -22,6 +22,12 @@ enum AnalysisModelTier {
 	HEAVY
 }
 
+enum AiModelTask {
+	EMBEDDING
+	OCR
+	OBJECT_DETECTION
+}
+
 type Workspace {
 	id: ID!
 	name: String!
@@ -212,7 +218,10 @@ extend type Mutation {
 	"""
 	Download/prepare AI models for current workspace settings
 	"""
-	prepareWorkspaceAiModels(workspaceId: ID!): Boolean!
+	prepareWorkspaceAiModels(
+		workspaceId: ID!
+		tasks: [AiModelTask!]
+	): Boolean!
 
 	"""
 	Enable AI processing and enqueue workspace backfill analysis
