@@ -34,9 +34,9 @@ export function useFileSystemColumns({
 			{
 				id: "select",
 				enableHiding: false,
-				size: 20,
+				size: 25,
 				minSize: 20,
-				maxSize: 20,
+				maxSize: 30,
 				header: ({ table }) => (
 					<div className="w-4 h-4 flex items-center justify-center">
 						<Checkbox
@@ -69,8 +69,8 @@ export function useFileSystemColumns({
 			{
 				id: "name",
 				size: 220,
-				minSize: 400,
-				maxSize: 500,
+				minSize: 200,
+				maxSize: 400,
 				accessorFn: (row) =>
 					row.kind === "file" ? row.file.name : row.folder.name,
 				header: "Name",
