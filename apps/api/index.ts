@@ -86,11 +86,6 @@ startTransferWorker();
 startAnalysisWorker();
 
 logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
-logger.info({
-	msg: "AI inference configuration",
-	inferenceUrlConfigured: Boolean(env.AI_INFERENCE_URL),
-	inferenceUrl: env.AI_INFERENCE_URL ?? null,
-});
 
 telemetry.capture("server_started", { version: appVersion });
 

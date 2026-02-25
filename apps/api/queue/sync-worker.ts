@@ -21,7 +21,7 @@ export function startSyncWorker(): Worker<SyncJobData> {
 			const { providerId, workspaceId, userId, recursive, pruneDeleted } =
 				job.data;
 
-			logger.info({
+			logger.debug({
 				msg: "Starting provider sync job",
 				providerId,
 				jobId: job.id,

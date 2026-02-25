@@ -1,31 +1,44 @@
 import type { Database } from "@drivebase/db";
-import { deleteFile, moveFile, renameFile } from "./file/file-mutations";
 import {
+	deleteFile,
+	downloadFile,
+	downloadFileForProxy,
 	getContents,
 	getFile,
 	getFileForProxy,
+	getFileMetadata,
 	getRecentFiles,
 	getStarredFiles,
 	listFiles,
-	searchFiles,
-	searchFilesAi,
-	searchFolders,
-} from "./file/file-queries";
-import { starFile, unstarFile } from "./file/file-stars";
-import {
-	downloadFile,
-	downloadFileForProxy,
-	getFileMetadata,
+	moveFile,
 	moveFileToProvider,
+	renameFile,
 	requestDownload,
 	requestUpload,
-} from "./file/file-transfers";
+	searchFiles,
+	searchFolders,
+	starFile,
+	unstarFile,
+} from "./file/index";
 import { getAccessibleWorkspaceId } from "./workspace/workspace";
 
 export class FileService {
 	constructor(private db: Database) {}
 
-	async requestUpload(
+	private async withWorkspace<T>(
+		userId: string,
+		preferredWorkspaceId: string | undefined,
+		run: (workspaceId: string) => Promise<T>,
+	): Promise<T> {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		return run(workspaceId);
+	}
+
+	requestUpload(
 		userId: string,
 		name: string,
 		mimeType: string,
@@ -34,268 +47,194 @@ export class FileService {
 		providerId: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
-		);
-		return requestUpload(
-			this.db,
-			userId,
-			workspaceId,
-			name,
-			mimeType,
-			size,
-			folderId,
-			providerId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			requestUpload(
+				this.db,
+				userId,
+				workspaceId,
+				name,
+				mimeType,
+				size,
+				folderId,
+				providerId,
+			),
 		);
 	}
 
-	async getFile(fileId: string, userId: string, preferredWorkspaceId?: string) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+	getFile(fileId: string, userId: string, preferredWorkspaceId?: string) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			getFile(this.db, fileId, userId, workspaceId),
 		);
-		return getFile(this.db, fileId, userId, workspaceId);
 	}
 
-	async getFileForProxy(
+	getFileForProxy(
 		fileId: string,
 		userId: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			getFileForProxy(this.db, fileId, workspaceId),
 		);
-		return getFileForProxy(this.db, fileId, workspaceId);
 	}
 
-	async listFiles(
+	listFiles(
 		userId: string,
 		preferredWorkspaceId?: string,
 		folderId?: string,
 		limit?: number,
 		offset?: number,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			listFiles(this.db, userId, workspaceId, folderId, limit, offset),
 		);
-		return listFiles(this.db, userId, workspaceId, folderId, limit, offset);
 	}
 
-	async searchFiles(
+	searchFiles(
 		userId: string,
 		query: string,
 		limit?: number,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			searchFiles(this.db, userId, workspaceId, query, limit),
 		);
-		return searchFiles(this.db, userId, workspaceId, query, limit);
 	}
 
-	async searchFilesAi(
+	searchFilesAi(
 		userId: string,
 		query: string,
 		limit?: number,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
-		);
-		return searchFilesAi(this.db, userId, workspaceId, query, limit);
+		return this.searchFiles(userId, query, limit, preferredWorkspaceId);
 	}
 
-	async searchFolders(
+	searchFolders(
 		userId: string,
 		query: string,
 		limit?: number,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			searchFolders(this.db, userId, workspaceId, query, limit),
 		);
-		return searchFolders(this.db, userId, workspaceId, query, limit);
 	}
 
-	async getRecentFiles(
+	getRecentFiles(
 		userId: string,
 		limit?: number,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			getRecentFiles(this.db, userId, workspaceId, limit),
 		);
-		return getRecentFiles(this.db, userId, workspaceId, limit);
 	}
 
-	async requestDownload(
+	requestDownload(
 		fileId: string,
 		userId: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			requestDownload(this.db, fileId, userId, workspaceId),
 		);
-		return requestDownload(this.db, fileId, userId, workspaceId);
 	}
 
-	async downloadFile(
+	downloadFile(
 		fileId: string,
 		userId: string,
 		preferredWorkspaceId?: string,
 	): Promise<ReadableStream> {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			downloadFile(this.db, fileId, userId, workspaceId),
 		);
-		return downloadFile(this.db, fileId, userId, workspaceId);
 	}
 
-	async downloadFileForProxy(
+	downloadFileForProxy(
 		fileId: string,
 		userId: string,
 		preferredWorkspaceId?: string,
 	): Promise<ReadableStream> {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			downloadFileForProxy(this.db, fileId, userId, workspaceId),
 		);
-		return downloadFileForProxy(this.db, fileId, userId, workspaceId);
 	}
 
-	async renameFile(
+	renameFile(
 		fileId: string,
 		userId: string,
 		newName: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			renameFile(this.db, fileId, userId, newName, workspaceId),
 		);
-		return renameFile(this.db, fileId, userId, newName, workspaceId);
 	}
 
-	async moveFile(
+	moveFile(
 		fileId: string,
 		userId: string,
 		newFolderId?: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			moveFile(this.db, fileId, userId, workspaceId, newFolderId),
 		);
-		return moveFile(this.db, fileId, userId, workspaceId, newFolderId);
 	}
 
-	async moveFileToProvider(
+	moveFileToProvider(
 		fileId: string,
 		userId: string,
 		providerId: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			moveFileToProvider(this.db, fileId, userId, providerId, workspaceId),
 		);
-		return moveFileToProvider(this.db, fileId, userId, providerId, workspaceId);
 	}
 
-	async deleteFile(
+	deleteFile(fileId: string, userId: string, preferredWorkspaceId?: string) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			deleteFile(this.db, fileId, userId, workspaceId),
+		);
+	}
+
+	getFileMetadata(
 		fileId: string,
 		userId: string,
 		preferredWorkspaceId?: string,
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			getFileMetadata(this.db, fileId, userId, workspaceId),
 		);
-		return deleteFile(this.db, fileId, userId, workspaceId);
 	}
 
-	async getFileMetadata(
-		fileId: string,
-		userId: string,
-		preferredWorkspaceId?: string,
-	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+	starFile(fileId: string, userId: string, preferredWorkspaceId?: string) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			starFile(this.db, fileId, userId, workspaceId),
 		);
-		return getFileMetadata(this.db, fileId, userId, workspaceId);
 	}
 
-	async starFile(
-		fileId: string,
-		userId: string,
-		preferredWorkspaceId?: string,
-	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+	unstarFile(fileId: string, userId: string, preferredWorkspaceId?: string) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			unstarFile(this.db, fileId, userId, workspaceId),
 		);
-		return starFile(this.db, fileId, userId, workspaceId);
 	}
 
-	async unstarFile(
-		fileId: string,
-		userId: string,
-		preferredWorkspaceId?: string,
-	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
-		);
-		return unstarFile(this.db, fileId, userId, workspaceId);
-	}
-
-	async getContents(
+	getContents(
 		userId: string,
 		preferredWorkspaceId?: string,
 		folderId?: string,
 		providerIds?: string[],
 	) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			getContents(this.db, workspaceId, userId, folderId, providerIds),
 		);
-		return getContents(this.db, workspaceId, userId, folderId, providerIds);
 	}
 
-	async getStarredFiles(userId: string, preferredWorkspaceId?: string) {
-		const workspaceId = await getAccessibleWorkspaceId(
-			this.db,
-			userId,
-			preferredWorkspaceId,
+	getStarredFiles(userId: string, preferredWorkspaceId?: string) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			getStarredFiles(this.db, userId, workspaceId),
 		);
-		return getStarredFiles(this.db, userId, workspaceId);
 	}
 }

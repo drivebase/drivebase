@@ -25,6 +25,5 @@
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"noPropertyAccessFromIndexSignature": false
-	},
-	"exclude": ["tests/**/*.ts", "**/*.test.ts"]
+	}
 }

@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { getUploadQueue } from "../../queue/upload-queue";
 import { enqueueFileAnalysis } from "../../services/ai/analysis-jobs";
 import { FileService } from "../../services/file";
-import { UploadSessionManager } from "../../services/file/upload-session";
+import { UploadSessionManager } from "../../services/file/upload";
 import { ProviderService } from "../../services/provider";
 import type {
 	FileResolvers,

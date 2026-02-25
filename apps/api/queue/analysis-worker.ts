@@ -56,7 +56,6 @@ async function recoverPendingRuns(limit = 1000): Promise<void> {
 		.where(eq(fileAnalysisRuns.status, "pending"))
 		.limit(limit);
 
-	let requeued = 0;
 	for (const run of pendingRuns) {
 		try {
 			await queue.add(
@@ -68,7 +67,6 @@ async function recoverPendingRuns(limit = 1000): Promise<void> {
 				},
 				{ jobId: `analysis-${run.id}` },
 			);
-			requeued += 1;
 		} catch (error) {
 			// Ignore duplicate job id conflicts; those are already queued.
 			const message = error instanceof Error ? error.message : String(error);
@@ -83,29 +81,12 @@ async function recoverPendingRuns(limit = 1000): Promise<void> {
 			}
 		}
 	}
-
-	logger.info({
-		msg: "Recovered pending analysis runs",
-		pendingFound: pendingRuns.length,
-		requeued,
-	});
 }
 
 async function ensureAnalysisQueueActive(): Promise<void> {
 	const queue = getAnalysisQueue();
 	try {
 		await queue.resume();
-		const counts = await queue.getJobCounts(
-			"waiting",
-			"active",
-			"delayed",
-			"paused",
-			"prioritized",
-		);
-		logger.info({
-			msg: "Analysis queue is active",
-			counts,
-		});
 	} catch (error) {
 		logger.warn({
 			msg: "Failed to ensure analysis queue active",

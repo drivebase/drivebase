@@ -1,6 +1,6 @@
 import { S3Provider } from "@drivebase/s3";
 import { getRedis } from "../../redis/client";
-import { UploadSessionManager } from "../../services/file/upload-session";
+import { UploadSessionManager } from "../../services/file/upload";
 import { ProviderService } from "../../services/provider";
 import { VaultService } from "../../services/vault";
 import type { MutationResolvers, QueryResolvers } from "../generated/types";

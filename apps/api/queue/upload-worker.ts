@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
 import { createBullMQConnection } from "../redis/client";
 import { enqueueFileAnalysis } from "../services/ai/analysis-jobs";
-import { UploadSessionManager } from "../services/file/upload-session";
+import { UploadSessionManager } from "../services/file/upload";
 import { ProviderService } from "../services/provider";
 import { fileSizeBucket, telemetry } from "../telemetry";
 import { logger } from "../utils/logger";
