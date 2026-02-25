@@ -1,6 +1,5 @@
 import {
 	fileAnalysisRuns,
-	fileDetectedObjects,
 	fileEmbeddings,
 	fileExtractedText,
 	files,
@@ -15,13 +14,9 @@ import { getProviderInstance } from "@/service/provider/query";
 import { env } from "../config/env";
 import { createBullMQConnection } from "../redis/client";
 import { refreshWorkspaceAiProgress } from "../service/ai/ai-settings";
-import {
-	resolveAiFeatureToggles,
-	resolveMaxFileSizeMb,
-} from "../service/ai/ai-support";
+import { resolveMaxFileSizeMb } from "../service/ai/ai-support";
 import {
 	inferEmbeddingStream,
-	inferObjectsStream,
 	inferOcrStream,
 	inferTextEmbedding,
 } from "../service/ai/inference-client";
@@ -306,10 +301,8 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 						status: "failed",
 						embeddingStatus: "failed",
 						ocrStatus: "failed",
-						objectDetectionStatus: "failed",
 						embeddingError: "file_not_found",
 						ocrError: "file_not_found",
-						objectDetectionError: "file_not_found",
 						completedAt: new Date(),
 						updatedAt: new Date(),
 					})
@@ -320,10 +313,8 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 
 			let embeddingStatus: "completed" | "failed" | "skipped" = "skipped";
 			let ocrStatus: "completed" | "failed" | "skipped" = "skipped";
-			let objectStatus: "completed" | "failed" | "skipped" = "skipped";
 			let embeddingError: string | null = null;
 			let ocrError: string | null = null;
-			let objectError: string | null = null;
 
 			await db
 				.update(fileAnalysisRuns)
@@ -345,7 +336,6 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				settings?.config,
 				Number.parseFloat(env.AI_MAX_FILE_SIZE_MB) || 50,
 			);
-			const featureToggles = resolveAiFeatureToggles(settings?.config);
 			if (settings && !settings.enabled) {
 				const reason = "ai_processing_disabled";
 				await db
@@ -354,10 +344,8 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 						status: "skipped",
 						embeddingStatus: "skipped",
 						ocrStatus: "skipped",
-						objectDetectionStatus: "skipped",
 						embeddingError: reason,
 						ocrError: reason,
-						objectDetectionError: reason,
 						completedAt: new Date(),
 						updatedAt: new Date(),
 					})
@@ -381,10 +369,8 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 						status: "skipped",
 						embeddingStatus: "skipped",
 						ocrStatus: "skipped",
-						objectDetectionStatus: "skipped",
 						embeddingError: reason,
 						ocrError: reason,
-						objectDetectionError: reason,
 						completedAt: new Date(),
 						updatedAt: new Date(),
 					})
@@ -402,10 +388,7 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				return;
 			}
 
-			if (!featureToggles.embedding) {
-				embeddingStatus = "skipped";
-				embeddingError = "feature_disabled";
-			} else if (env.AI_INFERENCE_URL) {
+			if (env.AI_INFERENCE_URL) {
 				try {
 					const startedAt = Date.now();
 					logger.debug({
@@ -473,10 +456,7 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				isImageMime(file.mimeType) ||
 				isPdfMime(file.mimeType) ||
 				isDocxMime(file.mimeType);
-			if (!featureToggles.ocr) {
-				ocrStatus = "skipped";
-				ocrError = "feature_disabled";
-			} else if (canOcr) {
+			if (canOcr) {
 				if (env.AI_INFERENCE_URL) {
 					try {
 						const startedAt = Date.now();
@@ -595,87 +575,7 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				ocrError = "unsupported_file_type";
 			}
 
-			if (!featureToggles.objectDetection) {
-				objectStatus = "skipped";
-				objectError = "feature_disabled";
-			} else if (isImageMime(file.mimeType)) {
-				if (env.AI_INFERENCE_URL) {
-					try {
-						const startedAt = Date.now();
-						logger.debug({
-							msg: "Starting object inference stream",
-							runId,
-							fileId,
-							mimeType: file.mimeType,
-							fileSizeBytes: file.size,
-						});
-						const { stream, provider } = await streamFromProvider({
-							providerId: file.providerId,
-							workspaceId,
-							remoteId: file.remoteId,
-						});
-						const result = await (async () => {
-							try {
-								return await inferObjectsStream({
-									stream,
-									fileName: file.name,
-									mimeType: file.mimeType,
-									modelTier: run.tierObject,
-								});
-							} finally {
-								await provider.cleanup().catch(() => undefined);
-							}
-						})();
-
-						if (result.objects.length === 0) {
-							objectStatus = "completed";
-						} else {
-							for (const object of result.objects) {
-								await db.insert(fileDetectedObjects).values({
-									fileId: file.id,
-									workspaceId,
-									runId,
-									label: object.label,
-									confidence: object.confidence,
-									bbox: object.bbox,
-									count: object.count ?? 1,
-								});
-							}
-							objectStatus = "completed";
-						}
-						logger.debug({
-							msg: "Object inference stream completed",
-							runId,
-							fileId,
-							durationMs: Date.now() - startedAt,
-							objectCount: result.objects.length,
-						});
-					} catch (error) {
-						objectStatus = "failed";
-						objectError =
-							error instanceof Error ? error.message : String(error);
-						logger.warn({
-							msg: "Object inference failed",
-							runId,
-							fileId,
-							error: toErrorDetails(error),
-						});
-					}
-				} else {
-					objectStatus = "skipped";
-					objectError = "inference_service_not_configured";
-					logger.warn({
-						msg: "Skipping object inference: AI inference URL not configured",
-						runId,
-						fileId,
-					});
-				}
-			} else {
-				objectStatus = "skipped";
-				objectError = "unsupported_file_type";
-			}
-
-			const statuses = [embeddingStatus, ocrStatus, objectStatus];
+			const statuses = [embeddingStatus, ocrStatus];
 			const allSkipped = statuses.every((status) => status === "skipped");
 			const hasFailed = statuses.some((status) => status === "failed");
 			const runStatus = allSkipped
@@ -690,10 +590,8 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 					status: runStatus,
 					embeddingStatus,
 					ocrStatus,
-					objectDetectionStatus: objectStatus,
 					embeddingError,
 					ocrError,
-					objectDetectionError: objectError,
 					completedAt: new Date(),
 					updatedAt: new Date(),
 				})
@@ -709,7 +607,6 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 					fileId,
 					embeddingError,
 					ocrError,
-					objectError,
 				});
 			}
 			logger.info({
@@ -721,7 +618,6 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				runStatus,
 				embeddingStatus,
 				ocrStatus,
-				objectStatus,
 			});
 		},
 		{

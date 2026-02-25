@@ -108,7 +108,6 @@ export const WORKSPACE_AI_SETTINGS_QUERY = graphql(`
       modelsReady
       embeddingTier
       ocrTier
-      objectTier
       maxConcurrency
       config
       updatedAt
@@ -158,7 +157,6 @@ export const UPDATE_WORKSPACE_AI_SETTINGS_MUTATION = graphql(`
       modelsReady
       embeddingTier
       ocrTier
-      objectTier
       maxConcurrency
       config
       updatedAt

@@ -65,28 +65,42 @@ export function useActivities() {
 			return;
 		}
 
-		const hasInFlight =
-			(progress.pendingFiles ?? 0) > 0 || (progress.runningFiles ?? 0) > 0;
-		if (!hasInFlight) {
+		const totalTrackedFiles =
+			(progress.pendingFiles ?? 0) +
+			(progress.runningFiles ?? 0) +
+			(progress.failedFiles ?? 0) +
+			(progress.skippedFiles ?? 0) +
+			(progress.completedFiles ?? 0);
+		if (totalTrackedFiles === 0) {
 			removeJob(aiProgressJobId);
 			return;
 		}
 
+		const hasInFlight =
+			(progress.pendingFiles ?? 0) > 0 || (progress.runningFiles ?? 0) > 0;
 		const completionPct = Math.max(
 			0,
 			Math.min(100, progress.completionPct ?? 0),
 		);
-		const now = new Date().toISOString();
+		const hasFailures = (progress.failedFiles ?? 0) > 0;
+		const progressUpdatedAt = progress.updatedAt ?? new Date().toISOString();
 		setJob({
 			id: aiProgressJobId,
 			type: "ai_processing",
 			title: "AI file processing",
-			message: `Processing ${progress.processedFiles}/${progress.eligibleFiles} files`,
+			message: hasInFlight
+				? `Processing ${progress.processedFiles}/${progress.eligibleFiles} files`
+				: hasFailures
+					? `Completed with ${progress.failedFiles} failed file(s)`
+					: `Completed ${progress.processedFiles}/${progress.eligibleFiles} files`,
 			progress: completionPct / 100,
-			status:
-				(progress.runningFiles ?? 0) > 0
+			status: hasInFlight
+				? (progress.runningFiles ?? 0) > 0
 					? JobStatus.Running
-					: JobStatus.Pending,
+					: JobStatus.Pending
+				: hasFailures
+					? JobStatus.Error
+					: JobStatus.Completed,
 			metadata: {
 				workspaceId: activeWorkspaceId,
 				pendingFiles: progress.pendingFiles,
@@ -95,8 +109,8 @@ export function useActivities() {
 				skippedFiles: progress.skippedFiles,
 				completedFiles: progress.completedFiles,
 			},
-			createdAt: now,
-			updatedAt: now,
+			createdAt: progressUpdatedAt,
+			updatedAt: progressUpdatedAt,
 		});
 	}, [
 		activeWorkspaceId,

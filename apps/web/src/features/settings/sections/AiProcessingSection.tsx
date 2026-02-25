@@ -1,4 +1,3 @@
-import { Info } from "lucide-react";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -14,12 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useAiSettingsStore } from "@/features/ai/store/aiSettingsStore";
 
 interface AiProcessingSectionProps {
@@ -27,9 +20,6 @@ interface AiProcessingSectionProps {
 	deleteFetching: boolean;
 	saveFetching: boolean;
 	onToggle: (enabled: boolean) => void;
-	onFeatureEmbeddingChange: (enabled: boolean) => void;
-	onFeatureOcrChange: (enabled: boolean) => void;
-	onFeatureObjectDetectionChange: (enabled: boolean) => void;
 	onMaxConcurrencyChange: (value: string) => void;
 	onSaveProcessingSettings: () => void;
 	onDeleteAiData: () => void;
@@ -40,9 +30,6 @@ export function AiProcessingSection({
 	deleteFetching,
 	saveFetching,
 	onToggle,
-	onFeatureEmbeddingChange,
-	onFeatureOcrChange,
-	onFeatureObjectDetectionChange,
 	onMaxConcurrencyChange,
 	onSaveProcessingSettings,
 	onDeleteAiData,
@@ -52,15 +39,6 @@ export function AiProcessingSection({
 	);
 	const settings = useAiSettingsStore((state) => state.settings);
 	const progress = useAiSettingsStore((state) => state.progress);
-	const featureEmbeddingEnabled = useAiSettingsStore(
-		(state) => state.featureEmbeddingEnabled,
-	);
-	const featureOcrEnabled = useAiSettingsStore(
-		(state) => state.featureOcrEnabled,
-	);
-	const featureObjectDetectionEnabled = useAiSettingsStore(
-		(state) => state.featureObjectDetectionEnabled,
-	);
 	const maxConcurrency = useAiSettingsStore((state) => state.maxConcurrency);
 	const isMainEnabled = Boolean(settings?.enabled);
 	const isProcessingActive =
@@ -88,86 +66,6 @@ export function AiProcessingSection({
 						disabled={!canManageWorkspace || isUpdating}
 						onCheckedChange={onToggle}
 					/>
-				</div>
-				<div className="w-full space-y-3">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-2">
-							<span className="text-sm font-medium">Embeddings</span>
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<button
-											type="button"
-											className="text-muted-foreground hover:text-foreground"
-											aria-label="Embeddings info"
-										>
-											<Info className="h-4 w-4" />
-										</button>
-									</TooltipTrigger>
-									<TooltipContent sideOffset={6}>
-										Semantic search by meaning and related concepts.
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						</div>
-						<Switch
-							checked={featureEmbeddingEnabled}
-							onCheckedChange={onFeatureEmbeddingChange}
-							disabled={!canManageWorkspace || isUpdating || !isMainEnabled}
-						/>
-					</div>
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-2">
-							<span className="text-sm font-medium">OCR / Text extraction</span>
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<button
-											type="button"
-											className="text-muted-foreground hover:text-foreground"
-											aria-label="OCR info"
-										>
-											<Info className="h-4 w-4" />
-										</button>
-									</TooltipTrigger>
-									<TooltipContent sideOffset={6}>
-										Extract searchable text from images and documents.
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						</div>
-						<Switch
-							checked={featureOcrEnabled}
-							onCheckedChange={onFeatureOcrChange}
-							disabled={!canManageWorkspace || isUpdating || !isMainEnabled}
-						/>
-					</div>
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-2">
-							<span className="text-sm font-medium">Object detection</span>
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<button
-											type="button"
-											className="text-muted-foreground hover:text-foreground"
-											aria-label="Object detection info"
-										>
-											<Info className="h-4 w-4" />
-										</button>
-									</TooltipTrigger>
-									<TooltipContent sideOffset={6}>
-										Find images by detected objects like cat, dog, car.
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						</div>
-						<Switch
-							checked={featureObjectDetectionEnabled}
-							onCheckedChange={onFeatureObjectDetectionChange}
-							disabled={!canManageWorkspace || isUpdating || !isMainEnabled}
-						/>
-					</div>
 				</div>
 				<div className="w-full max-w-md space-y-2">
 					<span className="text-sm font-medium">Max concurrency</span>
@@ -207,8 +105,7 @@ export function AiProcessingSection({
 								<AlertDialogTitle>Delete AI data?</AlertDialogTitle>
 								<AlertDialogDescription>
 									This will remove all AI analysis results for this workspace,
-									including embeddings, OCR text, detected objects, and analysis
-									run history.
+									including embeddings, OCR text, and analysis run history.
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 							<AlertDialogFooter>

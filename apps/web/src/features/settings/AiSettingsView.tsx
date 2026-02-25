@@ -22,11 +22,6 @@ export function AiSettingsView() {
 				deleteFetching={controller.deleteAiDataFetching}
 				saveFetching={controller.updateSettingsFetching}
 				onToggle={controller.handleToggleAiProcessing}
-				onFeatureEmbeddingChange={controller.handleFeatureEmbeddingToggle}
-				onFeatureOcrChange={controller.handleFeatureOcrToggle}
-				onFeatureObjectDetectionChange={
-					controller.handleFeatureObjectDetectionToggle
-				}
 				onMaxConcurrencyChange={controller.setMaxConcurrency}
 				onSaveProcessingSettings={controller.handleSave}
 				onDeleteAiData={controller.handleDeleteAiData}
@@ -43,10 +38,8 @@ export function AiSettingsView() {
 				prepareFetching={controller.prepareModelsFetching}
 				onEmbeddingTierChange={controller.setEmbeddingTier}
 				onOcrTierChange={controller.setOcrTier}
-				onObjectTierChange={controller.setObjectTier}
 				onDownloadEmbeddingModel={controller.handleDownloadEmbeddingModel}
 				onDownloadOcrModel={controller.handleDownloadOcrModel}
-				onDownloadObjectModel={controller.handleDownloadObjectModel}
 			/>
 		</div>
 	);

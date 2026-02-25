@@ -25,7 +25,6 @@ enum AnalysisModelTier {
 enum AiModelTask {
 	EMBEDDING
 	OCR
-	OBJECT_DETECTION
 }
 
 type Workspace {
@@ -80,7 +79,6 @@ type WorkspaceAiSettings {
 	modelsReady: Boolean!
 	embeddingTier: AnalysisModelTier!
 	ocrTier: AnalysisModelTier!
-	objectTier: AnalysisModelTier!
 	maxConcurrency: Int!
 	config: JSON!
 	updatedAt: DateTime!
@@ -170,7 +168,6 @@ input UpdateWorkspaceAiSettingsInput {
 	enabled: Boolean
 	embeddingTier: AnalysisModelTier
 	ocrTier: AnalysisModelTier
-	objectTier: AnalysisModelTier
 	maxConcurrency: Int
 	config: JSON
 }

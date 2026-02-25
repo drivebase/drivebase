@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TYPE "public"."activity_type" AS ENUM('upload', 'download', 'create', 'update', 'delete', 'move', 'copy', 'share', 'unshare');--> statement-breakpoint
 CREATE TYPE "public"."analysis_model_tier" AS ENUM('lightweight', 'medium', 'heavy');--> statement-breakpoint
 CREATE TYPE "public"."analysis_status" AS ENUM('pending', 'running', 'completed', 'failed', 'skipped');--> statement-breakpoint
-CREATE TYPE "public"."analysis_task_type" AS ENUM('embedding', 'ocr', 'object_detection');--> statement-breakpoint
+CREATE TYPE "public"."analysis_task_type" AS ENUM('embedding', 'ocr');--> statement-breakpoint
 CREATE TYPE "public"."analysis_trigger" AS ENUM('upload', 'manual_reprocess', 'backfill', 'provider_sync');--> statement-breakpoint
 CREATE TYPE "public"."job_status" AS ENUM('pending', 'running', 'completed', 'error');--> statement-breakpoint
 CREATE TYPE "public"."node_type" AS ENUM('file', 'folder');--> statement-breakpoint
@@ -37,30 +37,15 @@ CREATE TABLE "file_analysis_runs" (
 	"status" "analysis_status" DEFAULT 'pending' NOT NULL,
 	"embedding_status" "analysis_status" DEFAULT 'pending' NOT NULL,
 	"ocr_status" "analysis_status" DEFAULT 'pending' NOT NULL,
-	"object_detection_status" "analysis_status" DEFAULT 'pending' NOT NULL,
 	"embedding_error" text,
 	"ocr_error" text,
-	"object_detection_error" text,
 	"tier_embedding" "analysis_model_tier" DEFAULT 'medium' NOT NULL,
 	"tier_ocr" "analysis_model_tier" DEFAULT 'medium' NOT NULL,
-	"tier_object" "analysis_model_tier" DEFAULT 'medium' NOT NULL,
 	"attempt_count" integer DEFAULT 0 NOT NULL,
 	"started_at" timestamp with time zone,
 	"completed_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "file_detected_objects" (
-	"id" text PRIMARY KEY NOT NULL,
-	"file_id" text NOT NULL,
-	"workspace_id" text NOT NULL,
-	"run_id" text NOT NULL,
-	"label" text NOT NULL,
-	"confidence" real NOT NULL,
-	"bbox" jsonb,
-	"count" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "file_embeddings" (
@@ -118,7 +103,6 @@ CREATE TABLE "workspace_ai_settings" (
 	"models_ready" boolean DEFAULT false NOT NULL,
 	"embedding_tier" "analysis_model_tier" DEFAULT 'medium' NOT NULL,
 	"ocr_tier" "analysis_model_tier" DEFAULT 'medium' NOT NULL,
-	"object_tier" "analysis_model_tier" DEFAULT 'medium' NOT NULL,
 	"max_concurrency" integer DEFAULT 2 NOT NULL,
 	"config" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -325,9 +309,6 @@ ALTER TABLE "activities" ADD CONSTRAINT "activities_provider_id_storage_provider
 ALTER TABLE "activities" ADD CONSTRAINT "activities_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "file_analysis_runs" ADD CONSTRAINT "file_analysis_runs_file_id_nodes_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."nodes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "file_analysis_runs" ADD CONSTRAINT "file_analysis_runs_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "file_detected_objects" ADD CONSTRAINT "file_detected_objects_file_id_nodes_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."nodes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "file_detected_objects" ADD CONSTRAINT "file_detected_objects_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "file_detected_objects" ADD CONSTRAINT "file_detected_objects_run_id_file_analysis_runs_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."file_analysis_runs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "file_embeddings" ADD CONSTRAINT "file_embeddings_file_id_nodes_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."nodes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "file_embeddings" ADD CONSTRAINT "file_embeddings_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "file_embeddings" ADD CONSTRAINT "file_embeddings_run_id_file_analysis_runs_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."file_analysis_runs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
