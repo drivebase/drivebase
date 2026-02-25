@@ -1,5 +1,6 @@
-import { roadmap } from "@/lib/source";
 import { RoadmapList } from "@/components/roadmap/roadmap-list";
+import { roadmap } from "@/lib/source";
+import type { RoadmapListItem } from "@/lib/types";
 
 export const metadata = {
   title: "Roadmap",
@@ -9,25 +10,17 @@ export const metadata = {
 
 export default function RoadmapPage() {
   const pages = roadmap.getPages().sort((a, b) => {
-    // Sort by version descending (assuming vX.Y.Z format)
-    return b.data.version.localeCompare(a.data.version, undefined, {
-      numeric: true,
-    });
+    return new Date(b.data.date).getTime() - new Date(a.data.date).getTime();
   });
 
-  // Map to a serializable format for the client component
-  const items = pages.map((page) => ({
+  // Keep only serializable frontmatter for the client component.
+  const items: RoadmapListItem[] = pages.map((page) => ({
     url: page.url,
     data: {
       title: page.data.title,
       version: page.data.version,
-      description: page.data.description,
+      date: page.data.date,
       features: page.data.features,
-      status: page.data.status,
-      date:
-        page.data.date instanceof Date
-          ? page.data.date.toISOString()
-          : page.data.date,
     },
   }));
 
@@ -49,7 +42,7 @@ export default function RoadmapPage() {
           <div className="h-px w-full bg-border" />
 
           <div className="px-6 py-10 sm:py-12">
-            <RoadmapList items={items as any} />
+            <RoadmapList items={items} />
           </div>
         </div>
       </div>
