@@ -22,6 +22,10 @@ const footerLinks = [
       { label: "DeepWiki", href: "https://deepwiki.com/drivebase/drivebase" },
     ],
   },
+  {
+    title: "Compare",
+    links: [{ label: "Drivebase vs rclone", href: "/drivebase-vs-rclone" }],
+  },
 ];
 
 const socialLinks = [
