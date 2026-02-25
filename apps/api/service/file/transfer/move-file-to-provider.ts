@@ -62,13 +62,16 @@ export async function moveFileToProvider(
 		);
 
 		await activityService.log({
-			type: "move",
+			kind: "file.transfer.queued",
+			title: "Provider transfer queued",
+			summary: file.name,
+			status: "info",
 			userId,
 			workspaceId,
-			fileId: file.id,
-			providerId: targetProviderId,
-			folderId: file.folderId ?? undefined,
-			metadata: {
+			details: {
+				fileId: file.id,
+				providerId: targetProviderId,
+				folderId: file.folderId ?? undefined,
 				mode: "provider_transfer",
 				sourceProviderId: file.providerId,
 				targetProviderId,

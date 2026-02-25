@@ -163,24 +163,6 @@ export function ActivityPanel() {
 	);
 
 	useEffect(() => {
-		const currentIds = new Set(jobs.map((job) => job.id));
-		setDismissedJobs((prev) => {
-			const entries = Object.entries(prev);
-			if (entries.length === 0) return prev;
-			const next: DismissedJobsMap = {};
-			let changed = false;
-			for (const [jobId, dismissedAt] of entries) {
-				if (currentIds.has(jobId)) {
-					next[jobId] = dismissedAt;
-				} else {
-					changed = true;
-				}
-			}
-			return changed ? next : prev;
-		});
-	}, [jobs]);
-
-	useEffect(() => {
 		localStorage.setItem(
 			ACTIVITY_PANEL_DISMISSED_JOBS_STORAGE_KEY,
 			JSON.stringify(dismissedJobs),

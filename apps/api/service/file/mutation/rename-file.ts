@@ -72,13 +72,16 @@ export async function renameFile(
 		if (!updated) throw new Error("Failed to rename file");
 
 		await new ActivityService(db).log({
-			type: "update",
+			kind: "file.renamed",
+			title: "File renamed",
+			summary: sanitizedName,
+			status: "success",
 			userId,
 			workspaceId,
-			fileId: updated.id,
-			providerId: updated.providerId,
-			folderId: updated.folderId ?? undefined,
-			metadata: {
+			details: {
+				fileId: updated.id,
+				providerId: updated.providerId,
+				folderId: updated.folderId ?? undefined,
 				action: "rename",
 				oldName: file.name,
 				newName: sanitizedName,

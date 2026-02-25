@@ -40,21 +40,21 @@ async function upsertWorkspaceStatsRange(
 ) {
 	const aggregated = await db
 		.select({
-			bucketStart: sql<Date>`date_trunc('day', ${activities.createdAt} AT TIME ZONE 'UTC')::timestamptz`,
-			uploadedBytes: sql<number>`coalesce(sum(case when ${activities.type} = 'upload' then ${activities.bytes} else 0 end), 0)::bigint`,
-			downloadedBytes: sql<number>`coalesce(sum(case when ${activities.type} = 'download' then ${activities.bytes} else 0 end), 0)::bigint`,
+			bucketStart: sql<Date>`date_trunc('day', ${activities.occurredAt} AT TIME ZONE 'UTC')::timestamptz`,
+			uploadedBytes: sql<number>`coalesce(sum(case when ${activities.kind} = 'file.upload.requested' then coalesce(((${activities.details} ->> 'size')::bigint), 0) else 0 end), 0)::bigint`,
+			downloadedBytes: sql<number>`coalesce(sum(case when ${activities.kind} = 'file.downloaded' then coalesce(((${activities.details} ->> 'size')::bigint), 0) else 0 end), 0)::bigint`,
 		})
 		.from(activities)
 		.where(
 			and(
 				eq(activities.workspaceId, workspaceId),
-				inArray(activities.type, ["upload", "download"]),
-				gte(activities.createdAt, start),
-				lt(activities.createdAt, endExclusive),
+				inArray(activities.kind, ["file.upload.requested", "file.downloaded"]),
+				gte(activities.occurredAt, start),
+				lt(activities.occurredAt, endExclusive),
 			),
 		)
 		.groupBy(
-			sql`date_trunc('day', ${activities.createdAt} AT TIME ZONE 'UTC')::timestamptz`,
+			sql`date_trunc('day', ${activities.occurredAt} AT TIME ZONE 'UTC')::timestamptz`,
 		);
 
 	const byDay = new Map<

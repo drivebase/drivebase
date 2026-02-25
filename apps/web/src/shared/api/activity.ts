@@ -4,25 +4,17 @@ export const ACTIVITIES_QUERY = graphql(`
   query GetActivities($limit: Int, $offset: Int) {
     activities(limit: $limit, offset: $offset) {
       id
-      type
+      kind
+      title
+      summary
+      status
+      details
       userId
-      metadata
-      ipAddress
-      userAgent
+      workspaceId
+      occurredAt
       createdAt
       user {
         ...UserItem
-      }
-      file {
-        ...FileItem
-      }
-      folder {
-        ...FolderItem
-      }
-      provider {
-        id
-        name
-        type
       }
     }
   }
@@ -48,15 +40,14 @@ export const RECENT_ACTIVITIES_QUERY = graphql(`
   query RecentActivities($limit: Int, $offset: Int) {
     activities(limit: $limit, offset: $offset) {
       id
-      type
-      fileId
-      folderId
-      providerId
-      metadata
+      kind
+      title
+      summary
+      status
+      details
+      workspaceId
+      occurredAt
       createdAt
-      provider {
-        type
-      }
     }
   }
 `);
@@ -87,15 +78,14 @@ export const ACTIVITY_CREATED_SUBSCRIPTION = graphql(`
   subscription ActivityCreated {
     activityCreated {
       id
-      type
-      fileId
-      folderId
-      providerId
-      metadata
+      kind
+      title
+      summary
+      status
+      details
+      workspaceId
+      occurredAt
       createdAt
-      provider {
-        type
-      }
     }
   }
 `);

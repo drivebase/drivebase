@@ -1,5 +1,5 @@
 {
-  "id": "a18cb0cc-422d-4f98-8907-2ca881a0e985",
+  "id": "3046c9d7-0c82-4195-828d-dd16fba6228b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,12 +14,29 @@
           "primaryKey": true,
           "notNull": true
         },
-        "type": {
-          "name": "type",
-          "type": "activity_type",
-          "typeSchema": "public",
+        "kind": {
+          "name": "kind",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "user_id": {
           "name": "user_id",
@@ -27,54 +44,24 @@
           "primaryKey": false,
           "notNull": true
         },
-        "file_id": {
-          "name": "file_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "folder_id": {
-          "name": "folder_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "provider_id": {
-          "name": "provider_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "workspace_id": {
           "name": "workspace_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "bytes": {
-          "name": "bytes",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "metadata": {
-          "name": "metadata",
+        "details": {
+          "name": "details",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
-        "ip_address": {
-          "name": "ip_address",
-          "type": "text",
+        "occurred_at": {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
-        },
-        "user_agent": {
-          "name": "user_agent",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         },
         "created_at": {
           "name": "created_at",
@@ -116,13 +103,13 @@
               "nulls": "last"
             },
             {
-              "expression": "type",
+              "expression": "kind",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             },
             {
-              "expression": "created_at",
+              "expression": "occurred_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -146,45 +133,6 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "activities_file_id_nodes_id_fk": {
-          "name": "activities_file_id_nodes_id_fk",
-          "tableFrom": "activities",
-          "tableTo": "nodes",
-          "columnsFrom": [
-            "file_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "activities_folder_id_nodes_id_fk": {
-          "name": "activities_folder_id_nodes_id_fk",
-          "tableFrom": "activities",
-          "tableTo": "nodes",
-          "columnsFrom": [
-            "folder_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "activities_provider_id_storage_providers_id_fk": {
-          "name": "activities_provider_id_storage_providers_id_fk",
-          "tableFrom": "activities",
-          "tableTo": "storage_providers",
-          "columnsFrom": [
-            "provider_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
           "onUpdate": "no action"
         },
         "activities_workspace_id_workspaces_id_fk": {
@@ -2628,21 +2576,6 @@
     }
   },
   "enums": {
-    "public.activity_type": {
-      "name": "activity_type",
-      "schema": "public",
-      "values": [
-        "upload",
-        "download",
-        "create",
-        "update",
-        "delete",
-        "move",
-        "copy",
-        "share",
-        "unshare"
-      ]
-    },
     "public.analysis_model_tier": {
       "name": "analysis_model_tier",
       "schema": "public",

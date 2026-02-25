@@ -1,49 +1,22 @@
 """
 Activity logging
 """
-enum ActivityType {
-	UPLOAD
-	DOWNLOAD
-	CREATE
-	UPDATE
-	DELETE
-	MOVE
-	COPY
-	SHARE
-	UNSHARE
-}
-
 type Activity {
 	id: ID!
-	type: ActivityType!
+	kind: String!
+	title: String!
+	summary: String
+	status: String
+	details: JSON
 	userId: ID!
-	fileId: ID
-	folderId: ID
-	providerId: ID
-	metadata: JSON
-	ipAddress: String
-	userAgent: String
+	workspaceId: ID
+	occurredAt: DateTime!
 	createdAt: DateTime!
 
 	"""
 	User who performed the activity
 	"""
 	user: User!
-
-	"""
-	Related file (if any)
-	"""
-	file: File
-
-	"""
-	Related folder (if any)
-	"""
-	folder: Folder
-
-	"""
-	Related provider (if any)
-	"""
-	provider: StorageProvider
 }
 
 extend type Query {
@@ -63,11 +36,6 @@ extend type Mutation {
 	Cancel a queued or running provider transfer job
 	"""
 	cancelTransferJob(jobId: ID!): Boolean!
-
-	"""
-	Delete activity log entries by ID (own activities only)
-	"""
-	deleteActivities(ids: [ID!]!): Int!
 }
 
 """
