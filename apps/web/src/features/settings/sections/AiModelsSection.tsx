@@ -68,21 +68,23 @@ function ModelRow({
 	onDownload,
 }: ModelRowProps) {
 	return (
-		<div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end border border-border/60 p-3">
-			<div className="space-y-3">
+		<div className="border border-border/60 p-3 space-y-3">
+			<div className="space-y-2">
 				<div className="flex items-center gap-2">
 					<p className="text-sm font-medium">{title}</p>
 					<Badge variant={isReady ? "secondary" : "outline"}>
-						{isReady ? "Ready" : "Not downloaded"}
+						{isReady ? "Downloaded" : "Not downloaded"}
 					</Badge>
 				</div>
 				<p className="text-xs text-muted-foreground">Model: {modelName}</p>
-				<div className="space-y-2 max-w-xs">
+			</div>
+			<div className="flex flex-col gap-2 w-52">
+				<div className="space-y-2">
 					<Label>Size</Label>
 					<Select
 						value={tier}
 						onValueChange={(value) => onTierChange(value as AnalysisModelTier)}
-						disabled={!canManageWorkspace}
+						disabled={!canManageWorkspace || isReady}
 					>
 						<SelectTrigger>
 							<SelectValue />
@@ -96,14 +98,15 @@ function ModelRow({
 						</SelectContent>
 					</Select>
 				</div>
+				<Button
+					variant="outline"
+					onClick={onDownload}
+					disabled={!canManageWorkspace || prepareFetching || isReady}
+					className="w-full"
+				>
+					Download
+				</Button>
 			</div>
-			<Button
-				variant="outline"
-				onClick={onDownload}
-				disabled={!canManageWorkspace || prepareFetching || isReady}
-			>
-				Download
-			</Button>
 		</div>
 	);
 }
@@ -143,7 +146,7 @@ export function AiModelsSection({
 					</p>
 				</div>
 
-				<div className="space-y-3">
+				<div className="grid grid-cols-2 gap-4">
 					<ModelRow
 						title="Embedding"
 						modelName={EMBEDDING_MODEL_BY_TIER[embeddingTier]}
