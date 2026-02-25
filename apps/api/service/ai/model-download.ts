@@ -10,7 +10,7 @@ import {
 	getModelReadyStatus,
 } from "./inference-client";
 
-type TaskType = "embedding" | "ocr" | "object_detection";
+type TaskType = "embedding" | "ocr";
 type TierType = "lightweight" | "medium" | "heavy";
 
 interface ModelTaskConfig {
@@ -74,7 +74,6 @@ export async function scheduleModelPreparation(
 		enabled: boolean;
 		embeddingTier: TierType;
 		ocrTier: TierType;
-		objectTier: TierType;
 	},
 	selectedTasks?: TaskType[],
 ) {
@@ -96,7 +95,6 @@ export async function scheduleModelPreparation(
 		workspaceId,
 		embeddingTier: settings.embeddingTier,
 		ocrTier: settings.ocrTier,
-		objectTier: settings.objectTier,
 	});
 
 	const activityService = new ActivityService(db);
@@ -120,11 +118,6 @@ export async function scheduleModelPreparation(
 			task: "ocr",
 			tier: settings.ocrTier,
 			label: `OCR (${settings.ocrTier})`,
-		},
-		{
-			task: "object_detection",
-			tier: settings.objectTier,
-			label: `Object detection (${settings.objectTier})`,
 		},
 	];
 	const taskSet =
@@ -291,7 +284,7 @@ export async function syncWorkspaceModelReadiness(
 	}
 
 	try {
-		const [embedding, ocr, object] = await Promise.all([
+		const [embedding, ocr] = await Promise.all([
 			getModelReadyStatus({
 				task: "embedding",
 				tier: settings.embeddingTier,
@@ -300,13 +293,9 @@ export async function syncWorkspaceModelReadiness(
 				task: "ocr",
 				tier: settings.ocrTier,
 			}),
-			getModelReadyStatus({
-				task: "object_detection",
-				tier: settings.objectTier,
-			}),
 		]);
 
-		const allReady = embedding.ready && ocr.ready && object.ready;
+		const allReady = embedding.ready && ocr.ready;
 		const existingConfig =
 			settings.config && typeof settings.config === "object"
 				? settings.config
@@ -320,7 +309,6 @@ export async function syncWorkspaceModelReadiness(
 					aiModelReady: {
 						embedding: embedding.ready,
 						ocr: ocr.ready,
-						objectDetection: object.ready,
 					},
 				},
 				updatedAt: new Date(),

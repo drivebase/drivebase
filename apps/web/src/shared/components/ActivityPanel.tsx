@@ -6,7 +6,7 @@ import {
 	Clock3,
 	Loader2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useMutation } from "urql";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,70 @@ import { type Job, JobStatus } from "@/gql/graphql";
 import { CANCEL_TRANSFER_JOB_MUTATION } from "@/shared/api/activity";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
 import { useActivityStore } from "@/shared/store/activityStore";
+
+const ACTIVITY_PANEL_EXPANDED_STORAGE_KEY = "activity_panel_expanded";
+const ACTIVITY_PANEL_DISMISSED_JOBS_STORAGE_KEY =
+	"activity_panel_dismissed_jobs_v1";
+
+type DismissedJobsMap = Record<string, string>;
+
+function getInitialExpandedState(): boolean {
+	const stored = localStorage.getItem(ACTIVITY_PANEL_EXPANDED_STORAGE_KEY);
+	if (stored === "false") return false;
+	return true;
+}
+
+function getInitialDismissedJobs(): DismissedJobsMap {
+	const raw = localStorage.getItem(ACTIVITY_PANEL_DISMISSED_JOBS_STORAGE_KEY);
+	if (!raw) return {};
+	try {
+		const parsed = JSON.parse(raw);
+		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+			return {};
+		}
+		const result: DismissedJobsMap = {};
+		for (const [key, value] of Object.entries(parsed)) {
+			if (typeof value === "string") {
+				result[key] = value;
+			}
+		}
+		return result;
+	} catch {
+		return {};
+	}
+}
+
+function getJobDismissVersion(job: Job): string {
+	if (job.type === "ai_processing") {
+		const metadata =
+			job.metadata &&
+			typeof job.metadata === "object" &&
+			!Array.isArray(job.metadata)
+				? job.metadata
+				: {};
+		const pendingFiles =
+			typeof metadata.pendingFiles === "number" ? metadata.pendingFiles : 0;
+		const runningFiles =
+			typeof metadata.runningFiles === "number" ? metadata.runningFiles : 0;
+		const failedFiles =
+			typeof metadata.failedFiles === "number" ? metadata.failedFiles : 0;
+		const skippedFiles =
+			typeof metadata.skippedFiles === "number" ? metadata.skippedFiles : 0;
+		const completedFiles =
+			typeof metadata.completedFiles === "number" ? metadata.completedFiles : 0;
+		return [
+			job.status,
+			Math.round(job.progress * 1000),
+			pendingFiles,
+			runningFiles,
+			failedFiles,
+			skippedFiles,
+			completedFiles,
+			job.message ?? "",
+		].join("|");
+	}
+	return `${job.status}|${job.updatedAt}`;
+}
 
 function getStatusIcon(status: JobStatus) {
 	if (status === JobStatus.Running) {
@@ -70,13 +134,15 @@ function getRetryLabel(job: Job): string | null {
 }
 
 export function ActivityPanel() {
-	const [expanded, setExpanded] = useState(true);
+	const [expanded, setExpanded] = useState(getInitialExpandedState);
 	const [cancellingJobIds, setCancellingJobIds] = useState<Set<string>>(
 		() => new Set(),
 	);
+	const [dismissedJobs, setDismissedJobs] = useState<DismissedJobsMap>(
+		getInitialDismissedJobs,
+	);
 	const [, cancelTransferJob] = useMutation(CANCEL_TRANSFER_JOB_MUTATION);
 	const jobsMap = useActivityStore((state) => state.jobs);
-	const clearCompleted = useActivityStore((state) => state.clearCompleted);
 
 	const jobs = useMemo(
 		() =>
@@ -86,24 +152,82 @@ export function ActivityPanel() {
 			),
 		[jobsMap],
 	);
+	const visibleJobs = useMemo(
+		() =>
+			jobs.filter((job) => {
+				const dismissedVersion = dismissedJobs[job.id];
+				if (!dismissedVersion) return true;
+				return getJobDismissVersion(job) !== dismissedVersion;
+			}),
+		[jobs, dismissedJobs],
+	);
 
-	if (jobs.length === 0) {
+	useEffect(() => {
+		const currentIds = new Set(jobs.map((job) => job.id));
+		setDismissedJobs((prev) => {
+			const entries = Object.entries(prev);
+			if (entries.length === 0) return prev;
+			const next: DismissedJobsMap = {};
+			let changed = false;
+			for (const [jobId, dismissedAt] of entries) {
+				if (currentIds.has(jobId)) {
+					next[jobId] = dismissedAt;
+				} else {
+					changed = true;
+				}
+			}
+			return changed ? next : prev;
+		});
+	}, [jobs]);
+
+	useEffect(() => {
+		localStorage.setItem(
+			ACTIVITY_PANEL_DISMISSED_JOBS_STORAGE_KEY,
+			JSON.stringify(dismissedJobs),
+		);
+	}, [dismissedJobs]);
+
+	if (visibleJobs.length === 0) {
 		return null;
 	}
 
-	const activeCount = jobs.filter(
+	const activeCount = visibleJobs.filter(
 		(job) =>
 			job.status === JobStatus.Pending || job.status === JobStatus.Running,
 	).length;
+
+	const setExpandedPersisted = (next: boolean) => {
+		setExpanded(next);
+		localStorage.setItem(
+			ACTIVITY_PANEL_EXPANDED_STORAGE_KEY,
+			next ? "true" : "false",
+		);
+	};
+	const clearPanelCompleted = () => {
+		setDismissedJobs((prev) => {
+			const next: DismissedJobsMap = { ...prev };
+			for (const job of visibleJobs) {
+				if (
+					job.status === JobStatus.Completed ||
+					job.status === JobStatus.Error
+				) {
+					next[job.id] = getJobDismissVersion(job);
+				}
+			}
+			return next;
+		});
+	};
 
 	if (!expanded) {
 		return (
 			<button
 				type="button"
-				onClick={() => setExpanded(true)}
+				onClick={() => setExpandedPersisted(true)}
 				className="fixed right-6 bottom-6 z-50 inline-flex items-center gap-2 rounded-full border bg-background px-4 py-2 text-sm shadow-lg"
 			>
-				{activeCount > 0 ? `${activeCount} active` : `${jobs.length} recent`}
+				{activeCount > 0
+					? `${activeCount} active`
+					: `${visibleJobs.length} recent`}
 				<ChevronUp className="h-4 w-4" />
 			</button>
 		);
@@ -144,21 +268,21 @@ export function ActivityPanel() {
 			<div className="flex items-center justify-between border-b px-4 py-3">
 				<div className="text-sm font-semibold">Activity</div>
 				<div className="flex items-center gap-2">
-					<Button size="sm" variant="ghost" onClick={clearCompleted}>
+					<Button size="sm" variant="ghost" onClick={clearPanelCompleted}>
 						Clear
 					</Button>
 					<Button
 						size="icon"
 						variant="ghost"
 						className="h-7 w-7"
-						onClick={() => setExpanded(false)}
+						onClick={() => setExpandedPersisted(false)}
 					>
 						<ChevronDown className="h-4 w-4" />
 					</Button>
 				</div>
 			</div>
 			<div className="max-h-80 space-y-3 overflow-y-auto p-3">
-				{jobs.map((job) => {
+				{visibleJobs.map((job) => {
 					const progress = Math.max(
 						0,
 						Math.min(100, Math.round(job.progress * 100)),

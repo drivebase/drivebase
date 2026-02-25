@@ -28,7 +28,6 @@ const vector = (name: string, dimensions: number) =>
 export const analysisTaskTypeEnum = pgEnum("analysis_task_type", [
 	"embedding",
 	"ocr",
-	"object_detection",
 ]);
 
 export const analysisStatusEnum = pgEnum("analysis_status", [
@@ -71,19 +70,12 @@ export const fileAnalysisRuns = pgTable(
 			.notNull()
 			.default("pending"),
 		ocrStatus: analysisStatusEnum("ocr_status").notNull().default("pending"),
-		objectDetectionStatus: analysisStatusEnum("object_detection_status")
-			.notNull()
-			.default("pending"),
 		embeddingError: text("embedding_error"),
 		ocrError: text("ocr_error"),
-		objectDetectionError: text("object_detection_error"),
 		tierEmbedding: analysisModelTierEnum("tier_embedding")
 			.notNull()
 			.default("medium"),
 		tierOcr: analysisModelTierEnum("tier_ocr").notNull().default("medium"),
-		tierObject: analysisModelTierEnum("tier_object")
-			.notNull()
-			.default("medium"),
 		attemptCount: integer("attempt_count").notNull().default(0),
 		startedAt: timestamp("started_at", { withTimezone: true }),
 		completedAt: timestamp("completed_at", { withTimezone: true }),
@@ -151,33 +143,6 @@ export const fileExtractedText = pgTable("file_extracted_text", {
 		.defaultNow(),
 });
 
-export const fileDetectedObjects = pgTable("file_detected_objects", {
-	id: text("id")
-		.primaryKey()
-		.$defaultFn(() => createId()),
-	fileId: text("file_id")
-		.notNull()
-		.references(() => files.id, { onDelete: "cascade" }),
-	workspaceId: text("workspace_id")
-		.notNull()
-		.references(() => workspaces.id, { onDelete: "cascade" }),
-	runId: text("run_id")
-		.notNull()
-		.references(() => fileAnalysisRuns.id, { onDelete: "cascade" }),
-	label: text("label").notNull(),
-	confidence: real("confidence").notNull(),
-	bbox: jsonb("bbox").$type<{
-		x: number;
-		y: number;
-		width: number;
-		height: number;
-	}>(),
-	count: integer("count").notNull().default(1),
-	createdAt: timestamp("created_at", { withTimezone: true })
-		.notNull()
-		.defaultNow(),
-});
-
 export const fileTextChunks = pgTable(
 	"file_text_chunks",
 	{
@@ -224,7 +189,6 @@ export const workspaceAiSettings = pgTable("workspace_ai_settings", {
 		.notNull()
 		.default("medium"),
 	ocrTier: analysisModelTierEnum("ocr_tier").notNull().default("medium"),
-	objectTier: analysisModelTierEnum("object_tier").notNull().default("medium"),
 	maxConcurrency: integer("max_concurrency").notNull().default(2),
 	config: jsonb("config")
 		.$type<Record<string, unknown>>()
@@ -261,8 +225,6 @@ export type FileEmbedding = typeof fileEmbeddings.$inferSelect;
 export type NewFileEmbedding = typeof fileEmbeddings.$inferInsert;
 export type FileExtractedText = typeof fileExtractedText.$inferSelect;
 export type NewFileExtractedText = typeof fileExtractedText.$inferInsert;
-export type FileDetectedObject = typeof fileDetectedObjects.$inferSelect;
-export type NewFileDetectedObject = typeof fileDetectedObjects.$inferInsert;
 export type FileTextChunk = typeof fileTextChunks.$inferSelect;
 export type NewFileTextChunk = typeof fileTextChunks.$inferInsert;
 export type WorkspaceAiSetting = typeof workspaceAiSettings.$inferSelect;

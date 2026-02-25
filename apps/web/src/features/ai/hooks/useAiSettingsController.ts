@@ -39,32 +39,12 @@ export function useAiSettingsController() {
 		(state) => state.setEmbeddingTier,
 	);
 	const setOcrTier = useAiSettingsStore((state) => state.setOcrTier);
-	const setObjectTier = useAiSettingsStore((state) => state.setObjectTier);
 	const setMaxConcurrency = useAiSettingsStore(
 		(state) => state.setMaxConcurrency,
 	);
-	const setFeatureEmbeddingEnabled = useAiSettingsStore(
-		(state) => state.setFeatureEmbeddingEnabled,
-	);
-	const setFeatureOcrEnabled = useAiSettingsStore(
-		(state) => state.setFeatureOcrEnabled,
-	);
-	const setFeatureObjectDetectionEnabled = useAiSettingsStore(
-		(state) => state.setFeatureObjectDetectionEnabled,
-	);
 	const embeddingTier = useAiSettingsStore((state) => state.embeddingTier);
 	const ocrTier = useAiSettingsStore((state) => state.ocrTier);
-	const objectTier = useAiSettingsStore((state) => state.objectTier);
 	const maxConcurrency = useAiSettingsStore((state) => state.maxConcurrency);
-	const featureEmbeddingEnabled = useAiSettingsStore(
-		(state) => state.featureEmbeddingEnabled,
-	);
-	const featureOcrEnabled = useAiSettingsStore(
-		(state) => state.featureOcrEnabled,
-	);
-	const featureObjectDetectionEnabled = useAiSettingsStore(
-		(state) => state.featureObjectDetectionEnabled,
-	);
 
 	const activeWorkspace = useMemo(() => {
 		const workspaces = workspacesResult.data?.workspaces ?? [];
@@ -190,7 +170,6 @@ export function useAiSettingsController() {
 				workspaceId,
 				embeddingTier,
 				ocrTier,
-				objectTier,
 			},
 		});
 		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) return;
@@ -207,27 +186,10 @@ export function useAiSettingsController() {
 			return;
 		}
 
-		const currentConfig =
-			settingsResult.data?.workspaceAiSettings?.config &&
-			typeof settingsResult.data.workspaceAiSettings.config === "object"
-				? (settingsResult.data.workspaceAiSettings.config as Record<
-						string,
-						unknown
-					>)
-				: {};
-
 		const result = await updateSettings({
 			input: {
 				workspaceId,
 				maxConcurrency: parsedConcurrency,
-				config: {
-					...currentConfig,
-					aiFeatures: {
-						embedding: featureEmbeddingEnabled,
-						ocr: featureOcrEnabled,
-						objectDetection: featureObjectDetectionEnabled,
-					},
-				},
 			},
 		});
 
@@ -268,69 +230,6 @@ export function useAiSettingsController() {
 		reexecuteProgress({ requestPolicy: "network-only" });
 	};
 
-	const persistFeatureConfig = async (
-		next: Partial<{
-			embedding: boolean;
-			ocr: boolean;
-			objectDetection: boolean;
-		}>,
-	) => {
-		if (!workspaceId || !canManageWorkspace) return;
-		const currentConfig =
-			settingsResult.data?.workspaceAiSettings?.config &&
-			typeof settingsResult.data.workspaceAiSettings.config === "object"
-				? (settingsResult.data.workspaceAiSettings.config as Record<
-						string,
-						unknown
-					>)
-				: {};
-		const existingFeatures =
-			currentConfig.aiFeatures && typeof currentConfig.aiFeatures === "object"
-				? (currentConfig.aiFeatures as Record<string, unknown>)
-				: {};
-		const result = await updateSettings({
-			input: {
-				workspaceId,
-				config: {
-					...currentConfig,
-					aiFeatures: {
-						...existingFeatures,
-						embedding:
-							typeof next.embedding === "boolean"
-								? next.embedding
-								: featureEmbeddingEnabled,
-						ocr: typeof next.ocr === "boolean" ? next.ocr : featureOcrEnabled,
-						objectDetection:
-							typeof next.objectDetection === "boolean"
-								? next.objectDetection
-								: featureObjectDetectionEnabled,
-					},
-				},
-			},
-		});
-		if (result.error || !result.data?.updateWorkspaceAiSettings) {
-			reexecuteSettings({ requestPolicy: "network-only" });
-			return;
-		}
-		reexecuteSettings({ requestPolicy: "network-only" });
-		reexecuteProgress({ requestPolicy: "network-only" });
-	};
-
-	const handleFeatureEmbeddingToggle = (enabled: boolean) => {
-		setFeatureEmbeddingEnabled(enabled);
-		void persistFeatureConfig({ embedding: enabled });
-	};
-
-	const handleFeatureOcrToggle = (enabled: boolean) => {
-		setFeatureOcrEnabled(enabled);
-		void persistFeatureConfig({ ocr: enabled });
-	};
-
-	const handleFeatureObjectDetectionToggle = (enabled: boolean) => {
-		setFeatureObjectDetectionEnabled(enabled);
-		void persistFeatureConfig({ objectDetection: enabled });
-	};
-
 	const handleRetryFailedFiles = async () => {
 		if (!workspaceId || !canManageWorkspace) return;
 		const result = await retryFailed({ workspaceId });
@@ -347,27 +246,18 @@ export function useAiSettingsController() {
 		await persistTiersAndPrepare([AiModelTask.Ocr]);
 	};
 
-	const handleDownloadObjectModel = async () => {
-		await persistTiersAndPrepare([AiModelTask.ObjectDetection]);
-	};
-
 	return {
 		activeWorkspace,
 		setEmbeddingTier,
 		setOcrTier,
-		setObjectTier,
 		setMaxConcurrency,
 		handleDownloadModels,
 		handleDownloadEmbeddingModel,
 		handleDownloadOcrModel,
-		handleDownloadObjectModel,
 		handleSave,
 		handleStartProcessing,
 		handleStopProcessing,
 		handleToggleAiProcessing,
-		handleFeatureEmbeddingToggle,
-		handleFeatureOcrToggle,
-		handleFeatureObjectDetectionToggle,
 		handleDeleteAiData,
 		handleRetryFailedFiles,
 		updateSettingsFetching: updateSettingsResult.fetching,

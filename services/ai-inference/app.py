@@ -10,7 +10,6 @@ from ai_inference.config import MODEL_REGISTRY, MODELS_DIR, TaskType, TierType
 from ai_inference.downloads import ensure_download, get_download_status, is_model_ready
 from ai_inference.embeddings import embedding_from_seed
 from ai_inference.extractors import extract_text_for_file
-from ai_inference.object_detection import detect_objects_from_image_bytes
 
 
 class EnsureModelRequest(BaseModel):
@@ -54,17 +53,6 @@ class OcrResponse(BaseModel):
     text: str
     language: str | None = None
     source: str | None = None
-
-
-class DetectObjectsRequest(BaseModel):
-    fileId: str
-    fileName: str
-    mimeType: str
-    modelTier: TierType
-
-
-class DetectObjectsResponse(BaseModel):
-    objects: list[dict]
 
 
 app = FastAPI(title="Drivebase AI Inference Service", version="0.2.0")
@@ -205,46 +193,3 @@ async def ocr_stream(request: Request):
         source=extracted.source,
     )
 
-
-@app.post("/detect-objects", response_model=DetectObjectsResponse)
-def detect_objects(payload: DetectObjectsRequest):
-    logger.info(
-        "Object detection requested file=%s tier=%s",
-        payload.fileId,
-        payload.modelTier,
-    )
-    _ = MODEL_REGISTRY[payload.modelTier]["object_detection"]
-    # Request endpoint does not include image bytes. Keep empty result for
-    # compatibility and use /detect-objects/stream for actual inference.
-    return DetectObjectsResponse(objects=[])
-
-
-@app.post("/detect-objects/stream", response_model=DetectObjectsResponse)
-async def detect_objects_stream(request: Request):
-    tier = _resolve_tier(request.headers.get("x-model-tier"))
-    _ = MODEL_REGISTRY[tier]["object_detection"]
-    file_name = request.headers.get("x-file-name", "file")
-    mime_type = request.headers.get("x-mime-type", "application/octet-stream")
-    body = await request.body()
-    logger.info(
-        "Object stream requested file=%s tier=%s mime=%s bytes=%s",
-        file_name,
-        tier,
-        mime_type,
-        len(body),
-    )
-
-    if not mime_type.lower().startswith("image/"):
-        raise HTTPException(status_code=422, detail="unsupported_file_type")
-
-    try:
-        objects = detect_objects_from_image_bytes(body, tier)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-    logger.info(
-        "Object detection completed file=%s detected=%s",
-        file_name,
-        len(objects),
-    )
-    return DetectObjectsResponse(objects=objects)

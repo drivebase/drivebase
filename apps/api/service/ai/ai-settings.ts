@@ -18,7 +18,6 @@ export interface WorkspaceAiSettingsInput {
 	enabled?: boolean;
 	embeddingTier?: AnalysisModelTier;
 	ocrTier?: AnalysisModelTier;
-	objectTier?: AnalysisModelTier;
 	maxConcurrency?: number;
 	config?: Record<string, unknown>;
 }
@@ -60,7 +59,6 @@ export async function updateWorkspaceAiSettings(
 			enabled: input.enabled ?? existing.enabled,
 			embeddingTier: input.embeddingTier ?? existing.embeddingTier,
 			ocrTier: input.ocrTier ?? existing.ocrTier,
-			objectTier: input.objectTier ?? existing.objectTier,
 			maxConcurrency: input.maxConcurrency ?? existing.maxConcurrency,
 			config: input.config ?? existing.config,
 			updatedAt: new Date(),
@@ -189,6 +187,20 @@ export async function refreshWorkspaceAiProgress(
 		await pubSub.publish("workspaceAiProgressUpdated", workspaceId, created);
 
 		return created;
+	}
+
+	const hasChanged =
+		existing.eligibleFiles !== eligibleFiles ||
+		existing.processedFiles !== processedFiles ||
+		existing.pendingFiles !== aggregate.pendingFiles ||
+		existing.runningFiles !== aggregate.runningFiles ||
+		existing.failedFiles !== aggregate.failedFiles ||
+		existing.skippedFiles !== aggregate.skippedFiles ||
+		existing.completedFiles !== aggregate.completedFiles ||
+		existing.completionPct !== completionPct;
+
+	if (!hasChanged) {
+		return existing;
 	}
 
 	const [updated] = await db

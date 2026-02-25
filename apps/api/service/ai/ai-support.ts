@@ -46,24 +46,3 @@ export function resolveMaxFileSizeMb(
 	if (!Number.isNaN(fromConfig) && fromConfig > 0) return fromConfig;
 	return fallbackMb;
 }
-
-export interface AiFeatureToggles {
-	embedding: boolean;
-	ocr: boolean;
-	objectDetection: boolean;
-}
-
-export function resolveAiFeatureToggles(
-	config: Record<string, unknown> | null | undefined,
-): AiFeatureToggles {
-	const featuresRaw =
-		typeof config?.aiFeatures === "object" && config.aiFeatures !== null
-			? (config.aiFeatures as Record<string, unknown>)
-			: null;
-
-	return {
-		embedding: featuresRaw?.embedding !== false,
-		ocr: featuresRaw?.ocr !== false,
-		objectDetection: featuresRaw?.objectDetection !== false,
-	};
-}

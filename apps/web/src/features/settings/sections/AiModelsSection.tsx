@@ -30,20 +30,12 @@ const OCR_MODEL_BY_TIER: Record<AnalysisModelTier, string> = {
 	[AnalysisModelTier.Heavy]: "PaddleOCR High-Accuracy",
 };
 
-const OBJECT_MODEL_BY_TIER: Record<AnalysisModelTier, string> = {
-	[AnalysisModelTier.Lightweight]: "YOLOv8n",
-	[AnalysisModelTier.Medium]: "YOLOv8s",
-	[AnalysisModelTier.Heavy]: "YOLOv9",
-};
-
 interface AiModelsSectionProps {
 	prepareFetching: boolean;
 	onEmbeddingTierChange: (tier: AnalysisModelTier) => void;
 	onOcrTierChange: (tier: AnalysisModelTier) => void;
-	onObjectTierChange: (tier: AnalysisModelTier) => void;
 	onDownloadEmbeddingModel: () => void;
 	onDownloadOcrModel: () => void;
-	onDownloadObjectModel: () => void;
 }
 
 interface ModelRowProps {
@@ -130,10 +122,8 @@ export function AiModelsSection({
 	prepareFetching,
 	onEmbeddingTierChange,
 	onOcrTierChange,
-	onObjectTierChange,
 	onDownloadEmbeddingModel,
 	onDownloadOcrModel,
-	onDownloadObjectModel,
 }: AiModelsSectionProps) {
 	const canManageWorkspace = useAiSettingsStore(
 		(state) => state.canManageWorkspace,
@@ -141,7 +131,6 @@ export function AiModelsSection({
 	const settings = useAiSettingsStore((state) => state.settings);
 	const embeddingTier = useAiSettingsStore((state) => state.embeddingTier);
 	const ocrTier = useAiSettingsStore((state) => state.ocrTier);
-	const objectTier = useAiSettingsStore((state) => state.objectTier);
 	const latestModelJob = useAiSettingsStore((state) => state.latestModelJob);
 
 	const readyMap =
@@ -162,9 +151,6 @@ export function AiModelsSection({
 	const ocrReady =
 		settings?.ocrTier === ocrTier &&
 		(readyMap.ocr === true || settings?.modelsReady === true);
-	const objectReady =
-		settings?.objectTier === objectTier &&
-		(readyMap.objectDetection === true || settings?.modelsReady === true);
 	const modelDownloadInFlight =
 		latestModelJob?.status === JobStatus.Pending ||
 		latestModelJob?.status === JobStatus.Running;
@@ -224,23 +210,6 @@ export function AiModelsSection({
 						}
 						onTierChange={onOcrTierChange}
 						onDownload={onDownloadOcrModel}
-					/>
-					<ModelRow
-						title="Object Detection"
-						modelName={OBJECT_MODEL_BY_TIER[objectTier]}
-						tier={objectTier}
-						isReady={objectReady}
-						canManageWorkspace={canManageWorkspace}
-						prepareFetching={prepareFetching}
-						isModelDownloadInFlight={modelDownloadInFlight}
-						isTaskDownloading={
-							activeTask === "object_detection" && modelDownloadInFlight
-						}
-						downloadProgressPct={
-							activeTask === "object_detection" ? activeTaskProgressPct : 0
-						}
-						onTierChange={onObjectTierChange}
-						onDownload={onDownloadObjectModel}
 					/>
 				</div>
 			</section>

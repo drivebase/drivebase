@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import Dict, Literal
 
-TaskType = Literal["embedding", "ocr", "object_detection"]
+TaskType = Literal["embedding", "ocr"]
 TierType = Literal["lightweight", "medium", "heavy"]
 DownloadStatus = Literal["pending", "downloading", "completed", "failed"]
 
@@ -13,17 +13,14 @@ MODEL_REGISTRY: dict[TierType, dict[TaskType, str]] = {
     "lightweight": {
         "embedding": "MobileCLIP",
         "ocr": "Tesseract",
-        "object_detection": "YOLOv8n",
     },
     "medium": {
         "embedding": "CLIP-ViT-B-32",
         "ocr": "PaddleOCR",
-        "object_detection": "YOLOv8s",
     },
     "heavy": {
         "embedding": "CLIP-ViT-L-14",
         "ocr": "PaddleOCR-high-accuracy",
-        "object_detection": "YOLOv9",
     },
 }
 
@@ -42,4 +39,3 @@ try:
     MODEL_ASSET_URLS: Dict[str, str] = json.loads(_download_urls_env)
 except json.JSONDecodeError:
     MODEL_ASSET_URLS = {}
-

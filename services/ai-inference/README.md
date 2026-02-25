@@ -4,7 +4,6 @@ Minimal Python service used by the API for:
 
 - semantic embedding generation
 - OCR text extraction
-- object detection
 - model download/prepare tracking
 
 ## Run locally
@@ -35,5 +34,4 @@ uvicorn app:app --host 0.0.0.0 --port 8010 --reload
 - `GET /models/download/{downloadId}`
 - `POST /embed`
 - `POST /ocr`
-- `POST /detect-objects`
 - `GET /health`

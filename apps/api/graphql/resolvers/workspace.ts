@@ -107,12 +107,9 @@ function fromAnalysisModelTier(
 	return "medium";
 }
 
-function fromAiModelTask(
-	task: AiModelTask,
-): "embedding" | "ocr" | "object_detection" {
+function fromAiModelTask(task: AiModelTask): "embedding" | "ocr" {
 	if (task === "EMBEDDING") return "embedding";
-	if (task === "OCR") return "ocr";
-	return "object_detection";
+	return "ocr";
 }
 
 function toWorkspaceAiSettingsType(settings: {
@@ -120,7 +117,6 @@ function toWorkspaceAiSettingsType(settings: {
 	enabled: boolean;
 	embeddingTier: "lightweight" | "medium" | "heavy";
 	ocrTier: "lightweight" | "medium" | "heavy";
-	objectTier: "lightweight" | "medium" | "heavy";
 	modelsReady: boolean;
 	maxConcurrency: number;
 	config: Record<string, unknown>;
@@ -132,7 +128,6 @@ function toWorkspaceAiSettingsType(settings: {
 		modelsReady: settings.modelsReady,
 		embeddingTier: toAnalysisModelTier(settings.embeddingTier),
 		ocrTier: toAnalysisModelTier(settings.ocrTier),
-		objectTier: toAnalysisModelTier(settings.objectTier),
 		maxConcurrency: settings.maxConcurrency,
 		config: settings.config,
 		updatedAt: settings.updatedAt,
@@ -349,7 +344,6 @@ export const workspaceMutations: MutationResolvers = {
 				enabled: args.input.enabled ?? undefined,
 				embeddingTier: fromAnalysisModelTier(args.input.embeddingTier),
 				ocrTier: fromAnalysisModelTier(args.input.ocrTier),
-				objectTier: fromAnalysisModelTier(args.input.objectTier),
 				maxConcurrency: args.input.maxConcurrency ?? undefined,
 				config: args.input.config ?? undefined,
 			},
@@ -377,7 +371,6 @@ export const workspaceMutations: MutationResolvers = {
 				enabled: settings.enabled,
 				embeddingTier: settings.embeddingTier,
 				ocrTier: settings.ocrTier,
-				objectTier: settings.objectTier,
 			},
 			args.tasks?.map(fromAiModelTask),
 		);

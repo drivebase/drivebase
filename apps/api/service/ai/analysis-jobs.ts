@@ -18,11 +18,7 @@ import {
 	refreshWorkspaceAiProgress,
 	updateWorkspaceAiSettings,
 } from "./ai-settings";
-import {
-	isEligibleForAiAnalysis,
-	resolveAiFeatureToggles,
-	resolveMaxFileSizeMb,
-} from "./ai-support";
+import { isEligibleForAiAnalysis, resolveMaxFileSizeMb } from "./ai-support";
 
 type EnqueueTrigger =
 	| "upload"
@@ -91,19 +87,6 @@ export async function enqueueFileAnalysis(
 		settings?.config,
 		Number.parseFloat(env.AI_MAX_FILE_SIZE_MB) || 50,
 	);
-	const featureToggles = resolveAiFeatureToggles(settings?.config);
-	if (
-		!featureToggles.embedding &&
-		!featureToggles.ocr &&
-		!featureToggles.objectDetection
-	) {
-		logger.debug({
-			msg: "Skipping file analysis enqueue: all AI features disabled",
-			fileId,
-			workspaceId,
-		});
-		return { status: "skipped", reason: "all_features_disabled" };
-	}
 	const maxBytes = Math.floor(maxSizeMb * 1024 * 1024);
 	const isOversized = file.size > maxBytes;
 	const isEligible =
@@ -118,7 +101,6 @@ export async function enqueueFileAnalysis(
 		file.updatedAt.toISOString(),
 		settings?.embeddingTier ?? "medium",
 		settings?.ocrTier ?? "medium",
-		settings?.objectTier ?? "medium",
 		force ? `force:${Date.now()}` : "stable",
 		"pipeline:v1",
 	].join("|");
@@ -150,13 +132,10 @@ export async function enqueueFileAnalysis(
 				status: "skipped",
 				embeddingStatus: "skipped",
 				ocrStatus: "skipped",
-				objectDetectionStatus: "skipped",
 				embeddingError: skipReason,
 				ocrError: skipReason,
-				objectDetectionError: skipReason,
 				tierEmbedding: settings?.embeddingTier ?? "medium",
 				tierOcr: settings?.ocrTier ?? "medium",
-				tierObject: settings?.objectTier ?? "medium",
 				attemptCount: 1,
 				startedAt: new Date(),
 				completedAt: new Date(),
@@ -176,10 +155,8 @@ export async function enqueueFileAnalysis(
 			status: "pending",
 			embeddingStatus: "pending",
 			ocrStatus: "pending",
-			objectDetectionStatus: "pending",
 			tierEmbedding: settings?.embeddingTier ?? "medium",
 			tierOcr: settings?.ocrTier ?? "medium",
-			tierObject: settings?.objectTier ?? "medium",
 		})
 		.onConflictDoNothing({ target: fileAnalysisRuns.analysisKey })
 		.returning();
@@ -274,10 +251,8 @@ export async function stopWorkspaceAiProcessing(
 			status: "skipped",
 			embeddingStatus: "skipped",
 			ocrStatus: "skipped",
-			objectDetectionStatus: "skipped",
 			embeddingError: "stopped_by_user",
 			ocrError: "stopped_by_user",
-			objectDetectionError: "stopped_by_user",
 			completedAt: now,
 			updatedAt: now,
 		})

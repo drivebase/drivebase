@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 import { Settings2, X } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useMutation, useQuery, useSubscription } from "urql";
+import { useQuery, useSubscription } from "urql";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -17,7 +17,6 @@ import {
 } from "@/gql/graphql";
 import {
 	ACTIVITY_CREATED_SUBSCRIPTION,
-	DELETE_ACTIVITIES_MUTATION,
 	RECENT_ACTIVITIES_QUERY,
 } from "@/shared/api/activity";
 import { useActivityStore } from "@/shared/store/activityStore";
@@ -41,7 +40,6 @@ function DefaultView() {
 		NonNullable<RecentActivitiesQuery["activities"]>
 	>([]);
 	const [offset, setOffset] = useState(0);
-	const [, deleteActivities] = useMutation(DELETE_ACTIVITIES_MUTATION);
 	const [{ data, fetching }] = useQuery({
 		query: RECENT_ACTIVITIES_QUERY,
 		variables: { limit: 5, offset },
@@ -72,6 +70,10 @@ function DefaultView() {
 				.slice(0, 3),
 		[jobsMap],
 	);
+	const hasProcessingJobs = recentJobs.some(
+		(job) =>
+			job.status === JobStatus.Pending || job.status === JobStatus.Running,
+	);
 	const serverActivities = data?.activities ?? [];
 	const seenIds = new Set(localActivities.map((a) => a.id));
 	const recentActivities = [
@@ -87,7 +89,6 @@ function DefaultView() {
 	const handleClearActivities = () => {
 		const ids = recentActivities.map((a) => a.id);
 		if (ids.length === 0) return;
-		void deleteActivities({ ids });
 		setLocalActivities([]);
 		setOffset((prev) => prev + ids.length);
 	};
@@ -135,7 +136,7 @@ function DefaultView() {
 					<h3 className="font-semibold">
 						<Trans>Recent Activity</Trans>
 					</h3>
-					{recentActivities.length > 0 && (
+					{recentActivities.length > 0 && !hasProcessingJobs && (
 						<Button
 							size="sm"
 							variant="link"

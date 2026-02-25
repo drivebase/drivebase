@@ -11,15 +11,6 @@ interface OcrResponse {
 	source?: string;
 }
 
-interface DetectObjectsResponse {
-	objects: Array<{
-		label: string;
-		confidence: number;
-		bbox?: { x: number; y: number; width: number; height: number };
-		count?: number;
-	}>;
-}
-
 interface EnsureModelResponse {
 	downloadId: string;
 	modelId: string;
@@ -37,7 +28,7 @@ interface ModelDownloadStatusResponse {
 }
 
 interface ModelReadyStatusResponse {
-	task: "embedding" | "ocr" | "object_detection";
+	task: "embedding" | "ocr";
 	tier: "lightweight" | "medium" | "heavy";
 	modelId: string;
 	ready: boolean;
@@ -150,26 +141,8 @@ export async function inferOcrStream(input: {
 	return postStream<OcrResponse>("/ocr/stream", input);
 }
 
-export async function inferObjects(input: {
-	fileId: string;
-	fileName: string;
-	mimeType: string;
-	modelTier: "lightweight" | "medium" | "heavy";
-}): Promise<DetectObjectsResponse> {
-	return postJson<DetectObjectsResponse>("/detect-objects", input);
-}
-
-export async function inferObjectsStream(input: {
-	stream: ReadableStream;
-	fileName: string;
-	mimeType: string;
-	modelTier: "lightweight" | "medium" | "heavy";
-}): Promise<DetectObjectsResponse> {
-	return postStream<DetectObjectsResponse>("/detect-objects/stream", input);
-}
-
 export async function ensureModel(input: {
-	task: "embedding" | "ocr" | "object_detection";
+	task: "embedding" | "ocr";
 	tier: "lightweight" | "medium" | "heavy";
 }): Promise<EnsureModelResponse> {
 	return postJson<EnsureModelResponse>("/models/ensure", input);
@@ -205,7 +178,7 @@ export async function getModelDownloadStatus(
 }
 
 export async function getModelReadyStatus(input: {
-	task: "embedding" | "ocr" | "object_detection";
+	task: "embedding" | "ocr";
 	tier: "lightweight" | "medium" | "heavy";
 }): Promise<ModelReadyStatusResponse> {
 	if (!env.AI_INFERENCE_URL) {
