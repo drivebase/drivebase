@@ -112,7 +112,7 @@ export function RoadmapList({ items }: { items: RoadmapListItem[] }) {
         {items.map((item, index) => {
           const parsedDate = parseDate(item.data.date);
           const isReached = parsedDate
-            ? parsedDate.getTime() <= new Date().getTime()
+            ? parsedDate.getTime() <= Date.now()
             : false;
           const formattedDate = parsedDate
             ? parsedDate.toLocaleDateString("en-US", {
