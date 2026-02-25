@@ -2,6 +2,7 @@ const SUPPORTED_TEXT_MIME_PREFIXES = ["text/"];
 const SUPPORTED_TEXT_MIME_EXACT = new Set([
 	"application/json",
 	"application/csv",
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 
 const SUPPORTED_IMAGE_MIME_PREFIXES = ["image/"];

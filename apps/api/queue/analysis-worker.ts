@@ -3,6 +3,7 @@ import {
 	fileDetectedObjects,
 	fileEmbeddings,
 	fileExtractedText,
+	fileTextChunks,
 	files,
 	getDb,
 	storageProviders,
@@ -18,6 +19,7 @@ import {
 	inferEmbeddingStream,
 	inferObjectsStream,
 	inferOcrStream,
+	inferTextEmbedding,
 } from "../services/ai/inference-client";
 import { getProviderInstance } from "../services/provider/provider-queries";
 import { resolveMaxFileSizeMb } from "../services/ai/ai-support";
@@ -117,6 +119,13 @@ function isPdfMime(mimeType: string): boolean {
 	return mimeType.toLowerCase() === "application/pdf";
 }
 
+function isDocxMime(mimeType: string): boolean {
+	return (
+		mimeType.toLowerCase() ===
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	);
+}
+
 function isTextMime(mimeType: string): boolean {
 	const normalized = mimeType.toLowerCase();
 	return (
@@ -124,6 +133,95 @@ function isTextMime(mimeType: string): boolean {
 		normalized === "application/json" ||
 		normalized === "application/csv"
 	);
+}
+
+function chunkText(
+	text: string,
+	maxChars = 900,
+	overlap = 120,
+	minChars = 80,
+): string[] {
+	const normalized = text.replace(/\s+/g, " ").trim();
+	if (!normalized) return [];
+	if (normalized.length <= maxChars) return [normalized];
+
+	const chunks: string[] = [];
+	let start = 0;
+
+	while (start < normalized.length) {
+		const idealEnd = Math.min(start + maxChars, normalized.length);
+		let end = idealEnd;
+
+		if (idealEnd < normalized.length) {
+			const breakAt = normalized.lastIndexOf(" ", idealEnd);
+			if (breakAt > start + minChars) {
+				end = breakAt;
+			}
+		}
+
+		const chunk = normalized.slice(start, end).trim();
+		if (chunk.length >= minChars) {
+			chunks.push(chunk);
+		}
+
+		if (end >= normalized.length) break;
+		const nextStart = Math.max(0, end - overlap);
+		if (nextStart <= start) break;
+		start = nextStart;
+	}
+
+	return chunks;
+}
+
+async function readTextFromProvider(input: {
+	providerId: string;
+	workspaceId: string;
+	remoteId: string;
+}): Promise<string | null> {
+	const { stream, provider } = await streamFromProvider(input);
+	try {
+		const text = await new Response(stream).text();
+		return text.trim();
+	} catch {
+		return null;
+	} finally {
+		await provider.cleanup().catch(() => undefined);
+	}
+}
+
+async function persistChunkEmbeddings(input: {
+	db: ReturnType<typeof getDb>;
+	fileId: string;
+	workspaceId: string;
+	runId: string;
+	source: string;
+	text: string;
+	modelTier: "lightweight" | "medium" | "heavy";
+}): Promise<void> {
+	if (!env.AI_INFERENCE_URL) {
+		return;
+	}
+
+	const chunks = chunkText(input.text);
+	if (chunks.length === 0) return;
+
+	for (const [chunkIndex, chunk] of chunks.entries()) {
+		const embed = await inferTextEmbedding({
+			text: chunk,
+			modelTier: input.modelTier,
+		});
+		await input.db.insert(fileTextChunks).values({
+			fileId: input.fileId,
+			workspaceId: input.workspaceId,
+			runId: input.runId,
+			source: input.source,
+			chunkIndex,
+			text: chunk,
+			modelName: embed.modelName,
+			modelTier: input.modelTier,
+			embedding: embed.embedding,
+		});
+	}
 }
 
 async function streamFromProvider(input: {
@@ -383,7 +481,10 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 				});
 			}
 
-			const canOcr = isImageMime(file.mimeType) || isPdfMime(file.mimeType);
+			const canOcr =
+				isImageMime(file.mimeType) ||
+				isPdfMime(file.mimeType) ||
+				isDocxMime(file.mimeType);
 			if (canOcr) {
 				if (env.AI_INFERENCE_URL) {
 					try {
@@ -416,10 +517,28 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 							fileId: file.id,
 							workspaceId,
 							runId,
-							source: "ocr",
+							source: result.source ?? "ocr",
 							language: result.language ?? null,
 							text: result.text,
 						});
+						try {
+							await persistChunkEmbeddings({
+								db,
+								fileId: file.id,
+								workspaceId,
+								runId,
+								source: result.source ?? "ocr",
+								text: result.text,
+								modelTier: run.tierEmbedding,
+							});
+						} catch (error) {
+							logger.warn({
+								msg: "Failed to persist OCR chunk embeddings",
+								runId,
+								fileId,
+								error: toErrorDetails(error),
+							});
+						}
 						logger.debug({
 							msg: "OCR inference stream completed",
 							runId,
@@ -447,14 +566,38 @@ export function startAnalysisWorker(): Worker<FileAnalysisJobData> {
 					});
 				}
 			} else if (isTextMime(file.mimeType)) {
+				const extractedText =
+					(await readTextFromProvider({
+						providerId: file.providerId,
+						workspaceId,
+						remoteId: file.remoteId,
+					})) ?? file.name;
 				await db.insert(fileExtractedText).values({
 					fileId: file.id,
 					workspaceId,
 					runId,
 					source: "document_extract",
 					language: null,
-					text: file.name,
+					text: extractedText,
 				});
+				try {
+					await persistChunkEmbeddings({
+						db,
+						fileId: file.id,
+						workspaceId,
+						runId,
+						source: "document_extract",
+						text: extractedText,
+						modelTier: run.tierEmbedding,
+					});
+				} catch (error) {
+					logger.warn({
+						msg: "Failed to persist text chunk embeddings",
+						runId,
+						fileId,
+						error: toErrorDetails(error),
+					});
+				}
 				ocrStatus = "completed";
 			} else {
 				ocrStatus = "skipped";

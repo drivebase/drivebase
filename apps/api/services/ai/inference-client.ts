@@ -8,6 +8,7 @@ interface EmbedResponse {
 interface OcrResponse {
 	text: string;
 	language?: string;
+	source?: string;
 }
 
 interface DetectObjectsResponse {

@@ -12,6 +12,7 @@ import {
 import {
 	deleteWorkspaceAiData,
 	enqueueWorkspaceBackfill,
+	retryWorkspaceFailedAiFiles,
 	stopWorkspaceAiProcessing,
 } from "../../services/ai/analysis-jobs";
 import { scheduleModelPreparation } from "../../services/ai/model-download";
@@ -409,6 +410,17 @@ export const workspaceMutations: MutationResolvers = {
 		]);
 
 		await deleteWorkspaceAiData(context.db, args.workspaceId);
+		return true;
+	},
+
+	retryWorkspaceAiFailedFiles: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+		]);
+
+		await retryWorkspaceFailedAiFiles(context.db, args.workspaceId);
 		return true;
 	},
 

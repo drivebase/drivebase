@@ -7,7 +7,7 @@ import {
 	workspaceAiProgress,
 	workspaceAiSettings,
 } from "@drivebase/db";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import {
 	cancelWorkspaceAnalysisJobs,
 	getAnalysisQueue,
@@ -297,4 +297,57 @@ export async function deleteWorkspaceAiData(
 		msg: "Deleted workspace AI data",
 		workspaceId,
 	});
+}
+
+export async function retryWorkspaceFailedAiFiles(
+	db: Database,
+	workspaceId: string,
+): Promise<number> {
+	const rows = await db.execute(sql`
+		with latest_runs as (
+			select distinct on (far.file_id)
+				far.file_id,
+				far.status
+			from file_analysis_runs far
+			where far.workspace_id = ${workspaceId}
+			order by far.file_id, far.created_at desc
+		)
+		select file_id
+		from latest_runs
+		where status = 'failed'
+	`);
+
+	const fileIds = rows.rows
+		.map((row) => (row as { file_id?: unknown }).file_id)
+		.filter((fileId): fileId is string => typeof fileId === "string");
+
+	let queued = 0;
+	const skippedByReason = new Map<string, number>();
+	for (const fileId of fileIds) {
+		const result = await enqueueFileAnalysis(
+			db,
+			fileId,
+			workspaceId,
+			"manual_reprocess",
+			true,
+		);
+		if (result.status === "queued") {
+			queued += 1;
+			continue;
+		}
+		skippedByReason.set(
+			result.reason,
+			(skippedByReason.get(result.reason) ?? 0) + 1,
+		);
+	}
+
+	logger.info({
+		msg: "Retried failed workspace AI files",
+		workspaceId,
+		totalFailed: fileIds.length,
+		queued,
+		skippedByReason: Object.fromEntries(skippedByReason.entries()),
+	});
+
+	return queued;
 }

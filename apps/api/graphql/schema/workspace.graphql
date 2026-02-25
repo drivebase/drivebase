@@ -230,6 +230,11 @@ extend type Mutation {
 	deleteWorkspaceAiData(workspaceId: ID!): Boolean!
 
 	"""
+	Retry AI processing for files whose latest run failed
+	"""
+	retryWorkspaceAiFailedFiles(workspaceId: ID!): Boolean!
+
+	"""
 	Remove a member from workspace
 	"""
 	removeWorkspaceMember(workspaceId: ID!, userId: ID!): Boolean!
