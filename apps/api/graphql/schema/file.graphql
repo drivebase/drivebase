@@ -72,6 +72,11 @@ extend type Query {
 	searchFiles(query: String!, limit: Int): [File!]!
 
 	"""
+	Semantic AI search for files
+	"""
+	searchFilesAi(query: String!, limit: Int): [File!]!
+
+	"""
 	Search folders by name
 	"""
 	searchFolders(query: String!, limit: Int): [Folder!]!

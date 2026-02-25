@@ -1,5 +1,5 @@
-import { useNavigate } from "@tanstack/react-router";
 import { formatBytes } from "@drivebase/utils";
+import { useNavigate } from "@tanstack/react-router";
 import { Activity, ArrowRight, Files, HardDrive, Server } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";

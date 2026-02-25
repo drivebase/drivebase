@@ -35,6 +35,11 @@ const envSchema = z.object({
 
 	// Optional path for provider-transfer cache/staging files
 	TRANSFER_CACHE_DIR: z.string().optional(),
+
+	// Optional internal AI inference service endpoint
+	AI_INFERENCE_URL: z.string().url().optional(),
+	AI_INFERENCE_TOKEN: z.string().optional(),
+	AI_MAX_FILE_SIZE_MB: z.string().default("50"),
 });
 
 /**

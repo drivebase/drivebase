@@ -1,4 +1,4 @@
-import type { Activity, Job } from "@drivebase/db";
+import type { Activity, Job, WorkspaceAiProgress } from "@drivebase/db";
 import { createPubSub } from "graphql-yoga";
 
 export type UploadProgressPayload = {
@@ -16,6 +16,10 @@ export type PubSubChannels = {
 	uploadProgress: [sessionId: string, payload: UploadProgressPayload];
 	activityUpdated: [workspaceId: string, payload: Job];
 	activityCreated: [userId: string, payload: Activity];
+	workspaceAiProgressUpdated: [
+		workspaceId: string,
+		payload: WorkspaceAiProgress,
+	];
 };
 
 export const pubSub = createPubSub<PubSubChannels>();

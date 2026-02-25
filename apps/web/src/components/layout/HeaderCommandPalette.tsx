@@ -31,6 +31,7 @@ import {
 	useDeleteFile,
 	useRecentFiles,
 	useSearchFiles,
+	useSearchFilesAi,
 	useSearchFolders,
 	useStarFile,
 	useUnstarFile,
@@ -52,7 +53,7 @@ const NAVIGATION_ITEMS = [
 	{ label: "Settings", to: "/settings/general", icon: Settings },
 ] as const;
 
-function debounceValue(value: string, delay = 200) {
+function useDebouncedValue(value: string, delay = 200) {
 	const [debounced, setDebounced] = useState(value);
 
 	useEffect(() => {
@@ -73,27 +74,36 @@ export function HeaderCommandPalette() {
 
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
+	const [isAiMode, setIsAiMode] = useState(false);
 	const [selectedFile, setSelectedFile] = useState<FileItemFragment | null>(
 		null,
 	);
 	const [deletedFileIds, setDeletedFileIds] = useState<Set<string>>(new Set());
 
-	const debouncedQuery = debounceValue(query.trim(), 200);
+	const debouncedQuery = useDebouncedValue(query.trim(), 200);
 	const hasQuery = debouncedQuery.length > 0;
 
 	const { data: recentData } = useRecentFiles(RECENT_LIMIT);
 	const filesSearchResult = useSearchFiles(
-		hasQuery ? debouncedQuery : "",
+		hasQuery && !isAiMode ? debouncedQuery : "",
+		SEARCH_LIMIT,
+	);
+	const filesAiSearchResult = useSearchFilesAi(
+		hasQuery && isAiMode ? debouncedQuery : "",
 		SEARCH_LIMIT,
 	);
 	const foldersSearchResult = useSearchFolders(
-		hasQuery ? debouncedQuery : "",
+		hasQuery && !isAiMode ? debouncedQuery : "",
 		SEARCH_LIMIT,
 	);
 
 	const searchFiles =
 		(filesSearchResult.data?.searchFiles as FileItemFragment[] | undefined) ??
 		[];
+	const aiSearchFiles =
+		(filesAiSearchResult.data?.searchFilesAi as
+			| FileItemFragment[]
+			| undefined) ?? [];
 	const searchFolders =
 		(foldersSearchResult.data?.searchFolders as
 			| FolderItemFragment[]
@@ -150,6 +160,10 @@ export function HeaderCommandPalette() {
 		() => mergedResults.filter((item) => item.kind === "file"),
 		[mergedResults],
 	);
+	const visibleAiFileResults = useMemo(
+		() => aiSearchFiles.filter((file) => !deletedFileIds.has(file.id)),
+		[aiSearchFiles, deletedFileIds],
+	);
 	const visibleFolderResults = useMemo(
 		() => mergedResults.filter((item) => item.kind === "folder"),
 		[mergedResults],
@@ -184,6 +198,7 @@ export function HeaderCommandPalette() {
 		if (!open) {
 			setQuery("");
 			setSelectedFile(null);
+			setIsAiMode(false);
 		}
 	}, [open]);
 
@@ -249,158 +264,191 @@ export function HeaderCommandPalette() {
 				title="Search"
 				description="Search files, folders, and navigation"
 			>
-				<Command
-					key={
-						selectedFile ? `file-actions:${selectedFile.id}` : "search-results"
-					}
-					shouldFilter={false}
-				>
-					<CommandInput
-						placeholder="Search files and folders..."
-						value={query}
-						onValueChange={setQuery}
-					/>
-					<CommandList>
-						{selectedFile ? (
-							<CommandGroup heading="Actions">
-								<CommandItem onSelect={() => setSelectedFile(null)}>
-									<Search className="h-4 w-4" />
-									Back to results
-								</CommandItem>
-								<CommandSeparator />
-								<CommandItem onSelect={() => openFile(selectedFile)}>
-									<File className="h-4 w-4" />
-									Open
-								</CommandItem>
-								<CommandItem
-									onSelect={async () => {
-										await downloadFile(selectedFile);
-										setOpen(false);
-									}}
-								>
-									<Download className="h-4 w-4" />
-									Download
-								</CommandItem>
-								<CommandItem onSelect={() => handleToggleStar(selectedFile)}>
-									<Star className="h-4 w-4" />
-									{selectedFile.starred
-										? "Remove from Starred"
-										: "Add to Starred"}
-								</CommandItem>
-								<CommandItem onSelect={() => handleDeleteFile(selectedFile)}>
-									<Trash2 className="h-4 w-4" />
-									Delete
-								</CommandItem>
-							</CommandGroup>
-						) : hasQuery ? (
-							<>
-								{matchedNavigationItems.length > 0 ? (
-									<>
-										<CommandGroup heading="Navigation">
-											{matchedNavigationItems.map((item) => (
+				<div className="w-full">
+					<Command shouldFilter={false} className="w-full">
+						<CommandInput
+							placeholder={
+								isAiMode
+									? "AI mode: describe what you want to find"
+									: "Search files and folders... (Press Tab for AI Mode)"
+							}
+							value={query}
+							onValueChange={setQuery}
+							onKeyDown={(event) => {
+								if (event.key === "Tab") {
+									event.preventDefault();
+									setIsAiMode((prev) => !prev);
+								}
+							}}
+						/>
+						<CommandList>
+							{selectedFile ? (
+								<CommandGroup heading="Actions">
+									<CommandItem onSelect={() => setSelectedFile(null)}>
+										<Search className="h-4 w-4" />
+										Back to results
+									</CommandItem>
+									<CommandSeparator />
+									<CommandItem onSelect={() => openFile(selectedFile)}>
+										<File className="h-4 w-4" />
+										Open
+									</CommandItem>
+									<CommandItem
+										onSelect={async () => {
+											await downloadFile(selectedFile);
+											setOpen(false);
+										}}
+									>
+										<Download className="h-4 w-4" />
+										Download
+									</CommandItem>
+									<CommandItem onSelect={() => handleToggleStar(selectedFile)}>
+										<Star className="h-4 w-4" />
+										{selectedFile.starred
+											? "Remove from Starred"
+											: "Add to Starred"}
+									</CommandItem>
+									<CommandItem onSelect={() => handleDeleteFile(selectedFile)}>
+										<Trash2 className="h-4 w-4" />
+										Delete
+									</CommandItem>
+								</CommandGroup>
+							) : hasQuery ? (
+								<>
+									{!isAiMode && matchedNavigationItems.length > 0 ? (
+										<>
+											<CommandGroup heading="Navigation">
+												{matchedNavigationItems.map((item) => (
+													<CommandItem
+														key={`search-nav:${item.to}`}
+														onSelect={() => {
+															navigate({ to: item.to });
+															setOpen(false);
+														}}
+													>
+														<item.icon className="h-4 w-4" />
+														{item.label}
+													</CommandItem>
+												))}
+											</CommandGroup>
+											<CommandSeparator />
+										</>
+									) : null}
+									{isAiMode && visibleAiFileResults.length > 0 ? (
+										<CommandGroup heading="AI Results">
+											{visibleAiFileResults.map((file) => (
 												<CommandItem
-													key={`search-nav:${item.to}`}
-													onSelect={() => {
-														navigate({ to: item.to });
-														setOpen(false);
-													}}
+													key={`ai-file:${file.id}`}
+													onSelect={() => setSelectedFile(file)}
 												>
-													<item.icon className="h-4 w-4" />
-													{item.label}
+													<ProviderIcon
+														type={file.provider.type}
+														className="h-4 w-4"
+													/>
+													<span className="flex-1 truncate">{file.name}</span>
+													<CommandShortcut>
+														{formatSize(file.size)}
+													</CommandShortcut>
 												</CommandItem>
 											))}
 										</CommandGroup>
-										<CommandSeparator />
-									</>
-								) : null}
-								{visibleFileResults.length > 0 ? (
-									<CommandGroup heading="Files">
-										{visibleFileResults.map((result) => (
+									) : null}
+									{!isAiMode && visibleFileResults.length > 0 ? (
+										<CommandGroup heading="Files">
+											{visibleFileResults.map((result) => (
+												<CommandItem
+													key={`file:${result.id}`}
+													onSelect={() => setSelectedFile(result.file)}
+												>
+													<ProviderIcon
+														type={result.file.provider.type}
+														className="h-4 w-4"
+													/>
+													<span className="flex-1 truncate">
+														{result.file.name}
+													</span>
+													<CommandShortcut>
+														{formatSize(result.file.size)}
+													</CommandShortcut>
+												</CommandItem>
+											))}
+										</CommandGroup>
+									) : null}
+									{!isAiMode && visibleFolderResults.length > 0 ? (
+										<CommandGroup heading="Folders">
+											{visibleFolderResults.map((result) => (
+												<CommandItem
+													key={`folder:${result.id}`}
+													onSelect={() => {
+														navigate({
+															to: "/files",
+															search: { folderId: result.folder.id },
+														});
+														setOpen(false);
+													}}
+												>
+													<ProviderIcon
+														type={result.folder.provider.type}
+														className="h-4 w-4"
+													/>
+													<Folder className="h-4 w-4 text-muted-foreground" />
+													<span className="truncate">{result.folder.name}</span>
+												</CommandItem>
+											))}
+										</CommandGroup>
+									) : null}
+									{isAiMode && visibleAiFileResults.length === 0 ? (
+										<CommandEmpty>No AI results found.</CommandEmpty>
+									) : null}
+									{!isAiMode && mergedResults.length === 0 ? (
+										<CommandEmpty>No results found.</CommandEmpty>
+									) : null}
+								</>
+							) : isAiMode ? (
+								<CommandEmpty>Type a query to search in AI mode.</CommandEmpty>
+							) : (
+								<>
+									<CommandGroup heading="Navigation">
+										{NAVIGATION_ITEMS.map((item) => (
 											<CommandItem
-												key={`file:${result.id}`}
-												onSelect={() => setSelectedFile(result.file)}
-											>
-												<ProviderIcon
-													type={result.file.provider.type}
-													className="h-4 w-4"
-												/>
-												<span className="flex-1 truncate">
-													{result.file.name}
-												</span>
-												<CommandShortcut>
-													{formatSize(result.file.size)}
-												</CommandShortcut>
-											</CommandItem>
-										))}
-									</CommandGroup>
-								) : null}
-								{visibleFolderResults.length > 0 ? (
-									<CommandGroup heading="Folders">
-										{visibleFolderResults.map((result) => (
-											<CommandItem
-												key={`folder:${result.id}`}
+												key={item.to}
 												onSelect={() => {
-													navigate({
-														to: "/files",
-														search: { folderId: result.folder.id },
-													});
+													navigate({ to: item.to });
 													setOpen(false);
 												}}
 											>
-												<ProviderIcon
-													type={result.folder.provider.type}
-													className="h-4 w-4"
-												/>
-												<Folder className="h-4 w-4 text-muted-foreground" />
-												<span className="truncate">{result.folder.name}</span>
+												<item.icon className="h-4 w-4" />
+												{item.label}
 											</CommandItem>
 										))}
 									</CommandGroup>
-								) : null}
-								{mergedResults.length === 0 ? (
-									<CommandEmpty>No results found.</CommandEmpty>
-								) : null}
-							</>
-						) : (
-							<>
-								<CommandGroup heading="Navigation">
-									{NAVIGATION_ITEMS.map((item) => (
-										<CommandItem
-											key={item.to}
-											onSelect={() => {
-												navigate({ to: item.to });
-												setOpen(false);
-											}}
-										>
-											<item.icon className="h-4 w-4" />
-											{item.label}
-										</CommandItem>
-									))}
-								</CommandGroup>
-								<CommandSeparator />
-								<CommandGroup heading="Recent files">
-									{visibleRecentFiles.map((file) => (
-										<CommandItem
-											key={file.id}
-											onSelect={() => setSelectedFile(file)}
-										>
-											<Clock3 className="h-4 w-4 text-muted-foreground" />
-											<ProviderIcon
-												type={file.provider.type}
-												className="h-4 w-4"
-											/>
-											<span className="flex-1 truncate">{file.name}</span>
-											<CommandShortcut>{formatSize(file.size)}</CommandShortcut>
-										</CommandItem>
-									))}
-									{visibleRecentFiles.length === 0 ? (
-										<CommandItem disabled>No recent files</CommandItem>
-									) : null}
-								</CommandGroup>
-							</>
-						)}
-					</CommandList>
-				</Command>
+									<CommandSeparator />
+									<CommandGroup heading="Recent files">
+										{visibleRecentFiles.map((file) => (
+											<CommandItem
+												key={file.id}
+												onSelect={() => setSelectedFile(file)}
+											>
+												<Clock3 className="h-4 w-4 text-muted-foreground" />
+												<ProviderIcon
+													type={file.provider.type}
+													className="h-4 w-4"
+												/>
+												<span className="flex-1 truncate">{file.name}</span>
+												<CommandShortcut>
+													{formatSize(file.size)}
+												</CommandShortcut>
+											</CommandItem>
+										))}
+										{visibleRecentFiles.length === 0 ? (
+											<CommandItem disabled>No recent files</CommandItem>
+										) : null}
+									</CommandGroup>
+								</>
+							)}
+						</CommandList>
+					</Command>
+				</div>
 			</CommandDialog>
 		</>
 	);

@@ -1,10 +1,24 @@
 import {
+	getOrCreateWorkspaceAiSettings,
+	getWorkspaceAiProgress,
+	updateWorkspaceAiSettings,
+} from "../../services/ai/ai-settings";
+import {
+	deleteWorkspaceAiData,
+	enqueueWorkspaceBackfill,
+	retryWorkspaceFailedAiFiles,
+	stopWorkspaceAiProcessing,
+} from "../../services/ai/analysis-jobs";
+import {
+	scheduleModelPreparation,
+	syncWorkspaceModelReadiness,
+} from "../../services/ai/model-download";
+import {
 	createWorkspace,
 	listAccessibleWorkspaces,
-	updateWorkspaceSyncOperationsToProvider,
 	updateWorkspaceName,
+	updateWorkspaceSyncOperationsToProvider,
 } from "../../services/workspace/workspace";
-import { getWorkspaceStats } from "../../services/workspace/workspace-stats";
 import {
 	acceptWorkspaceInvite,
 	createWorkspaceInvite,
@@ -15,9 +29,13 @@ import {
 	revokeWorkspaceInvite,
 	updateWorkspaceMemberRole,
 } from "../../services/workspace/workspace-members";
+import { getWorkspaceStats } from "../../services/workspace/workspace-stats";
 import type {
 	MutationResolvers,
 	QueryResolvers,
+	SubscriptionResolvers,
+	WorkspaceAiProgress as WorkspaceAiProgressType,
+	WorkspaceAiSettings as WorkspaceAiSettingsType,
 	WorkspaceColor,
 	WorkspaceInvite,
 	WorkspaceInviteResolvers,
@@ -27,6 +45,8 @@ import type {
 	WorkspaceResolvers,
 	Workspace as WorkspaceType,
 } from "../generated/types";
+import { AnalysisModelTier } from "../generated/types";
+import { type PubSubChannels, pubSub } from "../pubsub";
 import { requireAuth } from "./auth-helpers";
 
 function toWorkspaceType(workspace: {
@@ -71,6 +91,73 @@ function toWorkspaceInviteType(invite: {
 	};
 }
 
+function toAnalysisModelTier(
+	tier: "lightweight" | "medium" | "heavy",
+): AnalysisModelTier {
+	if (tier === "lightweight") return AnalysisModelTier.Lightweight;
+	if (tier === "heavy") return AnalysisModelTier.Heavy;
+	return AnalysisModelTier.Medium;
+}
+
+function fromAnalysisModelTier(
+	tier?: string | null,
+): "lightweight" | "medium" | "heavy" | undefined {
+	if (!tier) return undefined;
+	if (tier === "LIGHTWEIGHT") return "lightweight";
+	if (tier === "HEAVY") return "heavy";
+	return "medium";
+}
+
+function toWorkspaceAiSettingsType(settings: {
+	workspaceId: string;
+	enabled: boolean;
+	embeddingTier: "lightweight" | "medium" | "heavy";
+	ocrTier: "lightweight" | "medium" | "heavy";
+	objectTier: "lightweight" | "medium" | "heavy";
+	modelsReady: boolean;
+	maxConcurrency: number;
+	config: Record<string, unknown>;
+	updatedAt: Date;
+}): WorkspaceAiSettingsType {
+	return {
+		workspaceId: settings.workspaceId,
+		enabled: settings.enabled,
+		modelsReady: settings.modelsReady,
+		embeddingTier: toAnalysisModelTier(settings.embeddingTier),
+		ocrTier: toAnalysisModelTier(settings.ocrTier),
+		objectTier: toAnalysisModelTier(settings.objectTier),
+		maxConcurrency: settings.maxConcurrency,
+		config: settings.config,
+		updatedAt: settings.updatedAt,
+	};
+}
+
+function toWorkspaceAiProgressType(progress: {
+	workspaceId: string;
+	eligibleFiles: number;
+	processedFiles: number;
+	pendingFiles: number;
+	runningFiles: number;
+	failedFiles: number;
+	skippedFiles: number;
+	completedFiles: number;
+	completionPct: number;
+	updatedAt: Date;
+}): WorkspaceAiProgressType {
+	return {
+		workspaceId: progress.workspaceId,
+		eligibleFiles: progress.eligibleFiles,
+		processedFiles: progress.processedFiles,
+		pendingFiles: progress.pendingFiles,
+		runningFiles: progress.runningFiles,
+		failedFiles: progress.failedFiles,
+		skippedFiles: progress.skippedFiles,
+		completedFiles: progress.completedFiles,
+		completionPct: progress.completionPct,
+		updatedAt: progress.updatedAt,
+	};
+}
+
 export const workspaceQueries: QueryResolvers = {
 	workspaces: async (_parent, _args, context) => {
 		const user = requireAuth(context);
@@ -112,6 +199,36 @@ export const workspaceQueries: QueryResolvers = {
 			"viewer",
 		]);
 		return getWorkspaceStats(context.db, args.workspaceId, args.days ?? 30);
+	},
+
+	workspaceAiSettings: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+			"editor",
+			"viewer",
+		]);
+		const settings = await getOrCreateWorkspaceAiSettings(
+			context.db,
+			args.workspaceId,
+		);
+		const synced =
+			(await syncWorkspaceModelReadiness(context.db, args.workspaceId)) ??
+			settings;
+		return toWorkspaceAiSettingsType(synced);
+	},
+
+	workspaceAiProgress: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+			"editor",
+			"viewer",
+		]);
+		const progress = await getWorkspaceAiProgress(context.db, args.workspaceId);
+		return toWorkspaceAiProgressType(progress);
 	},
 };
 
@@ -209,6 +326,110 @@ export const workspaceMutations: MutationResolvers = {
 		return toWorkspaceType(workspace);
 	},
 
+	updateWorkspaceAiSettings: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(
+			context.db,
+			args.input.workspaceId,
+			user.userId,
+			["owner", "admin"],
+		);
+
+		const settings = await updateWorkspaceAiSettings(
+			context.db,
+			args.input.workspaceId,
+			{
+				enabled: args.input.enabled ?? undefined,
+				embeddingTier: fromAnalysisModelTier(args.input.embeddingTier),
+				ocrTier: fromAnalysisModelTier(args.input.ocrTier),
+				objectTier: fromAnalysisModelTier(args.input.objectTier),
+				maxConcurrency: args.input.maxConcurrency ?? undefined,
+				config: args.input.config ?? undefined,
+			},
+		);
+
+		return toWorkspaceAiSettingsType(settings);
+	},
+
+	prepareWorkspaceAiModels: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+		]);
+
+		const settings = await getOrCreateWorkspaceAiSettings(
+			context.db,
+			args.workspaceId,
+		);
+
+		await scheduleModelPreparation(context.db, args.workspaceId, {
+			enabled: settings.enabled,
+			embeddingTier: settings.embeddingTier,
+			ocrTier: settings.ocrTier,
+			objectTier: settings.objectTier,
+		});
+
+		return true;
+	},
+
+	startWorkspaceAiProcessing: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+		]);
+
+		const settings = await getOrCreateWorkspaceAiSettings(
+			context.db,
+			args.workspaceId,
+		);
+
+		if (!settings.modelsReady) {
+			throw new Error("Models are not ready yet");
+		}
+
+		await updateWorkspaceAiSettings(context.db, args.workspaceId, {
+			enabled: true,
+		});
+		await enqueueWorkspaceBackfill(context.db, args.workspaceId);
+
+		return true;
+	},
+
+	stopWorkspaceAiProcessing: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+		]);
+
+		await stopWorkspaceAiProcessing(context.db, args.workspaceId);
+		return true;
+	},
+
+	deleteWorkspaceAiData: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+		]);
+
+		await deleteWorkspaceAiData(context.db, args.workspaceId);
+		return true;
+	},
+
+	retryWorkspaceAiFailedFiles: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+		]);
+
+		await retryWorkspaceFailedAiFiles(context.db, args.workspaceId);
+		return true;
+	},
+
 	removeWorkspaceMember: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
@@ -230,6 +451,24 @@ export const workspaceMutations: MutationResolvers = {
 
 export const workspaceResolvers: WorkspaceResolvers = {
 	color: (parent) => parent.color.toUpperCase() as never,
+};
+
+export const workspaceSubscriptions: SubscriptionResolvers = {
+	workspaceAiProgressUpdated: {
+		subscribe: async (_parent, args, context) => {
+			const user = requireAuth(context);
+			await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+				"owner",
+				"admin",
+				"editor",
+				"viewer",
+			]);
+			return pubSub.subscribe("workspaceAiProgressUpdated", args.workspaceId);
+		},
+		resolve: (
+			payload: PubSubChannels["workspaceAiProgressUpdated"][1],
+		): WorkspaceAiProgressType => toWorkspaceAiProgressType(payload),
+	},
 };
 
 export const workspaceMemberResolvers: WorkspaceMemberResolvers = {

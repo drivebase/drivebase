@@ -26,6 +26,7 @@ export {
 	useRequestDownload,
 	useRequestUpload,
 	useSearchFiles,
+	useSearchFilesAi,
 	useStarFile,
 	useStarredFiles,
 	useUnstarFile,

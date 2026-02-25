@@ -1,8 +1,8 @@
 "use client";
 
 import { Code2, Server, Users } from "lucide-react";
-import Link from "next/link";
 import { motion } from "motion/react";
+import Link from "next/link";
 
 export function UserTypesSection() {
   return (

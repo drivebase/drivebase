@@ -3,6 +3,7 @@ import { files, folders, storageProviders, users } from "@drivebase/db";
 import { S3Provider } from "@drivebase/s3";
 import { and, eq } from "drizzle-orm";
 import { getUploadQueue } from "../../queue/upload-queue";
+import { enqueueFileAnalysis } from "../../services/ai/analysis-jobs";
 import { FileService } from "../../services/file";
 import { UploadSessionManager } from "../../services/file/upload-session";
 import { ProviderService } from "../../services/provider";
@@ -106,6 +107,19 @@ export const fileQueries: QueryResolvers = {
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.searchFiles(
+			user.userId,
+			args.query,
+			args.limit ?? undefined,
+			workspaceId,
+		);
+	},
+
+	searchFilesAi: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		return fileService.searchFilesAi(
 			user.userId,
 			args.query,
 			args.limit ?? undefined,
@@ -451,6 +465,18 @@ export const fileMutations: MutationResolvers = {
 
 		// Mark session completed
 		await sessionManager.markCompleted(args.sessionId);
+
+		if (session.fileId && context.headers) {
+			const workspaceHeaderId = context.headers.get("x-workspace-id");
+			if (workspaceHeaderId) {
+				await enqueueFileAnalysis(
+					context.db,
+					session.fileId,
+					workspaceHeaderId,
+					"upload",
+				);
+			}
+		}
 
 		// Clean up Redis
 		await redis.del(`upload:s3multipart:${args.sessionId}`);
