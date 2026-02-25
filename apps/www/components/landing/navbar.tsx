@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const NAV_LINKS = [
+  { label: "Versus", href: "/drivebase-vs-rclone" },
   { label: "Docs", href: "/docs" },
   { label: "Blog", href: "/blogs" },
   { label: "Roadmap", href: "/roadmap" },
