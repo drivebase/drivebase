@@ -1,18 +1,22 @@
 import type { Database } from "@drivebase/db";
 import {
+	createFileDownloadLink,
 	deleteFile,
 	downloadFile,
 	downloadFileForProxy,
+	consumeFileDownloadLink,
 	getContents,
 	getFile,
 	getFileForProxy,
 	getFileMetadata,
 	getRecentFiles,
 	getStarredFiles,
+	listActiveFileDownloadLinks,
 	listFiles,
 	moveFile,
 	moveFileToProvider,
 	renameFile,
+	revokeFileDownloadLink,
 	requestDownload,
 	requestUpload,
 	searchFiles,
@@ -239,5 +243,48 @@ export class FileService {
 		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
 			getStarredFiles(this.db, userId, workspaceId),
 		);
+	}
+
+	createFileDownloadLink(
+		fileId: string,
+		userId: string,
+		maxDownloads: number,
+		expiresAt: Date,
+		preferredWorkspaceId?: string,
+	) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			createFileDownloadLink(
+				this.db,
+				fileId,
+				userId,
+				workspaceId,
+				maxDownloads,
+				expiresAt,
+			),
+		);
+	}
+
+	listActiveFileDownloadLinks(
+		fileId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			listActiveFileDownloadLinks(this.db, fileId, userId, workspaceId),
+		);
+	}
+
+	revokeFileDownloadLink(
+		downloadLinkId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			revokeFileDownloadLink(this.db, downloadLinkId, workspaceId),
+		);
+	}
+
+	consumeFileDownloadLink(token: string) {
+		return consumeFileDownloadLink(this.db, token);
 	}
 }

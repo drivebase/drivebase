@@ -9,6 +9,7 @@ import {
 	Star,
 	Trash,
 } from "lucide-react";
+import { Trans } from "@lingui/react/macro";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -37,6 +38,7 @@ export function FileSystemRowActions({
 	folder,
 	providers = [],
 	onDownloadFile,
+	onCreateDownloadLink,
 	onShowFileDetails,
 	onRenameFile,
 	onRenameFolder,
@@ -47,6 +49,7 @@ export function FileSystemRowActions({
 }: FileSystemRowActionsProps) {
 	const canRename = file ? !!onRenameFile : !!onRenameFolder;
 	const canMove = !!file && !!onMoveFileToProvider;
+	const canCreateDownloadLink = !!file && !!onCreateDownloadLink;
 	const canToggleFavorite = file
 		? !!onToggleFileFavorite
 		: !!onToggleFolderFavorite;
@@ -136,8 +139,12 @@ export function FileSystemRowActions({
 					) : null}
 					{canRename || canMove ? <DropdownMenuSeparator /> : null}
 					<DropdownMenuLabel>Library</DropdownMenuLabel>
-					<DropdownMenuItem>
-						<Share2 size={14} className="mr-2" /> Share
+					<DropdownMenuItem
+						disabled={!canCreateDownloadLink}
+						onClick={() => file && onCreateDownloadLink?.(file)}
+					>
+						<Share2 size={14} className="mr-2" />{" "}
+						<Trans>Create download link</Trans>
 					</DropdownMenuItem>
 					{file && canToggleFavorite ? (
 						<DropdownMenuItem onClick={() => onToggleFileFavorite?.(file)}>

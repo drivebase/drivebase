@@ -24,6 +24,7 @@ export type ProviderInfo = {
 export interface FileSystemTableHandlers {
 	onNavigate?: (folderId: string) => void;
 	onDownloadFile?: (file: FileItemFragment) => void;
+	onCreateDownloadLink?: (file: FileItemFragment) => void;
 	onShowFileDetails?: (file: FileItemFragment) => void;
 	onToggleFileFavorite?: (file: FileItemFragment) => void;
 	onToggleFolderFavorite?: (folder: FolderItemFragment) => void;
