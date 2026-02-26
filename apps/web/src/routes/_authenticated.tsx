@@ -88,6 +88,17 @@ function AuthenticatedLayout() {
 	const hasNetworkError = Boolean(meResult.error?.networkError);
 
 	useEffect(() => {
+		// If auth state is invalidated at runtime (e.g., /me auth error),
+		// redirect immediately instead of waiting for next page reload.
+		if (!isAuthenticated) {
+			navigate({
+				to: "/login",
+				replace: true,
+			});
+		}
+	}, [isAuthenticated, navigate]);
+
+	useEffect(() => {
 		// Token exists but backend says no user/session; force logout and redirect.
 		if (
 			isAuthenticated &&
@@ -137,6 +148,10 @@ function AuthenticatedLayout() {
 				onRetry={() => reexecuteMe({ requestPolicy: "network-only" })}
 			/>
 		);
+	}
+
+	if (!isAuthenticated) {
+		return <FullScreenBrandLoader />;
 	}
 
 	// If we have a user but onboarding is not completed, we are redirecting.
