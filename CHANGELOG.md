@@ -1,5 +1,53 @@
 # Changelog
 
+## [3.0.0](https://github.com/drivebase/drivebase/compare/v2.5.0...v3.0.0) (2026-02-26)
+
+### ✨ Features
+
+* **activity:** rewrite activity system to generic event model and extract recent activity view ([7d5703e](https://github.com/drivebase/drivebase/commit/7d5703e321f5f2680972552a33ec2d03d27569c1))
+* add 404 page in www ([1735eff](https://github.com/drivebase/drivebase/commit/1735eff86c3db32cbb0c4aff8d658f4dc4b31da5))
+* add roadmap page ([b175eac](https://github.com/drivebase/drivebase/commit/b175eacfcf860d46e5eb5c2ff7bb53e8d8aacd01))
+* generate download link ([#101](https://github.com/drivebase/drivebase/issues/101)) ([ea4141b](https://github.com/drivebase/drivebase/commit/ea4141b3d19c0ee16ce873869945012616125664))
+* **RecentActivityView:** add dialog for activity details and JSON view ([1aa70b5](https://github.com/drivebase/drivebase/commit/1aa70b59e8fe623a744b31625ec25916a5079f4c))
+* **releases:** add Releases page with GitHub release fetching ([82123f7](https://github.com/drivebase/drivebase/commit/82123f7d358d55b4062ece1f86636ea006fdf0e3))
+
+### 🐛 Fixes
+
+* **activity:** separate jobs and activities with recentJobs-backed JobPanel ([1b5e67e](https://github.com/drivebase/drivebase/commit/1b5e67ee26b81444169f6fc0b18e97b0f734f419))
+* add editor settings for typescriptreact and json to enforce biome fixes on save ([794b09a](https://github.com/drivebase/drivebase/commit/794b09a1b6b2349d22740859d8ce0fdbc2d6d587))
+* adjust column size constraints for file system table ([b903062](https://github.com/drivebase/drivebase/commit/b903062ddd1fd0c91389f02d1cdc0e4a15076411))
+* **auth:** redirect to login on invalid authentication state in onboarding and authenticated layouts ([be6a259](https://github.com/drivebase/drivebase/commit/be6a259ac8f0a9ae5b625e466a430293e47f62e3))
+* correct paths for requirements and source files in Dockerfile ([9e53ed3](https://github.com/drivebase/drivebase/commit/9e53ed3ac58c71f9caf0e54acea69886ae72bdb6))
+* format date fields in roadmap files ([4efb8db](https://github.com/drivebase/drivebase/commit/4efb8db9a10cf5007bd744520c6c939e8b38aca0))
+* **releases:** add cache duration for Releases page ([07497d8](https://github.com/drivebase/drivebase/commit/07497d82b7e6b066709c732174e19185b374ef38))
+* update blog post schema to include optional banner image ([8983ba2](https://github.com/drivebase/drivebase/commit/8983ba2fe8a118cf28619a23c57b31b1c4628e57))
+* update metadata and add Drivebase banner image ([b9ed351](https://github.com/drivebase/drivebase/commit/b9ed35194c86d91df8f90bedbcd57135223c8f98))
+* update roadmap item display to show version instead of title ([58cc2c4](https://github.com/drivebase/drivebase/commit/58cc2c40bbf79b5547a9555545237885639850e0))
+* **vscode:** remove redundant JSON settings for code actions on save ([09a3a80](https://github.com/drivebase/drivebase/commit/09a3a802f01d82be5d6e740c5a5a4ad706329d91))
+
+### 🎨 Styling
+
+* add hero illustration ([e5c05dc](https://github.com/drivebase/drivebase/commit/e5c05dc97aabe3c16e3cde35fecbb1081f752eb9))
+* change default fumadocs-ui theme to dusk ([a848fa9](https://github.com/drivebase/drivebase/commit/a848fa9a7410dd414d7797bab9abf1068232db75))
+* **hero-section:** update gradient colors for text in HeroSection component ([26f5663](https://github.com/drivebase/drivebase/commit/26f56639886520658d6f9c34f636fd726ff8bb3b))
+* **HeroSection:** adjust padding for responsive layout ([60372c3](https://github.com/drivebase/drivebase/commit/60372c34b5447c9b068e8fb7fd6edb1fcb00a2f8))
+* **HeroSection:** update gradient background ([618eaea](https://github.com/drivebase/drivebase/commit/618eaea61e193b217d6da79c01aa4db9b64f915d))
+* improve landing page ui ([b64a86d](https://github.com/drivebase/drivebase/commit/b64a86da2f23afc0be45966b203dcca93eaf02cd))
+* remove unnecessary border and padding ([6d13bec](https://github.com/drivebase/drivebase/commit/6d13bec9769c208219439328d1218407b49e94c9))
+
+### 📝 Docs
+
+* add blog post for Drivebase v3.0 release ([1411c4d](https://github.com/drivebase/drivebase/commit/1411c4d3621af1d1a39afbe0f387c00431631be8))
+* add Drivebase design system documentation outlining core principles and UI conventions ([dc6ac8d](https://github.com/drivebase/drivebase/commit/dc6ac8dfa8ba3c2d1b7ffd25b79c9134b79b04e1))
+* add repository-wide engineering standards for agents in Drivebase ([ea4fc72](https://github.com/drivebase/drivebase/commit/ea4fc7248085e151c1ffb8dc1ce4622e64274553))
+* **AGENTS.md:** add guideline for using Lingui i18n in user-facing UI strings ([5cb54fa](https://github.com/drivebase/drivebase/commit/5cb54fa4b0783f27bdf02f914de5741638476b03))
+* enhance blog page with dynamic image extraction and improved layout ([809767e](https://github.com/drivebase/drivebase/commit/809767e916d06511aef46b4681bd0869bbc28441))
+* update banner image ([c04dbf0](https://github.com/drivebase/drivebase/commit/c04dbf00d3aeb24e7cca995509404b46ffffc25a))
+* update contributing guidelines to include AI service setup and dependencies ([c68a6dc](https://github.com/drivebase/drivebase/commit/c68a6dcc8e4e03b045b747885cdbc5166292ba1e))
+* update discord invite link ([296eef8](https://github.com/drivebase/drivebase/commit/296eef8342edb22d220feab3115ae5bec11238da))
+* update landing page contents ([e8d8880](https://github.com/drivebase/drivebase/commit/e8d88807fc1d18bcd985eb9b92f5118f89daf6ed))
+* update roadmap ([4b71410](https://github.com/drivebase/drivebase/commit/4b71410ebeaf6ceda8f1360d4f12c14a0476b453))
+
 # [2.5.0](https://github.com/drivebase/drivebase/compare/v2.4.2...v2.5.0) (2026-02-23)
 
 
