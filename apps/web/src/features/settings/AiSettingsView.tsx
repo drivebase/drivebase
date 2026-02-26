@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useAiSettingsController } from "@/features/ai/hooks/useAiSettingsController";
 import { AiModelsSection } from "./sections/AiModelsSection";
 import { AiProcessingSection } from "./sections/AiProcessingSection";
@@ -9,8 +10,12 @@ export function AiSettingsView() {
 	if (!controller.activeWorkspace) {
 		return (
 			<div className="space-y-2">
-				<h3 className="text-lg font-medium">AI</h3>
-				<p className="text-sm text-muted-foreground">No workspace selected.</p>
+				<h3 className="text-lg font-medium">
+					<Trans>AI</Trans>
+				</h3>
+				<p className="text-sm text-muted-foreground">
+					<Trans>No workspace selected.</Trans>
+				</p>
 			</div>
 		);
 	}

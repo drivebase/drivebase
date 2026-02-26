@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Trans } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -48,8 +49,8 @@ export function LoginPage() {
 
 	return (
 		<AuthLayout
-			title="Welcome Back"
-			description="Enter your email to sign in to your account"
+			title={<Trans>Welcome Back</Trans>}
+			description={<Trans>Enter your email to sign in to your account</Trans>}
 		>
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -65,7 +66,9 @@ export function LoginPage() {
 							name="email"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Email</FormLabel>
+									<FormLabel>
+										<Trans>Email</Trans>
+									</FormLabel>
 									<FormControl>
 										<Input
 											placeholder="name@example.com"
@@ -84,13 +87,15 @@ export function LoginPage() {
 							render={({ field }) => (
 								<FormItem>
 									<div className="flex items-center justify-between">
-										<FormLabel>Password</FormLabel>
+										<FormLabel>
+											<Trans>Password</Trans>
+										</FormLabel>
 										<Link
 											to="/login"
 											className="text-xs font-medium text-primary hover:underline underline-offset-4"
 											tabIndex={-1}
 										>
-											Forgot password?
+											<Trans>Forgot password?</Trans>
 										</Link>
 									</div>
 									<FormControl>
@@ -114,16 +119,16 @@ export function LoginPage() {
 						className="w-full h-10 font-semibold shadow-md shadow-primary/20 hover:shadow-primary/30 transition-shadow"
 					>
 						{fetching && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-						Sign In
+						<Trans>Sign In</Trans>
 					</Button>
 
 					<p className="text-center text-sm text-muted-foreground pt-2">
-						Don&apos;t have an account?{" "}
+						<Trans>Don&apos;t have an account?</Trans>{" "}
 						<Link
 							to="/register"
 							className="font-semibold text-primary hover:underline underline-offset-4 transition-colors"
 						>
-							Sign up
+							<Trans>Sign up</Trans>
 						</Link>
 					</p>
 				</form>

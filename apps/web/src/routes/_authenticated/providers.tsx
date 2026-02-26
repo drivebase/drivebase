@@ -1,4 +1,5 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { Trans } from "@lingui/react/macro";
 import {
 	AlertTriangle,
 	Cloud,
@@ -148,7 +149,7 @@ function ProvidersPage() {
 						className="ml-auto h-auto p-1 text-destructive hover:bg-destructive/20"
 						onClick={clearError}
 					>
-						Dismiss
+						<Trans>Dismiss</Trans>
 					</Button>
 				</div>
 			)}
@@ -157,7 +158,7 @@ function ProvidersPage() {
 				<div className="flex items-center justify-between">
 					<h2 className="text-lg font-semibold flex items-center gap-2">
 						<Cloud className="h-5 w-5 text-primary" />
-						Connected Storage
+						<Trans>Connected Storage</Trans>
 					</h2>
 				</div>
 
@@ -178,9 +179,13 @@ function ProvidersPage() {
 					</div>
 				) : connectedProviders.length === 0 ? (
 					<div className="text-center py-12 bg-muted/30 border border-dashed ">
-						<h3 className="font-semibold text-lg">No providers connected</h3>
+						<h3 className="font-semibold text-lg">
+							<Trans>No providers connected</Trans>
+						</h3>
 						<p className="text-muted-foreground max-w-sm mx-auto mt-1 mb-6">
-							Connect a storage provider below to start managing your files.
+							<Trans>
+								Connect a storage provider below to start managing your files.
+							</Trans>
 						</p>
 					</div>
 				) : (
@@ -212,7 +217,7 @@ function ProvidersPage() {
 				<div className="flex items-center justify-between">
 					<h2 className="text-lg font-semibold flex items-center gap-2">
 						<Plus className="h-5 w-5 text-primary" />
-						Available Providers
+						<Trans>Available Providers</Trans>
 					</h2>
 				</div>
 
@@ -238,11 +243,13 @@ function ProvidersPage() {
 				<div className="flex flex-col items-center justify-center py-12 text-center space-y-4 mt-8">
 					<div className="space-y-1">
 						<h3 className="font-medium text-lg">
-							Couldn't find what you were looking for?
+							<Trans>Couldn't find what you were looking for?</Trans>
 						</h3>
 						<p className="text-muted-foreground text-sm max-w-sm mx-auto">
-							Suggest a new storage provider or report an issue on our GitHub
-							repository.
+							<Trans>
+								Suggest a new storage provider or report an issue on our GitHub
+								repository.
+							</Trans>
 						</p>
 					</div>
 					<Button variant="outline" asChild>
@@ -253,7 +260,7 @@ function ProvidersPage() {
 							className="flex items-center gap-2"
 						>
 							<Github className="h-4 w-4" />
-							Request a Provider
+							<Trans>Request a Provider</Trans>
 							<ExternalLink className="h-3 w-3 opacity-50" />
 						</a>
 					</Button>
@@ -276,11 +283,15 @@ function ProvidersPage() {
 			>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Disconnect Provider?</DialogTitle>
+						<DialogTitle>
+							<Trans>Disconnect Provider?</Trans>
+						</DialogTitle>
 						<DialogDescription>
-							Are you sure you want to disconnect this storage provider? Your
-							files will strictly remain in the remote storage, but you won't be
-							able to access them here until you reconnect.
+							<Trans>
+								Are you sure you want to disconnect this storage provider? Your
+								files will strictly remain in the remote storage, but you won't
+								be able to access them here until you reconnect.
+							</Trans>
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
@@ -289,7 +300,7 @@ function ProvidersPage() {
 							onClick={() => disconnect.setDisconnectId(null)}
 							disabled={disconnect.isDisconnecting}
 						>
-							Cancel
+							<Trans>Cancel</Trans>
 						</Button>
 						<Button
 							variant="destructive"
@@ -299,7 +310,7 @@ function ProvidersPage() {
 							{disconnect.isDisconnecting ? (
 								<Loader2 className="animate-spin h-4 w-4 mr-2" />
 							) : null}
-							Disconnect
+							<Trans>Disconnect</Trans>
 						</Button>
 					</DialogFooter>
 				</DialogContent>

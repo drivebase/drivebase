@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 import {
 	Card,
@@ -9,8 +10,8 @@ import {
 
 interface AuthLayoutProps {
 	children: ReactNode;
-	title: string;
-	description: string;
+	title: ReactNode;
+	description: ReactNode;
 }
 
 export function AuthLayout({ children, title, description }: AuthLayoutProps) {
@@ -46,7 +47,8 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
 				{/* Footer Links (Terms, etc - Optional) */}
 				<div className="mt-8 text-center text-xs text-muted-foreground">
 					<p>
-						&copy; {new Date().getFullYear()} Drivebase. Secure file storage.
+						&copy; {new Date().getFullYear()}{" "}
+						<Trans>Drivebase. Secure file storage.</Trans>
 					</p>
 				</div>
 			</div>

@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
@@ -90,22 +91,24 @@ export function UsersSettingsView() {
 		});
 
 		if (result.error || !result.data?.createWorkspaceInvite) {
-			toast.error(result.error?.message ?? "Failed to create invite link");
+			toast.error(
+				result.error?.message ?? <Trans>Failed to create invite link</Trans>,
+			);
 			return;
 		}
 
 		const inviteUrl = `${window.location.origin}/join-workspace?token=${result.data.createWorkspaceInvite.token}`;
 		setGeneratedInviteLink(inviteUrl);
-		toast.success("Invite link created");
+		toast.success(<Trans>Invite link created</Trans>);
 		reexecuteInvites({ requestPolicy: "network-only" });
 	};
 
 	const copyInviteLink = async (link: string) => {
 		try {
 			await navigator.clipboard.writeText(link);
-			toast.success("Invite link copied");
+			toast.success(<Trans>Invite link copied</Trans>);
 		} catch {
-			toast.error("Could not copy invite link");
+			toast.error(<Trans>Could not copy invite link</Trans>);
 		}
 	};
 
@@ -126,11 +129,13 @@ export function UsersSettingsView() {
 		});
 
 		if (result.error || !result.data?.updateWorkspaceMemberRole) {
-			toast.error(result.error?.message ?? "Failed to update member role");
+			toast.error(
+				result.error?.message ?? <Trans>Failed to update member role</Trans>,
+			);
 			return;
 		}
 
-		toast.success("Member role updated");
+		toast.success(<Trans>Member role updated</Trans>);
 		reexecuteMembers({ requestPolicy: "network-only" });
 	};
 
@@ -141,11 +146,13 @@ export function UsersSettingsView() {
 
 		const result = await removeMember({ workspaceId, userId });
 		if (result.error || !result.data?.removeWorkspaceMember) {
-			toast.error(result.error?.message ?? "Failed to remove member");
+			toast.error(
+				result.error?.message ?? <Trans>Failed to remove member</Trans>,
+			);
 			return;
 		}
 
-		toast.success("Member removed");
+		toast.success(<Trans>Member removed</Trans>);
 		reexecuteMembers({ requestPolicy: "network-only" });
 	};
 
@@ -156,19 +163,25 @@ export function UsersSettingsView() {
 
 		const result = await revokeInvite({ workspaceId, inviteId });
 		if (result.error || !result.data?.revokeWorkspaceInvite) {
-			toast.error(result.error?.message ?? "Failed to revoke invite");
+			toast.error(
+				result.error?.message ?? <Trans>Failed to revoke invite</Trans>,
+			);
 			return;
 		}
 
-		toast.success("Invite revoked");
+		toast.success(<Trans>Invite revoked</Trans>);
 		reexecuteInvites({ requestPolicy: "network-only" });
 	};
 
 	if (!activeWorkspace) {
 		return (
 			<div className="space-y-2">
-				<h3 className="text-lg font-medium">Users</h3>
-				<p className="text-sm text-muted-foreground">No workspace selected.</p>
+				<h3 className="text-lg font-medium">
+					<Trans>Users</Trans>
+				</h3>
+				<p className="text-sm text-muted-foreground">
+					<Trans>No workspace selected.</Trans>
+				</p>
 			</div>
 		);
 	}

@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Trans } from "@lingui/react/macro";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -71,10 +72,12 @@ function JoinWorkspacePage() {
 		return (
 			<div className="min-h-screen w-full flex items-center justify-center p-8">
 				<div className="max-w-md w-full  border bg-card p-6 space-y-4">
-					<h1 className="text-lg font-semibold">Could not join workspace</h1>
+					<h1 className="text-lg font-semibold">
+						<Trans>Could not join workspace</Trans>
+					</h1>
 					<p className="text-sm text-muted-foreground">{error}</p>
 					<Button onClick={() => window.location.reload()} className="w-full">
-						Try again
+						<Trans>Try again</Trans>
 					</Button>
 				</div>
 			</div>
@@ -84,7 +87,9 @@ function JoinWorkspacePage() {
 	return (
 		<div className="min-h-screen w-full flex items-center justify-center gap-2 text-sm text-muted-foreground">
 			<Loader2 className="h-4 w-4 animate-spin" />
-			<span>Joining workspace…</span>
+			<span>
+				<Trans>Joining workspace…</Trans>
+			</span>
 		</div>
 	);
 }

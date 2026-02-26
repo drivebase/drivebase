@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Trans } from "@lingui/react/macro";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -55,7 +56,9 @@ function VaultPage() {
 	if (fetching) {
 		return (
 			<div className="flex items-center justify-center h-full">
-				<div className="text-muted-foreground text-sm">Loading...</div>
+				<div className="text-muted-foreground text-sm">
+					<Trans>Loading...</Trans>
+				</div>
 			</div>
 		);
 	}
@@ -126,7 +129,7 @@ function VaultBrowser({ folderId }: { folderId?: string }) {
 	const handleFilesSelected = (files: File[]) => {
 		if (!files.length) return;
 		if (activeProviders.length === 0) {
-			toast.error("No storage providers connected");
+			toast.error(<Trans>No storage providers connected</Trans>);
 			return;
 		}
 		if (activeProviders.length === 1 && activeProviders[0]) {
@@ -176,7 +179,7 @@ function VaultBrowser({ folderId }: { folderId?: string }) {
 			await deleteFile(file.id);
 		}
 		if (selection.folders.length > 0) {
-			toast.info("Folder deletion is not yet supported in vault");
+			toast.info(<Trans>Folder deletion is not yet supported in vault</Trans>);
 		}
 	};
 
@@ -204,7 +207,11 @@ function VaultBrowser({ folderId }: { folderId?: string }) {
 			refresh();
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : "Failed to create folder",
+				error instanceof Error ? (
+					error.message
+				) : (
+					<Trans>Failed to create folder</Trans>
+				),
 			);
 		} finally {
 			setIsCreatingFolder(false);
@@ -252,11 +259,15 @@ function VaultBrowser({ folderId }: { folderId?: string }) {
 			>
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
-						<DialogTitle>Create Folder</DialogTitle>
+						<DialogTitle>
+							<Trans>Create Folder</Trans>
+						</DialogTitle>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid gap-2">
-							<Label htmlFor="vault-folder-name">Folder Name</Label>
+							<Label htmlFor="vault-folder-name">
+								<Trans>Folder Name</Trans>
+							</Label>
 							<Input
 								id="vault-folder-name"
 								value={newFolderName}
@@ -276,13 +287,17 @@ function VaultBrowser({ folderId }: { folderId?: string }) {
 							onClick={() => setIsCreateFolderOpen(false)}
 							disabled={isCreatingFolder}
 						>
-							Cancel
+							<Trans>Cancel</Trans>
 						</Button>
 						<Button
 							onClick={handleCreateFolder}
 							disabled={isCreatingFolder || !newFolderName.trim()}
 						>
-							{isCreatingFolder ? "Creating..." : "Create Folder"}
+							{isCreatingFolder ? (
+								<Trans>Creating...</Trans>
+							) : (
+								<Trans>Create Folder</Trans>
+							)}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

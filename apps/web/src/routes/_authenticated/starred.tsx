@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Trans } from "@lingui/react/macro";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/authStore";
@@ -90,18 +91,22 @@ function StarredPage() {
 			}
 
 			toast.success(
-				currentStarred
-					? `Removed ${file.name} from starred`
-					: `Added ${file.name} to starred`,
+				currentStarred ? (
+					<Trans>Removed {file.name} from starred</Trans>
+				) : (
+					<Trans>Added {file.name} to starred</Trans>
+				),
 			);
 		} catch (error) {
 			if (currentStarred) {
 				fileList.resetItem(file.id);
 			}
 			const message =
-				error instanceof Error
-					? error.message
-					: "Failed to update starred status.";
+				error instanceof Error ? (
+					error.message
+				) : (
+					<Trans>Failed to update starred status.</Trans>
+				);
 			toast.error(message);
 		}
 	};
@@ -125,18 +130,22 @@ function StarredPage() {
 			}
 
 			toast.success(
-				currentStarred
-					? `Removed ${folder.name} from starred`
-					: `Added ${folder.name} to starred`,
+				currentStarred ? (
+					<Trans>Removed {folder.name} from starred</Trans>
+				) : (
+					<Trans>Added {folder.name} to starred</Trans>
+				),
 			);
 		} catch (error) {
 			if (currentStarred) {
 				folderList.resetItem(folder.id);
 			}
 			const message =
-				error instanceof Error
-					? error.message
-					: "Failed to update starred status.";
+				error instanceof Error ? (
+					error.message
+				) : (
+					<Trans>Failed to update starred status.</Trans>
+				);
 			toast.error(message);
 		}
 	};
@@ -150,8 +159,14 @@ function StarredPage() {
 		return (
 			<div className="px-8 flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
 				<Star size={64} className="opacity-20" />
-				<h2 className="text-2xl font-bold">Starred</h2>
-				<p>No starred files yet. Star files or folders to see them here.</p>
+				<h2 className="text-2xl font-bold">
+					<Trans>Starred</Trans>
+				</h2>
+				<p>
+					<Trans>
+						No starred files yet. Star files or folders to see them here.
+					</Trans>
+				</p>
 			</div>
 		);
 	}

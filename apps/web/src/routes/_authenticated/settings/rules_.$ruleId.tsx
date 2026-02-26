@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Trans } from "@lingui/react/macro";
 import { RuleFormPage } from "@/features/rules/components/RuleFormPage";
 import { useFileRule } from "@/features/rules/hooks/useRules";
 
@@ -18,13 +19,17 @@ function EditRulePage() {
 	};
 
 	if (result.fetching) {
-		return <div className="text-sm text-muted-foreground">Loading rule...</div>;
+		return (
+			<div className="text-sm text-muted-foreground">
+				<Trans>Loading rule...</Trans>
+			</div>
+		);
 	}
 
 	if (result.error || !result.data?.fileRule) {
 		return (
 			<div className="text-sm text-destructive">
-				{result.error?.message ?? "Rule not found"}
+				{result.error?.message ?? <Trans>Rule not found</Trans>}
 			</div>
 		);
 	}
