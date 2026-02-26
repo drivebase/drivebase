@@ -13,6 +13,7 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
       API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
       SKIP_DB_MIGRATIONS: ${SKIP_DB_MIGRATIONS:-false}
+      AI_INFERENCE_URL: ${AI_INFERENCE_URL:-http://ai-inference:8010}
       UPDATER_URL: http://updater:4500
       UPDATER_SECRET: >-
         ${UPDATER_SECRET:-default-updater-secret-change-in-production}
