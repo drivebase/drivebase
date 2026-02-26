@@ -86,6 +86,7 @@ Example pattern to follow:
 - Component files should focus on rendering and interaction.
 - Move reusable logic to colocated util files (`*Utils.ts`) when complexity grows.
 - Prefer clear component names by intent (`JobPanel` vs generic names when domain is specific).
+- In `apps/web`, all user-facing UI strings must use Lingui `Trans` (or equivalent Lingui i18n wrappers). Do not ship hardcoded plain-text UI labels/messages.
 
 ### 4.4 Store Design
 
@@ -138,4 +139,3 @@ Before finishing changes:
 - Do not mix unrelated refactors with product behavior changes unless asked.
 - Maintain backward compatibility unless migration is intentional and documented.
 - Prefer conventional commits (`feat`, `fix`, `refactor`, `chore`, etc.) with accurate scope.
-
