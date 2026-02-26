@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import { Copy } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,7 @@ export function DownloadLinkConfigDialogHost() {
 	const [errorMessage, setErrorMessage] = useState<ReactNode | null>(null);
 	const [generatedLink, setGeneratedLink] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isCopySuccess, setIsCopySuccess] = useState(false);
 
 	useEffect(() => {
 		openDownloadLinkConfigDialog = (options, resolve) => {
@@ -97,6 +98,7 @@ export function DownloadLinkConfigDialogHost() {
 			setErrorMessage(null);
 			setGeneratedLink(null);
 			setIsSubmitting(false);
+			setIsCopySuccess(false);
 		};
 
 		return () => {
@@ -112,8 +114,21 @@ export function DownloadLinkConfigDialogHost() {
 		setErrorMessage(null);
 		setGeneratedLink(null);
 		setIsSubmitting(false);
+		setIsCopySuccess(false);
 		resolver?.();
 	};
+
+	useEffect(() => {
+		if (!isCopySuccess) {
+			return;
+		}
+
+		const timeoutId = window.setTimeout(() => {
+			setIsCopySuccess(false);
+		}, 1500);
+
+		return () => window.clearTimeout(timeoutId);
+	}, [isCopySuccess]);
 
 	const submit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -155,6 +170,7 @@ export function DownloadLinkConfigDialogHost() {
 				return;
 			}
 			setGeneratedLink(link);
+			setIsCopySuccess(false);
 		} catch (error) {
 			setErrorMessage(
 				error instanceof Error && error.message ? (
@@ -174,8 +190,10 @@ export function DownloadLinkConfigDialogHost() {
 		}
 		try {
 			await navigator.clipboard.writeText(generatedLink);
+			setIsCopySuccess(true);
 			toast.success(<Trans>Download link copied</Trans>);
 		} catch {
+			setIsCopySuccess(false);
 			toast.error(<Trans>Failed to copy download link</Trans>);
 		}
 	};
@@ -239,10 +257,19 @@ export function DownloadLinkConfigDialogHost() {
 										variant="outline"
 										size="icon-sm"
 										onClick={copyGeneratedLink}
+										title={isCopySuccess ? t`Copied` : t`Copy download link`}
 									>
-										<Copy className="h-4 w-4" />
+										{isCopySuccess ? (
+											<Check className="h-4 w-4 text-emerald-600" />
+										) : (
+											<Copy className="h-4 w-4" />
+										)}
 										<span className="sr-only">
-											<Trans>Copy download link</Trans>
+											{isCopySuccess ? (
+												<Trans>Copied</Trans>
+											) : (
+												<Trans>Copy download link</Trans>
+											)}
 										</span>
 									</Button>
 								</div>
