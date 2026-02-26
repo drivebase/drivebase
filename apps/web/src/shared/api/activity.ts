@@ -8,6 +8,7 @@ export const ACTIVITIES_QUERY = graphql(`
       title
       summary
       status
+      progress
       details
       userId
       workspaceId
@@ -36,6 +37,22 @@ export const ACTIVE_JOBS_QUERY = graphql(`
   }
 `);
 
+export const RECENT_JOBS_QUERY = graphql(`
+  query RecentJobs($limit: Int, $offset: Int) {
+    recentJobs(limit: $limit, offset: $offset) {
+      id
+      type
+      title
+      message
+      progress
+      status
+      metadata
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const RECENT_ACTIVITIES_QUERY = graphql(`
   query RecentActivities($limit: Int, $offset: Int) {
     activities(limit: $limit, offset: $offset) {
@@ -44,6 +61,7 @@ export const RECENT_ACTIVITIES_QUERY = graphql(`
       title
       summary
       status
+      progress
       details
       workspaceId
       occurredAt
@@ -82,6 +100,7 @@ export const ACTIVITY_CREATED_SUBSCRIPTION = graphql(`
       title
       summary
       status
+      progress
       details
       workspaceId
       occurredAt

@@ -70,6 +70,7 @@ async function waitForDownloadCompletion(
 export async function scheduleModelPreparation(
 	db: Database,
 	workspaceId: string,
+	userId: string,
 	settings: {
 		enabled: boolean;
 		embeddingTier: TierType;
@@ -254,6 +255,18 @@ export async function scheduleModelPreparation(
 				.where(eq(workspaceAiSettings.workspaceId, workspaceId));
 
 			await activityService.complete(job.id, "AI models are ready");
+			await activityService.log({
+				kind: "models.download.completed",
+				title: "Model download completed",
+				summary: "All requested models are ready",
+				status: "success",
+				userId,
+				workspaceId,
+				details: {
+					jobId: job.id,
+					taskTotal: tasks.length,
+				},
+			});
 			logger.info({ msg: "AI model preparation completed", workspaceId });
 		} catch (error) {
 			const message =
@@ -264,6 +277,18 @@ export async function scheduleModelPreparation(
 				error: message,
 			});
 			await activityService.fail(job.id, message);
+			await activityService.log({
+				kind: "models.download.failed",
+				title: "Model download failed",
+				summary: message,
+				status: "error",
+				userId,
+				workspaceId,
+				details: {
+					jobId: job.id,
+					error: message,
+				},
+			});
 		}
 	})();
 }

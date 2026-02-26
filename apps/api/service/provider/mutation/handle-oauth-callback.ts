@@ -18,7 +18,11 @@ export async function handleOAuthCallback(
 	db: Database,
 	code: string,
 	state: string,
-) {
+): Promise<{
+	provider: typeof storageProviders.$inferSelect;
+	source: string;
+	actorUserId?: string;
+}> {
 	const { providerId, source, userId: stateUserId } = parseOAuthState(state);
 
 	const [providerRecord] = await db
@@ -100,5 +104,5 @@ export async function handleOAuthCallback(
 		});
 	}
 
-	return { provider: updated, source };
+	return { provider: updated, source, actorUserId: syncUserId ?? undefined };
 }

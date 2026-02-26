@@ -243,6 +243,20 @@ export async function syncProvider(
 			job.id,
 			`Sync completed successfully (${processedCount} items)`,
 		);
+		await activityService.log({
+			kind: "provider.sync.completed",
+			title: "Provider sync completed",
+			summary: providerRecord.name,
+			status: "success",
+			userId,
+			workspaceId,
+			details: {
+				providerId: providerRecord.id,
+				providerType: providerRecord.type,
+				processedCount,
+				jobId: job.id,
+			},
+		});
 		telemetry.capture("provider_sync_completed", {
 			type: providerRecord.type,
 			duration_ms: Date.now() - syncStartTime,
@@ -251,6 +265,20 @@ export async function syncProvider(
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);
 		await activityService.fail(job.id, `Sync failed: ${msg}`);
+		await activityService.log({
+			kind: "provider.sync.failed",
+			title: "Provider sync failed",
+			summary: providerRecord.name,
+			status: "error",
+			userId,
+			workspaceId,
+			details: {
+				providerId: providerRecord.id,
+				providerType: providerRecord.type,
+				jobId: job.id,
+				error: msg,
+			},
+		});
 		throw error;
 	} finally {
 		await provider.cleanup();

@@ -61,6 +61,21 @@ export const activityQueries: QueryResolvers = {
 		const jobs = await activityService.getActive(workspaceId);
 		return jobs.map(toGraphqlJob);
 	},
+	recentJobs: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const workspaceId = await getAccessibleWorkspaceId(
+			context.db,
+			user.userId,
+			context.headers?.get("x-workspace-id") ?? undefined,
+		);
+		const activityService = new ActivityService(context.db);
+		const jobs = await activityService.getRecentJobs(
+			workspaceId,
+			args.limit ?? undefined,
+			args.offset ?? undefined,
+		);
+		return jobs.map(toGraphqlJob);
+	},
 };
 
 export const activityResolvers: ActivityResolvers = {
