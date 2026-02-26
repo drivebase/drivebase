@@ -3,6 +3,8 @@ import {
   type GitHubRelease,
 } from "@/components/release/release-list";
 
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Releases",
   description:
