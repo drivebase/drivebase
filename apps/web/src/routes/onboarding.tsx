@@ -27,8 +27,14 @@ export const Route = createFileRoute("/onboarding")({
 
 function OnboardingLayout() {
 	const navigate = useNavigate();
-	const { token, user } = useAuthStore();
+	const { token, user, isAuthenticated } = useAuthStore();
 	const [meResult] = useMe();
+
+	useEffect(() => {
+		if (!isAuthenticated) {
+			navigate({ to: "/login", replace: true });
+		}
+	}, [isAuthenticated, navigate]);
 
 	useEffect(() => {
 		if (user?.onboardingCompleted) {
@@ -48,6 +54,24 @@ function OnboardingLayout() {
 					<Loader2 className="h-3.5 w-3.5 animate-spin" />
 					<span>
 						<Trans>Loading...</Trans>
+					</span>
+				</div>
+			</div>
+		);
+	}
+
+	if (!isAuthenticated) {
+		return (
+			<div className="min-h-screen w-full flex flex-col items-center justify-center gap-3">
+				<img
+					src="/drivebase.svg"
+					alt="Drivebase"
+					className="h-10 w-10 animate-pulse"
+				/>
+				<div className="flex items-center gap-2 text-sm text-muted-foreground">
+					<Loader2 className="h-3.5 w-3.5 animate-spin" />
+					<span>
+						<Trans>Redirecting to login...</Trans>
 					</span>
 				</div>
 			</div>
