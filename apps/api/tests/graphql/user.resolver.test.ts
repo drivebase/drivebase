@@ -13,11 +13,11 @@ mock.module("../../service/user", () => ({
 }));
 
 import {
-	UserRole,
 	userMutations,
 	userQueries,
 	userResolvers,
 } from "../../graphql/resolvers/user";
+import { UserRole } from "../../graphql/generated/types";
 
 describe("user resolvers", () => {
 	beforeEach(() => {
@@ -59,7 +59,7 @@ describe("user resolvers", () => {
 			{},
 			{
 				id: "u2",
-				input: { role: "ADMIN" as UserRole, isActive: true },
+				input: { role: UserRole.Admin, isActive: true },
 			},
 			context,
 			{} as any,
@@ -78,6 +78,6 @@ describe("user resolvers", () => {
 			{} as any,
 			{} as any,
 		);
-		expect(result).toBe("OWNER");
+		expect(result).toBe(UserRole.Owner);
 	});
 });
