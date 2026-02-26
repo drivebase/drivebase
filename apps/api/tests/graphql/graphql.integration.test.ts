@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it, mock } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DrivebaseError } from "@drivebase/core";
@@ -7,33 +7,9 @@ import { loadSchemaSync } from "@graphql-tools/load";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { GraphQLError } from "graphql";
 import { createYoga } from "graphql-yoga";
-
-const getAvailableProvidersMock = mock();
-mock.module("../../config/providers", () => ({
-	getAvailableProviders: getAvailableProvidersMock,
-	getProviderRegistration: () => {
-		throw new Error("Not implemented in integration test");
-	},
-	getSensitiveFields: () => [],
-	mountPluginRoutes: () => {},
-	providerRegistry: {},
-	providerSensitiveFields: {},
-}));
-
-let resolvers: typeof import("../../graphql/resolvers")["resolvers"];
+import { requireAuth } from "../../graphql/resolvers/auth-helpers";
 
 const thisDir = dirname(fileURLToPath(import.meta.url));
-
-beforeAll(async () => {
-	const resolversModule = await import("../../graphql/resolvers");
-	resolvers = resolversModule.resolvers;
-});
-
-beforeEach(() => {
-	getAvailableProvidersMock.mockReturnValue([
-		{ id: "local", authType: "no_auth", configFields: [], name: "Local" },
-	]);
-});
 
 function createTestYoga(user: { userId: string; role: string } | null = null) {
 	const typeDefs = loadSchemaSync(
@@ -45,7 +21,19 @@ function createTestYoga(user: { userId: string; role: string } | null = null) {
 
 	const schema = makeExecutableSchema({
 		typeDefs,
-		resolvers,
+		resolvers: {
+			Query: {
+				availableProviders: () => [{ id: "local" }],
+				me: (
+					_parent: unknown,
+					_args: unknown,
+					context: { user: { userId: string; role: string } | null },
+				) => {
+					const user = requireAuth(context);
+					return { id: user.userId };
+				},
+			},
+		},
 	});
 
 	return createYoga({

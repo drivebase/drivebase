@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { beforeAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
 const userServiceMock = {
 	findAll: mock(),
@@ -12,12 +12,18 @@ mock.module("../../service/user", () => ({
 	UserService: mock(() => userServiceMock),
 }));
 
-import {
-	userMutations,
-	userQueries,
-	userResolvers,
-} from "../../graphql/resolvers/user";
 import { UserRole } from "../../graphql/generated/types";
+
+let userMutations: typeof import("../../graphql/resolvers/user")["userMutations"];
+let userQueries: typeof import("../../graphql/resolvers/user")["userQueries"];
+let userResolvers: typeof import("../../graphql/resolvers/user")["userResolvers"];
+
+beforeAll(async () => {
+	const userResolverModule = await import("../../graphql/resolvers/user");
+	userMutations = userResolverModule.userMutations;
+	userQueries = userResolverModule.userQueries;
+	userResolvers = userResolverModule.userResolvers;
+});
 
 describe("user resolvers", () => {
 	beforeEach(() => {
