@@ -33,7 +33,8 @@
 					"file": "render.yaml",
 					"type": "text/plain"
 				},
-				"apps/www/components/landing/hero-section.tsx"
+				"apps/www/components/landing/hero-section.tsx",
+				"services/ai-inference/app.py"
 			]
 		}
 	}

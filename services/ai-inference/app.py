@@ -3,13 +3,12 @@ from __future__ import annotations
 import hashlib
 import logging
 
-from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel
-
 from ai_inference.config import MODEL_REGISTRY, MODELS_DIR, TaskType, TierType
 from ai_inference.downloads import ensure_download, get_download_status, is_model_ready
 from ai_inference.embeddings import embedding_from_seed
 from ai_inference.extractors import extract_text_for_file
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel
 
 
 class EnsureModelRequest(BaseModel):
@@ -55,7 +54,7 @@ class OcrResponse(BaseModel):
     source: str | None = None
 
 
-app = FastAPI(title="Drivebase AI Inference Service", version="0.2.0")
+app = FastAPI(title="Drivebase AI Inference Service", version="3.0.0")
 logger = logging.getLogger("drivebase.ai_inference")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -192,4 +191,3 @@ async def ocr_stream(request: Request):
         language=extracted.language,
         source=extracted.source,
     )
-
