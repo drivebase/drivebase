@@ -130,7 +130,7 @@ export default async function Page(props: {
       {/* Content Section */}
       <div className="bg-background relative z-10 border-b border-border">
         <div className="max-w-7xl mx-auto border-x border-border py-16 px-6 lg:px-8">
-          <article className="prose prose-neutral dark:prose-invert max-w-4xl mx-auto prose-h2:border-b prose-h2:border-border prose-h2:pb-2 prose-a:text-primary hover:prose-a:text-primary/80 prose-img:rounded-none prose-img:border prose-img:border-border prose-headings:font-bold prose-hr:border-border">
+          <article className="prose prose-neutral dark:prose-invert max-w-4xl mx-auto prose-h2:border-b prose-h2:border-border prose-h2:pb-2 prose-img:rounded-none prose-img:border prose-img:border-border prose-headings:font-bold prose-hr:border-border">
             <InlineTOC items={page.data.toc} />
             <Mdx components={defaultMdxComponents} />
           </article>
