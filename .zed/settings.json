@@ -1,4 +1,6 @@
 {
+	"project_name": "Drrivebase",
+	"formatter": "language_server",
 	"code_actions_on_format": {
 		"source.organizeImports.biome": true,
 		"source.fixAll.biome": true

@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 import {
 	AlertCircle,
 	CheckCircle2,
@@ -6,14 +8,12 @@ import {
 	Clock3,
 	Loader2,
 } from "lucide-react";
-import { t } from "@lingui/core/macro";
-import { Trans } from "@lingui/react/macro";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useMutation } from "urql";
-import { getActiveWorkspaceId } from "@/features/workspaces";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { getActiveWorkspaceId } from "@/features/workspaces";
 import { type Job, JobStatus } from "@/gql/graphql";
 import { CANCEL_TRANSFER_JOB_MUTATION } from "@/shared/api/activity";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
@@ -25,8 +25,8 @@ import {
 	getProgressIndicatorClass,
 	getRetryLabel,
 	getStatusLabel,
-	isTerminalJob,
 	type HiddenJobsMap,
+	isTerminalJob,
 } from "./jobPanelUtils";
 
 const JOB_PANEL_EXPANDED_STORAGE_KEY = "job_panel_expanded";

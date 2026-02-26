@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function NotFound() {
@@ -12,10 +13,12 @@ export default function NotFound() {
         </div>
 
         <div className="relative max-w-md w-md border bg-card p-6 text-center space-y-4 shadow-sm">
-          <img
+          <Image
             src="/drivebase-light.svg"
             alt="Drivebase"
             className="h-12 w-12 mx-auto"
+            width={48}
+            height={48}
           />
 
           <div className="space-y-2">

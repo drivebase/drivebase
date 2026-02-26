@@ -4,8 +4,8 @@ import {
 	Activity,
 	Files,
 	HardDrive,
-	Server,
 	type LucideIcon,
+	Server,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 

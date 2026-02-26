@@ -1,6 +1,6 @@
 import {
-  ReleaseList,
   type GitHubRelease,
+  ReleaseList,
 } from "@/components/release/release-list";
 
 export const revalidate = 3600;

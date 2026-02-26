@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Trans } from "@lingui/react/macro";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { RuleFormPage } from "@/features/rules/components/RuleFormPage";
 import { useFileRule } from "@/features/rules/hooks/useRules";
 

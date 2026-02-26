@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { Trans } from "@lingui/react/macro";
+import { createFileRoute } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/trash")({

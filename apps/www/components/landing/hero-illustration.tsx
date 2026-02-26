@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
 
 const searchResults = [
   {
@@ -77,10 +78,12 @@ export function HeroIllustration() {
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary shadow-[0_0_10px_var(--primary)]" />
                 )}
                 <div className="w-12 h-12 shrink-0 flex items-center justify-center bg-background border border-border rounded-none p-2">
-                  <img
+                  <Image
                     src={item.icon}
                     alt=""
                     className="w-full h-full object-contain"
+                    width={48}
+                    height={48}
                   />
                 </div>
                 <div className="flex flex-col">

@@ -12,9 +12,9 @@ import {
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import {
 	NAVIGATION_ITEMS,
+	type NavigationItem,
 	RECENT_LIMIT,
 	SEARCH_LIMIT,
-	type NavigationItem,
 } from "./constants";
 
 type MergedSearchResult =

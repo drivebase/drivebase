@@ -3,6 +3,7 @@ import path from "node:path";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import { ArrowLeft } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { blog } from "@/lib/source";
@@ -97,10 +98,12 @@ export default async function Page(props: {
             {page.data.bannerImage && (
               <div className="mt-8 mb-4 border border-border">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={page.data.bannerImage}
                   alt={page.data.title}
                   className="w-full h-auto object-cover"
+                  width={1920}
+                  height={1080}
                 />
               </div>
             )}

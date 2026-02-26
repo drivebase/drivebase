@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import {
 	Command,
 	CommandDialog,
@@ -10,7 +11,6 @@ import { IdleStateGroups } from "./command-palette/IdleStateGroups";
 import { SearchResultsGroups } from "./command-palette/SearchResultsGroups";
 import { SelectedFileActionsGroup } from "./command-palette/SelectedFileActionsGroup";
 import { useCommandPaletteController } from "./command-palette/useCommandPaletteController";
-import { Link } from "@tanstack/react-router";
 
 export function CommandPalette() {
 	const controller = useCommandPaletteController();

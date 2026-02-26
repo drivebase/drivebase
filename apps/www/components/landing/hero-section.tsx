@@ -2,8 +2,8 @@
 
 import { ArrowRight, Check, Copy, Terminal } from "lucide-react";
 import { motion } from "motion/react";
-import { HeroIllustration } from "./hero-illustration";
 import { useState } from "react";
+import { HeroIllustration } from "./hero-illustration";
 
 function Button({
   children,

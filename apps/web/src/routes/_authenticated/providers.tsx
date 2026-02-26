@@ -1,5 +1,5 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { Trans } from "@lingui/react/macro";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import {
 	AlertTriangle,
 	Cloud,

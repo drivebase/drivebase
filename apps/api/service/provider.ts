@@ -23,8 +23,8 @@ import {
 	getProviders,
 	listOAuthProviderCredentials,
 } from "@/service/provider/query";
-import { ActivityService } from "./activity";
 import { logger } from "../utils/logger";
+import { ActivityService } from "./activity";
 import { getAccessibleWorkspaceId } from "./workspace";
 
 export class ProviderService {

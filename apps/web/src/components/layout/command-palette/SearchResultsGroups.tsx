@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Folder } from "lucide-react";
 import {
 	CommandEmpty,
@@ -10,7 +11,6 @@ import { formatSize } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import type { NavigationItem } from "./constants";
-import { Link } from "@tanstack/react-router";
 
 type Props = {
 	isAiMode: boolean;
