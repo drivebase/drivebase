@@ -2,6 +2,7 @@
 
 import { ArrowRight, Check, Copy, Terminal } from "lucide-react";
 import { motion } from "motion/react";
+import { HeroIllustration } from "./hero-illustration";
 import { useState } from "react";
 
 function Button({
@@ -131,7 +132,9 @@ export function HeroSection() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="lg:col-span-5"
-          ></motion.div>
+          >
+            <HeroIllustration />
+          </motion.div>
         </div>
       </div>
     </div>
