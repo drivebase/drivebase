@@ -9,15 +9,19 @@ export default function BlogPage() {
   );
 
   return (
-    <main className="flex-1 w-full mx-auto">
+    <main className="flex-1 w-full mx-auto bg-background">
       {/* Hero Section */}
-      <div className="relative isolate overflow-hidden pt-24 pb-16 sm:pt-32 sm:pb-24">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
+      <div className="border-b border-border bg-background z-10 relative">
+        <div className="max-w-7xl mx-auto py-24 md:py-32 px-6 lg:px-8 border-x border-border">
+          <div className="max-w-2xl">
+            <div className="flex items-center space-x-2 text-primary mb-6">
+              <span className="w-2 h-2 bg-primary" />
+              <span className="text-sm font-medium">Updates</span>
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl mb-6">
               Latest Updates
             </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-400">
+            <p className="text-lg leading-8 text-muted-foreground">
               News, tutorials, and product updates from the Drivebase team.
             </p>
           </div>
@@ -25,46 +29,48 @@ export default function BlogPage() {
       </div>
 
       {/* Blog Grid */}
-      <div className="mx-auto max-w-7xl px-6 pb-24">
-        <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-          {posts.map((post) => (
-            <article
-              key={post.url}
-              className="flex max-w-xl flex-col items-start justify-between p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors"
-            >
-              <div className="flex items-center gap-x-4 text-xs">
-                <time
-                  dateTime={new Date(post.data.date).toISOString()}
-                  className="text-gray-400"
-                >
-                  {new Date(post.data.date).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </time>
-              </div>
-              <div className="group relative">
-                <h3 className="mt-3 text-lg font-semibold leading-6 text-white group-hover:text-gray-300">
-                  <Link href={post.url}>
-                    <span className="absolute inset-0" />
-                    {post.data.title}
-                  </Link>
-                </h3>
-                <p className="mt-5 line-clamp-3 text-sm leading-6 text-gray-400">
-                  {post.data.description}
-                </p>
-              </div>
-              <div className="relative mt-8 flex items-center gap-x-4">
-                <div className="text-sm leading-6">
-                  <p className="font-semibold text-white">
-                    <span className="absolute inset-0" />
-                    {post.data.author}
+      <div className="bg-background relative z-10 border-b border-border">
+        <div className="max-w-7xl mx-auto border-x border-border">
+          <div className="grid md:grid-cols-3">
+            {posts.map((post) => (
+              <article
+                key={post.url}
+                className="flex flex-col items-start justify-between p-8 hover:bg-secondary/50 transition-colors group border-b border-border last:border-b-0 md:border-b md:[&:not(:nth-child(3n))]:border-r"
+              >
+                <div className="flex items-center gap-x-4 text-xs mb-4">
+                  <time
+                    dateTime={new Date(post.data.date).toISOString()}
+                    className="text-muted-foreground font-medium"
+                  >
+                    {new Date(post.data.date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                </div>
+                <div className="group relative flex-1 w-full">
+                  <h3 className="mt-3 text-xl font-bold leading-6 text-foreground group-hover:text-primary transition-colors">
+                    <Link href={post.url}>
+                      <span className="absolute inset-0" />
+                      {post.data.title}
+                    </Link>
+                  </h3>
+                  <p className="mt-5 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                    {post.data.description}
                   </p>
                 </div>
-              </div>
-            </article>
-          ))}
+                <div className="relative mt-8 flex items-center gap-x-4 pt-8 border-t border-border w-full">
+                  <div className="text-sm leading-6">
+                    <p className="font-medium text-foreground">
+                      <span className="absolute inset-0" />
+                      {post.data.author}
+                    </p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
     </main>
