@@ -18,6 +18,7 @@ const footerLinks = [
     links: [
       { label: "Documentation", href: "/docs" },
       { label: "API Reference", href: "/docs/api" },
+      { label: "Releases", href: "/releases" },
       { label: "Guides", href: "/docs/using-drivebase" },
       { label: "DeepWiki", href: "https://deepwiki.com/drivebase/drivebase" },
     ],
