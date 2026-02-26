@@ -28,7 +28,7 @@ const searchResults = [
   },
   {
     id: "4",
-    name: "Marketing_Assets_Final.docx",
+    name: "Team_Portrait_2024.jpg",
     timestamp: "Modified 3 days ago",
     icon: "/providers/google_drive.svg",
     isActive: false,
