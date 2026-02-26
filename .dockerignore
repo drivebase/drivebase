@@ -35,6 +35,7 @@ __pycache__
 *.pt
 .drivebase
 
-# Large directories not needed for main app or AI inference builds
+# Large directories not needed for main app build
 apps/www
 docker/updater
+services/
