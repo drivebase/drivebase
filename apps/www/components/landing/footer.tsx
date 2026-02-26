@@ -31,7 +31,7 @@ const footerLinks = [
 
 const socialLinks = [
   { label: "GitHub", href: "https://github.com/drivebase/drivebase" },
-  { label: "Discord", href: "https://discord.gg/zy3XyWcU6D" },
+  { label: "Discord", href: "https://discord.gg/5hPZwTPp68" },
   { label: "Telegram", href: "https://t.me/+fWEMYD3gp61lYWZl" },
 ];
 

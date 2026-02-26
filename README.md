@@ -8,7 +8,7 @@
   <a href="https://drivebase.io/docs">
     <img src="https://img.shields.io/badge/Documentation-red?style=for-the-badge" alt="Documentation" />
   </a> 
-  <a href="https://discord.gg/zy3XyWcU6D">
+  <a href="https://discord.gg/5hPZwTPp68">
     <img src="https://img.shields.io/discord/1472108078592688149?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2" alt="Discord">
   </a>
 </p>
@@ -118,7 +118,7 @@ Drivebase supports the following cloud providers:
 
 Have questions or need help? Here's how you can reach us:
 
-- [Discord](https://discord.gg/zy3XyWcU6D)
+- [Discord](https://discord.gg/5hPZwTPp68)
 - [Telegram](https://t.me/+fWEMYD3gp61lYWZl)
 
 ## Contributing
