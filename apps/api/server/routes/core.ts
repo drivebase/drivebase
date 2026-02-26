@@ -1,6 +1,7 @@
 import type { Hono } from "hono";
 import type { AppEnv } from "../app";
 import { authMiddleware } from "../middleware/auth";
+import { handleDownloadLink } from "./download-link";
 import { handleDownloadProxy } from "./download-proxy";
 import { handleExport } from "./export";
 import { handleOAuthCallback } from "./oauth";
@@ -17,6 +18,7 @@ export function mountCoreRoutes(app: Hono<AppEnv>): void {
 
 	// Download routes (with auth)
 	app.get("/api/download/proxy", authMiddleware, handleDownloadProxy);
+	app.get("/api/download/link", handleDownloadLink);
 
 	// Export route (with auth)
 	app.get("/api/export", authMiddleware, handleExport);

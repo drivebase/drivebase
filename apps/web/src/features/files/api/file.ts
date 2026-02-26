@@ -98,6 +98,25 @@ export const STARRED_FILES_QUERY = graphql(`
   }
 `);
 
+export const FILE_DOWNLOAD_LINKS_QUERY = graphql(`
+  query GetFileDownloadLinks($fileId: ID!) {
+    fileDownloadLinks(fileId: $fileId) {
+      id
+      token
+      fileId
+      maxDownloads
+      downloadCount
+      downloadsRemaining
+      expiresAt
+      lastAccessedAt
+      revokedAt
+      createdAt
+      updatedAt
+      downloadLinkUrl
+    }
+  }
+`);
+
 export const REQUEST_UPLOAD_MUTATION = graphql(`
   mutation RequestUpload($input: RequestUploadInput!) {
     requestUpload(input: $input) {
@@ -116,6 +135,31 @@ export const REQUEST_DOWNLOAD_MUTATION = graphql(`
       downloadUrl
       useDirectDownload
     }
+  }
+`);
+
+export const CREATE_FILE_DOWNLOAD_LINK_MUTATION = graphql(`
+  mutation CreateFileDownloadLink($input: CreateFileDownloadLinkInput!) {
+    createFileDownloadLink(input: $input) {
+      id
+      token
+      fileId
+      maxDownloads
+      downloadCount
+      downloadsRemaining
+      expiresAt
+      lastAccessedAt
+      revokedAt
+      createdAt
+      updatedAt
+      downloadLinkUrl
+    }
+  }
+`);
+
+export const REVOKE_FILE_DOWNLOAD_LINK_MUTATION = graphql(`
+  mutation RevokeFileDownloadLink($id: ID!) {
+    revokeFileDownloadLink(id: $id)
   }
 `);
 

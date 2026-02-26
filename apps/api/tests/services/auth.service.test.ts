@@ -1,10 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
-import { AuthService } from "../../service/auth";
-
-// Mock dependencies
-mock.module("@drivebase/db", () => ({
-	users: {},
-}));
+import { beforeAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
 mock.module("../../redis/otp", () => ({
 	storeOTP: mock(),
@@ -45,8 +39,11 @@ mock.module("../../utils/logger", () => ({
 	},
 }));
 
+type AuthServiceType = typeof import("../../service/auth")["AuthService"];
+let AuthServiceCtor: AuthServiceType;
+
 describe("AuthService", () => {
-	let authService: AuthService;
+	let authService: InstanceType<AuthServiceType>;
 	const mockDb: any = {
 		select: mock(() => mockDb),
 		from: mock(() => mockDb),
@@ -60,9 +57,14 @@ describe("AuthService", () => {
 		delete: mock(() => mockDb),
 	};
 
+	beforeAll(async () => {
+		const authModule = await import("../../service/auth");
+		AuthServiceCtor = authModule.AuthService;
+	});
+
 	beforeEach(() => {
 		mock.restore();
-		authService = new AuthService(mockDb);
+		authService = new AuthServiceCtor(mockDb);
 	});
 
 	it("should be defined", () => {

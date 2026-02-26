@@ -92,6 +92,11 @@ extend type Query {
 	starredFiles: [File!]!
 
 	"""
+	List active download links for a file
+	"""
+	fileDownloadLinks(fileId: ID!): [FileDownloadLink!]!
+
+	"""
 	Get active upload sessions for the current user
 	"""
 	activeUploadSessions: [UploadSessionInfo!]!
@@ -107,6 +112,11 @@ extend type Mutation {
 	Request file download (returns direct URL or API proxy URL)
 	"""
 	requestDownload(id: ID!): DownloadResponse!
+
+	"""
+	Create a download link for a file
+	"""
+	createFileDownloadLink(input: CreateFileDownloadLinkInput!): FileDownloadLink!
 
 	"""
 	Rename a file
@@ -137,6 +147,11 @@ extend type Mutation {
 	Unstar a file
 	"""
 	unstarFile(id: ID!): File!
+
+	"""
+	Revoke a file download link
+	"""
+	revokeFileDownloadLink(id: ID!): Boolean!
 
 	"""
 	Initiate a chunked upload session for large files
@@ -187,6 +202,27 @@ type DownloadResponse {
 	fileId: ID!
 	downloadUrl: String
 	useDirectDownload: Boolean!
+}
+
+type FileDownloadLink {
+	id: ID!
+	token: String!
+	fileId: ID!
+	maxDownloads: Int!
+	downloadCount: Int!
+	downloadsRemaining: Int!
+	expiresAt: DateTime!
+	lastAccessedAt: DateTime
+	revokedAt: DateTime
+	createdAt: DateTime!
+	updatedAt: DateTime!
+	downloadLinkUrl: String!
+}
+
+input CreateFileDownloadLinkInput {
+	fileId: ID!
+	maxDownloads: Int!
+	expiresAt: DateTime!
 }
 
 """

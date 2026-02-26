@@ -21,6 +21,10 @@ const starFile = mock();
 const unstarFile = mock();
 const getContents = mock();
 const getStarredFiles = mock();
+const createFileDownloadLink = mock();
+const listActiveFileDownloadLinks = mock();
+const revokeFileDownloadLink = mock();
+const consumeFileDownloadLink = mock();
 
 mock.module("../../../service/workspace", () => ({
 	getAccessibleWorkspaceId,
@@ -46,6 +50,10 @@ mock.module("../../../service/file/index", () => ({
 	unstarFile,
 	getContents,
 	getStarredFiles,
+	createFileDownloadLink,
+	listActiveFileDownloadLinks,
+	revokeFileDownloadLink,
+	consumeFileDownloadLink,
 }));
 
 import { FileService } from "../../../service/file.ts";
@@ -78,6 +86,10 @@ describe("FileService facade", () => {
 		unstarFile.mockReset();
 		getContents.mockReset();
 		getStarredFiles.mockReset();
+		createFileDownloadLink.mockReset();
+		listActiveFileDownloadLinks.mockReset();
+		revokeFileDownloadLink.mockReset();
+		consumeFileDownloadLink.mockReset();
 		getAccessibleWorkspaceId.mockResolvedValue("ws-1");
 	});
 
@@ -187,5 +199,37 @@ describe("FileService facade", () => {
 		expect(starFile).toHaveBeenCalledWith(db, "file-1", "user-1", "ws-1");
 		expect(unstarFile).toHaveBeenCalledWith(db, "file-1", "user-1", "ws-1");
 		expect(getStarredFiles).toHaveBeenCalledWith(db, "user-1", "ws-1");
+	});
+
+	it("forwards file download link calls and supports token consumption", async () => {
+		const service = new FileService(db as any);
+
+		await service.createFileDownloadLink(
+			"file-1",
+			"user-1",
+			10,
+			new Date("2030-01-01T00:00:00.000Z"),
+			"pref-ws",
+		);
+		await service.listActiveFileDownloadLinks("file-1", "user-1", "pref-ws");
+		await service.revokeFileDownloadLink("invite-1", "user-1", "pref-ws");
+		await service.consumeFileDownloadLink("fdl_test");
+
+		expect(createFileDownloadLink).toHaveBeenCalledWith(
+			db,
+			"file-1",
+			"user-1",
+			"ws-1",
+			10,
+			new Date("2030-01-01T00:00:00.000Z"),
+		);
+		expect(listActiveFileDownloadLinks).toHaveBeenCalledWith(
+			db,
+			"file-1",
+			"user-1",
+			"ws-1",
+		);
+		expect(revokeFileDownloadLink).toHaveBeenCalledWith(db, "invite-1", "ws-1");
+		expect(consumeFileDownloadLink).toHaveBeenCalledWith(db, "fdl_test");
 	});
 });

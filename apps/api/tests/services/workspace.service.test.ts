@@ -23,9 +23,12 @@ import {
 
 type WorkspaceRow = {
 	id: string;
-	name?: string;
-	color?: string;
-	ownerId?: string;
+	name: string;
+	color: string;
+	ownerId: string;
+	syncOperationsToProvider: boolean;
+	createdAt: Date;
+	updatedAt: Date;
 };
 
 type WorkspaceDbMock = {
@@ -70,11 +73,15 @@ describe("workspace service", () => {
 	});
 
 	it("createDefaultWorkspace creates My Workspace for owner", async () => {
+		const now = new Date();
 		const insertedWorkspace: WorkspaceRow = {
 			id: "ws-1",
 			name: "My Workspace",
 			color: "sky",
 			ownerId: "user-1",
+			syncOperationsToProvider: false,
+			createdAt: now,
+			updatedAt: now,
 		};
 		db.returning.mockResolvedValue([insertedWorkspace]);
 
@@ -110,6 +117,7 @@ describe("workspace service", () => {
 	});
 
 	it("getOwnedWorkspaceId creates default workspace when none exists", async () => {
+		const now = new Date();
 		db.limit.mockResolvedValueOnce([]);
 		db.returning.mockResolvedValueOnce([
 			{
@@ -117,6 +125,9 @@ describe("workspace service", () => {
 				name: "My Workspace",
 				color: "sky",
 				ownerId: "user-2",
+				syncOperationsToProvider: false,
+				createdAt: now,
+				updatedAt: now,
 			},
 		]);
 

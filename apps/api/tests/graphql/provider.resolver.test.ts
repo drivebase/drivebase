@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { beforeAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
 const providerServiceMock = {
 	getProviders: mock(),
@@ -16,18 +16,33 @@ mock.module("../../service/provider", () => ({
 }));
 
 const getAvailableProvidersMock = mock();
-mock.module("../../config/providers", () => ({
+const providersMockExports = {
 	getAvailableProviders: getAvailableProvidersMock,
-}));
+	getProviderRegistration: () => {
+		throw new Error("Not implemented in provider resolver test");
+	},
+	getSensitiveFields: () => [],
+	mountPluginRoutes: () => {},
+	providerRegistry: {},
+	providerSensitiveFields: {},
+};
+mock.module("../../config/providers", () => providersMockExports);
+mock.module("@/config/providers", () => providersMockExports);
 
-import {
-	AuthType,
-	availableProviderResolvers,
-	ProviderType,
-	providerMutations,
-	providerQueries,
-	storageProviderResolvers,
-} from "../../graphql/resolvers/provider";
+import { AuthType, ProviderType } from "../../graphql/generated/types";
+
+let availableProviderResolvers: typeof import("../../graphql/resolvers/provider")["availableProviderResolvers"];
+let providerMutations: typeof import("../../graphql/resolvers/provider")["providerMutations"];
+let providerQueries: typeof import("../../graphql/resolvers/provider")["providerQueries"];
+let storageProviderResolvers: typeof import("../../graphql/resolvers/provider")["storageProviderResolvers"];
+
+beforeAll(async () => {
+	const providerResolvers = await import("../../graphql/resolvers/provider");
+	availableProviderResolvers = providerResolvers.availableProviderResolvers;
+	providerMutations = providerResolvers.providerMutations;
+	providerQueries = providerResolvers.providerQueries;
+	storageProviderResolvers = providerResolvers.storageProviderResolvers;
+});
 
 describe("provider resolvers", () => {
 	beforeEach(() => {
@@ -58,7 +73,7 @@ describe("provider resolvers", () => {
 			{
 				input: {
 					name: "Drive",
-					type: "GOOGLE_DRIVE" as ProviderType,
+					type: ProviderType.GoogleDrive,
 					config: { x: 1 },
 				},
 			},
@@ -81,7 +96,7 @@ describe("provider resolvers", () => {
 
 		expect(
 			storageProviderResolvers.type?.(parent as any, {}, {} as any, {} as any),
-		).toBe("GOOGLE_DRIVE");
+		).toBe(ProviderType.GoogleDrive);
 		expect(
 			storageProviderResolvers.authType?.(
 				parent as any,
@@ -89,7 +104,7 @@ describe("provider resolvers", () => {
 				{} as any,
 				{} as any,
 			),
-		).toBe("OAUTH");
+		).toBe(AuthType.Oauth);
 	});
 
 	it("availableProvider authType field resolver maps to uppercase", () => {
@@ -97,6 +112,6 @@ describe("provider resolvers", () => {
 			availableProviderResolvers.authType({
 				authType: "api_key",
 			} as any),
-		).toBe("API_KEY");
+		).toBe(AuthType.ApiKey);
 	});
 });

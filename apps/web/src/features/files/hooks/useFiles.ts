@@ -1,7 +1,9 @@
 import { useClient, useMutation, useQuery } from "urql";
 import {
 	CONTENTS_QUERY,
+	CREATE_FILE_DOWNLOAD_LINK_MUTATION,
 	DELETE_FILE_MUTATION,
+	FILE_DOWNLOAD_LINKS_QUERY,
 	FILE_QUERY,
 	FILES_QUERY,
 	MOVE_FILE_MUTATION,
@@ -10,6 +12,7 @@ import {
 	RENAME_FILE_MUTATION,
 	REQUEST_DOWNLOAD_MUTATION,
 	REQUEST_UPLOAD_MUTATION,
+	REVOKE_FILE_DOWNLOAD_LINK_MUTATION,
 	SEARCH_FILES_AI_QUERY,
 	SEARCH_FILES_QUERY,
 	SEARCH_FOLDERS_QUERY,
@@ -92,6 +95,16 @@ export function useStarredFiles() {
 	return result;
 }
 
+export function useFileDownloadLinks(fileId: string, pause: boolean) {
+	const [result, reexecuteQuery] = useQuery({
+		query: FILE_DOWNLOAD_LINKS_QUERY,
+		variables: { fileId },
+		pause,
+		requestPolicy: "cache-and-network",
+	});
+	return [result, reexecuteQuery] as const;
+}
+
 export function useRequestUpload() {
 	const [result, execute] = useMutation(REQUEST_UPLOAD_MUTATION);
 	return [result, execute] as const;
@@ -99,6 +112,16 @@ export function useRequestUpload() {
 
 export function useRequestDownload() {
 	const [result, execute] = useMutation(REQUEST_DOWNLOAD_MUTATION);
+	return [result, execute] as const;
+}
+
+export function useCreateFileDownloadLink() {
+	const [result, execute] = useMutation(CREATE_FILE_DOWNLOAD_LINK_MUTATION);
+	return [result, execute] as const;
+}
+
+export function useRevokeFileDownloadLink() {
+	const [result, execute] = useMutation(REVOKE_FILE_DOWNLOAD_LINK_MUTATION);
 	return [result, execute] as const;
 }
 

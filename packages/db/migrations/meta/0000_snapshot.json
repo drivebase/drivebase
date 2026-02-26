@@ -1,5 +1,5 @@
 {
-	"id": "3046c9d7-0c82-4195-828d-dd16fba6228b",
+	"id": "8def069b-4a62-4945-840a-4a9b1a2bf161",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -867,6 +867,160 @@
 			"checkConstraints": {},
 			"isRLSEnabled": false
 		},
+		"public.file_download_links": {
+			"name": "file_download_links",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"workspace_id": {
+					"name": "workspace_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"file_id": {
+					"name": "file_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"token": {
+					"name": "token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"max_downloads": {
+					"name": "max_downloads",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 1
+				},
+				"download_count": {
+					"name": "download_count",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"last_accessed_at": {
+					"name": "last_accessed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"revoked_at": {
+					"name": "revoked_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"file_download_links_file_id_idx": {
+					"name": "file_download_links_file_id_idx",
+					"columns": [
+						{
+							"expression": "file_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"file_download_links_workspace_id_idx": {
+					"name": "file_download_links_workspace_id_idx",
+					"columns": [
+						{
+							"expression": "workspace_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"file_download_links_workspace_id_workspaces_id_fk": {
+					"name": "file_download_links_workspace_id_workspaces_id_fk",
+					"tableFrom": "file_download_links",
+					"tableTo": "workspaces",
+					"columnsFrom": ["workspace_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"file_download_links_file_id_nodes_id_fk": {
+					"name": "file_download_links_file_id_nodes_id_fk",
+					"tableFrom": "file_download_links",
+					"tableTo": "nodes",
+					"columnsFrom": ["file_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"file_download_links_created_by_users_id_fk": {
+					"name": "file_download_links_created_by_users_id_fk",
+					"tableFrom": "file_download_links",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"file_download_links_token_unique": {
+					"name": "file_download_links_token_unique",
+					"nullsNotDistinct": false,
+					"columns": ["token"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
 		"public.file_rules": {
 			"name": "file_rules",
 			"schema": "",
@@ -1286,6 +1440,12 @@
 				},
 				"metadata": {
 					"name": "metadata",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"details": {
+					"name": "details",
 					"type": "jsonb",
 					"primaryKey": false,
 					"notNull": false

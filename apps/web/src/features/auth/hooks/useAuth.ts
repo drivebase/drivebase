@@ -14,13 +14,13 @@ import type { LoginInput, RegisterInput } from "@/gql/graphql";
 import { UserFragment } from "@/shared/api/fragments";
 
 export function useMe() {
+	const { setUser, logout, isAuthenticated } = useAuthStore();
 	const [result, reexecuteQuery] = useQuery({
 		query: ME_QUERY,
+		requestPolicy: "network-only",
 		// Pause if not authenticated to avoid unnecessary calls
-		pause: !useAuthStore.getState().isAuthenticated,
+		pause: !isAuthenticated,
 	});
-
-	const { setUser, logout } = useAuthStore();
 
 	useEffect(() => {
 		if (result.data?.me) {
@@ -30,11 +30,19 @@ export function useMe() {
 	}, [result.data, setUser]);
 
 	useEffect(() => {
-		// If /me returns GraphQL errors (but transport is healthy), token/session is invalid.
-		if (result.error && !result.error.networkError) {
+		// Only invalidate local auth for completed auth-specific /me failures.
+		const hasAuthError = result.error?.graphQLErrors.some((graphQLError) => {
+			const code = graphQLError.extensions?.code;
+			return (
+				typeof code === "string" &&
+				(code === "AUTHENTICATION_ERROR" || code === "AUTHORIZATION_ERROR")
+			);
+		});
+
+		if (isAuthenticated && !result.fetching && hasAuthError) {
 			logout();
 		}
-	}, [result.error, logout]);
+	}, [isAuthenticated, result.fetching, result.error, logout]);
 
 	return [result, reexecuteQuery] as const;
 }

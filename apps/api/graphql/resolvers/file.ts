@@ -2,6 +2,7 @@ import { NotFoundError, ValidationError } from "@drivebase/core";
 import { files, folders, storageProviders, users } from "@drivebase/db";
 import { S3Provider } from "@drivebase/s3";
 import { and, eq } from "drizzle-orm";
+import { getPublicApiBaseUrl } from "../../config/url";
 import { getUploadQueue } from "../../queue/upload-queue";
 import { enqueueFileAnalysis } from "../../service/ai/analysis-jobs";
 import { FileService } from "../../service/file";
@@ -15,6 +16,28 @@ import type {
 } from "../generated/types";
 import { type PubSubChannels, pubSub } from "../pubsub";
 import { requireAuth } from "./auth-helpers";
+
+function toFileDownloadLinkType(downloadLink: {
+	id: string;
+	token: string;
+	fileId: string;
+	maxDownloads: number;
+	downloadCount: number;
+	expiresAt: Date;
+	lastAccessedAt: Date | null;
+	revokedAt?: Date | null;
+	createdAt: Date;
+	updatedAt: Date;
+}) {
+	return {
+		...downloadLink,
+		downloadsRemaining:
+			downloadLink.maxDownloads === 0
+				? 0
+				: Math.max(0, downloadLink.maxDownloads - downloadLink.downloadCount),
+		downloadLinkUrl: `${getPublicApiBaseUrl()}/api/download/link?token=${downloadLink.token}`,
+	};
+}
 
 /**
  * Require authentication
@@ -159,6 +182,18 @@ export const fileQueries: QueryResolvers = {
 		return fileService.getStarredFiles(user.userId, workspaceId);
 	},
 
+	fileDownloadLinks: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		const downloadLinks = await fileService.listActiveFileDownloadLinks(
+			args.fileId,
+			user.userId,
+			workspaceId,
+		);
+		return downloadLinks.map(toFileDownloadLinkType);
+	},
+
 	activeUploadSessions: async (_parent, _args, context) => {
 		const user = requireAuth(context);
 		const sessionManager = new UploadSessionManager(context.db);
@@ -205,6 +240,21 @@ export const fileMutations: MutationResolvers = {
 			downloadUrl: result.downloadUrl,
 			useDirectDownload: result.useDirectDownload,
 		};
+	},
+
+	createFileDownloadLink: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		const downloadLink = await fileService.createFileDownloadLink(
+			args.input.fileId,
+			user.userId,
+			args.input.maxDownloads,
+			new Date(args.input.expiresAt),
+			workspaceId,
+		);
+
+		return toFileDownloadLinkType(downloadLink);
 	},
 
 	renameFile: async (_parent, args, context) => {
@@ -264,6 +314,17 @@ export const fileMutations: MutationResolvers = {
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.unstarFile(args.id, user.userId, workspaceId);
+	},
+
+	revokeFileDownloadLink: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		return fileService.revokeFileDownloadLink(
+			args.id,
+			user.userId,
+			workspaceId,
+		);
 	},
 
 	initiateChunkedUpload: async (_parent, args, context) => {
