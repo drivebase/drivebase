@@ -11,13 +11,14 @@ import {
 } from "@/shared/api/activity";
 
 export function RecentActivityView() {
+	const RECENT_ACTIVITY_LIMIT = 10;
 	const [localActivities, setLocalActivities] = useState<
 		NonNullable<RecentActivitiesQuery["activities"]>
 	>([]);
 	const [offset, setOffset] = useState(0);
 	const [{ data, fetching }] = useQuery({
 		query: RECENT_ACTIVITIES_QUERY,
-		variables: { limit: 5, offset },
+		variables: { limit: RECENT_ACTIVITY_LIMIT, offset },
 		requestPolicy: "cache-and-network",
 	});
 
@@ -32,7 +33,7 @@ export function RecentActivityView() {
 				if (prev.some((activity) => activity.id === newActivity.id)) {
 					return prev;
 				}
-				return [newActivity, ...prev].slice(0, 5);
+				return [newActivity, ...prev].slice(0, RECENT_ACTIVITY_LIMIT);
 			});
 			return payload;
 		},
@@ -43,7 +44,7 @@ export function RecentActivityView() {
 	const recentActivities = [
 		...localActivities,
 		...serverActivities.filter((activity) => !seenIds.has(activity.id)),
-	].slice(0, 5);
+	].slice(0, RECENT_ACTIVITY_LIMIT);
 
 	const handleClearActivities = () => {
 		if (recentActivities.length === 0) return;
