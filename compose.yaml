@@ -58,8 +58,8 @@ services:
 
   ai-inference:
     build:
-      context: .
-      dockerfile: services/ai-inference/Dockerfile
+      context: services/ai-inference
+      dockerfile: Dockerfile
     container_name: drivebase_ai_inference
     restart: unless-stopped
     working_dir: /srv/ai-inference
