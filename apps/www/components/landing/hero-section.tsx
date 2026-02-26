@@ -52,7 +52,7 @@ export function HeroSection() {
 
   return (
     <div className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 border-b border-border bg-background z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 xl:px-0">
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7">
             <motion.h1
