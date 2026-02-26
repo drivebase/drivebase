@@ -2,6 +2,7 @@
 .gitignore
 .DS_Store
 
+# Dependencies and build artifacts
 node_modules
 **/node_modules
 **/dist
@@ -13,12 +14,27 @@ node_modules
 **/.next
 **/gql
 
+# Environment files
 .env
 .env.*
 **/.env
 **/.env.*
 
+# Editor and CI config
 .github
 .claude
 .zed
 .turbo
+
+# Python/AI artifacts
+__pycache__
+**/__pycache__
+*.pyc
+**/.venv
+.venv
+*.pt
+.drivebase
+
+# Large directories not needed for main app or AI inference builds
+apps/www
+docker/updater
