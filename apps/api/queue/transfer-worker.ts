@@ -460,6 +460,21 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				}
 
 				await activityService.complete(jobId, "Transfer completed");
+				await activityService.log({
+					kind: "file.transfer.completed",
+					title: "Provider transfer completed",
+					summary: file.name,
+					status: "success",
+					userId,
+					workspaceId,
+					details: {
+						fileId: file.id,
+						providerId: targetProviderId,
+						sourceProviderId: file.providerId,
+						targetProviderId,
+						jobId,
+					},
+				});
 				await rm(transferDir, { recursive: true, force: true });
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
@@ -470,6 +485,22 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 						metadata: {
 							phase: "cancelled",
 							cancelled: true,
+						},
+					});
+					await activityService.log({
+						kind: "file.transfer.cancelled",
+						title: "Provider transfer cancelled",
+						summary:
+							typeof bullJob.data.fileId === "string"
+								? bullJob.data.fileId
+								: "Transfer",
+						status: "error",
+						userId,
+						workspaceId,
+						details: {
+							fileId,
+							providerId: targetProviderId,
+							jobId,
 						},
 					});
 					return;
@@ -512,6 +543,20 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 							retryAttempt: currentAttempt,
 							retryMax: maxAttempts,
 							willRetry: false,
+						},
+					});
+					await activityService.log({
+						kind: "file.transfer.failed",
+						title: "Provider transfer failed",
+						summary: message,
+						status: "error",
+						userId,
+						workspaceId,
+						details: {
+							fileId,
+							providerId: targetProviderId,
+							jobId,
+							error: message,
 						},
 					});
 				}

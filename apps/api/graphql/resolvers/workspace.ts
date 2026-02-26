@@ -367,6 +367,7 @@ export const workspaceMutations: MutationResolvers = {
 		await scheduleModelPreparation(
 			context.db,
 			args.workspaceId,
+			user.userId,
 			{
 				enabled: settings.enabled,
 				embeddingTier: settings.embeddingTier,

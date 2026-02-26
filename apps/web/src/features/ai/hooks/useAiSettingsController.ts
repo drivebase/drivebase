@@ -34,6 +34,9 @@ export function useAiSettingsController() {
 	const setLatestModelJob = useAiSettingsStore(
 		(state) => state.setLatestModelJob,
 	);
+	const storedLatestModelJob = useAiSettingsStore(
+		(state) => state.latestModelJob,
+	);
 	const setEmbeddingTier = useAiSettingsStore(
 		(state) => state.setEmbeddingTier,
 	);
@@ -135,15 +138,34 @@ export function useAiSettingsController() {
 			return subscriptionJob;
 		}
 
-		return (
+		const latestActiveJob =
 			activeModelJobs
 				.slice()
 				.sort(
 					(a, b) =>
 						new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-				)[0] ?? null
-		);
-	}, [activeModelJobs, jobUpdatedData?.jobUpdated, workspaceId]);
+				)[0] ?? null;
+		if (latestActiveJob) {
+			return latestActiveJob;
+		}
+
+		if (
+			storedLatestModelJob?.type === "ai_model_download" &&
+			typeof storedLatestModelJob.metadata?.workspaceId === "string" &&
+			storedLatestModelJob.metadata.workspaceId === workspaceId &&
+			(storedLatestModelJob.status === "COMPLETED" ||
+				storedLatestModelJob.status === "ERROR")
+		) {
+			return storedLatestModelJob;
+		}
+
+		return null;
+	}, [
+		activeModelJobs,
+		jobUpdatedData?.jobUpdated,
+		storedLatestModelJob,
+		workspaceId,
+	]);
 
 	useEffect(() => {
 		setLatestModelJob(latestModelJob);

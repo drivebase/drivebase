@@ -23,6 +23,7 @@ import {
 	getProviders,
 	listOAuthProviderCredentials,
 } from "@/service/provider/query";
+import { ActivityService } from "./activity";
 import { logger } from "../utils/logger";
 import { getAccessibleWorkspaceId } from "./workspace";
 
@@ -62,28 +63,58 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		const provider = await connectProvider(
-			this.db,
-			workspaceId,
-			userId,
-			name,
-			type,
-			config,
-			oauthCredentialId,
-		);
-
-		// Trigger an initial background sync for active providers.
-		if (provider.isActive) {
-			await scheduleInitialProviderSync({
-				db: this.db,
-				providerId: provider.id,
+		try {
+			const provider = await connectProvider(
+				this.db,
 				workspaceId,
 				userId,
-				context: "connectProvider",
-			});
-		}
+				name,
+				type,
+				config,
+				oauthCredentialId,
+			);
 
-		return provider;
+			// Trigger an initial background sync for active providers.
+			if (provider.isActive) {
+				await scheduleInitialProviderSync({
+					db: this.db,
+					providerId: provider.id,
+					workspaceId,
+					userId,
+					context: "connectProvider",
+				});
+
+				await new ActivityService(this.db).log({
+					kind: "provider.connected",
+					title: "Provider connected",
+					summary: provider.name,
+					status: "success",
+					userId,
+					workspaceId,
+					details: {
+						providerId: provider.id,
+						providerType: provider.type,
+						authType: provider.authType,
+					},
+				});
+			}
+
+			return provider;
+		} catch (error) {
+			await new ActivityService(this.db).log({
+				kind: "provider.connect.failed",
+				title: "Provider connection failed",
+				summary: name,
+				status: "error",
+				userId,
+				workspaceId,
+				details: {
+					providerType: type,
+					error: error instanceof Error ? error.message : String(error),
+				},
+			});
+			throw error;
+		}
 	}
 
 	async listOAuthProviderCredentials(userId: string, type: string) {
@@ -120,7 +151,24 @@ export class ProviderService {
 	}
 
 	async handleOAuthCallback(code: string, state: string) {
-		return handleOAuthCallback(this.db, code, state);
+		const result = await handleOAuthCallback(this.db, code, state);
+		if (result.actorUserId) {
+			await new ActivityService(this.db).log({
+				kind: "provider.connected",
+				title: "Provider connected",
+				summary: result.provider.name,
+				status: "success",
+				userId: result.actorUserId,
+				workspaceId: result.provider.workspaceId,
+				details: {
+					providerId: result.provider.id,
+					providerType: result.provider.type,
+					authType: result.provider.authType,
+					source: result.source,
+				},
+			});
+		}
+		return result;
 	}
 
 	async pollProviderAuth(
@@ -133,7 +181,29 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		return pollProviderAuth(this.db, providerId, workspaceId, userId);
+		const result = await pollProviderAuth(
+			this.db,
+			providerId,
+			workspaceId,
+			userId,
+		);
+		if (result.status === "success") {
+			await new ActivityService(this.db).log({
+				kind: "provider.connected",
+				title: "Provider connected",
+				summary: result.provider.name,
+				status: "success",
+				userId,
+				workspaceId,
+				details: {
+					providerId: result.provider.id,
+					providerType: result.provider.type,
+					authType: result.provider.authType,
+					source: "poll",
+				},
+			});
+		}
+		return result;
 	}
 
 	async disconnectProvider(

@@ -7,6 +7,7 @@ type Activity {
 	title: String!
 	summary: String
 	status: String
+	progress: Float
 	details: JSON
 	userId: ID!
 	workspaceId: ID
@@ -29,6 +30,11 @@ extend type Query {
 	Get active jobs (pending or running) for the current workspace
 	"""
 	activeJobs: [Job!]!
+
+	"""
+	Get recent jobs (active and completed) for the current workspace
+	"""
+	recentJobs(limit: Int, offset: Int): [Job!]!
 }
 
 extend type Mutation {

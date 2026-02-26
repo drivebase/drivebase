@@ -1,18 +1,16 @@
 import { Trans } from "@lingui/react/macro";
 import { formatDistanceToNow } from "date-fns";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQuery, useSubscription } from "urql";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { JobStatus, type RecentActivitiesQuery } from "@/gql/graphql";
+import { type RecentActivitiesQuery } from "@/gql/graphql";
 import {
 	ACTIVITY_CREATED_SUBSCRIPTION,
 	RECENT_ACTIVITIES_QUERY,
 } from "@/shared/api/activity";
-import { useActivityStore } from "@/shared/store/activityStore";
 
 export function RecentActivityView() {
-	const jobsMap = useActivityStore((state) => state.jobs);
 	const [localActivities, setLocalActivities] = useState<
 		NonNullable<RecentActivitiesQuery["activities"]>
 	>([]);
@@ -40,20 +38,6 @@ export function RecentActivityView() {
 		},
 	);
 
-	const recentJobs = useMemo(
-		() =>
-			Array.from(jobsMap.values())
-				.sort(
-					(a, b) =>
-						new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-				)
-				.slice(0, 3),
-		[jobsMap],
-	);
-	const hasProcessingJobs = recentJobs.some(
-		(job) =>
-			job.status === JobStatus.Pending || job.status === JobStatus.Running,
-	);
 	const serverActivities = data?.activities ?? [];
 	const seenIds = new Set(localActivities.map((activity) => activity.id));
 	const recentActivities = [
@@ -73,7 +57,7 @@ export function RecentActivityView() {
 				<h3 className="font-semibold">
 					<Trans>Recent Activity</Trans>
 				</h3>
-				{recentActivities.length > 0 && !hasProcessingJobs && (
+				{recentActivities.length > 0 && (
 					<Button
 						size="sm"
 						variant="link"
@@ -95,33 +79,11 @@ export function RecentActivityView() {
 							<Skeleton className="h-3 w-1/3" />
 						</div>
 					))}
-				{!fetching &&
-					recentJobs.length === 0 &&
-					recentActivities.length === 0 && (
-						<div className="text-sm text-muted-foreground text-center py-8">
-							<Trans>No recent activity</Trans>
-						</div>
-					)}
-				{recentJobs.map((job) => (
-					<div key={job.id} className="p-3 hover:bg-muted transition-colors">
-						<p className="text-sm font-medium leading-snug line-clamp-1">
-							{job.title}
-						</p>
-						<p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-							{job.message ??
-								(job.status === JobStatus.Running
-									? "Running"
-									: job.status === JobStatus.Pending
-										? "Pending"
-										: job.status === JobStatus.Completed
-											? "Completed"
-											: "Failed")}
-						</p>
-						<p className="text-xs text-muted-foreground mt-1">
-							{new Date(job.updatedAt).toLocaleString()}
-						</p>
+				{!fetching && recentActivities.length === 0 && (
+					<div className="text-sm text-muted-foreground text-center py-8">
+						<Trans>No recent activity</Trans>
 					</div>
-				))}
+				)}
 				{recentActivities.map((activity) => {
 					const occurredAt = new Date(
 						activity.occurredAt ?? activity.createdAt,
@@ -134,11 +96,9 @@ export function RecentActivityView() {
 							<p className="text-sm font-medium leading-snug truncate">
 								{activity.title}
 							</p>
-							{activity.summary ? (
-								<p className="text-xs text-muted-foreground truncate mt-0.5">
-									{activity.summary}
-								</p>
-							) : null}
+							<p className="text-xs text-muted-foreground truncate mt-0.5 min-h-4">
+								{activity.summary ?? "\u00a0"}
+							</p>
 							<time
 								dateTime={occurredAt.toISOString()}
 								title={occurredAt.toLocaleString()}

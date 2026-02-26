@@ -22,6 +22,7 @@ interface LogActivityInput {
 	title: string;
 	summary?: string;
 	status?: "info" | "success" | "warning" | "error";
+	progress?: number;
 	userId: string;
 	workspaceId?: string;
 	details?: Record<string, unknown>;
@@ -101,7 +102,25 @@ export class ActivityService {
 			);
 	}
 
+	async getRecentJobs(workspaceId: string, limit = 50, offset = 0) {
+		const safeLimit = Math.max(1, Math.min(200, limit));
+		const safeOffset = Math.max(0, offset);
+		return this.db
+			.select()
+			.from(jobs)
+			.where(eq(jobs.workspaceId, workspaceId))
+			.orderBy(desc(jobs.updatedAt), desc(jobs.createdAt))
+			.limit(safeLimit)
+			.offset(safeOffset);
+	}
+
 	async log(input: LogActivityInput) {
+		const progress =
+			typeof input.progress === "number"
+				? Math.max(0, Math.min(1, input.progress))
+				: null;
+		const maybeProgressColumn =
+			progress === null ? {} : ({ progress } as Record<string, number>);
 		const [activity] = await this.db
 			.insert(activities)
 			.values({
@@ -109,6 +128,7 @@ export class ActivityService {
 				title: input.title,
 				summary: input.summary ?? null,
 				status: input.status ?? null,
+				...maybeProgressColumn,
 				userId: input.userId,
 				workspaceId: input.workspaceId ?? null,
 				details: input.details ?? null,
