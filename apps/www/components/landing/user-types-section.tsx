@@ -13,7 +13,7 @@ export function UserTypesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="relative p-12 hover:bg-secondary transition-colors"
+          className="relative p-12 hover:bg-secondary/30 transition-colors"
         >
           <span className="absolute top-4 right-4 inline-flex items-center border border-border bg-secondary px-2 py-1 text-xs font-medium text-muted-foreground">
             Coming Soon
@@ -38,7 +38,7 @@ export function UserTypesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="p-12 hover:bg-secondary transition-colors"
+          className="p-12 hover:bg-secondary/30 transition-colors"
         >
           <Users className="w-10 h-10 text-primary mb-6" />
           <h3 className="text-xl font-bold text-foreground mb-3">Teams</h3>
@@ -58,7 +58,7 @@ export function UserTypesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="p-12 hover:bg-secondary transition-colors"
+          className="p-12 hover:bg-secondary/30 transition-colors"
         >
           <Server className="w-10 h-10 text-primary mb-6" />
           <h3 className="text-xl font-bold text-foreground mb-3">
