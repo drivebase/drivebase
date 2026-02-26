@@ -10,6 +10,7 @@ import { formatSize } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import type { NavigationItem } from "./constants";
+import { Link } from "@tanstack/react-router";
 
 type Props = {
 	isAiMode: boolean;
@@ -99,10 +100,16 @@ export function SearchResultsGroups({
 				</CommandGroup>
 			) : null}
 			{isAiMode && aiProcessingDisabled ? (
-				<CommandEmpty>
-					AI processing is disabled for this workspace. Enable it from Settings{" "}
-					{" > "}
-					AI.
+				<CommandEmpty asChild>
+					<div className="space-y-2">
+						<h1 className="font-medium">AI processing is disabled.</h1>
+						<p className="text-muted-foreground">
+							Enable from{" "}
+							<Link to="/settings/ai" className="underline">
+								Settings &gt; AI
+							</Link>
+						</p>
+					</div>
 				</CommandEmpty>
 			) : null}
 			{isAiMode &&

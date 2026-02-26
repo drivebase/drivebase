@@ -10,6 +10,7 @@ import { IdleStateGroups } from "./command-palette/IdleStateGroups";
 import { SearchResultsGroups } from "./command-palette/SearchResultsGroups";
 import { SelectedFileActionsGroup } from "./command-palette/SelectedFileActionsGroup";
 import { useCommandPaletteController } from "./command-palette/useCommandPaletteController";
+import { Link } from "@tanstack/react-router";
 
 export function CommandPalette() {
 	const controller = useCommandPaletteController();
@@ -67,9 +68,18 @@ export function CommandPalette() {
 								/>
 							) : controller.isAiMode ? (
 								controller.aiProcessingDisabled ? (
-									<CommandEmpty>
-										AI processing is disabled for this workspace. Enable it from
-										Settings {" > "} AI.
+									<CommandEmpty asChild>
+										<div className="space-y-2">
+											<h1 className="font-medium">
+												AI processing is disabled.
+											</h1>
+											<p className="text-muted-foreground">
+												Enable from{" "}
+												<Link to="/settings/ai" className="underline">
+													Settings &gt; AI
+												</Link>
+											</p>
+										</div>
 									</CommandEmpty>
 								) : (
 									<CommandEmpty>
