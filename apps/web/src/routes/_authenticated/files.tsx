@@ -1,4 +1,5 @@
 import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { Trans } from "@lingui/react/macro";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -145,11 +146,15 @@ function FilesPage() {
 		});
 
 		if (result.error || !result.data?.updateWorkspaceSyncOperations) {
-			toast.error(result.error?.message ?? "Failed to update sync setting");
+			toast.error(
+				result.error?.message ?? <Trans>Failed to update sync setting</Trans>,
+			);
 			return;
 		}
 
-		toast.success(enabled ? "Sync enabled" : "Sync disabled");
+		toast.success(
+			enabled ? <Trans>Sync enabled</Trans> : <Trans>Sync disabled</Trans>,
+		);
 	};
 
 	return (

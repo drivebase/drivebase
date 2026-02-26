@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Trans } from "@lingui/react/macro";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Check, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -69,10 +70,10 @@ function CreateWorkspacePage() {
 				<CardContent className="px-8 py-8 min-h-105 flex flex-col">
 					<div className="space-y-1.5 mb-6">
 						<h1 className="text-2xl font-bold tracking-tight">
-							Create Workspace
+							<Trans>Create Workspace</Trans>
 						</h1>
 						<p className="text-muted-foreground text-sm leading-relaxed">
-							Set up a new workspace and switch to it.
+							<Trans>Set up a new workspace and switch to it.</Trans>
 						</p>
 					</div>
 
@@ -92,7 +93,9 @@ function CreateWorkspacePage() {
 								name="name"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Name</FormLabel>
+										<FormLabel>
+											<Trans>Name</Trans>
+										</FormLabel>
 										<FormControl>
 											<Input
 												placeholder="Marketing Workspace"
@@ -111,7 +114,9 @@ function CreateWorkspacePage() {
 								name="color"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Accent Color</FormLabel>
+										<FormLabel>
+											<Trans>Accent Color</Trans>
+										</FormLabel>
 										<FormControl>
 											<div className="flex items-center gap-3">
 												{WORKSPACE_COLORS.map((color) => {
@@ -150,7 +155,7 @@ function CreateWorkspacePage() {
 									{fetching ? (
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									) : null}
-									Create Workspace
+									<Trans>Create Workspace</Trans>
 								</Button>
 								<Button
 									type="button"
@@ -158,7 +163,7 @@ function CreateWorkspacePage() {
 									className="w-full h-10"
 									onClick={() => navigate({ to: "/" })}
 								>
-									Cancel
+									<Trans>Cancel</Trans>
 								</Button>
 							</div>
 						</form>

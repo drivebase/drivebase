@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Trans } from "@lingui/react/macro";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,7 +48,7 @@ function TelegramConnectPage() {
 		const success = await sendCode(Number(apiId), apiHash, phone);
 		if (success) {
 			setStep(2);
-			toast.success("Verification code sent to your Telegram app");
+			toast.success(<Trans>Verification code sent to your Telegram app</Trans>);
 		}
 		return success;
 	};
@@ -61,7 +62,7 @@ function TelegramConnectPage() {
 		) {
 			await handleCompleteAuth(result.sessionString);
 		} else if (result && "requires2FA" in result) {
-			toast.info("Two-factor authentication required");
+			toast.info(<Trans>Two-factor authentication required</Trans>);
 		}
 	};
 
@@ -76,12 +77,12 @@ function TelegramConnectPage() {
 		const success = await completeAuth(sessionString, state);
 		if (success) {
 			setStep(3);
-			toast.success("Telegram connected successfully!");
+			toast.success(<Trans>Telegram connected successfully!</Trans>);
 			setTimeout(() => {
 				navigate({ to: "/providers", search: { connected: true } });
 			}, 1500);
 		} else {
-			toast.error("Failed to complete connection");
+			toast.error(<Trans>Failed to complete connection</Trans>);
 		}
 	};
 
@@ -106,7 +107,7 @@ function TelegramConnectPage() {
 						className="h-7 w-7"
 					/>
 					<span className="font-semibold text-lg tracking-tight">
-						Connect Telegram
+						<Trans>Connect Telegram</Trans>
 					</span>
 				</div>
 

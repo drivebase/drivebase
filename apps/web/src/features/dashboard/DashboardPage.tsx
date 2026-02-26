@@ -1,4 +1,5 @@
 import { formatBytes } from "@drivebase/utils";
+import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { Activity, ArrowRight, Files, HardDrive, Server } from "lucide-react";
 import { toast } from "sonner";
@@ -35,28 +36,28 @@ export function DashboardPage() {
 	const statCards = [
 		{
 			id: "total-files",
-			title: "Total Files",
+			title: <Trans>Total Files</Trans>,
 			value: stats ? stats.totalFiles.toLocaleString() : "0",
 			icon: Files,
 			iconClassName: "bg-cyan-500/15 text-cyan-700",
 		},
 		{
 			id: "total-size",
-			title: "Total Size",
+			title: <Trans>Total Size</Trans>,
 			value: stats ? formatBytes(stats.totalSizeBytes) : formatBytes(0),
 			icon: HardDrive,
 			iconClassName: "bg-emerald-500/15 text-emerald-700",
 		},
 		{
 			id: "today-bandwidth",
-			title: "Today Bandwidth",
+			title: <Trans>Today Bandwidth</Trans>,
 			value: stats ? formatBytes(stats.bandwidthBytes) : formatBytes(0),
 			icon: Activity,
 			iconClassName: "bg-orange-500/15 text-orange-700",
 		},
 		{
 			id: "total-providers",
-			title: "Total Providers",
+			title: <Trans>Total Providers</Trans>,
 			value: stats ? stats.totalProviders.toLocaleString() : "0",
 			icon: Server,
 			iconClassName: "bg-violet-500/15 text-violet-700",
@@ -74,15 +75,19 @@ export function DashboardPage() {
 			}
 
 			toast.success(
-				file.starred
-					? `Removed ${file.name} from starred`
-					: `Added ${file.name} to starred`,
+				file.starred ? (
+					<Trans>Removed {file.name} from starred</Trans>
+				) : (
+					<Trans>Added {file.name} to starred</Trans>
+				),
 			);
 		} catch (error) {
 			const message =
-				error instanceof Error
-					? error.message
-					: "Failed to update starred status.";
+				error instanceof Error ? (
+					error.message
+				) : (
+					<Trans>Failed to update starred status.</Trans>
+				);
 			toast.error(message);
 		}
 	};
@@ -139,7 +144,9 @@ export function DashboardPage() {
 
 			<section>
 				<div className="flex justify-between items-center mb-6">
-					<h3 className="text-xl font-bold text-foreground">Starred Folders</h3>
+					<h3 className="text-xl font-bold text-foreground">
+						<Trans>Starred Folders</Trans>
+					</h3>
 				</div>
 				{starredFetching ? (
 					<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
@@ -159,7 +166,7 @@ export function DashboardPage() {
 					<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
 						{starredFolders.length === 0 ? (
 							<div className="col-span-full text-center text-muted-foreground h-60 flex items-center justify-center border border-dashed ">
-								You haven't starred any folders yet.
+								<Trans>You haven&apos;t starred any folders yet.</Trans>
 							</div>
 						) : (
 							starredFolders.map((folder) => (
@@ -181,7 +188,9 @@ export function DashboardPage() {
 
 			<section>
 				<div className="flex justify-between items-center mb-6">
-					<h3 className="text-xl font-bold text-foreground">Recent Files</h3>
+					<h3 className="text-xl font-bold text-foreground">
+						<Trans>Recent Files</Trans>
+					</h3>
 					<button
 						type="button"
 						className="text-muted-foreground hover:text-foreground transition-colors"
