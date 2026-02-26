@@ -72,10 +72,10 @@ export function CapabilitiesGrid() {
               className="p-8 hover:bg-secondary/50 transition-colors group"
             >
               <item.icon className="w-8 h-8 text-primary mb-4" />
-              <h3 className="text-lg font-bold text-foreground mb-2">
+              <h3 className="text-lg font-bold text-foreground mb-2 text-left">
                 {item.title}
               </h3>
-              <p className="text-muted-foreground">{item.desc}</p>
+              <p className="text-muted-foreground text-left">{item.desc}</p>
             </motion.div>
           ))}
         </div>
