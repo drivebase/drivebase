@@ -1,0 +1,108 @@
+---
+title: "AI Search, Command Palette, and Powerful File Management"
+description: "Drivebase v3.0 introduces semantic AI search, a lightning-fast command palette, real-time activity tracking, and a unified file browsing experience."
+author: "The Drivebase Team"
+date: 2026-02-26
+---
+
+![v3](https://picsum.photos/1200/630?random=1)
+
+Drivebase v3.0.0 is now live.
+
+This major release is a massive leap forward in how you navigate, search, and manage your files across all your storage providers. With foundational upgrades to the core file system, we've introduced intelligent new workflows to help you find what you need instantly and stay on top of background activities.
+
+Because of these foundational upgrades, **this release requires a database reset and a quick fresh setup** (see the Migration Guide at the end of this post).
+
+## What is new in v3
+
+### Smarter, AI-Powered Workflows
+
+Finding files is no longer about remembering exact names. Our new semantic AI-powered search understands the context and meaning of your query.
+
+![AI Search](https://picsum.photos/800/450?random=2)
+
+You are also fully in control of these models. Head to your **Workspace Settings** to manage AI processing. You can watch live progress as AI models are prepared, and you have full control to start, stop, or retry the AI model setup process.
+
+### Lightning-Fast Navigation: The Command Palette
+
+Say hello to the ultimate productivity booster: the Command Palette. 
+
+![Command Palette](https://picsum.photos/800/450?random=3)
+
+Simply press `Cmd+K` (Mac) or `Ctrl+K` (Windows) from anywhere in the app. You can instantly search for files, find folders, navigate between pages, or trigger quick actions without ever touching your mouse.
+
+### Complete Visibility: Real-Time Activity & Transfers
+
+Never guess what Drivebase is doing in the background.
+
+![Activity Panel](https://picsum.photos/800/450?random=4)
+
+The new real-time **Activity panel** shows you exactly what jobs are running, and gives you the power to cancel them on the fly. Whether you are uploading a massive folder or Drivebase is running provider sync jobs in the background, you can monitor the exact progress in the dedicated transfer panel.
+
+### The Core File System & Browsing Experience
+
+We've completely overhauled the core file system to make your day-to-day file management smoother:
+
+- **Unified File Browser:** While you still get intuitive folder-based navigation, you can now seamlessly browse and filter files across all your connected providers in one unified view.
+- **Recent Files:** Quickly jump back into what you were just working on with the new "Recent Files" section.
+- **Dashboard Stats:** Get a bird's-eye view of your entire workspace right when you log in. The new dashboard gives you instant stats on your total files, storage size, connected providers, and bandwidth usage.
+
+![Dashboard Stats](https://picsum.photos/800/450?random=5)
+
+### Provider Enhancements
+
+- **Rename Providers:** You can now rename your connected storage providers to keep things organized (e.g., rename "Google Drive" to "Work Drive" or "Personal GDrive").
+- **Background Syncs:** Weve robustly improved background provider sync jobs to ensure your workspace is always perfectly up-to-date with your external storage.
+
+---
+
+## Migration Guide: Resetting the App for v3
+
+Because we have completely overhauled the core file system, activity tracking, and search capabilities, **you will need to reset your existing database and containers** to upgrade to v3.
+
+*(Rest assured: Your actual files stored in your external providers like Google Drive, S3, or your Local file system are completely safe and untouched. Drivebase will simply re-sync them once you reconnect your accounts.)*
+
+Here is the step-by-step guide to get your instance back up and running:
+
+### Step 1: Stop and Remove Existing Containers
+
+First, stop your current Drivebase instances and remove the existing database to clear out the old data structure.
+
+```bash
+# Stop all running Drivebase containers
+docker compose down
+
+# If you use Docker volumes for your database (e.g., drivebase_db_data), remove it:
+docker volume rm <your_db_volume_name>
+```
+
+*(Note: If you mapped your database to a local folder like `./db_data`, you will need to delete or rename that folder on your computer).*
+
+### Step 2: Pull the Latest Updates
+
+Fetch the newest version of Drivebase to get the AI services and new UI features.
+
+```bash
+docker compose pull
+```
+
+### Step 3: Check Your Settings
+
+We've added a few new configuration options for the AI services. Check your `.env` file against the latest `.env.example` to see if there are any new settings you need to add.
+
+### Step 4: Start the Application
+
+Spin Drivebase back up. This will initialize a fresh, upgraded database.
+
+```bash
+docker compose up -d
+```
+
+### Step 5: Set Up Your Account Again
+
+Because the database was reset, you will need to go through the initial quick setup process again:
+
+1. Create your admin account.
+2. Reconnect your storage providers (you can now rename them as you add them!).
+3. Head to **Workspace Settings** to initialize your AI processing models.
+4. Sit back as Drivebase automatically runs background sync jobs to pull all your files into the new, unified file system.
