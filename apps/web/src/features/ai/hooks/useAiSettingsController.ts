@@ -16,7 +16,6 @@ import {
 	WORKSPACE_AI_PROGRESS_UPDATED_SUBSCRIPTION,
 } from "@/features/workspaces";
 import { WorkspaceMemberRole } from "@/gql/graphql";
-import { AiModelTask } from "@/gql/graphql";
 import {
 	ACTIVE_JOBS_QUERY,
 	JOB_UPDATED_SUBSCRIPTION,
@@ -160,10 +159,6 @@ export function useAiSettingsController() {
 	}, [latestModelJob, reexecuteProgress, reexecuteSettings]);
 
 	const handleDownloadModels = async () => {
-		await persistTiersAndPrepare();
-	};
-
-	const persistTiersAndPrepare = async (tasks?: AiModelTask[]) => {
 		if (!workspaceId || !canManageWorkspace) return;
 		const persisted = await updateSettings({
 			input: {
@@ -173,7 +168,7 @@ export function useAiSettingsController() {
 			},
 		});
 		if (persisted.error || !persisted.data?.updateWorkspaceAiSettings) return;
-		const result = await prepareModels({ workspaceId, tasks });
+		const result = await prepareModels({ workspaceId });
 		if (result.error || !result.data?.prepareWorkspaceAiModels) return;
 		reexecuteSettings({ requestPolicy: "network-only" });
 	};
@@ -238,22 +233,12 @@ export function useAiSettingsController() {
 		reexecuteProgress({ requestPolicy: "network-only" });
 	};
 
-	const handleDownloadEmbeddingModel = async () => {
-		await persistTiersAndPrepare([AiModelTask.Embedding]);
-	};
-
-	const handleDownloadOcrModel = async () => {
-		await persistTiersAndPrepare([AiModelTask.Ocr]);
-	};
-
 	return {
 		activeWorkspace,
 		setEmbeddingTier,
 		setOcrTier,
 		setMaxConcurrency,
 		handleDownloadModels,
-		handleDownloadEmbeddingModel,
-		handleDownloadOcrModel,
 		handleSave,
 		handleStartProcessing,
 		handleStopProcessing,
