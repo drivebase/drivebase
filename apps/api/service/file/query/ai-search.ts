@@ -1,8 +1,8 @@
 import type { Database } from "@drivebase/db";
 import {
 	fileExtractedText,
-	fileTextChunks,
 	files,
+	fileTextChunks,
 	storageProviders,
 	workspaceAiSettings,
 } from "@drivebase/db";

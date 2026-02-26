@@ -1,11 +1,11 @@
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { Settings2, X } from "lucide-react";
+import { RecentActivityView } from "@/components/layout/RecentActivityView";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { RecentActivityView } from "@/components/layout/RecentActivityView";
 import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
 function DefaultView() {

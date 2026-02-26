@@ -1,9 +1,9 @@
 "use client";
 
+import { Calendar, ExternalLink, Tag } from "lucide-react";
 import { motion } from "motion/react";
-import { ExternalLink, Tag, Calendar } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { useState, useEffect, useRef } from "react";
 
 export type GitHubRelease = {
   id: number;
@@ -68,6 +68,7 @@ export function ReleaseList({ items }: { items: GitHubRelease[] }) {
           <div className="max-h-[calc(100vh-200px)] overflow-y-auto pr-2 custom-scrollbar">
             {items.map((item) => (
               <button
+                type="button"
                 key={item.id}
                 onClick={() => scrollToRelease(item.tag_name)}
                 className={`w-full text-left px-3 py-2 text-sm font-medium transition-colors border-l-2 ${
@@ -85,7 +86,7 @@ export function ReleaseList({ items }: { items: GitHubRelease[] }) {
 
       {/* Content - Right Side */}
       <div className="flex-1 space-y-16">
-        {items.map((item, index) => {
+        {items.map((item, _index) => {
           const parsedDate = new Date(item.published_at);
           const formattedDate = parsedDate.toLocaleDateString("en-US", {
             month: "long",

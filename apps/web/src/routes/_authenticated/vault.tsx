@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { Trans } from "@lingui/react/macro";
+import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";

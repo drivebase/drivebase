@@ -6,10 +6,10 @@ import { NotFound } from "@/components/not-found";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/features/auth/hooks/useAuth";
-import { useActivityFeed } from "@/shared/hooks/useActivityFeed";
-import { useJobsFeed } from "@/shared/hooks/useJobsFeed";
 import { JobPanel } from "@/shared/components/JobPanel";
 import { TransferProgressPanel } from "@/shared/components/TransferProgressPanel";
+import { useActivityFeed } from "@/shared/hooks/useActivityFeed";
+import { useJobsFeed } from "@/shared/hooks/useJobsFeed";
 import { ConfirmDialogHost } from "@/shared/lib/confirmDialog";
 import { PromptDialogHost } from "@/shared/lib/promptDialog";
 

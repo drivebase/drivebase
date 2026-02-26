@@ -12,13 +12,13 @@ import {
 	Settings,
 	Star,
 } from "lucide-react";
+import { WorkspaceSwitcher } from "@/components/layout/sidebar/WorkspaceSwitcher";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { WorkspaceSwitcher } from "@/components/layout/sidebar/WorkspaceSwitcher";
 import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
 
 type NavItem = {

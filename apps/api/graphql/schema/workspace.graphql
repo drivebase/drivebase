@@ -215,10 +215,7 @@ extend type Mutation {
 	"""
 	Download/prepare AI models for current workspace settings
 	"""
-	prepareWorkspaceAiModels(
-		workspaceId: ID!
-		tasks: [AiModelTask!]
-	): Boolean!
+	prepareWorkspaceAiModels(workspaceId: ID!, tasks: [AiModelTask!]): Boolean!
 
 	"""
 	Enable AI processing and enqueue workspace backfill analysis

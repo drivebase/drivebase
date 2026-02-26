@@ -10,7 +10,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { type RecentActivitiesQuery } from "@/gql/graphql";
+import type { RecentActivitiesQuery } from "@/gql/graphql";
 import {
 	ACTIVITY_CREATED_SUBSCRIPTION,
 	RECENT_ACTIVITIES_QUERY,
