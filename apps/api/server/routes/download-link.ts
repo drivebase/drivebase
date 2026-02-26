@@ -1,8 +1,8 @@
 import { DrivebaseError } from "@drivebase/core";
 import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
-import { getFileForProxy } from "../../service/file/query/file-read";
 import { FileService } from "../../service/file";
+import { getFileForProxy } from "../../service/file/query/file-read";
 import { getProvider, getProviderInstance } from "../../service/provider/query";
 import { logger } from "../../utils/logger";
 import type { AppEnv } from "../app";

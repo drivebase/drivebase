@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import {
 	Download,
 	Eye,
@@ -9,7 +10,6 @@ import {
 	Star,
 	Trash,
 } from "lucide-react";
-import { Trans } from "@lingui/react/macro";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,

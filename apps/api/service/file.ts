@@ -1,10 +1,10 @@
 import type { Database } from "@drivebase/db";
 import {
+	consumeFileDownloadLink,
 	createFileDownloadLink,
 	deleteFile,
 	downloadFile,
 	downloadFileForProxy,
-	consumeFileDownloadLink,
 	getContents,
 	getFile,
 	getFileForProxy,
@@ -16,9 +16,9 @@ import {
 	moveFile,
 	moveFileToProvider,
 	renameFile,
-	revokeFileDownloadLink,
 	requestDownload,
 	requestUpload,
+	revokeFileDownloadLink,
 	searchFiles,
 	searchFilesAi,
 	searchFolders,
