@@ -36,6 +36,7 @@ export const jobs = pgTable("jobs", {
 	progress: real("progress").notNull().default(0),
 	status: jobStatusEnum("status").notNull().default("pending"),
 	metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+	details: jsonb("details").$type<Record<string, unknown>>(),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.notNull()
 		.defaultNow(),

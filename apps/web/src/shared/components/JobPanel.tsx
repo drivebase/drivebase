@@ -6,6 +6,8 @@ import {
 	Clock3,
 	Loader2,
 } from "lucide-react";
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useMutation } from "urql";
@@ -136,8 +138,8 @@ export function JobPanel() {
 
 	const handleCancelTransfer = async (job: Job) => {
 		const confirmed = await confirmDialog(
-			"Cancel transfer",
-			`Cancel "${job.title}"? This will stop the provider transfer.`,
+			t`Cancel transfer`,
+			t`Cancel "${job.title}"? This will stop the provider transfer.`,
 		);
 		if (!confirmed) return;
 
@@ -149,11 +151,11 @@ export function JobPanel() {
 		try {
 			const result = await cancelTransferJob({ jobId: job.id });
 			if (result.error || !result.data?.cancelTransferJob) {
-				throw new Error(result.error?.message ?? "Failed to cancel transfer");
+				throw new Error(result.error?.message ?? t`Failed to cancel transfer`);
 			}
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : "Failed to cancel transfer",
+				error instanceof Error ? error.message : t`Failed to cancel transfer`,
 			);
 		} finally {
 			setCancellingJobIds((prev) => {
@@ -167,10 +169,12 @@ export function JobPanel() {
 	return (
 		<div className="fixed right-6 bottom-6 z-50 w-96 border bg-background shadow-2xl">
 			<div className="flex items-center justify-between border-b px-4 py-3">
-				<div className="text-sm font-semibold">Jobs</div>
+				<div className="text-sm font-semibold">
+					<Trans>Jobs</Trans>
+				</div>
 				<div className="flex items-center gap-2">
 					<Button size="sm" variant="ghost" onClick={clearPanelCompleted}>
-						Clear
+						<Trans>Clear</Trans>
 					</Button>
 					<Button
 						size="icon"
@@ -211,7 +215,7 @@ export function JobPanel() {
 											onClick={() => void handleCancelTransfer(job)}
 											disabled={cancellingJobIds.has(job.id)}
 										>
-											Cancel
+											<Trans>Cancel</Trans>
 										</Button>
 									) : null}
 									{getStatusIcon(job.status)}
