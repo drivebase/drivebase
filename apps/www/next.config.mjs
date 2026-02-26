@@ -17,6 +17,10 @@ const config = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "cdn.drivebase.io",
+      },
+      {
+        protocol: "https",
         hostname: "picsum.photos",
       },
     ],
