@@ -21,6 +21,7 @@ export function useFileSystemColumns({
 	providers = [],
 	onNavigate,
 	onDownloadFile,
+	onCreateDownloadLink,
 	onShowFileDetails,
 	onToggleFileFavorite,
 	onToggleFolderFavorite,
@@ -192,9 +193,9 @@ export function useFileSystemColumns({
 			{
 				id: "actions",
 				enableHiding: false,
-				size: 44,
-				minSize: 44,
-				maxSize: 44,
+				size: 30,
+				minSize: 20,
+				maxSize: 30,
 				header: () => <div className="text-right" />,
 				cell: ({ row }) => {
 					const original = row.original;
@@ -208,6 +209,7 @@ export function useFileSystemColumns({
 							folder={folder}
 							providers={providers}
 							onDownloadFile={onDownloadFile}
+							onCreateDownloadLink={onCreateDownloadLink}
 							onShowFileDetails={onShowFileDetails}
 							onRenameFile={onRenameFile}
 							onRenameFolder={onRenameFolder}
@@ -223,6 +225,7 @@ export function useFileSystemColumns({
 		[
 			onDeleteSelection,
 			onDownloadFile,
+			onCreateDownloadLink,
 			onMoveFileToProvider,
 			onNavigate,
 			onRenameFile,

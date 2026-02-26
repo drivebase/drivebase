@@ -106,6 +106,22 @@ CREATE TABLE "workspace_ai_settings" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "file_download_links" (
+	"id" text PRIMARY KEY NOT NULL,
+	"workspace_id" text NOT NULL,
+	"file_id" text NOT NULL,
+	"created_by" text NOT NULL,
+	"token" text NOT NULL,
+	"max_downloads" integer DEFAULT 1 NOT NULL,
+	"download_count" integer DEFAULT 0 NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	"last_accessed_at" timestamp with time zone,
+	"revoked_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "file_download_links_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
 CREATE TABLE "file_rules" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
@@ -155,6 +171,7 @@ CREATE TABLE "jobs" (
 	"progress" real DEFAULT 0 NOT NULL,
 	"status" "job_status" DEFAULT 'pending' NOT NULL,
 	"metadata" jsonb,
+	"details" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -314,6 +331,9 @@ ALTER TABLE "file_text_chunks" ADD CONSTRAINT "file_text_chunks_workspace_id_wor
 ALTER TABLE "file_text_chunks" ADD CONSTRAINT "file_text_chunks_run_id_file_analysis_runs_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."file_analysis_runs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspace_ai_progress" ADD CONSTRAINT "workspace_ai_progress_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspace_ai_settings" ADD CONSTRAINT "workspace_ai_settings_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "file_download_links" ADD CONSTRAINT "file_download_links_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "file_download_links" ADD CONSTRAINT "file_download_links_file_id_nodes_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."nodes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "file_download_links" ADD CONSTRAINT "file_download_links_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "file_rules" ADD CONSTRAINT "file_rules_destination_provider_id_storage_providers_id_fk" FOREIGN KEY ("destination_provider_id") REFERENCES "public"."storage_providers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "file_rules" ADD CONSTRAINT "file_rules_destination_folder_id_nodes_id_fk" FOREIGN KEY ("destination_folder_id") REFERENCES "public"."nodes"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "file_rules" ADD CONSTRAINT "file_rules_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -350,6 +370,8 @@ CREATE UNIQUE INDEX "file_embeddings_file_model_run_idx" ON "file_embeddings" US
 CREATE UNIQUE INDEX "file_text_chunks_file_run_chunk_idx" ON "file_text_chunks" USING btree ("file_id","run_id","chunk_index");--> statement-breakpoint
 CREATE INDEX "file_text_chunks_workspace_idx" ON "file_text_chunks" USING btree ("workspace_id");--> statement-breakpoint
 CREATE INDEX "file_text_chunks_file_idx" ON "file_text_chunks" USING btree ("file_id");--> statement-breakpoint
+CREATE INDEX "file_download_links_file_id_idx" ON "file_download_links" USING btree ("file_id");--> statement-breakpoint
+CREATE INDEX "file_download_links_workspace_id_idx" ON "file_download_links" USING btree ("workspace_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "nodes_virtual_path_provider_id_unique" ON "nodes" USING btree ("virtual_path","provider_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "nodes_remote_id_provider_id_unique" ON "nodes" USING btree ("remote_id","provider_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "oauth_provider_credentials_user_type_identifier_idx" ON "oauth_provider_credentials" USING btree ("user_id","type","identifier_value");--> statement-breakpoint

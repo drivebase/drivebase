@@ -47,7 +47,7 @@ function FilesPage() {
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const [isFilesSettingsOpen, setIsFilesSettingsOpen] = useState(false);
 	const [filterProviderIds, setFilterProviderIds] = useState<string[]>([]);
-	const { downloadFile, showDetails } = useFileActions();
+	const { downloadFile, showDetails, createDownloadLink } = useFileActions();
 	const { data: providersData } = useProviders();
 	const [workspacesResult, reexecuteWorkspaces] = useWorkspaces(false);
 	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
@@ -205,6 +205,9 @@ function FilesPage() {
 						providers={providersData?.storageProviders}
 						onNavigate={handleNavigate}
 						onDownloadFile={downloadFile}
+						onCreateDownloadLink={
+							canWriteFiles ? createDownloadLink : undefined
+						}
 						onShowFileDetails={showDetails}
 						onToggleFileFavorite={
 							canWriteFiles ? operations.handleToggleFileFavorite : undefined
