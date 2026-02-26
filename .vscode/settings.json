@@ -3,15 +3,5 @@
 		"editor.codeActionsOnSave": {
 			"source.fixAll.biome": "explicit"
 		}
-	},
-	"[typescriptreact]": {
-		"editor.codeActionsOnSave": {
-			"source.fixAll.biome": "explicit"
-		}
-	},
-	"[json]": {
-		"editor.codeActionsOnSave": {
-			"source.fixAll.biome": "explicit"
-		}
 	}
 }
