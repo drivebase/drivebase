@@ -13,7 +13,11 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/features/settings/components/SettingsCategoryNav.tsx:14
+#: src/routes/_workspace/workspaces.create.tsx:118
+msgid "Accent Color"
+msgstr ""
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:22
 msgid "Account"
 msgstr "Cuenta"
 
@@ -37,9 +41,22 @@ msgstr "Añadir grupo OR"
 msgid "Add Rule"
 msgstr "Añadir Regla"
 
-#: src/features/settings/components/SettingsCategoryNav.tsx:29
+#. placeholder {0}: file.name
+#. placeholder {0}: folder.name
+#: src/features/dashboard/DashboardPage.tsx:81
+#: src/routes/_authenticated/starred.tsx:97
+#: src/routes/_authenticated/starred.tsx:136
+msgid "Added {0} to starred"
+msgstr ""
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:42
 msgid "Advanced"
 msgstr "Avanzado"
+
+#: src/features/settings/AiSettingsView.tsx:14
+#: src/features/settings/components/SettingsCategoryNav.tsx:37
+msgid "AI"
+msgstr ""
 
 #: src/features/rules/components/ConditionGroupEditor.tsx:90
 msgid "All conditions must match (AND)"
@@ -49,9 +66,17 @@ msgstr "Todas las condiciones deben coincidir (Y)"
 msgid "All Files"
 msgstr "Todos los archivos"
 
+#: src/features/auth/RegisterPage.tsx:124
+msgid "Already have an account?"
+msgstr ""
+
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:29
 msgid "Appearance"
 msgstr "Apariencia"
+
+#: src/routes/_authenticated/providers.tsx:290
+msgid "Are you sure you want to disconnect this storage provider? Your files will strictly remain in the remote storage, but you won't be able to access them here until you reconnect."
+msgstr ""
 
 #: src/components/layout/Header.tsx:135
 #~ msgid "Audio"
@@ -65,7 +90,14 @@ msgstr "Apariencia"
 msgid "Automatically route uploaded files to specific providers and folders based on file attributes."
 msgstr "Enrutar automáticamente los archivos cargados a proveedores y carpetas específicos según los atributos del archivo."
 
+#: src/routes/_authenticated/providers.tsx:220
+msgid "Available Providers"
+msgstr ""
+
 #: src/features/rules/components/RuleForm.tsx:209
+#: src/routes/_authenticated/providers.tsx:303
+#: src/routes/_authenticated/vault.tsx:290
+#: src/routes/_workspace/workspaces.create.tsx:166
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -85,7 +117,7 @@ msgstr "Elige tema claro, oscuro o del sistema"
 msgid "Choose your preferred language"
 msgstr "Elige tu idioma preferido"
 
-#: src/components/layout/RightPanel.tsx:120
+#: src/components/layout/RightPanel.tsx:69
 msgid "Close panel"
 msgstr "Cerrar panel"
 
@@ -94,9 +126,43 @@ msgstr "Cerrar panel"
 msgid "Conditions"
 msgstr "Condiciones"
 
+#: src/routes/_authenticated/providers.tsx:186
+msgid "Connect a storage provider below to start managing your files."
+msgstr ""
+
+#: src/routes/connect/telegram.tsx:110
+msgid "Connect Telegram"
+msgstr ""
+
+#: src/routes/_authenticated/providers.tsx:161
+msgid "Connected Storage"
+msgstr ""
+
 #: src/routes/_authenticated.tsx:72
 msgid "Connection failed"
 msgstr "Conexión fallida"
+
+#: src/features/settings/UsersSettingsView.tsx:111
+msgid "Could not copy invite link"
+msgstr ""
+
+#: src/routes/join-workspace.tsx:76
+msgid "Could not join workspace"
+msgstr ""
+
+#: src/routes/_authenticated/providers.tsx:246
+msgid "Couldn't find what you were looking for?"
+msgstr ""
+
+#: src/features/auth/RegisterPage.tsx:59
+#: src/features/auth/RegisterPage.tsx:120
+msgid "Create Account"
+msgstr ""
+
+#: src/routes/_authenticated/vault.tsx:263
+#: src/routes/_authenticated/vault.tsx:299
+msgid "Create Folder"
+msgstr ""
 
 #: src/features/rules/components/RuleFormPage.tsx:63
 #: src/features/rules/components/RuleFormPage.tsx:73
@@ -106,6 +172,15 @@ msgstr "Crear Regla"
 #: src/components/layout/Sidebar.tsx:200
 msgid "Create workspace"
 msgstr "Crear espacio de trabajo"
+
+#: src/routes/_workspace/workspaces.create.tsx:73
+#: src/routes/_workspace/workspaces.create.tsx:158
+msgid "Create Workspace"
+msgstr ""
+
+#: src/routes/_authenticated/vault.tsx:297
+msgid "Creating..."
+msgstr ""
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:62
 msgid "Current password"
@@ -141,14 +216,36 @@ msgstr "Carpeta de destino (opcional)"
 msgid "Destination Provider"
 msgstr "Proveedor de destino"
 
+#: src/routes/_authenticated/providers.tsx:313
+msgid "Disconnect"
+msgstr ""
+
+#: src/routes/_authenticated/providers.tsx:287
+msgid "Disconnect Provider?"
+msgstr ""
+
+#: src/routes/_authenticated/providers.tsx:152
+msgid "Dismiss"
+msgstr ""
+
 #: src/components/layout/Header.tsx:117
 #~ msgid "Documents"
 #~ msgstr "Documentos"
+
+#: src/features/auth/LoginPage.tsx:126
+msgid "Don't have an account?"
+msgstr ""
+
+#: src/features/auth/AuthLayout.tsx:51
+msgid "Drivebase. Secure file storage."
+msgstr ""
 
 #: src/features/rules/components/RuleFormPage.tsx:63
 msgid "Edit Rule"
 msgstr "Editar Regla"
 
+#: src/features/auth/LoginPage.tsx:70
+#: src/features/auth/RegisterPage.tsx:77
 #: src/features/settings/sections/AccountSettingsSection.tsx:104
 msgid "Email"
 msgstr "Correo electrónico"
@@ -160,6 +257,14 @@ msgstr "Habilitado"
 #: src/features/settings/sections/ExportSection.tsx:81
 msgid "Encryption password"
 msgstr "Contraseña de cifrado"
+
+#: src/features/auth/RegisterPage.tsx:60
+msgid "Enter your email below to create your account"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx:53
+msgid "Enter your email to sign in to your account"
+msgstr ""
 
 #: src/features/settings/sections/ExportSection.tsx:37
 #: src/features/settings/sections/ExportSection.tsx:109
@@ -174,9 +279,43 @@ msgstr "Exporta los datos de tu espacio de trabajo incluyendo archivos, carpetas
 msgid "Exporting..."
 msgstr "Exportando..."
 
+#: src/routes/connect/telegram.tsx:85
+msgid "Failed to complete connection"
+msgstr ""
+
+#: src/routes/_authenticated/vault.tsx:213
+msgid "Failed to create folder"
+msgstr ""
+
+#: src/features/settings/UsersSettingsView.tsx:95
+msgid "Failed to create invite link"
+msgstr ""
+
+#: src/features/settings/UsersSettingsView.tsx:150
+msgid "Failed to remove member"
+msgstr ""
+
+#: src/features/settings/UsersSettingsView.tsx:167
+msgid "Failed to revoke invite"
+msgstr ""
+
+#: src/features/settings/UsersSettingsView.tsx:133
+msgid "Failed to update member role"
+msgstr ""
+
 #: src/features/settings/sections/AccountSettingsSection.tsx:54
 msgid "Failed to update profile"
 msgstr "Error al actualizar el perfil"
+
+#: src/features/dashboard/DashboardPage.tsx:89
+#: src/routes/_authenticated/starred.tsx:108
+#: src/routes/_authenticated/starred.tsx:147
+msgid "Failed to update starred status."
+msgstr ""
+
+#: src/routes/_authenticated/files.tsx:150
+msgid "Failed to update sync setting"
+msgstr ""
 
 #: src/components/layout/Sidebar.tsx:38
 #: src/config/pageTitles.ts:7
@@ -191,7 +330,19 @@ msgstr "Archivos"
 msgid "Files matching these conditions will be routed to the destination. Groups are combined with OR; conditions within a group are combined with AND."
 msgstr "Los archivos que cumplan estas condiciones se enrutarán al destino. Los grupos se combinan con O; las condiciones dentro de un grupo se combinan con Y."
 
-#: src/features/settings/components/SettingsCategoryNav.tsx:9
+#: src/routes/_authenticated/vault.tsx:182
+msgid "Folder deletion is not yet supported in vault"
+msgstr ""
+
+#: src/routes/_authenticated/vault.tsx:269
+msgid "Folder Name"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx:98
+msgid "Forgot password?"
+msgstr ""
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:17
 msgid "General"
 msgstr "General"
 
@@ -207,6 +358,22 @@ msgstr "Incluir configuraciones de proveedores"
 msgid "Include sensitive credentials (requires password)"
 msgstr "Incluir credenciales sensibles (requiere contraseña)"
 
+#: src/features/settings/UsersSettingsView.tsx:109
+msgid "Invite link copied"
+msgstr ""
+
+#: src/features/settings/UsersSettingsView.tsx:102
+msgid "Invite link created"
+msgstr ""
+
+#: src/features/settings/UsersSettingsView.tsx:172
+msgid "Invite revoked"
+msgstr ""
+
+#: src/routes/join-workspace.tsx:91
+msgid "Joining workspace…"
+msgstr ""
+
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:82
 msgid "Language"
 msgstr "Idioma"
@@ -219,13 +386,30 @@ msgstr "Última versión"
 msgid "Light"
 msgstr "Claro"
 
+#: src/routes/_authenticated/settings/rules_.$ruleId.tsx:24
+msgid "Loading rule..."
+msgstr ""
+
 #: src/routes/_authenticated.tsx:42
 msgid "Loading your account..."
 msgstr "Cargando tu cuenta..."
 
+#: src/routes/_authenticated/vault.tsx:60
+#: src/routes/onboarding.tsx:50
+msgid "Loading..."
+msgstr ""
+
 #: src/features/settings/sections/UpdateSection.tsx:41
 msgid "Manage application updates."
 msgstr "Gestionar actualizaciones de la aplicación."
+
+#: src/features/settings/UsersSettingsView.tsx:155
+msgid "Member removed"
+msgstr ""
+
+#: src/features/settings/UsersSettingsView.tsx:138
+msgid "Member role updated"
+msgstr ""
 
 #: src/features/settings/sections/WorkspaceMembersSection.tsx:48
 msgid "Members"
@@ -235,7 +419,7 @@ msgstr "Miembros"
 msgid "Members in this workspace."
 msgstr "Miembros en este espacio de trabajo."
 
-#: src/components/layout/RightPanel.tsx:42
+#: src/components/layout/RightPanel.tsx:40
 #: src/config/pageTitles.ts:12
 msgid "My Account"
 msgstr "Mi cuenta"
@@ -244,6 +428,7 @@ msgstr "Mi cuenta"
 #: src/features/rules/components/RuleList.tsx:134
 #: src/features/settings/sections/AccountSettingsSection.tsx:84
 #: src/features/settings/sections/WorkspaceNameSection.tsx:29
+#: src/routes/_workspace/workspaces.create.tsx:97
 msgid "Name"
 msgstr "Nombre"
 
@@ -255,9 +440,13 @@ msgstr "El nombre es obligatorio"
 msgid "New password"
 msgstr "Nueva contraseña"
 
-#: src/components/layout/RightPanel.tsx:69
-#~ msgid "No recent activity"
-#~ msgstr "Sin actividad reciente"
+#: src/routes/_authenticated/providers.tsx:183
+msgid "No providers connected"
+msgstr ""
+
+#: src/components/layout/RecentActivityView.tsx:102
+msgid "No recent activity"
+msgstr "Sin actividad reciente"
 
 #: src/components/layout/Header.tsx:148
 #~ msgid "No results found."
@@ -267,9 +456,22 @@ msgstr "Nueva contraseña"
 msgid "No rules yet. Create a rule to automatically route files on upload."
 msgstr "Sin reglas aún. Crea una regla para enrutar automáticamente los archivos al cargarlos."
 
+#: src/routes/_authenticated/starred.tsx:166
+msgid "No starred files yet. Star files or folders to see them here."
+msgstr ""
+
+#: src/routes/_authenticated/vault.tsx:132
+msgid "No storage providers connected"
+msgstr ""
+
 #: src/components/layout/RightPanel.tsx:67
-msgid "No updates yet"
-msgstr "Sin actualizaciones todavía"
+#~ msgid "No updates yet"
+#~ msgstr "Sin actualizaciones todavía"
+
+#: src/features/settings/AiSettingsView.tsx:17
+#: src/features/settings/UsersSettingsView.tsx:183
+msgid "No workspace selected."
+msgstr ""
 
 #: src/features/rules/components/ConditionGroupEditor.tsx:81
 msgid "OR"
@@ -278,6 +480,11 @@ msgstr "O"
 #: src/features/rules/components/RuleList.tsx:131
 msgid "Order"
 msgstr "Orden"
+
+#: src/features/auth/LoginPage.tsx:91
+#: src/features/auth/RegisterPage.tsx:97
+msgid "Password"
+msgstr ""
 
 #: src/features/settings/sections/AccountSettingsSection.tsx:48
 msgid "Profile updated"
@@ -288,9 +495,21 @@ msgstr "Perfil actualizado"
 msgid "Providers"
 msgstr "Proveedores"
 
+#: src/components/layout/RecentActivityView.tsx:74
+msgid "Recent Activity"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx:192
+msgid "Recent Files"
+msgstr ""
+
 #: src/components/layout/RightPanel.tsx:52
-msgid "Recent Updates"
-msgstr "Actualizaciones Recientes"
+#~ msgid "Recent Updates"
+#~ msgstr "Actualizaciones Recientes"
+
+#: src/routes/onboarding.tsx:70
+msgid "Redirecting to dashboard..."
+msgstr ""
 
 #: src/features/rules/components/ConditionEditor.tsx:142
 msgid "Remove condition"
@@ -299,6 +518,18 @@ msgstr "Eliminar condición"
 #: src/features/rules/components/ConditionGroupEditor.tsx:100
 msgid "Remove group"
 msgstr "Eliminar grupo"
+
+#. placeholder {0}: file.name
+#. placeholder {0}: folder.name
+#: src/features/dashboard/DashboardPage.tsx:79
+#: src/routes/_authenticated/starred.tsx:95
+#: src/routes/_authenticated/starred.tsx:134
+msgid "Removed {0} from starred"
+msgstr ""
+
+#: src/routes/_authenticated/providers.tsx:263
+msgid "Request a Provider"
+msgstr ""
 
 #: src/routes/_authenticated.tsx:76
 msgid "Retry"
@@ -312,8 +543,12 @@ msgstr "Rol"
 msgid "Root (no folder)"
 msgstr "Raíz (sin carpeta)"
 
+#: src/routes/_authenticated/settings/rules_.$ruleId.tsx:32
+msgid "Rule not found"
+msgstr ""
+
 #: src/features/rules/components/RuleList.tsx:104
-#: src/features/settings/components/SettingsCategoryNav.tsx:24
+#: src/features/settings/components/SettingsCategoryNav.tsx:32
 msgid "Rules"
 msgstr "Reglas"
 
@@ -340,7 +575,7 @@ msgstr "Guardando..."
 #~ msgid "Searching..."
 #~ msgstr "Buscando..."
 
-#: src/routes/__root.tsx:63
+#: src/routes/__root.tsx:70
 msgid "Server may be unreachable"
 msgstr "El servidor puede estar inaccesible"
 
@@ -348,27 +583,64 @@ msgstr "El servidor puede estar inaccesible"
 msgid "Server Unreachable"
 msgstr "Servidor inaccesible"
 
+#: src/routes/_workspace/workspaces.create.tsx:76
+msgid "Set up a new workspace and switch to it."
+msgstr ""
+
 #: src/components/layout/Sidebar.tsx:53
 #: src/config/pageTitles.ts:10
 msgid "Settings"
 msgstr "Configuración"
 
+#: src/features/auth/RegisterPage.tsx:129
+msgid "Sign in"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx:122
+msgid "Sign In"
+msgstr ""
+
 #: src/features/settings/GeneralSettingsView.tsx:127
 msgid "Sign out"
 msgstr "Cerrar sesión"
 
-#: src/routes/__root.tsx:43
+#: src/features/auth/LoginPage.tsx:131
+msgid "Sign up"
+msgstr ""
+
+#: src/routes/__root.tsx:50
 msgid "Something went wrong while loading the app."
 msgstr "Algo salió mal al cargar la aplicación."
 
 #: src/components/layout/Sidebar.tsx:47
 #: src/config/pageTitles.ts:7
+#: src/routes/_authenticated/starred.tsx:163
 msgid "Starred"
 msgstr "Destacados"
+
+#: src/features/dashboard/DashboardPage.tsx:148
+msgid "Starred Folders"
+msgstr ""
+
+#: src/routes/_authenticated/providers.tsx:249
+msgid "Suggest a new storage provider or report an issue on our GitHub repository."
+msgstr ""
+
+#: src/routes/_authenticated/files.tsx:156
+msgid "Sync disabled"
+msgstr ""
+
+#: src/routes/_authenticated/files.tsx:156
+msgid "Sync enabled"
+msgstr ""
 
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:72
 msgid "System"
 msgstr "Sistema"
+
+#: src/routes/connect/telegram.tsx:80
+msgid "Telegram connected successfully!"
+msgstr ""
 
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:41
 msgid "Theme"
@@ -378,13 +650,35 @@ msgstr "Tema"
 msgid "This password will be used to encrypt your export file. Keep it safe, as you'll need it to import the data."
 msgstr "Esta contraseña se utilizará para cifrar tu archivo de exportación. Mantenla segura, ya que la necesitarás para importar los datos."
 
+#: src/features/dashboard/DashboardPage.tsx:53
+msgid "Today Bandwidth"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx:39
+msgid "Total Files"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx:60
+msgid "Total Providers"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx:46
+msgid "Total Size"
+msgstr ""
+
 #: src/config/pageTitles.ts:9
+#: src/routes/_authenticated/trash.tsx:10
 msgid "Trash"
 msgstr "Papelera"
 
-#: src/routes/__root.tsx:67
+#: src/routes/__root.tsx:74
+#: src/routes/join-workspace.tsx:80
 msgid "Try again"
 msgstr "Intentar de nuevo"
+
+#: src/routes/connect/telegram.tsx:65
+msgid "Two-factor authentication required"
+msgstr ""
 
 #: src/components/layout/Header.tsx:144
 #~ msgid "Type to search files"
@@ -394,7 +688,7 @@ msgstr "Intentar de nuevo"
 msgid "Unable to connect to the API right now. Check the server and try again."
 msgstr "No se puede conectar a la API en este momento. Verifica el servidor e intenta de nuevo."
 
-#: src/routes/__root.tsx:56
+#: src/routes/__root.tsx:63
 msgid "Unable to load Drivebase"
 msgstr "No se puede cargar Drivebase"
 
@@ -436,7 +730,8 @@ msgstr "Actualizaciones"
 msgid "Updating..."
 msgstr "Actualizando..."
 
-#: src/features/settings/components/SettingsCategoryNav.tsx:19
+#: src/features/settings/components/SettingsCategoryNav.tsx:27
+#: src/features/settings/UsersSettingsView.tsx:180
 msgid "Users"
 msgstr "Usuarios"
 
@@ -445,12 +740,20 @@ msgstr "Usuarios"
 msgid "Vault"
 msgstr "Bóveda"
 
+#: src/routes/connect/telegram.tsx:51
+msgid "Verification code sent to your Telegram app"
+msgstr ""
+
 #: src/components/layout/Header.tsx:129
 #~ msgid "Videos"
 #~ msgstr "Videos"
 
 #: src/features/settings/sections/UpdateSection.tsx:116
 msgid "View releases"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx:52
+msgid "Welcome Back"
 msgstr ""
 
 #: src/components/layout/Sidebar.tsx:177
@@ -464,3 +767,11 @@ msgstr "Nombre del espacio de trabajo"
 #: src/components/layout/Sidebar.tsx:182
 msgid "Workspaces"
 msgstr "Espacios de trabajo"
+
+#: src/features/dashboard/DashboardPage.tsx:169
+msgid "You haven't starred any folders yet."
+msgstr ""
+
+#: src/routes/_authenticated/trash.tsx:13
+msgid "Your deleted files will appear here."
+msgstr ""
