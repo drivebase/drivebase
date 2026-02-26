@@ -59,7 +59,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-4xl md:text-6xl font-bold tracking-tight mb-6 leading-tight from-gray-100 via-gray-200 to-gray-500 bg-linear-to-r bg-clip-text text-transparent"
+              className="text-4xl md:text-6xl font-bold tracking-tight mb-6 leading-tight from-foreground via-foreground/50 to-foreground bg-linear-to-r bg-clip-text text-transparent"
             >
               One Interface. <br />
               Unified Storage.
