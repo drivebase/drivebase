@@ -1,5 +1,15 @@
 import { randomUUID } from "node:crypto";
 
+let appVersion = "unknown";
+try {
+	const packageJsonPath = new URL("../../package.json", import.meta.url);
+	const packageJsonContent = await Bun.file(packageJsonPath).text();
+	const packageJson = JSON.parse(packageJsonContent) as { version?: string };
+	appVersion = packageJson.version ?? "unknown";
+} catch {
+	// fallback
+}
+
 const DATA_DIR = import.meta.env.DATA_DIR ?? import.meta.dir;
 const INSTANCE_ID_PATH = `${DATA_DIR}/.instance-id`;
 
@@ -89,7 +99,11 @@ function sendEvent(event: string, properties: Record<string, unknown>): void {
 	fetch(TELEMETRY_URL, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ event, properties, distinctId: instanceId }),
+		body: JSON.stringify({
+			event,
+			properties: { version: appVersion, ...properties },
+			distinctId: instanceId,
+		}),
 		signal: controller.signal,
 	})
 		.catch(() => {
