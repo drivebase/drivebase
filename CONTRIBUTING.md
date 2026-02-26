@@ -10,6 +10,11 @@ Before you start, make sure you have the following installed:
 
 - **[Bun](https://bun.sh/)** (v1.x) - This project uses Bun as the package manager and runtime.
 - **[Docker](https://www.docker.com/)** - Required for running the database (PostgreSQL) and Redis locally.
+- **[Python](https://www.python.org/)** (v3.11+) - Required for the AI inference service.
+- **System Dependencies** (for AI):
+    - **Tesseract OCR** (for text extraction from images/PDFs)
+    - **Poppler** (for PDF processing)
+    - **libgl1 & libglib2.0** (required by OpenCV/vision models)
 
 ## 🚀 Getting Started
 
@@ -52,16 +57,33 @@ Before you start, make sure you have the following installed:
     bun db:migrate
     ```
 
-6.  **Start Development Server**
+6.  **Setup AI Inference Service**
 
-    Start both the API and Web application in development mode:
+    If you plan to use AI features locally, set up the Python environment:
 
     ```bash
+    cd services/ai-inference
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    cd ../..
+    ```
+
+7.  **Start Development Servers**
+
+    You need to start the AI service separately (in a new terminal) if you are not using Docker for it:
+
+    ```bash
+    # In one terminal (AI Service)
+    cd services/ai-inference && source .venv/bin/activate && uvicorn app:app --host 0.0.0.0 --port 8010 --reload
+
+    # In another terminal (Web & API)
     bun dev
     ```
 
     - **Web App:** [http://localhost:3000](http://localhost:3000)
     - **API:** [http://localhost:4000/graphql](http://localhost:4000/graphql)
+    - **AI Service:** [http://localhost:8010](http://localhost:8010)
 
 ## 📂 Project Structure
 
@@ -76,6 +98,8 @@ This is a monorepo managed by [Turbo](https://turbo.build/) and [Bun](https://bu
     - **`core`**: Shared core business logic, types, and interfaces.
     - **`utils`**: Shared utility functions.
     - **`google-drive`**, **`dropbox`**, **`s3`**, **`local`**: Storage provider implementations.
+- **`services/`**
+    - **`ai-inference`**: Python-based service for semantic embeddings, OCR, and object detection.
 
 ## 💻 Development Workflow
 
