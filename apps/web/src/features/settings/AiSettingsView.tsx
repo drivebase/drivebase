@@ -38,8 +38,7 @@ export function AiSettingsView() {
 				prepareFetching={controller.prepareModelsFetching}
 				onEmbeddingTierChange={controller.setEmbeddingTier}
 				onOcrTierChange={controller.setOcrTier}
-				onDownloadEmbeddingModel={controller.handleDownloadEmbeddingModel}
-				onDownloadOcrModel={controller.handleDownloadOcrModel}
+				onDownloadModels={controller.handleDownloadModels}
 			/>
 		</div>
 	);

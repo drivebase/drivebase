@@ -34,8 +34,7 @@ interface AiModelsSectionProps {
 	prepareFetching: boolean;
 	onEmbeddingTierChange: (tier: AnalysisModelTier) => void;
 	onOcrTierChange: (tier: AnalysisModelTier) => void;
-	onDownloadEmbeddingModel: () => void;
-	onDownloadOcrModel: () => void;
+	onDownloadModels: () => void;
 }
 
 interface ModelRowProps {
@@ -44,12 +43,7 @@ interface ModelRowProps {
 	tier: AnalysisModelTier;
 	isReady: boolean;
 	canManageWorkspace: boolean;
-	prepareFetching: boolean;
-	isModelDownloadInFlight: boolean;
-	isTaskDownloading: boolean;
-	downloadProgressPct: number;
 	onTierChange: (tier: AnalysisModelTier) => void;
-	onDownload: () => void;
 }
 
 function ModelRow({
@@ -58,17 +52,8 @@ function ModelRow({
 	tier,
 	isReady,
 	canManageWorkspace,
-	prepareFetching,
-	isModelDownloadInFlight,
-	isTaskDownloading,
-	downloadProgressPct,
 	onTierChange,
-	onDownload,
 }: ModelRowProps) {
-	const downloadLabel = isTaskDownloading
-		? `Downloading... ${downloadProgressPct}%`
-		: "Download";
-
 	return (
 		<div className="border border-border/60 p-3 space-y-3">
 			<div className="space-y-2">
@@ -80,39 +65,24 @@ function ModelRow({
 				</div>
 				<p className="text-xs text-muted-foreground">Model: {modelName}</p>
 			</div>
-			<div className="flex flex-col gap-2 w-52">
-				<div className="space-y-2">
-					<Label>Size</Label>
-					<Select
-						value={tier}
-						onValueChange={(value) => onTierChange(value as AnalysisModelTier)}
-						disabled={!canManageWorkspace || isReady}
-					>
-						<SelectTrigger>
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{TIER_OPTIONS.map((itemTier) => (
-								<SelectItem key={itemTier} value={itemTier}>
-									{itemTier}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-				<Button
-					variant="outline"
-					onClick={onDownload}
-					disabled={
-						!canManageWorkspace ||
-						prepareFetching ||
-						isReady ||
-						isModelDownloadInFlight
-					}
-					className="w-full"
+			<div className="space-y-2 w-52">
+				<Label>Size</Label>
+				<Select
+					value={tier}
+					onValueChange={(value) => onTierChange(value as AnalysisModelTier)}
+					disabled={!canManageWorkspace || isReady}
 				>
-					{downloadLabel}
-				</Button>
+					<SelectTrigger>
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{TIER_OPTIONS.map((itemTier) => (
+							<SelectItem key={itemTier} value={itemTier}>
+								{itemTier}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
 			</div>
 		</div>
 	);
@@ -122,8 +92,7 @@ export function AiModelsSection({
 	prepareFetching,
 	onEmbeddingTierChange,
 	onOcrTierChange,
-	onDownloadEmbeddingModel,
-	onDownloadOcrModel,
+	onDownloadModels,
 }: AiModelsSectionProps) {
 	const canManageWorkspace = useAiSettingsStore(
 		(state) => state.canManageWorkspace,
@@ -154,18 +123,16 @@ export function AiModelsSection({
 	const modelDownloadInFlight =
 		latestModelJob?.status === JobStatus.Pending ||
 		latestModelJob?.status === JobStatus.Running;
-	const activeTask =
-		typeof latestModelJob?.metadata?.task === "string"
-			? latestModelJob.metadata.task
-			: null;
-	const activeTaskProgress =
-		typeof latestModelJob?.metadata?.downloadProgress === "number"
-			? latestModelJob.metadata.downloadProgress
-			: 0;
-	const activeTaskProgressPct = Math.max(
+	const downloadProgressPct = Math.max(
 		0,
-		Math.min(100, Math.round(activeTaskProgress * 100)),
+		Math.min(100, Math.round((latestModelJob?.progress ?? 0) * 100)),
 	);
+	const allReady = embeddingReady && ocrReady;
+	const downloadLabel = modelDownloadInFlight
+		? `Downloading... ${downloadProgressPct}%`
+		: allReady
+			? "Downloaded"
+			: "Start download";
 
 	return (
 		<>
@@ -185,16 +152,7 @@ export function AiModelsSection({
 						tier={embeddingTier}
 						isReady={embeddingReady}
 						canManageWorkspace={canManageWorkspace}
-						prepareFetching={prepareFetching}
-						isModelDownloadInFlight={modelDownloadInFlight}
-						isTaskDownloading={
-							activeTask === "embedding" && modelDownloadInFlight
-						}
-						downloadProgressPct={
-							activeTask === "embedding" ? activeTaskProgressPct : 0
-						}
 						onTierChange={onEmbeddingTierChange}
-						onDownload={onDownloadEmbeddingModel}
 					/>
 					<ModelRow
 						title="OCR"
@@ -202,15 +160,22 @@ export function AiModelsSection({
 						tier={ocrTier}
 						isReady={ocrReady}
 						canManageWorkspace={canManageWorkspace}
-						prepareFetching={prepareFetching}
-						isModelDownloadInFlight={modelDownloadInFlight}
-						isTaskDownloading={activeTask === "ocr" && modelDownloadInFlight}
-						downloadProgressPct={
-							activeTask === "ocr" ? activeTaskProgressPct : 0
-						}
 						onTierChange={onOcrTierChange}
-						onDownload={onDownloadOcrModel}
 					/>
+				</div>
+				<div>
+					<Button
+						variant="outline"
+						onClick={onDownloadModels}
+						disabled={
+							!canManageWorkspace ||
+							prepareFetching ||
+							modelDownloadInFlight ||
+							allReady
+						}
+					>
+						{downloadLabel}
+					</Button>
 				</div>
 			</section>
 		</>
