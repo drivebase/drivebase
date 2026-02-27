@@ -91,11 +91,11 @@ echo -e "  3. Start Drivebase: ${BOLD}${BLUE}docker compose --env-file .env.loca
 
 # Telemetry
 (
-    TRACK_URL="https://drivebase.io/api/track"
+    TRACK_URL="https://telemetry.drivebase.io/v1/record"
     OS=$(uname -s)
     ARCH=$(uname -m)
     INSTALL_ID=$(openssl rand -hex 16)
-    
+
     curl -s -X POST "$TRACK_URL" \
         -H "Content-Type: application/json" \
         -d "{
