@@ -1,0 +1,30 @@
+---
+title: Samba (SMB)
+description: Connect a Samba/SMB shared folder to Drivebase.
+---
+
+Drivebase can connect to SMB shares exposed by Samba or compatible servers.
+
+## Required Configuration
+
+You will need:
+
+- **Host**: SMB server hostname or IP.
+- **Share**: SMB share name.
+- **Username**: SMB account username.
+- **Password**: SMB account password.
+- **Domain** (optional): Domain/workgroup.
+- **Port** (optional): Defaults to `445`.
+- **Root Path** (optional): Base path within the share.
+
+## Connect in Drivebase
+
+1. Open **Providers**.
+2. Click **Connect Provider**.
+3. Select **Samba**.
+4. Enter the configuration values and connect.
+
+## Notes
+
+- Quota reporting is not provided by SMB in this integration.
+- Ensure the Drivebase API host can reach your SMB server over TCP `445`.
