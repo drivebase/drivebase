@@ -1,8 +1,10 @@
-name: Create Release
+name: Build & Push Docker images to GCR
 
 on:
-  tags:
-    - 'v*'
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,22 +13,276 @@ concurrency:
   group: release
   cancel-in-progress: false
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
-  release:
+  build:
+    if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+        include:
+          - platform: linux/amd64
+            suffix: amd64
+          - platform: linux/arm64
+            suffix: arm64
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        if: matrix.platform == 'linux/arm64'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Extract version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            IS_RELEASE=true
+          else
+            VERSION="development"
+            IS_RELEASE=false
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "IS_RELEASE=$IS_RELEASE" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:master
+            network=host
+
+      - name: Build and push platform image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}-${{ matrix.suffix }}
+          build-args: |
+            APP_VERSION=${{ steps.version.outputs.VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          outputs: type=image,compression=zstd
+
+  merge-and-push:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Extract version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            IS_RELEASE=true
+          else
+            VERSION="development"
+            IS_RELEASE=false
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "IS_RELEASE=$IS_RELEASE" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list and push
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          REGISTRY="${{ env.REGISTRY }}"
+          IMAGE_NAME="${{ env.IMAGE_NAME }}"
+
+          # Create and push the manifest list
+          docker buildx imagetools create -t $REGISTRY/$IMAGE_NAME:$VERSION \
+            $REGISTRY/$IMAGE_NAME:$VERSION-amd64 \
+            $REGISTRY/$IMAGE_NAME:$VERSION-arm64
+
+          # Tag as latest if this is a release
+          if [[ "${{ steps.version.outputs.IS_RELEASE }}" == "true" ]]; then
+            docker buildx imagetools create -t $REGISTRY/$IMAGE_NAME:latest \
+              $REGISTRY/$IMAGE_NAME:$VERSION-amd64 \
+              $REGISTRY/$IMAGE_NAME:$VERSION-arm64
+          fi
+
+      - name: Clean up
+        if: always()
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          REGISTRY="${{ env.REGISTRY }}"
+          IMAGE_NAME="${{ env.IMAGE_NAME }}"
+
+          # Remove architecture-specific tags
+          docker buildx imagetools rm $REGISTRY/$IMAGE_NAME:$VERSION-amd64 || true
+          docker buildx imagetools rm $REGISTRY/$IMAGE_NAME:$VERSION-arm64 || true
+
+  release:
+    needs: merge-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Extract version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            IS_RELEASE=true
+          else
+            VERSION="development"
+            IS_RELEASE=false
+          fi
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "IS_RELEASE=$IS_RELEASE" >> $GITHUB_OUTPUT
 
-      - name: Run release-it
+      - name: Extract release notes from CHANGELOG.md
+        id: changelog
+        if: ${{ steps.version.outputs.IS_RELEASE == 'true' }}
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          CHANGELOG_CONTENT="$(
+            awk -v version="$VERSION" '
+              BEGIN {
+                in_section = 0
+              }
+              /^## / {
+                if (in_section) {
+                  exit
+                }
+                if ($0 ~ "^## \\[" version "\\]") {
+                  in_section = 1
+                  next
+                }
+              }
+              in_section {
+                print
+              }
+            ' CHANGELOG.md
+          )"
+
+          if [[ -z "${CHANGELOG_CONTENT//[[:space:]]/}" ]]; then
+            echo "Failed to extract release notes for $VERSION from CHANGELOG.md"
+            exit 1
+          fi
+
+          {
+            echo "BODY<<EOF"
+            echo "$CHANGELOG_CONTENT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create or update GitHub release
+        if: ${{ steps.version.outputs.IS_RELEASE == 'true' }}
+        uses: actions/github-script@v7
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bunx release-it ${{ github.ref_name }} --ci --github.release=true --no-npm
+          TAG_NAME: ${{ steps.version.outputs.VERSION }}
+          RELEASE_BODY: ${{ steps.changelog.outputs.BODY }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const tag = process.env.TAG_NAME;
+            const body = process.env.RELEASE_BODY || "";
+
+            let release;
+            try {
+              release = await github.rest.repos.getReleaseByTag({ owner, repo, tag });
+              await github.rest.repos.updateRelease({
+                owner,
+                repo,
+                release_id: release.data.id,
+                tag_name: tag,
+                name: tag,
+                body,
+                draft: false,
+                prerelease: tag.includes("-")
+              });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.repos.createRelease({
+                owner,
+                repo,
+                tag_name: tag,
+                target_commitish: context.sha,
+                name: tag,
+                body,
+                draft: false,
+                prerelease: tag.includes("-")
+              });
+            }
+
+  build-updater:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            IS_RELEASE=true
+          else
+            VERSION="development"
+            IS_RELEASE=false
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "IS_RELEASE=$IS_RELEASE" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push updater image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/updater
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/drivebase/updater:${{ steps.version.outputs.VERSION }}
+            ${{ steps.version.outputs.IS_RELEASE == 'true' && format('{0}/drivebase/updater:latest', env.REGISTRY) || '' }}
+          cache-from: type=gha,scope=updater
+          cache-to: type=gha,mode=max,scope=updater
+          provenance: false
