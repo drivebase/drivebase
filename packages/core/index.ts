@@ -30,20 +30,25 @@ export {
 
 // Interfaces
 export type {
+	ArchiveRequestOptions,
 	AuthType,
 	CopyOptions,
 	CreateFolderOptions,
 	DeleteOptions,
 	DownloadOptions,
 	IStorageProvider,
+	LifecycleRestoreTier,
 	ListOptions,
 	ListResult,
 	MoveOptions,
 	OAuthInitResult,
+	ProviderFileLifecycleState,
+	ProviderLifecycleState,
 	ProviderConfig,
 	ProviderConfigField,
 	ProviderFactory,
 	ProviderRegistration,
+	RestoreRequestOptions,
 	UploadOptions,
 } from "./interfaces";
 // Types

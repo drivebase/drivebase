@@ -1,5 +1,6 @@
 import { useClient, useMutation, useQuery } from "urql";
 import {
+	ARCHIVE_FILE_MUTATION,
 	CONTENTS_QUERY,
 	CREATE_FILE_DOWNLOAD_LINK_MUTATION,
 	DELETE_FILE_MUTATION,
@@ -9,7 +10,9 @@ import {
 	MOVE_FILE_MUTATION,
 	MOVE_FILE_TO_PROVIDER_MUTATION,
 	RECENT_FILES_QUERY,
+	REFRESH_FILE_LIFECYCLE_MUTATION,
 	RENAME_FILE_MUTATION,
+	REQUEST_FILE_RESTORE_MUTATION,
 	REQUEST_DOWNLOAD_MUTATION,
 	REQUEST_UPLOAD_MUTATION,
 	REVOKE_FILE_DOWNLOAD_LINK_MUTATION,
@@ -164,6 +167,55 @@ export function useMoveFileToProvider() {
 
 export function useDeleteFile() {
 	const [result, execute] = useMutation(DELETE_FILE_MUTATION);
+	return [result, execute] as const;
+}
+
+export function useArchiveFile() {
+	const client = useClient();
+	const setJob = useActivityStore((state) => state.setJob);
+	const [result, execute] = useMutation(ARCHIVE_FILE_MUTATION);
+	const executeWithActivityRefresh = async (
+		variables: Parameters<typeof execute>[0],
+	) => {
+		const mutationResult = await execute(variables);
+		if (mutationResult.data?.archiveFile) {
+			setJob(mutationResult.data.archiveFile);
+			const activeJobsResult = await client
+				.query(ACTIVE_JOBS_QUERY, {}, { requestPolicy: "network-only" })
+				.toPromise();
+			for (const job of activeJobsResult.data?.activeJobs ?? []) {
+				setJob(job);
+			}
+		}
+		return mutationResult;
+	};
+	return [result, executeWithActivityRefresh] as const;
+}
+
+export function useRequestFileRestore() {
+	const client = useClient();
+	const setJob = useActivityStore((state) => state.setJob);
+	const [result, execute] = useMutation(REQUEST_FILE_RESTORE_MUTATION);
+	const executeWithActivityRefresh = async (
+		variables: Parameters<typeof execute>[0],
+	) => {
+		const mutationResult = await execute(variables);
+		if (mutationResult.data?.requestFileRestore) {
+			setJob(mutationResult.data.requestFileRestore);
+			const activeJobsResult = await client
+				.query(ACTIVE_JOBS_QUERY, {}, { requestPolicy: "network-only" })
+				.toPromise();
+			for (const job of activeJobsResult.data?.activeJobs ?? []) {
+				setJob(job);
+			}
+		}
+		return mutationResult;
+	};
+	return [result, executeWithActivityRefresh] as const;
+}
+
+export function useRefreshFileLifecycle() {
+	const [result, execute] = useMutation(REFRESH_FILE_LIFECYCLE_MUTATION);
 	return [result, execute] as const;
 }
 

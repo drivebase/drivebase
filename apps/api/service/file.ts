@@ -1,5 +1,6 @@
 import type { Database } from "@drivebase/db";
 import {
+	archiveFile,
 	consumeFileDownloadLink,
 	createFileDownloadLink,
 	deleteFile,
@@ -16,6 +17,8 @@ import {
 	moveFile,
 	moveFileToProvider,
 	renameFile,
+	requestFileRestore,
+	refreshFileLifecycle,
 	requestDownload,
 	requestUpload,
 	revokeFileDownloadLink,
@@ -197,6 +200,34 @@ export class FileService {
 	) {
 		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
 			moveFileToProvider(this.db, fileId, userId, providerId, workspaceId),
+		);
+	}
+
+	archiveFile(fileId: string, userId: string, preferredWorkspaceId?: string) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			archiveFile(this.db, fileId, userId, workspaceId),
+		);
+	}
+
+	requestFileRestore(
+		fileId: string,
+		userId: string,
+		days: number,
+		tier: "fast" | "standard" | "bulk",
+		preferredWorkspaceId?: string,
+	) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			requestFileRestore(this.db, fileId, userId, workspaceId, days, tier),
+		);
+	}
+
+	refreshFileLifecycle(
+		fileId: string,
+		userId: string,
+		preferredWorkspaceId?: string,
+	) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			refreshFileLifecycle(this.db, fileId, userId, workspaceId),
 		);
 	}
 

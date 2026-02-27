@@ -1,3 +1,4 @@
+import { ConflictError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { getPublicApiBaseUrl } from "../../../config/url";
 import { logger } from "../../../utils/logger";
@@ -15,6 +16,21 @@ export async function requestDownload(
 
 	try {
 		const file = await getFile(db, fileId, userId, workspaceId);
+		const now = Date.now();
+		const restoreExpired =
+			file.restoreExpiresAt !== null && file.restoreExpiresAt.getTime() <= now;
+		if (
+			file.lifecycleState === "archived" ||
+			file.lifecycleState === "restore_requested" ||
+			file.lifecycleState === "restoring" ||
+			(file.lifecycleState === "restored_temporary" && restoreExpired)
+		) {
+			throw new ConflictError("File is archived and must be restored first", {
+				requiresRestore: true,
+				state: file.lifecycleState,
+				restoreExpiresAt: file.restoreExpiresAt?.toISOString() ?? null,
+			});
+		}
 		const providerService = new ProviderService(db);
 		const providerRecord = await providerService.getProvider(
 			file.providerId,
