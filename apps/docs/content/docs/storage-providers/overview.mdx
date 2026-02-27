@@ -1,0 +1,34 @@
+---
+title: Overview
+description: Overview of supported storage backends in Drivebase
+---
+
+Drivebase is cloud-agnostic and built to unify multiple storage services under a single virtual file system, so you can manage files consistently across providers.
+
+## Supported Providers
+
+Click on a provider below to view specific setup and configuration instructions:
+
+- **[Local Storage](/docs/storage-providers/local)**: Use your server's disk space.
+- **[S3 Compatible Storage](/docs/storage-providers/s3)**: Connect AWS S3, MinIO, R2, and more.
+- **[Google Drive](/docs/storage-providers/google-drive)**: Manage your Google Drive files.
+- **[Dropbox](/docs/storage-providers/dropbox)**: Connect your Dropbox account.
+- **[FTP](/docs/storage-providers/ftp)**: Connect any FTP or FTPS file server.
+- **[WebDAV](/docs/storage-providers/webdav)**: Connect Nextcloud, ownCloud, or any WebDAV server.
+- **[Telegram](/docs/storage-providers/telegram)**: Use Telegram's Saved Messages as cloud file storage.
+- **[Nextcloud](/docs/storage-providers/nextcloud)**: Connect your Nextcloud instance with Login Flow v2.
+- **[Darkibox](/docs/storage-providers/darkibox)**: Connect your Darkibox account using an API key.
+- **[Samba (SMB)](/docs/storage-providers/samba)**: Connect a Samba or SMB shared folder.
+
+## Common Features
+
+All storage providers in Drivebase support the following core features:
+
+### Automatic Syncing
+Drivebase periodically syncs with your connected providers to ensure that metadata (file names, sizes, etc.) is up to date. You can also trigger a manual sync at any time from the provider settings.
+
+### Quota Management
+Monitor how much storage you are using across different platforms from a single dashboard.
+
+### Provider Security
+Your provider credentials (API keys, secrets, tokens) are always encrypted at rest in the Drivebase database using the `ENCRYPTION_KEY` defined in your environment variables.
