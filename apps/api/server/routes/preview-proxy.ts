@@ -1,9 +1,9 @@
 import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
-import { getPreviewCache, setPreviewCache } from "../preview-cache";
 import { FileService } from "../../service/file";
 import { logger } from "../../utils/logger";
 import type { AppEnv } from "../app";
+import { getPreviewCache, setPreviewCache } from "../preview-cache";
 
 const PREVIEWABLE_PREFIXES = ["image/", "text/"];
 

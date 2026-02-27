@@ -1,11 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useDownload } from "@/features/files/hooks/useDownload";
-import { useFileDetailsDialogStore } from "@/features/files/store/fileDetailsDialogStore";
 import {
 	useDeleteFile,
 	useStarFile,
 	useUnstarFile,
 } from "@/features/files/hooks/useFiles";
+import { useFileDetailsDialogStore } from "@/features/files/store/fileDetailsDialogStore";
 import type { FileItemFragment } from "@/gql/graphql";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
 import type { NavigationItem } from "./constants";
