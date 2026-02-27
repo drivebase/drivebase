@@ -1,8 +1,9 @@
 import { format } from "date-fns";
-import { FileText, ImageIcon, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFilePreview } from "@/features/files/hooks/useFilePreview";
 import {
 	useArchiveFile,
 	useFile,
@@ -45,19 +46,18 @@ export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 
 	const kind = getFileKind(file.mimeType);
 	const isPreviewable = kind === "image" || kind === "text";
-	const defaultTab = isPreviewable ? "preview" : "file";
 
 	return (
-		<Tabs defaultValue={defaultTab} className="w-full">
+		<Tabs defaultValue={"file"} className="w-full">
 			<TabsList variant="line" className="mb-4">
-				{isPreviewable && <TabsTrigger value="preview">Preview</TabsTrigger>}
 				<TabsTrigger value="file">File</TabsTrigger>
 				<TabsTrigger value="metadata">Metadata</TabsTrigger>
+				{isPreviewable && <TabsTrigger value="preview">Preview</TabsTrigger>}
 			</TabsList>
 
 			{isPreviewable && (
 				<TabsContent value="preview">
-					<PreviewPlaceholder kind={kind} name={file.name} />
+					<FilePreview fileId={fileId} mimeType={file.mimeType} />
 				</TabsContent>
 			)}
 
@@ -207,28 +207,57 @@ export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 	);
 }
 
-function PreviewPlaceholder({
-	kind,
-	name,
+function FilePreview({
+	fileId,
+	mimeType,
 }: {
-	kind: "image" | "text";
-	name: string;
+	fileId: string;
+	mimeType: string;
 }) {
-	return (
-		<div className="flex flex-col items-center justify-center gap-4 py-16 text-muted-foreground rounded-lg bg-muted/40">
-			{kind === "image" ? (
-				<ImageIcon className="h-12 w-12 opacity-30" />
-			) : (
-				<FileText className="h-12 w-12 opacity-30" />
-			)}
-			<div className="text-center space-y-1">
-				<p className="text-sm font-medium text-foreground/60 truncate max-w-xs">
-					{name}
-				</p>
-				<p className="text-xs">
-					{kind === "image" ? "Image preview" : "Text preview"} coming soon
-				</p>
+	const { result, loading, error } = useFilePreview(fileId, mimeType);
+
+	if (loading) {
+		return (
+			<div className="flex items-center justify-center gap-2 py-20 text-muted-foreground">
+				<Loader2 className="h-4 w-4 animate-spin" />
+				<span className="text-sm">Loading preview…</span>
 			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="flex items-center justify-center gap-2 py-20 text-destructive">
+				<AlertCircle className="h-4 w-4" />
+				<span className="text-sm">{error}</span>
+			</div>
+		);
+	}
+
+	if (!result) return null;
+
+	if (result.type === "image") {
+		return (
+			<div className="w-full h-[50vh] bg-muted/30 rounded-lg flex items-center justify-center overflow-hidden p-4">
+				<img
+					src={result.url}
+					alt="Preview"
+					className="max-w-full max-h-full object-contain"
+				/>
+			</div>
+		);
+	}
+
+	return (
+		<div className="space-y-2">
+			{result.truncated && (
+				<p className="text-xs text-muted-foreground">
+					Showing first 100 KB of file.
+				</p>
+			)}
+			<pre className="text-xs font-mono bg-muted/40 rounded-lg p-4 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
+				{result.content}
+			</pre>
 		</div>
 	);
 }

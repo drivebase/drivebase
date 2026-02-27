@@ -18,15 +18,15 @@ export function FileDetailsDialog() {
 
 	return (
 		<Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && close()}>
-			<DialogContent className="w-[min(45vw,1100px)] max-w-275 sm:max-w-275 max-h-[55vh] p-0 overflow-hidden text-sm">
-				<DialogHeader className="px-6 py-4 border-b">
+			<DialogContent className="w-[min(45vw,1100px)] flex flex-col max-w-275 sm:max-w-275 max-h-[75vh] p-0 overflow-hidden text-sm">
+				<DialogHeader className="px-6 py-4 border-b h-20">
 					{fileId ? (
 						<FileDialogHeader fileId={fileId} />
 					) : (
 						<DialogTitle>File Details</DialogTitle>
 					)}
 				</DialogHeader>
-				<div className="h-[calc(85vh-74px)] overflow-y-auto px-6 py-5">
+				<div className="overflow-y-auto px-6 py-4 h-full">
 					{fileId ? <FileInfoPanel fileId={fileId} /> : null}
 				</div>
 			</DialogContent>
