@@ -1,9 +1,8 @@
 name: Create Release
 
 on:
-  push:
-    branches:
-      - main
+  tags:
+    - 'v*'
 
 permissions:
   contents: write
@@ -14,7 +13,6 @@ concurrency:
 
 jobs:
   release:
-    if: "${{ contains(github.event.head_commit.message, 'chore: release') && github.actor != 'github-actions[bot]' }}"
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -31,4 +29,4 @@ jobs:
       - name: Run release-it
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bunx release-it --ci --github.release=true --no-npm
+        run: bunx release-it ${{ github.ref_name }} --ci --github.release=true --no-npm
