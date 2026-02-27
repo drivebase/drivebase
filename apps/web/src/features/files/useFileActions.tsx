@@ -1,19 +1,18 @@
 import { t } from "@lingui/core/macro";
 import { useCallback } from "react";
-import { FileInfoPanel } from "@/features/files/FileInfoPanel";
 import { useDownload } from "@/features/files/hooks/useDownload";
 import { useCreateFileDownloadLink } from "@/features/files/hooks/useFiles";
+import { useFileDetailsDialogStore } from "@/features/files/store/fileDetailsDialogStore";
 import type { FileItemFragment } from "@/gql/graphql";
 import { downloadLinkConfigDialog } from "@/shared/lib/downloadLinkConfigDialog";
-import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 
 export function useFileActions() {
 	const { downloadFile } = useDownload();
 	const [, createFileDownloadLink] = useCreateFileDownloadLink();
-	const setRightPanelContent = useRightPanelStore((state) => state.setContent);
+	const openForFile = useFileDetailsDialogStore((state) => state.openForFile);
 
 	const showDetails = (file: FileItemFragment) => {
-		setRightPanelContent(<FileInfoPanel fileId={file.id} />);
+		openForFile(file.id);
 	};
 
 	const createDownloadLink = useCallback(

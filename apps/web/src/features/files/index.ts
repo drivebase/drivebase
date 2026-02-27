@@ -6,6 +6,7 @@ export { FileDropZone } from "./components/FileDropZone";
 export { FilesToolbar } from "./components/FilesToolbar";
 export { ProviderFilter } from "./components/ProviderFilter";
 export { FileInfoPanel } from "./FileInfoPanel";
+export { FileDetailsDialog } from "./FileDetailsDialog";
 export { FileMimeIcon } from "./FileMimeIcon";
 export type { DragItem } from "./FileSystemTable";
 export { DragOverlayContent, FileSystemTable } from "./FileSystemTable";

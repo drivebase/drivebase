@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { FileInfoPanel } from "@/features/files/FileInfoPanel";
 import { useDownload } from "@/features/files/hooks/useDownload";
+import { useFileDetailsDialogStore } from "@/features/files/store/fileDetailsDialogStore";
 import {
 	useDeleteFile,
 	useStarFile,
@@ -8,7 +8,6 @@ import {
 } from "@/features/files/hooks/useFiles";
 import type { FileItemFragment } from "@/gql/graphql";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
-import { useRightPanelStore } from "@/shared/store/rightPanelStore";
 import type { NavigationItem } from "./constants";
 
 type Params = {
@@ -29,14 +28,14 @@ export function usePaletteActions({
 	const [, deleteFile] = useDeleteFile();
 	const [, starFile] = useStarFile();
 	const [, unstarFile] = useUnstarFile();
-	const setRightPanelContent = useRightPanelStore((state) => state.setContent);
+	const openForFile = useFileDetailsDialogStore((state) => state.openForFile);
 
 	const openFile = (file: FileItemFragment) => {
 		navigate({
 			to: "/files",
 			search: { folderId: file.folderId ?? undefined },
 		});
-		setRightPanelContent(<FileInfoPanel fileId={file.id} />);
+		openForFile(file.id);
 		setOpen(false);
 	};
 
