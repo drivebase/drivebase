@@ -1,5 +1,28 @@
 # Changelog
 
+## [3.1.0](https://github.com/drivebase/drivebase/compare/v3.0.0...v3.1.0) (2026-02-27)
+
+### ✨ Features
+
+* add file preview ([473a447](https://github.com/drivebase/drivebase/commit/473a4477d349b5e3b208c9560985ec4a7375e564))
+* **provider:** add generic file lifecycle support with S3 Glacier ([92b5901](https://github.com/drivebase/drivebase/commit/92b590144a8a0581281f5910ca6d010307375083))
+* use modal for file details ([bf088fe](https://github.com/drivebase/drivebase/commit/bf088fe35a08b41378fbb882f8a8e496c9879254))
+
+### 🐛 Fixes
+
+* update telemetry endpoint URL in install script ([a2ffc69](https://github.com/drivebase/drivebase/commit/a2ffc69e7326d719f76cdede6cf8802243810125))
+* **web:** hydrate job panel from active jobs only to avoid showing ([33550d0](https://github.com/drivebase/drivebase/commit/33550d0372eaece46cfb30a10ab914822ac89ff0))
+
+### 🎨 Styling
+
+* blog post content styling ([ac73e0f](https://github.com/drivebase/drivebase/commit/ac73e0ffe3c6f6ac52eb760ed93e516da377eaf8))
+* landing page UI for better aesthetics ([eb2c7a0](https://github.com/drivebase/drivebase/commit/eb2c7a0bc5ef6238c1614a9ab4f2349acd101dce))
+
+### 📝 Docs
+
+* dd funding usernames for GitHub and Ko-fi ([e4237d2](https://github.com/drivebase/drivebase/commit/e4237d237829df431dc4b719d0a1880b0945d9b8))
+* update blog banner image and allow cdn.drivebase.io ([6df9c17](https://github.com/drivebase/drivebase/commit/6df9c175dfe26abdd8f2bf65090fed9c00eaa944))
+
 ## [3.0.0](https://github.com/drivebase/drivebase/compare/v2.5.0...v3.0.0) (2026-02-26)
 
 ### ✨ Features
