@@ -101,7 +101,17 @@ export function useFileSystemColumns({
 							<div className="shrink-0">
 								<FileMimeIcon mimeType={file.mimeType} />
 							</div>
-							<span className="truncate">{file.name}</span>
+							{onShowFileDetails ? (
+								<button
+									type="button"
+									onClick={() => onShowFileDetails(file)}
+									className="truncate text-left hover:underline"
+								>
+									{file.name}
+								</button>
+							) : (
+								<span className="truncate">{file.name}</span>
+							)}
 							{file.starred && (
 								<Star size={12} className="shrink-0 text-muted-foreground" />
 							)}

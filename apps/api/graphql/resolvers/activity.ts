@@ -26,7 +26,7 @@ function toJobStatus(status: DbJob["status"]): JobStatus {
 	return JobStatus.Error;
 }
 
-function toGraphqlJob(job: DbJob): Job {
+export function toGraphqlJob(job: DbJob): Job {
 	return {
 		id: job.id,
 		type: job.type,

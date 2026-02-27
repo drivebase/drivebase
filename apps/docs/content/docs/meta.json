@@ -25,6 +25,7 @@
     "storage-providers/overview",
     "storage-providers/google-drive",
     "storage-providers/s3",
+    "storage-providers/s3-lifecycle-restore",
     "storage-providers/local",
     "storage-providers/telegram",
     "storage-providers/nexcloud",

@@ -45,6 +45,13 @@ export const FILE_QUERY = graphql(`
       starred
       createdAt
       updatedAt
+      lifecycle {
+        state
+        storageClass
+        restoreRequestedAt
+        restoreExpiresAt
+        lastCheckedAt
+      }
       provider {
         id
         name
@@ -183,6 +190,50 @@ export const MOVE_FILE_TO_PROVIDER_MUTATION = graphql(`
   mutation MoveFileToProvider($id: ID!, $providerId: ID!) {
     moveFileToProvider(id: $id, providerId: $providerId) {
       ...FileItem
+    }
+  }
+`);
+
+export const ARCHIVE_FILE_MUTATION = graphql(`
+  mutation ArchiveFile($id: ID!) {
+    archiveFile(id: $id) {
+      id
+      type
+      title
+      message
+      progress
+      status
+      metadata
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const REQUEST_FILE_RESTORE_MUTATION = graphql(`
+  mutation RequestFileRestore($id: ID!, $input: RequestFileRestoreInput!) {
+    requestFileRestore(id: $id, input: $input) {
+      id
+      type
+      title
+      message
+      progress
+      status
+      metadata
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const REFRESH_FILE_LIFECYCLE_MUTATION = graphql(`
+  mutation RefreshFileLifecycle($id: ID!) {
+    refreshFileLifecycle(id: $id) {
+      state
+      storageClass
+      restoreRequestedAt
+      restoreExpiresAt
+      lastCheckedAt
     }
   }
 `);

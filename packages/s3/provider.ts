@@ -11,6 +11,7 @@ import {
 	HeadObjectCommand,
 	ListObjectsV2Command,
 	PutObjectCommand,
+	RestoreObjectCommand,
 	S3Client,
 	UploadPartCommand,
 } from "@aws-sdk/client-s3";
@@ -29,7 +30,9 @@ import type {
 	MoveOptions,
 	MultipartUploadResult,
 	ProviderConfig,
+	ProviderFileLifecycleState,
 	ProviderQuota,
+	RestoreRequestOptions,
 	UploadOptions,
 	UploadPartResult,
 	UploadResponse,
@@ -39,6 +42,13 @@ import { type S3Config, S3ConfigSchema } from "./schema";
 
 const FOLDER_MIME_TYPE = "application/x-directory";
 const DEFAULT_PAGE_SIZE = 100;
+const ARCHIVE_STORAGE_CLASS = "GLACIER";
+const ARCHIVE_STORAGE_CLASSES = new Set([
+	"GLACIER",
+	"DEEP_ARCHIVE",
+	"GLACIER_IR",
+	"INTELLIGENT_TIERING",
+]);
 
 function normalizePrefix(prefix?: string): string {
 	if (!prefix) return "";
@@ -691,6 +701,103 @@ export class S3Provider implements IStorageProvider {
 		this.config = null;
 	}
 
+	async archiveFile(remoteId: string): Promise<void> {
+		const { client, bucket } = this.ensureInitialized();
+		try {
+			await client.send(
+				new CopyObjectCommand({
+					Bucket: bucket,
+					Key: remoteId,
+					CopySource: `${bucket}/${remoteId}`,
+					StorageClass: ARCHIVE_STORAGE_CLASS,
+					MetadataDirective: "COPY",
+				}),
+			);
+		} catch (error) {
+			throw new ProviderError("s3", "Failed to archive object", {
+				error: mapAwsError(error),
+			});
+		}
+	}
+
+	async requestRestore(
+		remoteId: string,
+		options: RestoreRequestOptions,
+	): Promise<void> {
+		const { client, bucket } = this.ensureInitialized();
+		try {
+			await client.send(
+				new RestoreObjectCommand({
+					Bucket: bucket,
+					Key: remoteId,
+					RestoreRequest: {
+						Days: options.days,
+						GlacierJobParameters: {
+							Tier: toAwsRestoreTier(options.tier),
+						},
+					},
+				}),
+			);
+		} catch (error) {
+			throw new ProviderError("s3", "Failed to request restore", {
+				error: mapAwsError(error),
+			});
+		}
+	}
+
+	async getLifecycleState(
+		remoteId: string,
+	): Promise<ProviderFileLifecycleState> {
+		const { client, bucket } = this.ensureInitialized();
+		const now = new Date();
+		try {
+			const metadata = await client.send(
+				new HeadObjectCommand({
+					Bucket: bucket,
+					Key: remoteId,
+				}),
+			);
+			const storageClass = metadata.StorageClass;
+			const restoreHeader = metadata.Restore;
+			const isArchived = storageClass
+				? ARCHIVE_STORAGE_CLASSES.has(storageClass)
+				: false;
+			const restoreInfo = parseRestoreHeader(restoreHeader);
+
+			if (!isArchived) {
+				return {
+					state: "hot",
+					storageClass,
+					lastCheckedAt: now,
+				};
+			}
+			if (restoreInfo.ongoing) {
+				return {
+					state: "restoring",
+					storageClass,
+					lastCheckedAt: now,
+				};
+			}
+			if (restoreInfo.expiryDate) {
+				return {
+					state: "restored_temporary",
+					storageClass,
+					restoreExpiresAt: restoreInfo.expiryDate,
+					lastCheckedAt: now,
+				};
+			}
+			return {
+				state: "archived",
+				storageClass,
+				lastCheckedAt: now,
+			};
+		} catch (error) {
+			throw new ProviderError("s3", "Failed to get lifecycle state", {
+				error: mapAwsError(error),
+			});
+		}
+	}
+
 	private ensureInitialized(): { client: S3Client; bucket: string } {
 		if (!this.client || !this.config) {
 			throw new ProviderError("s3", "Provider not initialized");
@@ -750,4 +857,31 @@ export class S3Provider implements IStorageProvider {
 				: undefined;
 		} while (continuationToken);
 	}
+}
+
+function toAwsRestoreTier(tier: RestoreRequestOptions["tier"]) {
+	if (tier === "fast") return "Expedited";
+	if (tier === "bulk") return "Bulk";
+	return "Standard";
+}
+
+function parseRestoreHeader(restoreHeader?: string): {
+	ongoing: boolean;
+	expiryDate?: Date;
+} {
+	if (!restoreHeader) {
+		return { ongoing: false };
+	}
+
+	const ongoingMatch = restoreHeader.match(/ongoing-request="(true|false)"/i);
+	const ongoing = ongoingMatch?.[1]?.toLowerCase() === "true";
+	const expiryMatch = restoreHeader.match(/expiry-date="([^"]+)"/i);
+	const expiryDate = expiryMatch?.[1] ? new Date(expiryMatch[1]) : undefined;
+	return {
+		ongoing,
+		expiryDate:
+			expiryDate && !Number.isNaN(expiryDate.getTime())
+				? expiryDate
+				: undefined,
+	};
 }

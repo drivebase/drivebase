@@ -14,7 +14,9 @@ import type {
 	QueryResolvers,
 	SubscriptionResolvers,
 } from "../generated/types";
+import { FileLifecycleState, RestoreTier } from "../generated/types";
 import { type PubSubChannels, pubSub } from "../pubsub";
+import { toGraphqlJob } from "./activity";
 import { requireAuth } from "./auth-helpers";
 
 function toFileDownloadLinkType(downloadLink: {
@@ -39,11 +41,34 @@ function toFileDownloadLinkType(downloadLink: {
 	};
 }
 
+function toFileLifecycleState(state: string): FileLifecycleState {
+	if (state === "hot") return FileLifecycleState.Hot;
+	if (state === "archived") return FileLifecycleState.Archived;
+	if (state === "restore_requested") return FileLifecycleState.RestoreRequested;
+	if (state === "restoring") return FileLifecycleState.Restoring;
+	if (state === "restored_temporary")
+		return FileLifecycleState.RestoredTemporary;
+	return FileLifecycleState.Unknown;
+}
+
+function fromRestoreTier(tier: RestoreTier): "fast" | "standard" | "bulk" {
+	if (tier === RestoreTier.Fast) return "fast";
+	if (tier === RestoreTier.Bulk) return "bulk";
+	return "standard";
+}
+
 /**
  * Require authentication
  */
 
 export const fileResolvers: FileResolvers = {
+	lifecycle: (parent) => ({
+		state: toFileLifecycleState(parent.lifecycleState),
+		storageClass: parent.storageClass,
+		restoreRequestedAt: parent.restoreRequestedAt,
+		restoreExpiresAt: parent.restoreExpiresAt,
+		lastCheckedAt: parent.lifecycleCheckedAt,
+	}),
 	provider: async (parent, _args, context) => {
 		// We assume access to the file implies access to see provider basic info
 		const [provider] = await context.db
@@ -289,6 +314,50 @@ export const fileMutations: MutationResolvers = {
 			args.providerId,
 			workspaceId,
 		);
+	},
+
+	archiveFile: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		const job = await fileService.archiveFile(
+			args.id,
+			user.userId,
+			workspaceId,
+		);
+		return toGraphqlJob(job);
+	},
+
+	requestFileRestore: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		const job = await fileService.requestFileRestore(
+			args.id,
+			user.userId,
+			args.input.days,
+			fromRestoreTier(args.input.tier ?? RestoreTier.Standard),
+			workspaceId,
+		);
+		return toGraphqlJob(job);
+	},
+
+	refreshFileLifecycle: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		const lifecycle = await fileService.refreshFileLifecycle(
+			args.id,
+			user.userId,
+			workspaceId,
+		);
+		return {
+			state: toFileLifecycleState(lifecycle.state),
+			storageClass: lifecycle.storageClass,
+			restoreRequestedAt: lifecycle.restoreRequestedAt,
+			restoreExpiresAt: lifecycle.restoreExpiresAt,
+			lastCheckedAt: lifecycle.lastCheckedAt,
+		};
 	},
 
 	deleteFile: async (_parent, args, context) => {

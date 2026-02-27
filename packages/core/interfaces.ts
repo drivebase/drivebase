@@ -106,6 +106,42 @@ export interface ListResult {
 	nextPageToken?: string;
 }
 
+export type LifecycleRestoreTier = "fast" | "standard" | "bulk";
+
+export interface ArchiveRequestOptions {
+	/**
+	 * Reserved for provider-specific options in future versions.
+	 */
+	metadata?: Record<string, unknown>;
+}
+
+export interface RestoreRequestOptions {
+	/**
+	 * Number of days to keep the restored object accessible.
+	 */
+	days: number;
+	/**
+	 * Retrieval speed tier, normalized across providers.
+	 */
+	tier: LifecycleRestoreTier;
+}
+
+export type ProviderLifecycleState =
+	| "hot"
+	| "archived"
+	| "restore_requested"
+	| "restoring"
+	| "restored_temporary"
+	| "unknown";
+
+export interface ProviderFileLifecycleState {
+	state: ProviderLifecycleState;
+	storageClass?: string;
+	restoreRequestedAt?: Date;
+	restoreExpiresAt?: Date;
+	lastCheckedAt: Date;
+}
+
 /**
  * Storage provider interface
  * All storage providers must implement this interface
@@ -244,6 +280,27 @@ export interface IStorageProvider {
 	 * Abort a multipart upload and clean up uploaded parts
 	 */
 	abortMultipartUpload?(uploadId: string, remoteId: string): Promise<void>;
+
+	/**
+	 * Archive a file/object in cold storage when supported by the provider.
+	 */
+	archiveFile?(
+		remoteId: string,
+		options?: ArchiveRequestOptions,
+	): Promise<void>;
+
+	/**
+	 * Request temporary restore for an archived file/object.
+	 */
+	requestRestore?(
+		remoteId: string,
+		options: RestoreRequestOptions,
+	): Promise<void>;
+
+	/**
+	 * Get the provider lifecycle state for an object.
+	 */
+	getLifecycleState?(remoteId: string): Promise<ProviderFileLifecycleState>;
 }
 
 /**

@@ -6,6 +6,11 @@ import {
 	startAnalysisWorker,
 	stopAnalysisWorker,
 } from "./queue/analysis-worker";
+import { closeFileLifecycleQueue } from "./queue/file-lifecycle-queue";
+import {
+	startFileLifecycleWorker,
+	stopFileLifecycleWorker,
+} from "./queue/file-lifecycle-worker";
 import { closeSyncQueue } from "./queue/sync-queue";
 import { startSyncWorker, stopSyncWorker } from "./queue/sync-worker";
 import { closeTransferQueue } from "./queue/transfer-queue";
@@ -84,6 +89,7 @@ startUploadWorker();
 startSyncWorker();
 startTransferWorker();
 startAnalysisWorker();
+startFileLifecycleWorker();
 
 logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
 
@@ -108,6 +114,8 @@ async function shutdown() {
 	await closeTransferQueue();
 	await stopAnalysisWorker();
 	await closeAnalysisQueue();
+	await stopFileLifecycleWorker();
+	await closeFileLifecycleQueue();
 	telemetry.capture("server_shutdown");
 	await telemetry.shutdown();
 	process.exit(0);

@@ -30,6 +30,13 @@ export const FileFragment = graphql(`
     starred
     createdAt
     updatedAt
+    lifecycle {
+      state
+      storageClass
+      restoreRequestedAt
+      restoreExpiresAt
+      lastCheckedAt
+    }
     provider {
       id
       name

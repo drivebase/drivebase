@@ -15,6 +15,14 @@ import { vaults } from "./vaults";
 import { workspaces } from "./workspaces";
 
 export const nodeTypeEnum = pgEnum("node_type", ["file", "folder"]);
+export const fileLifecycleStateEnum = pgEnum("file_lifecycle_state", [
+	"hot",
+	"archived",
+	"restore_requested",
+	"restoring",
+	"restored_temporary",
+	"unknown",
+]);
 
 /**
  * Unified metadata node table (file + folder).
@@ -57,6 +65,17 @@ export const nodes = pgTable(
 		mimeType: text("mime_type").notNull().default(""),
 		size: bigint("size", { mode: "number" }).notNull().default(0),
 		hash: text("hash"),
+		lifecycleState: fileLifecycleStateEnum("lifecycle_state")
+			.notNull()
+			.default("hot"),
+		storageClass: text("storage_class"),
+		restoreRequestedAt: timestamp("restore_requested_at", {
+			withTimezone: true,
+		}),
+		restoreExpiresAt: timestamp("restore_expires_at", { withTimezone: true }),
+		lifecycleCheckedAt: timestamp("lifecycle_checked_at", {
+			withTimezone: true,
+		}),
 		isEncrypted: boolean("is_encrypted").notNull().default(false),
 		encryptedFileKey: text("encrypted_file_key"),
 		encryptedChunkSize: integer("encrypted_chunk_size"),
