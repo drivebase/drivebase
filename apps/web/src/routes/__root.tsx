@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { NotFound } from "@/components/not-found";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
+import { FileDetailsDialog } from "@/features/files/FileDetailsDialog";
 import { JobPanel } from "@/shared/components/JobPanel";
 import { TransferProgressPanel } from "@/shared/components/TransferProgressPanel";
 import { useActivityFeed } from "@/shared/hooks/useActivityFeed";
@@ -31,6 +32,7 @@ function RootComponent() {
 			<ConfirmDialogHost />
 			<PromptDialogHost />
 			<DownloadLinkConfigDialogHost />
+			<FileDetailsDialog />
 			<JobPanel />
 			<TransferProgressPanel />
 			<Toaster position="bottom-right" theme={theme} />

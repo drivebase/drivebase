@@ -1,15 +1,15 @@
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
+import { FileText, ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { FileMimeIcon } from "@/features/files/FileMimeIcon";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	useArchiveFile,
 	useFile,
 	useRefreshFileLifecycle,
 	useRequestFileRestore,
 } from "@/features/files/hooks/useFiles";
-import { formatFileTypeLabel, formatSize } from "@/features/files/utils";
+import { formatSize, getFileKind } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import { RestoreTier } from "@/gql/graphql";
 import { promptDialog } from "@/shared/lib/promptDialog";
@@ -43,155 +43,219 @@ export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 		);
 	}
 
+	const kind = getFileKind(file.mimeType);
+	const isPreviewable = kind === "image" || kind === "text";
+	const defaultTab = isPreviewable ? "preview" : "file";
+
 	return (
-		<div className="space-y-5">
-			<div className="flex items-center gap-3">
-				<FileMimeIcon mimeType={file.mimeType} />
-				<div>
-					<h3 className="text-base font-semibold break-all">{file.name}</h3>
-					<p className="text-xs text-muted-foreground">
-						{formatFileTypeLabel(file.mimeType)}
-					</p>
-				</div>
-			</div>
+		<Tabs defaultValue={defaultTab} className="w-full">
+			<TabsList variant="line" className="mb-4">
+				{isPreviewable && <TabsTrigger value="preview">Preview</TabsTrigger>}
+				<TabsTrigger value="file">File</TabsTrigger>
+				<TabsTrigger value="metadata">Metadata</TabsTrigger>
+			</TabsList>
 
-			<div className="space-y-2">
-				<div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-					Storage Provider
-				</div>
-				<div className="flex items-center gap-2 text-sm">
-					<ProviderIcon type={file.provider.type} className="h-4 w-4" />
-					<span>{file.provider.name}</span>
-					<span className="text-muted-foreground">
-						({file.provider.type.replace("_", " ")})
-					</span>
-				</div>
-			</div>
-			{supportsLifecycle ? (
-				<div className="flex gap-2">
-					{file.lifecycle.state === "HOT" ? (
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={async () => {
-								const result = await archiveFile({ id: file.id });
-								if (result.error) {
-									toast.error(result.error.message);
-									return;
-								}
-								toast.success("Archive job queued");
-							}}
-						>
-							Archive
-						</Button>
-					) : null}
-					{file.lifecycle.state !== "HOT" ? (
-						<Button
-							size="sm"
-							onClick={async () => {
-								const input = await promptDialog(
-									"Restore duration",
-									"How many days should this file stay restored?",
-									{
-										defaultValue: "7",
-										placeholder: "7",
-										submitLabel: "Request restore",
-									},
-								);
-								if (!input) {
-									return;
-								}
-								const days = Number.parseInt(input, 10);
-								if (!Number.isInteger(days) || days < 1 || days > 30) {
-									toast.error("Days must be between 1 and 30");
-									return;
-								}
-								const result = await requestFileRestore({
-									id: file.id,
-									input: { days, tier: RestoreTier.Standard },
-								});
-								if (result.error) {
-									toast.error(result.error.message);
-									return;
-								}
-								toast.success("Restore job queued");
-							}}
-						>
-							Request Restore
-						</Button>
-					) : null}
-					<Button
-						size="sm"
-						variant="ghost"
-						onClick={async () => {
-							const result = await refreshFileLifecycle({ id: file.id });
-							if (result.error) {
-								toast.error(result.error.message);
-								return;
-							}
-							toast.success("Lifecycle refreshed");
-						}}
-					>
-						Refresh Lifecycle
-					</Button>
-				</div>
-			) : null}
+			{isPreviewable && (
+				<TabsContent value="preview">
+					<PreviewPlaceholder kind={kind} name={file.name} />
+				</TabsContent>
+			)}
 
-			<div className="space-y-3 text-sm">
-				<div className="flex justify-between gap-4">
-					<span className="text-muted-foreground">File ID</span>
-					<span className="text-right break-all font-mono text-xs">
-						{file.id}
-					</span>
-				</div>
-				<div className="flex justify-between gap-4">
-					<span className="text-muted-foreground">MIME Type</span>
-					<span className="text-right break-all">{file.mimeType}</span>
-				</div>
-				<div className="flex justify-between gap-4">
-					<span className="text-muted-foreground">Size</span>
-					<span>{formatSize(file.size)}</span>
-				</div>
-				<div className="flex justify-between gap-4">
-					<span className="text-muted-foreground">Path</span>
-					<span className="text-right break-all">{file.virtualPath}</span>
-				</div>
-				<div className="flex justify-between gap-4">
-					<span className="text-muted-foreground">Uploaded By</span>
-					<span className="text-right">{file.user?.email ?? "Unknown"}</span>
-				</div>
-				<div className="flex justify-between gap-4">
-					<span className="text-muted-foreground">Created</span>
-					<span>{format(new Date(file.createdAt), "MMM dd, yyyy HH:mm")}</span>
-				</div>
-				<div className="flex justify-between gap-4">
-					<span className="text-muted-foreground">Updated</span>
-					<span>{format(new Date(file.updatedAt), "MMM dd, yyyy HH:mm")}</span>
-				</div>
-				<div className="flex justify-between gap-4">
-					<span className="text-muted-foreground">Lifecycle</span>
-					<span className="text-right">
-						{formatLifecycle(file.lifecycle.state)}
-					</span>
-				</div>
-				{file.lifecycle.storageClass ? (
-					<div className="flex justify-between gap-4">
-						<span className="text-muted-foreground">Storage Class</span>
-						<span className="text-right">{file.lifecycle.storageClass}</span>
-					</div>
-				) : null}
-				{file.lifecycle.restoreExpiresAt ? (
-					<div className="flex justify-between gap-4">
-						<span className="text-muted-foreground">Restore Expires</span>
-						<span>
-							{format(
-								new Date(file.lifecycle.restoreExpiresAt),
-								"MMM dd, yyyy HH:mm",
-							)}
+			<TabsContent value="file" className="space-y-5">
+				<div className="space-y-2">
+					<SectionLabel>Storage Provider</SectionLabel>
+					<div className="flex items-center gap-2 text-sm">
+						<ProviderIcon type={file.provider.type} className="h-4 w-4" />
+						<span>{file.provider.name}</span>
+						<span className="text-muted-foreground">
+							({file.provider.type.replace("_", " ")})
 						</span>
 					</div>
-				) : null}
+				</div>
+
+				{supportsLifecycle && (
+					<div className="flex flex-wrap gap-2">
+						{file.lifecycle.state === "HOT" ? (
+							<Button
+								size="sm"
+								variant="outline"
+								onClick={async () => {
+									const result = await archiveFile({ id: file.id });
+									if (result.error) {
+										toast.error(result.error.message);
+										return;
+									}
+									toast.success("Archive job queued");
+								}}
+							>
+								Archive
+							</Button>
+						) : null}
+						{file.lifecycle.state !== "HOT" ? (
+							<Button
+								size="sm"
+								onClick={async () => {
+									const input = await promptDialog(
+										"Restore duration",
+										"How many days should this file stay restored?",
+										{
+											defaultValue: "7",
+											placeholder: "7",
+											submitLabel: "Request restore",
+										},
+									);
+									if (!input) return;
+									const days = Number.parseInt(input, 10);
+									if (!Number.isInteger(days) || days < 1 || days > 30) {
+										toast.error("Days must be between 1 and 30");
+										return;
+									}
+									const result = await requestFileRestore({
+										id: file.id,
+										input: { days, tier: RestoreTier.Standard },
+									});
+									if (result.error) {
+										toast.error(result.error.message);
+										return;
+									}
+									toast.success("Restore job queued");
+								}}
+							>
+								Request Restore
+							</Button>
+						) : null}
+						<Button
+							size="sm"
+							variant="ghost"
+							onClick={async () => {
+								const result = await refreshFileLifecycle({ id: file.id });
+								if (result.error) {
+									toast.error(result.error.message);
+									return;
+								}
+								toast.success("Lifecycle refreshed");
+							}}
+						>
+							Refresh Lifecycle
+						</Button>
+					</div>
+				)}
+
+				<div className="space-y-3">
+					<DetailRow label="Size" value={formatSize(file.size)} />
+					<DetailRow label="MIME Type" value={file.mimeType} />
+					<DetailRow label="Path" value={file.virtualPath} mono />
+					<DetailRow label="File ID" value={file.id} mono />
+					<DetailRow label="Remote ID" value={file.remoteId} mono />
+					<DetailRow label="Hash" value={file.hash ?? "—"} mono />
+				</div>
+			</TabsContent>
+
+			<TabsContent value="metadata" className="space-y-3">
+				<DetailRow label="Uploaded By" value={file.user?.email ?? "Unknown"} />
+				<DetailRow
+					label="Created"
+					value={format(new Date(file.createdAt), "MMM dd, yyyy HH:mm")}
+				/>
+				<DetailRow
+					label="Updated"
+					value={format(new Date(file.updatedAt), "MMM dd, yyyy HH:mm")}
+				/>
+				<DetailRow
+					label="Lifecycle"
+					value={formatLifecycle(file.lifecycle.state)}
+				/>
+				<DetailRow
+					label="Storage Class"
+					value={file.lifecycle.storageClass ?? "—"}
+				/>
+				<DetailRow
+					label="Restore Requested"
+					value={
+						file.lifecycle.restoreRequestedAt
+							? format(
+									new Date(file.lifecycle.restoreRequestedAt),
+									"MMM dd, yyyy HH:mm",
+								)
+							: "—"
+					}
+				/>
+				<DetailRow
+					label="Restore Expires"
+					value={
+						file.lifecycle.restoreExpiresAt
+							? format(
+									new Date(file.lifecycle.restoreExpiresAt),
+									"MMM dd, yyyy HH:mm",
+								)
+							: "—"
+					}
+				/>
+				<DetailRow
+					label="Last Checked"
+					value={
+						file.lifecycle.lastCheckedAt
+							? format(
+									new Date(file.lifecycle.lastCheckedAt),
+									"MMM dd, yyyy HH:mm",
+								)
+							: "—"
+					}
+				/>
+			</TabsContent>
+		</Tabs>
+	);
+}
+
+function PreviewPlaceholder({
+	kind,
+	name,
+}: {
+	kind: "image" | "text";
+	name: string;
+}) {
+	return (
+		<div className="flex flex-col items-center justify-center gap-4 py-16 text-muted-foreground rounded-lg bg-muted/40">
+			{kind === "image" ? (
+				<ImageIcon className="h-12 w-12 opacity-30" />
+			) : (
+				<FileText className="h-12 w-12 opacity-30" />
+			)}
+			<div className="text-center space-y-1">
+				<p className="text-sm font-medium text-foreground/60 truncate max-w-xs">
+					{name}
+				</p>
+				<p className="text-xs">
+					{kind === "image" ? "Image preview" : "Text preview"} coming soon
+				</p>
 			</div>
+		</div>
+	);
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+	return (
+		<div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+			{children}
+		</div>
+	);
+}
+
+function DetailRow({
+	label,
+	value,
+	mono = false,
+}: {
+	label: string;
+	value: string;
+	mono?: boolean;
+}) {
+	return (
+		<div className="grid grid-cols-[140px_1fr] gap-3 items-start text-sm">
+			<span className="text-muted-foreground">{label}</span>
+			<span className={mono ? "break-all font-mono text-xs" : "break-all"}>
+				{value}
+			</span>
 		</div>
 	);
 }
