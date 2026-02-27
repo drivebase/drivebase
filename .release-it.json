@@ -4,7 +4,7 @@
 		"commitMessage": "chore: release v${version}"
 	},
 	"github": {
-		"release": true,
+		"release": false,
 		"tokenRef": "GITHUB_TOKEN",
 		"releaseName": "v${version}"
 	},
