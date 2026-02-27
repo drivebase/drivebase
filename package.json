@@ -1,6 +1,6 @@
 {
 	"name": "drivebase",
-	"version": "3.0.0",
+	"version": "5.2.1",
 	"private": true,
 	"workspaces": [
 		"apps/api",
