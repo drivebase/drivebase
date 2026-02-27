@@ -30,7 +30,20 @@ export function useDownload() {
 
 			try {
 				const result = await requestDownload({ id: file.id });
-				if (result.error) throw new Error(result.error.message);
+				if (result.error) {
+					const detail = result.error.graphQLErrors.find((gqlError) => {
+						const details = gqlError.extensions?.details as
+							| Record<string, unknown>
+							| undefined;
+						return details?.requiresRestore === true;
+					});
+					if (detail) {
+						throw new Error(
+							"This file is archived. Request restore before downloading.",
+						);
+					}
+					throw new Error(result.error.message);
+				}
 
 				const response = result.data?.requestDownload;
 				if (!response?.downloadUrl)

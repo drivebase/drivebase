@@ -39,6 +39,22 @@ export interface File extends BaseEntity {
 	size: number;
 	/** MD5 hash for deduplication and integrity */
 	hash?: string;
+	/** Lifecycle state for hot/cold archival */
+	lifecycleState?:
+		| "hot"
+		| "archived"
+		| "restore_requested"
+		| "restoring"
+		| "restored_temporary"
+		| "unknown";
+	/** Provider-specific storage class (if available) */
+	storageClass?: string;
+	/** Time restore was requested for archived data */
+	restoreRequestedAt?: Date;
+	/** Time temporary restore access expires */
+	restoreExpiresAt?: Date;
+	/** Last lifecycle sync time */
+	lifecycleCheckedAt?: Date;
 	/** Provider-specific identifier for the file */
 	remoteId: string;
 	/** Storage provider ID */

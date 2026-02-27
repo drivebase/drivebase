@@ -1,9 +1,18 @@
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { FileMimeIcon } from "@/features/files/FileMimeIcon";
-import { useFile } from "@/features/files/hooks/useFiles";
+import {
+	useArchiveFile,
+	useFile,
+	useRefreshFileLifecycle,
+	useRequestFileRestore,
+} from "@/features/files/hooks/useFiles";
 import { formatFileTypeLabel, formatSize } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
+import { RestoreTier } from "@/gql/graphql";
+import { promptDialog } from "@/shared/lib/promptDialog";
 
 interface FileInfoPanelProps {
 	fileId: string;
@@ -11,7 +20,11 @@ interface FileInfoPanelProps {
 
 export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 	const { data, fetching, error } = useFile(fileId);
+	const [, archiveFile] = useArchiveFile();
+	const [, requestFileRestore] = useRequestFileRestore();
+	const [, refreshFileLifecycle] = useRefreshFileLifecycle();
 	const file = data?.file;
+	const supportsLifecycle = file?.provider.type === "S3";
 
 	if (fetching) {
 		return (
@@ -54,6 +67,75 @@ export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 					</span>
 				</div>
 			</div>
+			{supportsLifecycle ? (
+				<div className="flex gap-2">
+					{file.lifecycle.state === "HOT" ? (
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={async () => {
+								const result = await archiveFile({ id: file.id });
+								if (result.error) {
+									toast.error(result.error.message);
+									return;
+								}
+								toast.success("Archive job queued");
+							}}
+						>
+							Archive
+						</Button>
+					) : null}
+					{file.lifecycle.state !== "HOT" ? (
+						<Button
+							size="sm"
+							onClick={async () => {
+								const input = await promptDialog(
+									"Restore duration",
+									"How many days should this file stay restored?",
+									{
+										defaultValue: "7",
+										placeholder: "7",
+										submitLabel: "Request restore",
+									},
+								);
+								if (!input) {
+									return;
+								}
+								const days = Number.parseInt(input, 10);
+								if (!Number.isInteger(days) || days < 1 || days > 30) {
+									toast.error("Days must be between 1 and 30");
+									return;
+								}
+								const result = await requestFileRestore({
+									id: file.id,
+									input: { days, tier: RestoreTier.Standard },
+								});
+								if (result.error) {
+									toast.error(result.error.message);
+									return;
+								}
+								toast.success("Restore job queued");
+							}}
+						>
+							Request Restore
+						</Button>
+					) : null}
+					<Button
+						size="sm"
+						variant="ghost"
+						onClick={async () => {
+							const result = await refreshFileLifecycle({ id: file.id });
+							if (result.error) {
+								toast.error(result.error.message);
+								return;
+							}
+							toast.success("Lifecycle refreshed");
+						}}
+					>
+						Refresh Lifecycle
+					</Button>
+				</div>
+			) : null}
 
 			<div className="space-y-3 text-sm">
 				<div className="flex justify-between gap-4">
@@ -86,7 +168,34 @@ export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 					<span className="text-muted-foreground">Updated</span>
 					<span>{format(new Date(file.updatedAt), "MMM dd, yyyy HH:mm")}</span>
 				</div>
+				<div className="flex justify-between gap-4">
+					<span className="text-muted-foreground">Lifecycle</span>
+					<span className="text-right">
+						{formatLifecycle(file.lifecycle.state)}
+					</span>
+				</div>
+				{file.lifecycle.storageClass ? (
+					<div className="flex justify-between gap-4">
+						<span className="text-muted-foreground">Storage Class</span>
+						<span className="text-right">{file.lifecycle.storageClass}</span>
+					</div>
+				) : null}
+				{file.lifecycle.restoreExpiresAt ? (
+					<div className="flex justify-between gap-4">
+						<span className="text-muted-foreground">Restore Expires</span>
+						<span>
+							{format(
+								new Date(file.lifecycle.restoreExpiresAt),
+								"MMM dd, yyyy HH:mm",
+							)}
+						</span>
+					</div>
+				) : null}
 			</div>
 		</div>
 	);
+}
+
+function formatLifecycle(state: string): string {
+	return state.toLowerCase().replace(/_/g, " ");
 }

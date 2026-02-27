@@ -1,0 +1,59 @@
+---
+title: S3 Lifecycle & Restore
+description: Archive and temporary restore behavior for S3-compatible providers
+---
+
+Drivebase supports file lifecycle operations for S3 providers, including archive transitions and temporary restore requests.
+
+## Lifecycle States
+
+Drivebase exposes these normalized lifecycle states:
+
+| State | Meaning | Download Behavior |
+| :--- | :--- | :--- |
+| `HOT` | Object is in normal online storage. | Allowed |
+| `ARCHIVED` | Object is in archive storage and not restored. | Blocked |
+| `RESTORE_REQUESTED` | Restore request accepted and queued by provider. | Blocked |
+| `RESTORING` | Provider indicates restore is in progress. | Blocked |
+| `RESTORED_TEMPORARY` | Archived object is temporarily available after restore. | Allowed until expiry |
+| `UNKNOWN` | Provider state could not be mapped confidently. | Treated conservatively |
+
+## Restore Inputs
+
+When requesting restore, Drivebase accepts:
+
+- `days`: Number of days to keep temporary restored access.
+- `tier`: Retrieval speed tier.
+
+Drivebase maps generic tiers to S3 Glacier tiers:
+
+| Drivebase Tier | AWS Glacier Tier |
+| :--- | :--- |
+| `FAST` | `Expedited` |
+| `STANDARD` | `Standard` |
+| `BULK` | `Bulk` |
+
+## State Metadata
+
+In addition to state, Drivebase tracks:
+
+- `storageClass`: Provider storage class (for example `GLACIER` or `DEEP_ARCHIVE`).
+- `restoreRequestedAt`: Timestamp when restore was requested.
+- `restoreExpiresAt`: Timestamp when temporary restored access expires.
+- `lastCheckedAt`: Last provider lifecycle status refresh time.
+
+## Download Guard Behavior
+
+Drivebase blocks downloads for lifecycle states that are not immediately readable:
+
+- `ARCHIVED`
+- `RESTORE_REQUESTED`
+- `RESTORING`
+
+For `RESTORED_TEMPORARY`, downloads are allowed until `restoreExpiresAt`.
+
+## Compatibility Notes
+
+- Lifecycle operations are currently available for S3 providers.
+- Some S3-compatible vendors may not support all restore tiers.
+- Unsupported lifecycle operations are rejected with a provider capability error.

@@ -16,6 +16,7 @@ type File {
 	starred: Boolean!
 	createdAt: DateTime!
 	updatedAt: DateTime!
+	lifecycle: FileLifecycle!
 
 	"""
 	Storage provider
@@ -31,6 +32,29 @@ type File {
 	User who uploaded
 	"""
 	user: User!
+}
+
+enum FileLifecycleState {
+	HOT
+	ARCHIVED
+	RESTORE_REQUESTED
+	RESTORING
+	RESTORED_TEMPORARY
+	UNKNOWN
+}
+
+enum RestoreTier {
+	FAST
+	STANDARD
+	BULK
+}
+
+type FileLifecycle {
+	state: FileLifecycleState!
+	storageClass: String
+	restoreRequestedAt: DateTime
+	restoreExpiresAt: DateTime
+	lastCheckedAt: DateTime
 }
 
 type FileConnection {
@@ -132,6 +156,9 @@ extend type Mutation {
 	Move file to a different storage provider (queued background transfer)
 	"""
 	moveFileToProvider(id: ID!, providerId: ID!): File!
+	archiveFile(id: ID!): Job!
+	requestFileRestore(id: ID!, input: RequestFileRestoreInput!): Job!
+	refreshFileLifecycle(id: ID!): FileLifecycle!
 
 	"""
 	Delete file (soft delete)
@@ -189,6 +216,11 @@ input RequestUploadInput {
 	size: Float!
 	folderId: ID
 	providerId: ID!
+}
+
+input RequestFileRestoreInput {
+	days: Int!
+	tier: RestoreTier = STANDARD
 }
 
 type UploadResponse {

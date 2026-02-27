@@ -44,3 +44,9 @@ To connect an S3 provider, you will need:
 
 - **IAM Policies**: Use a restricted IAM user or access key that only has permissions for the specific bucket used by Drivebase.
 - **CORS**: If you plan to use direct uploads (browser to S3), ensure your bucket's CORS policy allows requests from your Drivebase frontend domain.
+
+## Lifecycle and Restore
+
+Drivebase supports lifecycle operations for S3 providers, including archive and temporary restore requests.
+
+- See **[S3 Lifecycle & Restore](/docs/storage-providers/s3-lifecycle-restore)** for state definitions, restore tiers, and behavior details.
