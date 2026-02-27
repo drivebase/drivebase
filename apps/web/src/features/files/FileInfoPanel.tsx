@@ -24,6 +24,7 @@ export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 	const [, requestFileRestore] = useRequestFileRestore();
 	const [, refreshFileLifecycle] = useRefreshFileLifecycle();
 	const file = data?.file;
+	const supportsLifecycle = file?.provider.type === "S3";
 
 	if (fetching) {
 		return (
@@ -66,73 +67,75 @@ export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 					</span>
 				</div>
 			</div>
-			<div className="flex gap-2">
-				{file.lifecycle.state === "HOT" ? (
+			{supportsLifecycle ? (
+				<div className="flex gap-2">
+					{file.lifecycle.state === "HOT" ? (
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={async () => {
+								const result = await archiveFile({ id: file.id });
+								if (result.error) {
+									toast.error(result.error.message);
+									return;
+								}
+								toast.success("Archive job queued");
+							}}
+						>
+							Archive
+						</Button>
+					) : null}
+					{file.lifecycle.state !== "HOT" ? (
+						<Button
+							size="sm"
+							onClick={async () => {
+								const input = await promptDialog(
+									"Restore duration",
+									"How many days should this file stay restored?",
+									{
+										defaultValue: "7",
+										placeholder: "7",
+										submitLabel: "Request restore",
+									},
+								);
+								if (!input) {
+									return;
+								}
+								const days = Number.parseInt(input, 10);
+								if (!Number.isInteger(days) || days < 1 || days > 30) {
+									toast.error("Days must be between 1 and 30");
+									return;
+								}
+								const result = await requestFileRestore({
+									id: file.id,
+									input: { days, tier: RestoreTier.Standard },
+								});
+								if (result.error) {
+									toast.error(result.error.message);
+									return;
+								}
+								toast.success("Restore job queued");
+							}}
+						>
+							Request Restore
+						</Button>
+					) : null}
 					<Button
 						size="sm"
-						variant="outline"
+						variant="ghost"
 						onClick={async () => {
-							const result = await archiveFile({ id: file.id });
+							const result = await refreshFileLifecycle({ id: file.id });
 							if (result.error) {
 								toast.error(result.error.message);
 								return;
 							}
-							toast.success("Archive job queued");
+							toast.success("Lifecycle refreshed");
 						}}
 					>
-						Archive
+						Refresh Lifecycle
 					</Button>
-				) : null}
-				{file.lifecycle.state !== "HOT" ? (
-					<Button
-						size="sm"
-						onClick={async () => {
-							const input = await promptDialog(
-								"Restore duration",
-								"How many days should this file stay restored?",
-								{
-									defaultValue: "7",
-									placeholder: "7",
-									submitLabel: "Request restore",
-								},
-							);
-							if (!input) {
-								return;
-							}
-							const days = Number.parseInt(input, 10);
-							if (!Number.isInteger(days) || days < 1 || days > 30) {
-								toast.error("Days must be between 1 and 30");
-								return;
-							}
-							const result = await requestFileRestore({
-								id: file.id,
-								input: { days, tier: RestoreTier.Standard },
-							});
-							if (result.error) {
-								toast.error(result.error.message);
-								return;
-							}
-							toast.success("Restore job queued");
-						}}
-					>
-						Request Restore
-					</Button>
-				) : null}
-				<Button
-					size="sm"
-					variant="ghost"
-					onClick={async () => {
-						const result = await refreshFileLifecycle({ id: file.id });
-						if (result.error) {
-							toast.error(result.error.message);
-							return;
-						}
-						toast.success("Lifecycle refreshed");
-					}}
-				>
-					Refresh Lifecycle
-				</Button>
-			</div>
+				</div>
+			) : null}
 
 			<div className="space-y-3 text-sm">
 				<div className="flex justify-between gap-4">
