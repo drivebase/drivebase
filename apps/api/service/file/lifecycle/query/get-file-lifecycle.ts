@@ -1,6 +1,6 @@
 import type { Database } from "@drivebase/db";
-import { toLifecycleView } from "../shared/mapping";
 import { getFile } from "../../query/file-read";
+import { toLifecycleView } from "../shared/mapping";
 
 export async function getFileLifecycle(
 	db: Database,

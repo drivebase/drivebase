@@ -8,15 +8,15 @@ import { enqueueFileAnalysis } from "../../service/ai/analysis-jobs";
 import { FileService } from "../../service/file";
 import { UploadSessionManager } from "../../service/file/upload";
 import { ProviderService } from "../../service/provider";
-import { toGraphqlJob } from "./activity";
-import { FileLifecycleState, RestoreTier } from "../generated/types";
 import type {
 	FileResolvers,
 	MutationResolvers,
 	QueryResolvers,
 	SubscriptionResolvers,
 } from "../generated/types";
+import { FileLifecycleState, RestoreTier } from "../generated/types";
 import { type PubSubChannels, pubSub } from "../pubsub";
+import { toGraphqlJob } from "./activity";
 import { requireAuth } from "./auth-helpers";
 
 function toFileDownloadLinkType(downloadLink: {

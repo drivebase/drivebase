@@ -1,6 +1,6 @@
 import { Queue } from "bullmq";
-import type { RestoreTier } from "../service/file/lifecycle/shared/types";
 import { createBullMQConnection } from "../redis/client";
+import type { RestoreTier } from "../service/file/lifecycle/shared/types";
 
 export type FileLifecycleJobAction = "archive" | "restore";
 

@@ -1,12 +1,12 @@
 import { createClient as createSSEClient } from "graphql-sse";
-import { map, pipe } from "wonka";
 import {
 	Client,
-	type Exchange,
 	cacheExchange,
+	type Exchange,
 	fetchExchange,
 	subscriptionExchange,
 } from "urql";
+import { map, pipe } from "wonka";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
 
 const API_URL =

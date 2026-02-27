@@ -10,8 +10,8 @@ import {
 	useRequestFileRestore,
 } from "@/features/files/hooks/useFiles";
 import { formatFileTypeLabel, formatSize } from "@/features/files/utils";
-import { RestoreTier } from "@/gql/graphql";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
+import { RestoreTier } from "@/gql/graphql";
 import { promptDialog } from "@/shared/lib/promptDialog";
 
 interface FileInfoPanelProps {

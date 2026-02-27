@@ -1,16 +1,16 @@
-import { ValidationError, sleep } from "@drivebase/core";
+import { sleep, ValidationError } from "@drivebase/core";
 import { files, getDb } from "@drivebase/db";
+import { Worker } from "bullmq";
 import { eq } from "drizzle-orm";
+import { createBullMQConnection } from "../redis/client";
 import { ActivityService } from "../service/activity";
+import { mapProviderLifecycleState } from "../service/file/lifecycle/shared/mapping";
 import { ProviderService } from "../service/provider";
 import { logger } from "../utils/logger";
 import {
 	type FileLifecycleJobData,
 	getFileLifecycleQueue,
 } from "./file-lifecycle-queue";
-import { Worker } from "bullmq";
-import { createBullMQConnection } from "../redis/client";
-import { mapProviderLifecycleState } from "../service/file/lifecycle/shared/mapping";
 
 const RESTORE_POLL_ATTEMPTS = 12;
 const RESTORE_POLL_DELAY_MS = 5000;
