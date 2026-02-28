@@ -1,5 +1,6 @@
-<img width="2167" height="1579" alt="drivebase-banner" src="https://github.com/user-attachments/assets/77f0b47e-6230-42ef-bd07-368a7de36a48" />
 
+
+<img width="2167" height="1579" alt="drivebase-banner" src="https://github.com/user-attachments/assets/77f0b47e-6230-42ef-bd07-368a7de36a48" />
 
 <p align="center">
   <a href="https://t.me/+fWEMYD3gp61lYWZl">
@@ -15,9 +16,14 @@
 
 Drivebase is a cloud-agnostic file management platform for people and teams using multiple storage providers. It gives you one unified file and folder workspace across providers, with Vault for end-to-end encrypted uploads and Smart Uploads for rule-based file routing. The goal is to reduce provider lock-in while keeping storage ownership and control in your hands.
 
-<a href="https://deepwiki.com/drivebase/drivebase">
-  <img src="https://deepwiki.com/badge.svg" alt="Documentation" />
-</a> 
+<p align="center">
+  <a href="https://deepwiki.com/drivebase/drivebase">
+    <img src="https://deepwiki.com/badge.svg" alt="Documentation" />
+  </a> 
+  <a href="https://www.youtube.com/watch?v=QuKxvCgBwPg">
+    <img src="https://img.shields.io/badge/YouTube-%23FF0000.svg?logo=YouTube&logoColor=white" />
+  </a> 
+</p>
 
 ---
 
