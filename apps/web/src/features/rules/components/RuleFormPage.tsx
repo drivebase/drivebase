@@ -1,8 +1,10 @@
 import { Trans } from "@lingui/react/macro";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { useClient } from "urql";
 import { Button } from "@/components/ui/button";
 import type { GetFileRulesQuery } from "@/gql/graphql";
+import { FILE_RULES_QUERY } from "../api/rule";
 import { useCreateFileRule, useUpdateFileRule } from "../hooks/useRules";
 import type { RuleConditionGroups } from "./ConditionGroupEditor";
 import { RuleForm, type RuleFormValues } from "./RuleForm";
@@ -17,6 +19,7 @@ interface RuleFormPageProps {
 
 export function RuleFormPage({ rule, onSuccess, onCancel }: RuleFormPageProps) {
 	const isEditing = Boolean(rule);
+	const client = useClient();
 	const [, createRule] = useCreateFileRule();
 	const [, updateRule] = useUpdateFileRule();
 
@@ -39,6 +42,9 @@ export function RuleFormPage({ rule, onSuccess, onCancel }: RuleFormPageProps) {
 			}
 			toast.success("Rule created");
 		}
+		await client
+			.query(FILE_RULES_QUERY, {}, { requestPolicy: "network-only" })
+			.toPromise();
 		onSuccess();
 	};
 
