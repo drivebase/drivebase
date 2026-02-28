@@ -9,8 +9,7 @@ import {
 import { map, pipe } from "wonka";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
 
-const API_URL =
-	import.meta.env.VITE_PUBLIC_API_URL || "http://localhost:4000/graphql";
+const API_URL = import.meta.env.VITE_PUBLIC_API_URL || "/graphql";
 
 const sseClient = createSSEClient({
 	url: API_URL,
