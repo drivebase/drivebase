@@ -2,8 +2,8 @@ import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
 import { pubSub } from "../../graphql/pubsub";
 import { getUploadQueue } from "../../queue/upload-queue";
-import { UploadSessionManager } from "../../service/file/upload";
 import { logFileOperationDebugError } from "../../service/file/shared/file-error-log";
+import { UploadSessionManager } from "../../service/file/upload";
 import { logger } from "../../utils/logger";
 import type { AppEnv } from "../app";
 
