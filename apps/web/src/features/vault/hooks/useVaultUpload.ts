@@ -11,6 +11,7 @@ import {
 import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
 import { encryptChunk } from "@/features/vault/lib/crypto";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
+import { API_BASE_URL } from "@/shared/lib/apiUrl";
 import { progressPanel } from "@/shared/lib/progressPanel";
 
 const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
@@ -221,9 +222,6 @@ export function useVaultUpload({
 				}
 			} else {
 				// Proxy chunked upload with encryption
-				const apiUrl =
-					import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") ?? "";
-
 				for (let i = 0; i < serverTotalChunks; i++) {
 					const start = i * DEFAULT_CHUNK_SIZE;
 					const end = Math.min(start + DEFAULT_CHUNK_SIZE, file.size);
@@ -240,7 +238,7 @@ export function useVaultUpload({
 						try {
 							const wsId = localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY);
 							const response = await fetch(
-								`${apiUrl}/api/upload/chunk?sessionId=${sessionId}&chunkIndex=${i}`,
+								`${API_BASE_URL}/api/upload/chunk?sessionId=${sessionId}&chunkIndex=${i}`,
 								{
 									method: "POST",
 									headers: {

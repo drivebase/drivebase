@@ -1,7 +1,5 @@
 import { useCallback, useState } from "react";
-
-const API_BASE =
-	import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") || "";
+import { API_BASE_URL } from "@/shared/lib/apiUrl";
 
 interface TelegramAuthState {
 	loading: boolean;
@@ -30,7 +28,7 @@ export function useTelegramAuth(providerId: string) {
 		async (apiId: number, apiHash: string, phone: string) => {
 			setState((prev) => ({ ...prev, loading: true, error: null }));
 			try {
-				const res = await fetch(`${API_BASE}/api/telegram/send-code`, {
+				const res = await fetch(`${API_BASE_URL}/api/telegram/send-code`, {
 					method: "POST",
 					headers: getHeaders(),
 					body: JSON.stringify({ providerId, apiId, apiHash, phone }),
@@ -57,7 +55,7 @@ export function useTelegramAuth(providerId: string) {
 		async (code: string) => {
 			setState((prev) => ({ ...prev, loading: true, error: null }));
 			try {
-				const res = await fetch(`${API_BASE}/api/telegram/verify`, {
+				const res = await fetch(`${API_BASE_URL}/api/telegram/verify`, {
 					method: "POST",
 					headers: getHeaders(),
 					body: JSON.stringify({ providerId, code }),
@@ -97,7 +95,7 @@ export function useTelegramAuth(providerId: string) {
 		async (password: string) => {
 			setState((prev) => ({ ...prev, loading: true, error: null }));
 			try {
-				const res = await fetch(`${API_BASE}/api/telegram/verify-2fa`, {
+				const res = await fetch(`${API_BASE_URL}/api/telegram/verify-2fa`, {
 					method: "POST",
 					headers: getHeaders(),
 					body: JSON.stringify({ providerId, password }),
@@ -126,7 +124,7 @@ export function useTelegramAuth(providerId: string) {
 
 	const completeAuth = useCallback(
 		async (sessionString: string, oauthState: string) => {
-			const callbackUrl = `${API_BASE}/webhook/callback?code=${encodeURIComponent(sessionString)}&state=${encodeURIComponent(oauthState)}`;
+			const callbackUrl = `${API_BASE_URL}/webhook/callback?code=${encodeURIComponent(sessionString)}&state=${encodeURIComponent(oauthState)}`;
 
 			try {
 				const res = await fetch(callbackUrl, { redirect: "manual" });

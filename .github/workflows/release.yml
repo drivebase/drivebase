@@ -34,7 +34,7 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_PUBLIC_API_URL: /graphql
+          VITE_PUBLIC_BASE_URL: ""
         run: bun run --cwd apps/web build
 
       - name: Upload frontend dist
