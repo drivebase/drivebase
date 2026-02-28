@@ -3,13 +3,15 @@ import {
 	type analysisModelTierEnum,
 	fileAnalysisRuns,
 	files,
+	jobs,
 	storageProviders,
 	workspaceAiProgress,
 	workspaceAiSettings,
 } from "@drivebase/db";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { env } from "../../config/env";
 import { pubSub } from "../../graphql/pubsub";
+import { ActivityService } from "../activity";
 import { isEligibleForAiAnalysis, resolveMaxFileSizeMb } from "./ai-support";
 
 type AnalysisModelTier = (typeof analysisModelTierEnum.enumValues)[number];
@@ -165,6 +167,107 @@ export async function refreshWorkspaceAiProgress(
 			? 0
 			: Math.round((processedFiles / eligibleFiles) * 10000) / 100;
 
+	const syncAiProcessingJob = async (progress: {
+		eligibleFiles: number;
+		processedFiles: number;
+		pendingFiles: number;
+		runningFiles: number;
+		failedFiles: number;
+		skippedFiles: number;
+		completedFiles: number;
+		completionPct: number;
+	}) => {
+		const activeJobs = await db
+			.select()
+			.from(jobs)
+			.where(
+				and(
+					eq(jobs.workspaceId, workspaceId),
+					eq(jobs.type, "ai_processing"),
+					inArray(jobs.status, ["pending", "running"]),
+				),
+			)
+			.orderBy(desc(jobs.updatedAt))
+			.limit(20);
+		const [primaryJob, ...duplicateJobs] = activeJobs;
+
+		const activeCount = progress.pendingFiles + progress.runningFiles;
+		const hasActiveWork = activeCount > 0;
+		const hasWork = progress.eligibleFiles > 0;
+		const activityService = new ActivityService(db);
+
+		if (hasActiveWork) {
+			const metadata = {
+				workspaceId,
+				eligibleFiles: progress.eligibleFiles,
+				processedFiles: progress.processedFiles,
+				pendingFiles: progress.pendingFiles,
+				runningFiles: progress.runningFiles,
+				failedFiles: progress.failedFiles,
+				skippedFiles: progress.skippedFiles,
+				completedFiles: progress.completedFiles,
+				completionPct: progress.completionPct,
+			};
+			const progressValue = Math.max(
+				0,
+				Math.min(1, progress.completionPct / 100),
+			);
+			const message = `Analyzing files (${progress.processedFiles}/${progress.eligibleFiles})`;
+
+			if (!primaryJob) {
+				const created = await activityService.create(workspaceId, {
+					type: "ai_processing",
+					title: "AI processing",
+					message,
+					metadata,
+				});
+				await activityService.update(created.id, {
+					status: "running",
+					progress: progressValue,
+					message,
+					metadata,
+				});
+				return;
+			}
+
+			await activityService.update(primaryJob.id, {
+				status: "running",
+				progress: progressValue,
+				message,
+				metadata,
+			});
+			for (const duplicateJob of duplicateJobs) {
+				await activityService.complete(
+					duplicateJob.id,
+					"Superseded by a newer AI processing job",
+				);
+			}
+			return;
+		}
+
+		if (activeJobs.length === 0) {
+			return;
+		}
+
+		if (!hasWork) {
+			for (const activeJob of activeJobs) {
+				await activityService.complete(
+					activeJob.id,
+					"No eligible files for AI",
+				);
+			}
+			return;
+		}
+
+		const finalMessage =
+			progress.failedFiles > 0
+				? `AI processing finished (${progress.completedFiles} completed, ${progress.failedFiles} failed)`
+				: `AI processing finished (${progress.completedFiles} completed)`;
+		for (const activeJob of activeJobs) {
+			await activityService.complete(activeJob.id, finalMessage);
+		}
+	};
+
 	if (!existing) {
 		const [created] = await db
 			.insert(workspaceAiProgress)
@@ -185,6 +288,7 @@ export async function refreshWorkspaceAiProgress(
 			throw new Error("Failed to create workspace AI progress");
 		}
 		await pubSub.publish("workspaceAiProgressUpdated", workspaceId, created);
+		await syncAiProcessingJob(created);
 
 		return created;
 	}
@@ -200,6 +304,18 @@ export async function refreshWorkspaceAiProgress(
 		existing.completionPct !== completionPct;
 
 	if (!hasChanged) {
+		if (aggregate.pendingFiles + aggregate.runningFiles === 0) {
+			await syncAiProcessingJob({
+				eligibleFiles,
+				processedFiles,
+				pendingFiles: aggregate.pendingFiles,
+				runningFiles: aggregate.runningFiles,
+				failedFiles: aggregate.failedFiles,
+				skippedFiles: aggregate.skippedFiles,
+				completedFiles: aggregate.completedFiles,
+				completionPct,
+			});
+		}
 		return existing;
 	}
 
@@ -223,6 +339,7 @@ export async function refreshWorkspaceAiProgress(
 		throw new Error("Failed to update workspace AI progress");
 	}
 	await pubSub.publish("workspaceAiProgressUpdated", workspaceId, updated);
+	await syncAiProcessingJob(updated);
 
 	return updated;
 }
