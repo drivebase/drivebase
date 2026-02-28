@@ -1,5 +1,7 @@
 # Changelog
 
+## [3.1.1](https://github.com/drivebase/drivebase/compare/v3.1.0...v3.1.1) (2026-02-28)
+
 ## [3.1.0](https://github.com/drivebase/drivebase/compare/v3.0.0...v3.1.0) (2026-02-27)
 
 ### ✨ Features
