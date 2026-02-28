@@ -8,11 +8,11 @@ import type { Database } from "@drivebase/db";
 import { files, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 import { getPublicApiBaseUrl } from "../../../config/url";
-import { logger } from "../../../utils/logger";
 import { ActivityService } from "../../activity";
 import { FolderService } from "../../folder";
 import { ProviderService } from "../../provider";
 import { evaluateRules } from "../../rule";
+import { logFileOperationDebugError } from "../shared/file-error-log";
 
 // Request upload target and create/update file metadata.
 export async function requestUpload(
@@ -25,7 +25,6 @@ export async function requestUpload(
 	folderId: string | undefined,
 	providerId: string,
 ) {
-	logger.debug({ msg: "Requesting upload", userId, name, size, providerId });
 	if (!name?.trim()) throw new ValidationError("File name is required");
 	if (size <= 0) throw new ValidationError("File size must be greater than 0");
 
@@ -151,7 +150,12 @@ export async function requestUpload(
 			useDirectUpload: uploadResponse.useDirectUpload,
 		};
 	} catch (error) {
-		logger.error({ msg: "Request upload failed", userId, name, error });
+		logFileOperationDebugError({
+			operation: "upload",
+			stage: "request",
+			context: { userId, workspaceId, providerId, folderId, name, size },
+			error,
+		});
 		throw error;
 	}
 }
