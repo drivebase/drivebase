@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.1.4](https://github.com/drivebase/drivebase/compare/v3.1.3...v3.1.4) (2026-02-28)
+
+### 🐛 Fixes
+
+* **ai:** reconcile ai_processing jobs from workspace progress and ([06cf5b3](https://github.com/drivebase/drivebase/commit/06cf5b3be338a7131943e77711f96425c068f629))
+* **files:** enable pruneDeleted by default on provider sync and avoid ([378cdb1](https://github.com/drivebase/drivebase/commit/378cdb1d0cbfd2c02ad9a2fd5a989b9983b65c62))
+* i18n extract ([ad3275a](https://github.com/drivebase/drivebase/commit/ad3275a0e19c623dc351b580d49649761cf798a9))
+
 ## [3.1.3](https://github.com/drivebase/drivebase/compare/v3.1.2...v3.1.3) (2026-02-28)
 
 ### 🐛 Fixes
