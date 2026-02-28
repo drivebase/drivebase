@@ -6,6 +6,8 @@
 node_modules
 **/node_modules
 **/dist
+!apps/web/dist
+!apps/web/dist/**
 **/.turbo
 **/.cache
 **/.vite

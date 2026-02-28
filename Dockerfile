@@ -3,7 +3,7 @@ FROM oven/bun:1.2-alpine AS base
 FROM base AS pruner
 WORKDIR /app
 COPY . .
-RUN bunx turbo prune --scope=api --scope=web --docker
+RUN bunx turbo prune --scope=api --docker
 
 FROM base AS deps
 WORKDIR /app
@@ -14,12 +14,7 @@ RUN bun install --frozen-lockfile --ignore-scripts
 FROM deps AS builder
 WORKDIR /app
 COPY --from=pruner /app/out/full/ .
-COPY biome.json README.md ./
-
-# Build-time frontend API URL (defaults to same-origin proxy).
-ARG VITE_PUBLIC_API_URL=/graphql
-ENV VITE_PUBLIC_API_URL=${VITE_PUBLIC_API_URL}
-RUN bun run --cwd apps/web build
+RUN bun run --cwd apps/api codegen
 
 FROM base AS runtime
 WORKDIR /app
@@ -32,10 +27,8 @@ COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/turbo.json ./turbo.json
 
-RUN bun run --cwd apps/api codegen
-
-# Static frontend served by Caddy.
-COPY --from=builder /app/apps/web/dist /srv/www
+# Frontend assets are prebuilt once in CI and added to the build context.
+COPY apps/web/dist /srv/www
 
 COPY docker/Caddyfile /etc/caddy/Caddyfile
 COPY docker/supervisord.conf /etc/supervisord.conf
