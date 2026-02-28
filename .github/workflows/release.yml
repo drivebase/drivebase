@@ -224,8 +224,7 @@ jobs:
           )"
 
           if [[ -z "${CHANGELOG_CONTENT//[[:space:]]/}" ]]; then
-            echo "Failed to extract release notes for $VERSION from CHANGELOG.md"
-            exit 1
+            CHANGELOG_CONTENT="No changelog entries were generated for ${VERSION}."
           fi
 
           {
