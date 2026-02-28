@@ -30,14 +30,14 @@ export function SyncProviderDialog({
 }: SyncProviderDialogProps) {
 	const [options, setOptions] = useState<SyncOptionsInput>({
 		recursive: true,
-		pruneDeleted: false,
+		pruneDeleted: true,
 	});
 
 	if (!provider) return null;
 
 	const handleSync = async () => {
-		await onSync(provider.id, options);
 		onClose();
+		await onSync(provider.id, options);
 	};
 
 	return (
@@ -80,7 +80,7 @@ export function SyncProviderDialog({
 						</div>
 						<Switch
 							id="prune"
-							checked={options.pruneDeleted ?? false}
+							checked={options.pruneDeleted ?? true}
 							onCheckedChange={(checked) =>
 								setOptions((prev) => ({ ...prev, pruneDeleted: checked }))
 							}

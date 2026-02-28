@@ -42,6 +42,11 @@ extend type Mutation {
 	Cancel a queued or running provider transfer job
 	"""
 	cancelTransferJob(jobId: ID!): Boolean!
+
+	"""
+	Delete activities by ID for the current user
+	"""
+	clearActivities(ids: [ID!]!): Int!
 }
 
 """

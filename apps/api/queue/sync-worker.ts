@@ -31,7 +31,7 @@ export function startSyncWorker(): Worker<SyncJobData> {
 
 			await syncProvider(db, providerId, workspaceId, userId, {
 				recursive: recursive ?? true,
-				pruneDeleted: pruneDeleted ?? false,
+				pruneDeleted: pruneDeleted ?? true,
 			});
 
 			logger.info({

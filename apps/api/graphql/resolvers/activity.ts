@@ -97,6 +97,11 @@ function getTransferCancelKey(jobId: string): string {
 }
 
 export const activityMutations: MutationResolvers = {
+	clearActivities: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const activityService = new ActivityService(context.db);
+		return activityService.deleteForUser(user.userId, args.ids);
+	},
 	cancelTransferJob: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const workspaceId = await getAccessibleWorkspaceId(

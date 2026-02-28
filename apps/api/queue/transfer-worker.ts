@@ -29,6 +29,7 @@ interface TransferManifest {
 	multipart?: {
 		uploadId: string;
 		remoteId: string;
+		finalRemoteId?: string;
 		parts: Array<{ partNumber: number; etag: string; size: number }>;
 	};
 }
@@ -94,6 +95,14 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				bullJob.data;
 			const redis = getRedis();
 
+			logger.debug({
+				msg: "[transfer] job started",
+				jobId,
+				fileId,
+				targetProviderId,
+				attempt: bullJob.attemptsMade + 1,
+			});
+
 			const assertNotCancelled = async () => {
 				const cancelled = await redis.get(getTransferCancelKey(jobId));
 				if (cancelled) {
@@ -139,20 +148,35 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					.limit(1);
 
 				if (!file) {
+					logger.debug({ msg: "[transfer] file not found", jobId, fileId });
 					await activityService.fail(jobId, "File not found");
 					return;
 				}
 
 				if (file.providerId === targetProviderId) {
+					logger.debug({
+						msg: "[transfer] file already on target provider",
+						jobId,
+						fileId,
+					});
 					await activityService.fail(jobId, "File is already on this provider");
 					return;
 				}
+
+				logger.debug({
+					msg: "[transfer] file resolved",
+					jobId,
+					fileName: file.name,
+					fileSize: file.size,
+					mimeType: file.mimeType,
+				});
 
 				const transferDir = join(getTransferCacheRoot(), workspaceId, file.id);
 				const cachedFilePath = join(transferDir, "payload.bin");
 				const manifestPath = join(transferDir, "manifest.json");
 
 				await mkdir(transferDir, { recursive: true });
+				logger.debug({ msg: "[transfer] staging dir ready", transferDir });
 				await assertNotCancelled();
 
 				const sourceRecord = await providerService.getProvider(
@@ -170,6 +194,12 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				targetProvider =
 					await providerService.getProviderInstance(targetRecord);
 
+				logger.debug({
+					msg: "[transfer] providers resolved",
+					source: sourceRecord.type,
+					target: targetRecord.type,
+				});
+
 				const manifest =
 					(await readManifest(manifestPath)) ??
 					({
@@ -186,6 +216,14 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					Boolean(cachedStats) && manifest.downloadedBytes >= file.size;
 
 				if (!hasFullCache) {
+					logger.debug({
+						msg: "[transfer] download starting",
+						jobId,
+						fileName: file.name,
+						fileSize: file.size,
+						resumeFrom: manifest.downloadedBytes,
+					});
+
 					await updateActivity({
 						message: "Downloading from source provider",
 						progress: getTransferProgress(0, manifest.uploadedBytes, file.size),
@@ -218,9 +256,19 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 								downloadedBytes % DEFAULT_TRANSFER_CHUNK_SIZE < chunk.length ||
 								downloadedBytes === file.size
 							) {
+								const pct = (
+									(downloadedBytes / Math.max(file.size, 1)) *
+									100
+								).toFixed(1);
+								logger.debug({
+									msg: `[transfer] download ${pct}%`,
+									jobId,
+									downloadedBytes,
+									totalSize: file.size,
+								});
 								await writeManifest(manifestPath, manifest);
 								await updateActivity({
-									message: `Downloading ${((downloadedBytes / Math.max(file.size, 1)) * 100).toFixed(0)}%`,
+									message: `Downloading ${pct}%`,
 									progress: getTransferProgress(
 										downloadedBytes,
 										manifest.uploadedBytes,
@@ -242,7 +290,17 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 
 					manifest.downloadedBytes = file.size;
 					await writeManifest(manifestPath, manifest);
+					logger.debug({
+						msg: "[transfer] download complete",
+						jobId,
+						downloadedBytes: file.size,
+					});
 				} else {
+					logger.debug({
+						msg: "[transfer] cache hit, skipping download",
+						jobId,
+						cachedBytes: manifest.downloadedBytes,
+					});
 					manifest.downloadedBytes = file.size;
 					await writeManifest(manifestPath, manifest);
 				}
@@ -280,6 +338,17 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					},
 				});
 
+				logger.debug({
+					msg: "[transfer] upload starting",
+					jobId,
+					method:
+						targetProvider.supportsChunkedUpload &&
+						targetProvider.initiateMultipartUpload
+							? "multipart"
+							: "streaming",
+					targetParentId,
+				});
+
 				let finalRemoteId: string;
 				if (
 					targetProvider.supportsChunkedUpload &&
@@ -288,6 +357,10 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					targetProvider.completeMultipartUpload
 				) {
 					if (!manifest.multipart) {
+						logger.debug({
+							msg: "[transfer] initiating multipart upload",
+							jobId,
+						});
 						const multipart = await targetProvider.initiateMultipartUpload({
 							name: file.name,
 							mimeType: file.mimeType,
@@ -300,6 +373,18 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 							parts: [],
 						};
 						await writeManifest(manifestPath, manifest);
+						logger.debug({
+							msg: "[transfer] multipart initiated",
+							jobId,
+							uploadId: multipart.uploadId,
+						});
+					} else {
+						logger.debug({
+							msg: "[transfer] resuming multipart",
+							jobId,
+							uploadId: manifest.multipart.uploadId,
+							partsAlready: manifest.multipart.parts.length,
+						});
 					}
 
 					const cachedFile = Bun.file(cachedFilePath);
@@ -318,6 +403,13 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 						Math.ceil(file.size / DEFAULT_TRANSFER_CHUNK_SIZE),
 					);
 
+					logger.debug({
+						msg: "[transfer] uploading parts",
+						jobId,
+						partCount,
+						resumeFrom: uploadedParts.size,
+					});
+
 					for (let partNumber = 1; partNumber <= partCount; partNumber += 1) {
 						await assertNotCancelled();
 						if (uploadedParts.has(partNumber)) {
@@ -333,6 +425,12 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 							await cachedFile.slice(start, end).arrayBuffer(),
 						);
 
+						logger.debug({
+							msg: `[transfer] uploading part ${partNumber}/${partCount}`,
+							jobId,
+							chunkSize: chunkData.length,
+						});
+
 						const uploadResult = await targetProvider.uploadPart(
 							manifest.multipart.uploadId,
 							manifest.multipart.remoteId,
@@ -345,14 +443,33 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 							etag: uploadResult.etag,
 							size: chunkData.length,
 						};
+						if (uploadResult.finalRemoteId) {
+							manifest.multipart.finalRemoteId = uploadResult.finalRemoteId;
+							logger.debug({
+								msg: "[transfer] got final remoteId from last part",
+								jobId,
+								finalRemoteId: uploadResult.finalRemoteId,
+							});
+						}
 						manifest.multipart.parts.push(partState);
 						uploadedParts.set(uploadResult.partNumber, partState);
 						uploadedBytes += chunkData.length;
 						manifest.uploadedBytes = uploadedBytes;
 
+						const pct = (
+							(uploadedBytes / Math.max(file.size, 1)) *
+							100
+						).toFixed(1);
+						logger.debug({
+							msg: `[transfer] upload ${pct}%`,
+							jobId,
+							uploadedBytes,
+							totalSize: file.size,
+						});
+
 						await writeManifest(manifestPath, manifest);
 						await updateActivity({
-							message: `Uploading ${((uploadedBytes / Math.max(file.size, 1)) * 100).toFixed(0)}%`,
+							message: `Uploading ${pct}%`,
 							progress: getTransferProgress(
 								manifest.downloadedBytes,
 								uploadedBytes,
@@ -368,6 +485,11 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					}
 
 					await assertNotCancelled();
+					logger.debug({
+						msg: "[transfer] completing multipart upload",
+						jobId,
+						parts: manifest.multipart.parts.length,
+					});
 					await targetProvider.completeMultipartUpload(
 						manifest.multipart.uploadId,
 						manifest.multipart.remoteId,
@@ -379,15 +501,30 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 							})),
 					);
 
-					finalRemoteId = manifest.multipart.remoteId;
+					finalRemoteId =
+						manifest.multipart.finalRemoteId ?? manifest.multipart.remoteId;
 					manifest.uploadedBytes = file.size;
 					await writeManifest(manifestPath, manifest);
+					logger.debug({
+						msg: "[transfer] multipart upload complete",
+						jobId,
+						finalRemoteId,
+					});
 				} else {
+					logger.debug({
+						msg: "[transfer] requesting streaming upload slot",
+						jobId,
+					});
 					const uploadResponse = await targetProvider.requestUpload({
 						name: file.name,
 						mimeType: file.mimeType,
 						size: file.size,
 						parentId: targetParentId,
+					});
+					logger.debug({
+						msg: "[transfer] streaming upload slot acquired",
+						jobId,
+						fileId: uploadResponse.fileId,
 					});
 
 					let uploadedBytes = 0;
@@ -403,13 +540,21 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 									DEFAULT_TRANSFER_CHUNK_SIZE ||
 								uploadedBytes === file.size
 							) {
+								const pct = (
+									(uploadedBytes / Math.max(file.size, 1)) *
+									100
+								).toFixed(1);
+								logger.debug({
+									msg: `[transfer] stream upload ${pct}%`,
+									jobId,
+									uploadedBytes,
+									totalSize: file.size,
+								});
 								lastReportedBytes = uploadedBytes;
 								manifest.uploadedBytes = uploadedBytes;
 								writeManifest(manifestPath, manifest).catch(() => {});
 								updateActivity({
-									message: `Uploading ${(
-										(uploadedBytes / Math.max(file.size, 1)) * 100
-									).toFixed(0)}%`,
+									message: `Uploading ${pct}%`,
 									progress: getTransferProgress(
 										manifest.downloadedBytes,
 										uploadedBytes,
@@ -430,6 +575,10 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 						.stream()
 						.pipeThrough(progressStream);
 					await assertNotCancelled();
+					logger.debug({
+						msg: "[transfer] streaming upload in progress",
+						jobId,
+					});
 					const maybeRemoteId = await targetProvider.uploadFile(
 						uploadResponse.fileId,
 						readableStream,
@@ -437,14 +586,31 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 					finalRemoteId = maybeRemoteId || uploadResponse.fileId;
 					manifest.uploadedBytes = Math.max(uploadedBytes, file.size);
 					await writeManifest(manifestPath, manifest);
+					logger.debug({
+						msg: "[transfer] streaming upload complete",
+						jobId,
+						finalRemoteId,
+					});
 				}
 
+				logger.debug({
+					msg: "[transfer] deleting from source provider",
+					jobId,
+					remoteId: file.remoteId,
+				});
 				await sourceProvider.delete({
 					remoteId: file.remoteId,
 					isFolder: false,
 				});
 				await assertNotCancelled();
 
+				logger.debug({
+					msg: "[transfer] updating file record in db",
+					jobId,
+					fileId: file.id,
+					finalRemoteId,
+					targetProviderId,
+				});
 				const [updated] = await db
 					.update(files)
 					.set({
@@ -475,10 +641,17 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 						jobId,
 					},
 				});
+				logger.debug({
+					msg: "[transfer] cleaning up staging dir",
+					jobId,
+					transferDir,
+				});
 				await rm(transferDir, { recursive: true, force: true });
+				logger.debug({ msg: "[transfer] done", jobId, fileName: file.name });
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
 				if (error instanceof TransferCancelledError) {
+					logger.debug({ msg: "[transfer] cancelled", jobId });
 					await activityService.update(jobId, {
 						status: "error",
 						message: "Transfer cancelled",

@@ -155,8 +155,8 @@ export function useFileOperations({
 		const result = await moveFileToProvider({ id: file.id, providerId });
 		if (result.error) {
 			toast.error(`Failed to move: ${result.error.message}`);
-		} else {
-			onMutationComplete?.();
+		} else if (result.data?.moveFileToProvider) {
+			fileList.updateItem(file.id, result.data.moveFileToProvider);
 		}
 	};
 

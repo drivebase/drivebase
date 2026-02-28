@@ -1,7 +1,7 @@
 import { Trans } from "@lingui/react/macro";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
-import { useQuery, useSubscription } from "urql";
+import { useMutation, useQuery, useSubscription } from "urql";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { RecentActivitiesQuery } from "@/gql/graphql";
 import {
 	ACTIVITY_CREATED_SUBSCRIPTION,
+	CLEAR_ACTIVITIES_MUTATION,
 	RECENT_ACTIVITIES_QUERY,
 } from "@/shared/api/activity";
 
@@ -34,6 +35,7 @@ export function RecentActivityView() {
 	>(null);
 	const [showJsonDetails, setShowJsonDetails] = useState(false);
 	const [offset, setOffset] = useState(0);
+	const [, clearActivitiesMutation] = useMutation(CLEAR_ACTIVITIES_MUTATION);
 	const [{ data, fetching }] = useQuery({
 		query: RECENT_ACTIVITIES_QUERY,
 		variables: { limit: RECENT_ACTIVITY_LIMIT, offset },
@@ -64,10 +66,12 @@ export function RecentActivityView() {
 		...serverActivities.filter((activity) => !seenIds.has(activity.id)),
 	].slice(0, RECENT_ACTIVITY_LIMIT);
 
-	const handleClearActivities = () => {
+	const handleClearActivities = async () => {
 		if (recentActivities.length === 0) return;
+		const ids = recentActivities.map((a) => a.id);
 		setLocalActivities([]);
 		setOffset((prev) => prev + recentActivities.length);
+		await clearActivitiesMutation({ ids });
 	};
 
 	const handleOpenActivity = (

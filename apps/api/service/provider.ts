@@ -140,13 +140,7 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		logger.debug({
-			msg: "Resolved workspace for provider oauth initiation",
-			userId,
-			workspaceId,
-			providerId,
-			source,
-		});
+
 		return initiateOAuth(this.db, providerId, workspaceId, userId, source);
 	}
 
@@ -216,12 +210,6 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		logger.debug({
-			msg: "Resolved workspace for provider disconnect",
-			userId,
-			workspaceId,
-			providerId,
-		});
 		return disconnectProvider(this.db, providerId, workspaceId);
 	}
 
@@ -237,12 +225,6 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		logger.debug({
-			msg: "Resolved workspace for provider quota update",
-			userId,
-			workspaceId,
-			providerId,
-		});
 		return updateProviderQuota(
 			this.db,
 			providerId,
@@ -263,12 +245,6 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		logger.debug({
-			msg: "Resolved workspace for provider rename",
-			userId,
-			workspaceId,
-			providerId,
-		});
 		return renameProvider(this.db, providerId, workspaceId, name);
 	}
 
@@ -291,12 +267,6 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		logger.debug({
-			msg: "Resolved workspace for provider fetch",
-			userId,
-			workspaceId,
-			providerId,
-		});
 		return getProvider(this.db, providerId, workspaceId);
 	}
 

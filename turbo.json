@@ -12,7 +12,8 @@
 		"DEFAULT_OWNER_EMAIL",
 		"DEFAULT_OWNER_PASSWORD",
 		"VITE_PUBLIC_BASE_URL",
-		"AI_INFERENCE_URL"
+		"AI_INFERENCE_URL",
+		"DATA_DIR"
 	],
 	"tasks": {
 		"build": {

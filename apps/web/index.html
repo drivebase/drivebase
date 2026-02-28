@@ -12,6 +12,43 @@
     <link rel="apple-touch-icon" href="/logo192.png" />
     <link rel="manifest" href="/manifest.json" />
     <title>Drivebase</title>
+    <style>
+      html,
+      body,
+      #app {
+        min-height: 100%;
+      }
+      html {
+        background-color: #0a0a0a;
+      }
+      html.light {
+        background-color: #ffffff;
+      }
+      html.dark {
+        background-color: #0a0a0a;
+      }
+      body {
+        margin: 0;
+        background-color: transparent;
+      }
+    </style>
+    <script>
+      (() => {
+        const storageKey = "vite-ui-theme";
+        const root = document.documentElement;
+        const storedTheme = localStorage.getItem(storageKey);
+        const resolvedTheme =
+          storedTheme === "light" || storedTheme === "dark"
+            ? storedTheme
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+
+        root.classList.remove("light", "dark");
+        root.classList.add(resolvedTheme);
+        root.style.colorScheme = resolvedTheme;
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>
