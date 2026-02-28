@@ -156,8 +156,7 @@ export function useChunkedUpload() {
 			ppId: string,
 		): Promise<boolean> => {
 			const apiUrl =
-				import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") ??
-				"http://localhost:4000";
+				import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") ?? "";
 
 			for (let i = 0; i < totalChunks; i++) {
 				const start = i * chunkSize;

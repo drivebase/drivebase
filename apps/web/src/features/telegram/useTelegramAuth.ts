@@ -1,8 +1,7 @@
 import { useCallback, useState } from "react";
 
 const API_BASE =
-	import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") ||
-	"http://localhost:4000";
+	import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") || "";
 
 interface TelegramAuthState {
 	loading: boolean;

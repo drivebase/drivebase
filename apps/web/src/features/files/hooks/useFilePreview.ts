@@ -4,8 +4,7 @@ import { getFileKind } from "@/features/files/utils";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
 
 const API_BASE =
-	import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") ||
-	"http://localhost:4000";
+	import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") || "";
 
 /** Max text bytes rendered inline (100 KB) */
 const TEXT_PREVIEW_LIMIT = 100 * 1024;
