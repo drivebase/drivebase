@@ -13,6 +13,11 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/shared/lib/downloadLinkConfigDialog.tsx:222
+#: src/shared/lib/downloadLinkConfigDialog.tsx:238
+msgid "0 for unlimited"
+msgstr ""
+
 #: src/routes/_workspace/workspaces.create.tsx:118
 msgid "Accent Color"
 msgstr ""
@@ -25,9 +30,9 @@ msgstr "Cuenta"
 msgid "Actions"
 msgstr "Acciones"
 
-#: src/components/layout/RightPanel.tsx:64
-#~ msgid "Activity"
-#~ msgstr "Actividad"
+#: src/components/layout/RecentActivityView.tsx:153
+msgid "Activity"
+msgstr "Actividad"
 
 #: src/features/rules/components/ConditionGroupEditor.tsx:123
 msgid "Add condition"
@@ -43,7 +48,7 @@ msgstr "Añadir Regla"
 
 #. placeholder {0}: file.name
 #. placeholder {0}: folder.name
-#: src/features/dashboard/DashboardPage.tsx:81
+#: src/features/dashboard/hooks/useDashboardPageController.ts:52
 #: src/routes/_authenticated/starred.tsx:97
 #: src/routes/_authenticated/starred.tsx:136
 msgid "Added {0} to starred"
@@ -98,8 +103,19 @@ msgstr ""
 #: src/routes/_authenticated/providers.tsx:303
 #: src/routes/_authenticated/vault.tsx:290
 #: src/routes/_workspace/workspaces.create.tsx:166
+#: src/shared/components/JobPanel.tsx:218
+#: src/shared/lib/downloadLinkConfigDialog.tsx:286
 msgid "Cancel"
 msgstr "Cancelar"
+
+#. placeholder {0}: job.title
+#: src/shared/components/JobPanel.tsx:142
+msgid "Cancel \"{0}\"? This will stop the provider transfer."
+msgstr ""
+
+#: src/shared/components/JobPanel.tsx:141
+msgid "Cancel transfer"
+msgstr ""
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:89
 msgid "Change password"
@@ -116,6 +132,11 @@ msgstr "Elige tema claro, oscuro o del sistema"
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:85
 msgid "Choose your preferred language"
 msgstr "Elige tu idioma preferido"
+
+#: src/components/layout/RecentActivityView.tsx:94
+#: src/shared/components/JobPanel.tsx:177
+msgid "Clear"
+msgstr ""
 
 #: src/components/layout/RightPanel.tsx:69
 msgid "Close panel"
@@ -142,6 +163,16 @@ msgstr ""
 msgid "Connection failed"
 msgstr "Conexión fallida"
 
+#: src/shared/lib/downloadLinkConfigDialog.tsx:260
+#: src/shared/lib/downloadLinkConfigDialog.tsx:269
+msgid "Copied"
+msgstr ""
+
+#: src/shared/lib/downloadLinkConfigDialog.tsx:260
+#: src/shared/lib/downloadLinkConfigDialog.tsx:271
+msgid "Copy download link"
+msgstr ""
+
 #: src/features/settings/UsersSettingsView.tsx:111
 msgid "Could not copy invite link"
 msgstr ""
@@ -159,6 +190,12 @@ msgstr ""
 msgid "Create Account"
 msgstr ""
 
+#: src/features/files/components/file-system-table/FileSystemRowActions.tsx:147
+#: src/features/files/useFileActions.tsx:21
+#: src/shared/lib/downloadLinkConfigDialog.tsx:292
+msgid "Create download link"
+msgstr ""
+
 #: src/routes/_authenticated/vault.tsx:263
 #: src/routes/_authenticated/vault.tsx:299
 msgid "Create Folder"
@@ -169,7 +206,7 @@ msgstr ""
 msgid "Create Rule"
 msgstr "Crear Regla"
 
-#: src/components/layout/Sidebar.tsx:200
+#: src/components/layout/sidebar/WorkspaceSwitcher.tsx:69
 msgid "Create workspace"
 msgstr "Crear espacio de trabajo"
 
@@ -198,7 +235,7 @@ msgstr "Personaliza la apariencia de la aplicación. Cambia automáticamente ent
 msgid "Dark"
 msgstr "Oscuro"
 
-#: src/components/layout/Sidebar.tsx:45
+#: src/components/layout/Sidebar.tsx:31
 #: src/config/pageTitles.ts:5
 #: src/config/pageTitles.ts:31
 msgid "Dashboard"
@@ -236,6 +273,18 @@ msgstr ""
 msgid "Don't have an account?"
 msgstr ""
 
+#: src/shared/lib/downloadLinkConfigDialog.tsx:286
+msgid "Done"
+msgstr ""
+
+#: src/shared/lib/downloadLinkConfigDialog.tsx:247
+msgid "Download link"
+msgstr ""
+
+#: src/shared/lib/downloadLinkConfigDialog.tsx:194
+msgid "Download link copied"
+msgstr ""
+
 #: src/features/auth/AuthLayout.tsx:51
 msgid "Drivebase. Secure file storage."
 msgstr ""
@@ -266,6 +315,15 @@ msgstr ""
 msgid "Enter your email to sign in to your account"
 msgstr ""
 
+#: src/shared/lib/downloadLinkConfigDialog.tsx:230
+msgid "Expires in days"
+msgstr ""
+
+#. placeholder {0}: state.maxExpiresInDays
+#: src/shared/lib/downloadLinkConfigDialog.tsx:152
+msgid "Expiry must be a whole number between 1 and {0} days."
+msgstr ""
+
 #: src/features/settings/sections/ExportSection.tsx:37
 #: src/features/settings/sections/ExportSection.tsx:109
 msgid "Export workspace"
@@ -279,8 +337,28 @@ msgstr "Exporta los datos de tu espacio de trabajo incluyendo archivos, carpetas
 msgid "Exporting..."
 msgstr "Exportando..."
 
+#: src/shared/components/JobPanel.tsx:154
+#: src/shared/components/JobPanel.tsx:158
+msgid "Failed to cancel transfer"
+msgstr ""
+
 #: src/routes/connect/telegram.tsx:85
 msgid "Failed to complete connection"
+msgstr ""
+
+#: src/shared/lib/downloadLinkConfigDialog.tsx:197
+msgid "Failed to copy download link"
+msgstr ""
+
+#: src/features/files/useFileActions.tsx:43
+#: src/features/files/useFileActions.tsx:50
+msgid "Failed to create download link"
+msgstr ""
+
+#: src/shared/lib/downloadLinkConfigDialog.tsx:161
+#: src/shared/lib/downloadLinkConfigDialog.tsx:169
+#: src/shared/lib/downloadLinkConfigDialog.tsx:179
+msgid "Failed to create download link."
 msgstr ""
 
 #: src/routes/_authenticated/vault.tsx:213
@@ -307,7 +385,7 @@ msgstr ""
 msgid "Failed to update profile"
 msgstr "Error al actualizar el perfil"
 
-#: src/features/dashboard/DashboardPage.tsx:89
+#: src/features/dashboard/hooks/useDashboardPageController.ts:58
 #: src/routes/_authenticated/starred.tsx:108
 #: src/routes/_authenticated/starred.tsx:147
 msgid "Failed to update starred status."
@@ -322,7 +400,7 @@ msgstr ""
 #~ msgid "Favorites"
 #~ msgstr "Favoritos"
 
-#: src/components/layout/Sidebar.tsx:46
+#: src/components/layout/Sidebar.tsx:32
 msgid "Files"
 msgstr "Archivos"
 
@@ -346,6 +424,14 @@ msgstr ""
 msgid "General"
 msgstr "General"
 
+#: src/shared/lib/downloadLinkConfigDialog.tsx:290
+msgid "Generate new link"
+msgstr ""
+
+#: src/components/layout/RecentActivityView.tsx:196
+msgid "Hide JSON"
+msgstr ""
+
 #: src/components/layout/Header.tsx:123
 #~ msgid "Images"
 #~ msgstr "Imágenes"
@@ -368,6 +454,14 @@ msgstr ""
 
 #: src/features/settings/UsersSettingsView.tsx:172
 msgid "Invite revoked"
+msgstr ""
+
+#: src/components/layout/RecentActivityView.tsx:172
+msgid "Job ID"
+msgstr ""
+
+#: src/shared/components/JobPanel.tsx:173
+msgid "Jobs"
 msgstr ""
 
 #: src/routes/join-workspace.tsx:91
@@ -395,13 +489,21 @@ msgid "Loading your account..."
 msgstr "Cargando tu cuenta..."
 
 #: src/routes/_authenticated/vault.tsx:60
-#: src/routes/onboarding.tsx:50
+#: src/routes/onboarding.tsx:56
 msgid "Loading..."
 msgstr ""
 
 #: src/features/settings/sections/UpdateSection.tsx:41
 msgid "Manage application updates."
 msgstr "Gestionar actualizaciones de la aplicación."
+
+#: src/shared/lib/downloadLinkConfigDialog.tsx:215
+msgid "Max downloads"
+msgstr ""
+
+#: src/shared/lib/downloadLinkConfigDialog.tsx:140
+msgid "Max downloads must be 0 or a positive integer."
+msgstr ""
 
 #: src/features/settings/UsersSettingsView.tsx:155
 msgid "Member removed"
@@ -444,7 +546,7 @@ msgstr "Nueva contraseña"
 msgid "No providers connected"
 msgstr ""
 
-#: src/components/layout/RecentActivityView.tsx:102
+#: src/components/layout/RecentActivityView.tsx:110
 msgid "No recent activity"
 msgstr "Sin actividad reciente"
 
@@ -490,16 +592,16 @@ msgstr ""
 msgid "Profile updated"
 msgstr "Perfil actualizado"
 
-#: src/components/layout/Sidebar.tsx:48
+#: src/components/layout/Sidebar.tsx:34
 #: src/config/pageTitles.ts:8
 msgid "Providers"
 msgstr "Proveedores"
 
-#: src/components/layout/RecentActivityView.tsx:74
+#: src/components/layout/RecentActivityView.tsx:84
 msgid "Recent Activity"
 msgstr ""
 
-#: src/features/dashboard/DashboardPage.tsx:192
+#: src/features/dashboard/components/RecentFilesSection.tsx:27
 msgid "Recent Files"
 msgstr ""
 
@@ -507,8 +609,12 @@ msgstr ""
 #~ msgid "Recent Updates"
 #~ msgstr "Actualizaciones Recientes"
 
-#: src/routes/onboarding.tsx:70
+#: src/routes/onboarding.tsx:94
 msgid "Redirecting to dashboard..."
+msgstr ""
+
+#: src/routes/onboarding.tsx:74
+msgid "Redirecting to login..."
 msgstr ""
 
 #: src/features/rules/components/ConditionEditor.tsx:142
@@ -521,7 +627,7 @@ msgstr "Eliminar grupo"
 
 #. placeholder {0}: file.name
 #. placeholder {0}: folder.name
-#: src/features/dashboard/DashboardPage.tsx:79
+#: src/features/dashboard/hooks/useDashboardPageController.ts:51
 #: src/routes/_authenticated/starred.tsx:95
 #: src/routes/_authenticated/starred.tsx:134
 msgid "Removed {0} from starred"
@@ -575,7 +681,7 @@ msgstr "Guardando..."
 #~ msgid "Searching..."
 #~ msgstr "Buscando..."
 
-#: src/routes/__root.tsx:70
+#: src/routes/__root.tsx:74
 msgid "Server may be unreachable"
 msgstr "El servidor puede estar inaccesible"
 
@@ -583,14 +689,22 @@ msgstr "El servidor puede estar inaccesible"
 msgid "Server Unreachable"
 msgstr "Servidor inaccesible"
 
+#: src/features/files/useFileActions.tsx:22
+msgid "Set download limit and expiry for this file."
+msgstr ""
+
 #: src/routes/_workspace/workspaces.create.tsx:76
 msgid "Set up a new workspace and switch to it."
 msgstr ""
 
-#: src/components/layout/Sidebar.tsx:53
+#: src/components/layout/Sidebar.tsx:39
 #: src/config/pageTitles.ts:10
 msgid "Settings"
 msgstr "Configuración"
+
+#: src/components/layout/RecentActivityView.tsx:198
+msgid "Show JSON"
+msgstr ""
 
 #: src/features/auth/RegisterPage.tsx:129
 msgid "Sign in"
@@ -608,17 +722,17 @@ msgstr "Cerrar sesión"
 msgid "Sign up"
 msgstr ""
 
-#: src/routes/__root.tsx:50
+#: src/routes/__root.tsx:54
 msgid "Something went wrong while loading the app."
 msgstr "Algo salió mal al cargar la aplicación."
 
-#: src/components/layout/Sidebar.tsx:47
+#: src/components/layout/Sidebar.tsx:33
 #: src/config/pageTitles.ts:7
 #: src/routes/_authenticated/starred.tsx:163
 msgid "Starred"
 msgstr "Destacados"
 
-#: src/features/dashboard/DashboardPage.tsx:148
+#: src/features/dashboard/components/StarredFoldersSection.tsx:21
 msgid "Starred Folders"
 msgstr ""
 
@@ -650,19 +764,19 @@ msgstr "Tema"
 msgid "This password will be used to encrypt your export file. Keep it safe, as you'll need it to import the data."
 msgstr "Esta contraseña se utilizará para cifrar tu archivo de exportación. Mantenla segura, ya que la necesitarás para importar los datos."
 
-#: src/features/dashboard/DashboardPage.tsx:53
+#: src/features/dashboard/components/DashboardStatsSection.tsx:53
 msgid "Today Bandwidth"
 msgstr ""
 
-#: src/features/dashboard/DashboardPage.tsx:39
+#: src/features/dashboard/components/DashboardStatsSection.tsx:39
 msgid "Total Files"
 msgstr ""
 
-#: src/features/dashboard/DashboardPage.tsx:60
+#: src/features/dashboard/components/DashboardStatsSection.tsx:60
 msgid "Total Providers"
 msgstr ""
 
-#: src/features/dashboard/DashboardPage.tsx:46
+#: src/features/dashboard/components/DashboardStatsSection.tsx:46
 msgid "Total Size"
 msgstr ""
 
@@ -671,7 +785,7 @@ msgstr ""
 msgid "Trash"
 msgstr "Papelera"
 
-#: src/routes/__root.tsx:74
+#: src/routes/__root.tsx:78
 #: src/routes/join-workspace.tsx:80
 msgid "Try again"
 msgstr "Intentar de nuevo"
@@ -688,7 +802,7 @@ msgstr ""
 msgid "Unable to connect to the API right now. Check the server and try again."
 msgstr "No se puede conectar a la API en este momento. Verifica el servidor e intenta de nuevo."
 
-#: src/routes/__root.tsx:63
+#: src/routes/__root.tsx:67
 msgid "Unable to load Drivebase"
 msgstr "No se puede cargar Drivebase"
 
@@ -701,7 +815,7 @@ msgid "Update available"
 msgstr "Actualización disponible"
 
 #. placeholder {0}: latestGithubVersion ?? "unknown"
-#: src/components/layout/Sidebar.tsx:144
+#: src/components/layout/Sidebar.tsx:109
 msgid "Update available: v{0})"
 msgstr ""
 
@@ -735,7 +849,7 @@ msgstr "Actualizando..."
 msgid "Users"
 msgstr "Usuarios"
 
-#: src/components/layout/Sidebar.tsx:52
+#: src/components/layout/Sidebar.tsx:38
 #: src/config/pageTitles.ts:11
 msgid "Vault"
 msgstr "Bóveda"
@@ -756,7 +870,7 @@ msgstr ""
 msgid "Welcome Back"
 msgstr ""
 
-#: src/components/layout/Sidebar.tsx:177
+#: src/components/layout/sidebar/WorkspaceSwitcher.tsx:46
 msgid "Workspace"
 msgstr "Espacio de trabajo"
 
@@ -764,11 +878,11 @@ msgstr "Espacio de trabajo"
 msgid "Workspace name"
 msgstr "Nombre del espacio de trabajo"
 
-#: src/components/layout/Sidebar.tsx:182
+#: src/components/layout/sidebar/WorkspaceSwitcher.tsx:51
 msgid "Workspaces"
 msgstr "Espacios de trabajo"
 
-#: src/features/dashboard/DashboardPage.tsx:169
+#: src/features/dashboard/components/StarredFoldersSection.tsx:42
 msgid "You haven't starred any folders yet."
 msgstr ""
 
