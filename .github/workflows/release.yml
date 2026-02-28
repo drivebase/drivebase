@@ -18,7 +18,34 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build frontend
+        env:
+          VITE_PUBLIC_API_URL: /graphql
+        run: bun run --cwd apps/web build
+
+      - name: Upload frontend dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+          if-no-files-found: error
+
   build:
+    needs: build-frontend
     if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     permissions:
@@ -39,6 +66,12 @@ jobs:
       - name: Set up QEMU
         if: matrix.platform == 'linux/arm64'
         uses: docker/setup-qemu-action@v3
+
+      - name: Download frontend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
 
       - name: Extract version
         id: version
@@ -169,16 +202,17 @@ jobs:
         if: ${{ steps.version.outputs.IS_RELEASE == 'true' }}
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
+          NORMALIZED_VERSION="${VERSION#v}"
           CHANGELOG_CONTENT="$(
-            awk -v version="$VERSION" '
+            awk -v version="$VERSION" -v normalized_version="$NORMALIZED_VERSION" '
               BEGIN {
                 in_section = 0
               }
-              /^## / {
+              /^##? / {
                 if (in_section) {
                   exit
                 }
-                if ($0 ~ "^## \\[" version "\\]") {
+                if ($0 ~ "^##? \\[" version "\\]" || $0 ~ "^##? \\[" normalized_version "\\]") {
                   in_section = 1
                   next
                 }
