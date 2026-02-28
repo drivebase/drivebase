@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.1.5](https://github.com/drivebase/drivebase/compare/v3.1.4...v3.1.5) (2026-02-28)
+
+### 🐛 Fixes
+
+* **rules:** refetch rule list after save ([ac63b9f](https://github.com/drivebase/drivebase/commit/ac63b9f480c9020c91f78f57fb13ad0e8fba205d))
+
+### 📝 Docs
+
+* add YouTube link ([138f7d8](https://github.com/drivebase/drivebase/commit/138f7d8f8eb59165de746415e8830eaf94cc12bb))
+* update README ([2f607da](https://github.com/drivebase/drivebase/commit/2f607da3689d03d6df14fd8d609f125bd7872c35))
+
+### 🤖 Chore
+
+* **api:** add structured debug error logs for ([550f233](https://github.com/drivebase/drivebase/commit/550f23316537db803572c9dfc3f27be5ed3a9c85))
+* lint ([a8bec1d](https://github.com/drivebase/drivebase/commit/a8bec1dfd2333d4ad147fbd98c67250aa5ae5d5e))
+* update relaese-it file ([49b8815](https://github.com/drivebase/drivebase/commit/49b8815555bcea31aef0709b8409e8eb9b905d37))
+
 ## [3.1.4](https://github.com/drivebase/drivebase/compare/v3.1.3...v3.1.4) (2026-02-28)
 
 ### 🐛 Fixes
