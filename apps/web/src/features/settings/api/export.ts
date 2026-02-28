@@ -1,7 +1,5 @@
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
-
-const API_BASE_URL =
-	import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") || "";
+import { API_BASE_URL } from "@/shared/lib/apiUrl";
 
 export interface ExportOptions {
 	includeProviders?: boolean;

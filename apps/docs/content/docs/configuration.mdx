@@ -27,7 +27,7 @@ Drivebase uses environment variables for configuration. You can set these in a `
 - `DEFAULT_OWNER_PASSWORD`: (Optional) Password for the default owner account.
 
 ### Web Client
-- `VITE_PUBLIC_API_URL`: The public GraphQL endpoint URL used by the browser (e.g., `http://localhost:4000/graphql`).
+- `VITE_PUBLIC_BASE_URL`: The public API base URL used by the browser (e.g., `http://localhost:4000`). The app appends `/graphql` automatically for GraphQL.
 
 ### Telemetry
 - `DRIVEBASE_TELEMETRY`: Set to `false` to disable anonymous usage telemetry (default: `true`). See [Telemetry](/docs/telemetry) for details on what is collected.
@@ -54,5 +54,5 @@ REDIS_URL=redis://redis.example.com:6379
 JWT_SECRET=xY7z... (at least 32 characters)
 ENCRYPTION_KEY=aB1c... (exactly 32 characters recommended)
 
-VITE_PUBLIC_API_URL=https://api.drivebase.io/graphql
+VITE_PUBLIC_BASE_URL=https://api.drivebase.io
 ```

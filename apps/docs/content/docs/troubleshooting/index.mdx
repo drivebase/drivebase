@@ -11,7 +11,7 @@ If you encounter issues while using Drivebase, this guide covers the most common
 - **Symptom**: The web app shows "Unable to connect to API" or stays on a loading screen.
 - **Fix**: 
     - Ensure the API server is running (`docker compose ps` or `bun run dev`).
-    - Check that `VITE_PUBLIC_API_URL` in your frontend configuration matches the actual API URL.
+    - Check that `VITE_PUBLIC_BASE_URL` in your frontend configuration matches the actual API origin.
     - Check for CORS errors in the browser console. Ensure `CORS_ORIGIN` in the API configuration allows your frontend domain.
 
 ### Database or Redis Connection

@@ -9,6 +9,7 @@ import {
 	UPLOAD_PROGRESS_SUBSCRIPTION,
 } from "@/features/files/api/upload-session";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
+import { API_BASE_URL } from "@/shared/lib/apiUrl";
 import { progressPanel } from "@/shared/lib/progressPanel";
 
 const DEFAULT_CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
@@ -155,9 +156,6 @@ export function useChunkedUpload() {
 			chunkSize: number,
 			ppId: string,
 		): Promise<boolean> => {
-			const apiUrl =
-				import.meta.env.VITE_PUBLIC_API_URL?.replace("/graphql", "") ?? "";
-
 			for (let i = 0; i < totalChunks; i++) {
 				const start = i * chunkSize;
 				const end = Math.min(start + chunkSize, file.size);
@@ -171,7 +169,7 @@ export function useChunkedUpload() {
 							ACTIVE_WORKSPACE_STORAGE_KEY,
 						);
 						const response = await fetch(
-							`${apiUrl}/api/upload/chunk?sessionId=${sessionId}&chunkIndex=${i}`,
+							`${API_BASE_URL}/api/upload/chunk?sessionId=${sessionId}&chunkIndex=${i}`,
 							{
 								method: "POST",
 								headers: {

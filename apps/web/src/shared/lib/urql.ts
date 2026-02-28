@@ -8,11 +8,10 @@ import {
 } from "urql";
 import { map, pipe } from "wonka";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
-
-const API_URL = import.meta.env.VITE_PUBLIC_API_URL || "/graphql";
+import { GRAPHQL_API_URL } from "@/shared/lib/apiUrl";
 
 const sseClient = createSSEClient({
-	url: API_URL,
+	url: GRAPHQL_API_URL,
 	headers: () => {
 		const token = localStorage.getItem("token");
 		const workspaceId = localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY);
@@ -45,7 +44,7 @@ const normalizeErrorMessageExchange: Exchange =
 		);
 
 export const client = new Client({
-	url: API_URL,
+	url: GRAPHQL_API_URL,
 	exchanges: [
 		normalizeErrorMessageExchange,
 		cacheExchange,
