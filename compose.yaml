@@ -22,7 +22,7 @@ services:
       ai-inference:
         condition: service_started
     volumes:
-      - drivebase_data:/app/data
+      - ./data:/app/data
     ports:
       - "3000:3000"
 
@@ -67,10 +67,9 @@ services:
       AI_MODELS_DIR: /app/data/ai-models
     volumes:
       - ./services/ai-inference:/srv/ai-inference
-      - drivebase_data:/app/data
+      - ./data:/app/data
     ports:
       - "8010:8010"
 
 volumes:
   postgres_data:
-  drivebase_data:

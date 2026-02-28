@@ -46,9 +46,10 @@ export function FileInfoPanel({ fileId }: FileInfoPanelProps) {
 
 	const kind = getFileKind(file.mimeType);
 	const isPreviewable = kind === "image" || kind === "text";
+	const defaultView = isPreviewable ? "preview" : "file";
 
 	return (
-		<Tabs defaultValue={"file"} className="w-full">
+		<Tabs defaultValue={defaultView} className="w-full">
 			<TabsList variant="line" className="mb-4">
 				<TabsTrigger value="file">File</TabsTrigger>
 				<TabsTrigger value="metadata">Metadata</TabsTrigger>

@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { enqueueFileAnalysis } from "../../service/ai/analysis-jobs";
 import { FileService } from "../../service/file";
+import { logFileOperationDebugError } from "../../service/file/shared/file-error-log";
 import { ProviderService } from "../../service/provider";
 import { fileSizeBucket, telemetry } from "../../telemetry";
 import { logger } from "../../utils/logger";
@@ -83,11 +84,15 @@ export async function handleUploadProxy(c: Context<AppEnv>): Promise<Response> {
 
 		return c.json({ success: true });
 	} catch (error) {
-		logger.error({
-			msg: "Proxy upload failed",
+		logFileOperationDebugError({
+			operation: "upload",
+			stage: "provider_transfer",
+			context: {
+				userId: user.userId,
+				workspaceId: c.req.header("x-workspace-id") ?? undefined,
+				fileId,
+			},
 			error,
-			fileId,
-			userId: user.userId,
 		});
 
 		try {
@@ -99,10 +104,14 @@ export async function handleUploadProxy(c: Context<AppEnv>): Promise<Response> {
 					.where(eq(files.id, fileId));
 			}
 		} catch (cleanupError) {
-			logger.error({
-				msg: "Failed to cleanup after upload failure",
+			logFileOperationDebugError({
+				operation: "upload",
+				stage: "cleanup_after_failure",
+				context: {
+					userId: user.userId,
+					fileId,
+				},
 				error: cleanupError,
-				fileId,
 			});
 		}
 

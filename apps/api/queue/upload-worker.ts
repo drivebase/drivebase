@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
 import { createBullMQConnection } from "../redis/client";
 import { enqueueFileAnalysis } from "../service/ai/analysis-jobs";
+import { logFileOperationDebugError } from "../service/file/shared/file-error-log";
 import { UploadSessionManager } from "../service/file/upload";
 import { ProviderService } from "../service/provider";
 import { fileSizeBucket, telemetry } from "../telemetry";
@@ -275,11 +276,17 @@ export function startUploadWorker(): Worker<UploadJobData> {
 				const errorMessage =
 					error instanceof Error ? error.message : String(error);
 
-				logger.error({
-					msg: "Upload worker failed",
-					jobId: job.id,
-					sessionId,
-					error: errorMessage,
+				logFileOperationDebugError({
+					operation: "upload",
+					stage: "worker_provider_transfer",
+					context: {
+						jobId: String(job.id ?? ""),
+						sessionId,
+						fileId: fileId ?? undefined,
+						providerId: providerId ?? undefined,
+						attempt: job.attemptsMade + 1,
+					},
+					error,
 				});
 
 				telemetry.capture("chunked_upload_failed", {
@@ -312,7 +319,12 @@ export function startUploadWorker(): Worker<UploadJobData> {
 	);
 
 	uploadWorker.on("error", (error) => {
-		logger.error({ msg: "Upload worker error", error: error.message });
+		logFileOperationDebugError({
+			operation: "upload",
+			stage: "worker_runtime",
+			context: {},
+			error,
+		});
 	});
 
 	logger.info("Upload worker started");

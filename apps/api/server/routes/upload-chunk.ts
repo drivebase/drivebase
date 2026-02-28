@@ -3,6 +3,7 @@ import type { Context } from "hono";
 import { pubSub } from "../../graphql/pubsub";
 import { getUploadQueue } from "../../queue/upload-queue";
 import { UploadSessionManager } from "../../service/file/upload";
+import { logFileOperationDebugError } from "../../service/file/shared/file-error-log";
 import { logger } from "../../utils/logger";
 import type { AppEnv } from "../app";
 
@@ -90,11 +91,15 @@ export async function handleUploadChunk(c: Context<AppEnv>): Promise<Response> {
 		});
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
-		logger.error({
-			msg: "Chunk upload failed",
-			sessionId,
-			chunkIndex,
-			error: errorMessage,
+		logFileOperationDebugError({
+			operation: "upload",
+			stage: "chunk_receive",
+			context: {
+				userId: user.userId,
+				sessionId,
+				chunkIndex,
+			},
+			error,
 		});
 
 		return c.json({ error: errorMessage }, 500);

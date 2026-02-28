@@ -1,7 +1,7 @@
 import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders } from "@drivebase/db";
 import { and, desc, eq, ilike, isNull, sql } from "drizzle-orm";
-import { logger } from "@/utils/logger";
+import { logFileOperationDebugError } from "../shared/file-error-log";
 
 export async function listFiles(
 	db: Database,
@@ -36,7 +36,12 @@ export async function listFiles(
 			hasMore: fileList.length === limit,
 		};
 	} catch (error) {
-		logger.error({ msg: "List files failed", userId, folderId, error });
+		logFileOperationDebugError({
+			operation: "file_list",
+			stage: "list",
+			context: { userId, workspaceId, folderId, limit, offset },
+			error,
+		});
 		throw error;
 	}
 }
@@ -48,8 +53,6 @@ export async function searchFiles(
 	query: string,
 	limit: number = 50,
 ) {
-	logger.debug({ msg: "Searching files", userId, workspaceId, query });
-
 	try {
 		return await db
 			.select({ file: files })
@@ -68,7 +71,12 @@ export async function searchFiles(
 			.orderBy(files.name)
 			.then((rows) => rows.map((row) => row.file));
 	} catch (error) {
-		logger.error({ msg: "Search files failed", userId, query, error });
+		logFileOperationDebugError({
+			operation: "file_list",
+			stage: "search_files",
+			context: { userId, workspaceId, query, limit },
+			error,
+		});
 		throw error;
 	}
 }
@@ -80,8 +88,6 @@ export async function searchFolders(
 	query: string,
 	limit: number = 50,
 ) {
-	logger.debug({ msg: "Searching folders", userId, workspaceId, query });
-
 	try {
 		return await db
 			.select({ folder: folders })
@@ -100,7 +106,12 @@ export async function searchFolders(
 			.orderBy(folders.name)
 			.then((rows) => rows.map((row) => row.folder));
 	} catch (error) {
-		logger.error({ msg: "Search folders failed", userId, query, error });
+		logFileOperationDebugError({
+			operation: "file_list",
+			stage: "search_folders",
+			context: { userId, workspaceId, query, limit },
+			error,
+		});
 		throw error;
 	}
 }
@@ -132,7 +143,12 @@ export async function getRecentFiles(
 			)
 			.then((rows) => rows.map((row) => row.file));
 	} catch (error) {
-		logger.error({ msg: "List recent files failed", userId, error });
+		logFileOperationDebugError({
+			operation: "file_list",
+			stage: "recent",
+			context: { userId, workspaceId, limit },
+			error,
+		});
 		throw error;
 	}
 }

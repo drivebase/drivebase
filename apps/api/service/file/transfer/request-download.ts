@@ -1,9 +1,9 @@
 import { ConflictError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { getPublicApiBaseUrl } from "../../../config/url";
-import { logger } from "../../../utils/logger";
 import { ProviderService } from "../../provider";
 import { getFile } from "../query/file-read";
+import { logFileOperationDebugError } from "../shared/file-error-log";
 
 // Request a download URL or fallback proxy URL.
 export async function requestDownload(
@@ -12,8 +12,6 @@ export async function requestDownload(
 	userId: string,
 	workspaceId: string,
 ) {
-	logger.debug({ msg: "Requesting download", userId, fileId });
-
 	try {
 		const file = await getFile(db, fileId, userId, workspaceId);
 		const now = Date.now();
@@ -56,7 +54,12 @@ export async function requestDownload(
 			useDirectDownload,
 		};
 	} catch (error) {
-		logger.error({ msg: "Request download failed", userId, fileId, error });
+		logFileOperationDebugError({
+			operation: "download",
+			stage: "request",
+			context: { userId, workspaceId, fileId },
+			error,
+		});
 		throw error;
 	}
 }

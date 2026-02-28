@@ -2,6 +2,7 @@ import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
 import { ActivityService } from "../../service/activity";
 import { FileService } from "../../service/file";
+import { logFileOperationDebugError } from "../../service/file/shared/file-error-log";
 import { ProviderService } from "../../service/provider";
 import { telemetry } from "../../telemetry";
 import { logger } from "../../utils/logger";
@@ -125,11 +126,15 @@ export async function handleDownloadProxy(
 			},
 		});
 	} catch (error) {
-		logger.error({
-			msg: "Proxy download failed",
+		logFileOperationDebugError({
+			operation: "download",
+			stage: "proxy_stream",
+			context: {
+				userId: user.userId,
+				workspaceId: c.req.header("x-workspace-id") ?? undefined,
+				fileId,
+			},
 			error,
-			fileId,
-			userId: user.userId,
 		});
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		return c.text(`Download failed: ${errorMessage}`, 500);

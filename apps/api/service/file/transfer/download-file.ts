@@ -1,8 +1,8 @@
 import { ConflictError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { logger } from "../../../utils/logger";
 import { ProviderService } from "../../provider";
 import { getFile, getFileForProxy } from "../query/file-read";
+import { logFileOperationDebugError } from "../shared/file-error-log";
 
 // Stream a regular file through the proxy endpoint.
 export async function downloadFile(
@@ -11,8 +11,6 @@ export async function downloadFile(
 	userId: string,
 	workspaceId: string,
 ): Promise<ReadableStream> {
-	logger.debug({ msg: "Downloading file stream", userId, fileId });
-
 	try {
 		const file = await getFile(db, fileId, userId, workspaceId);
 		const now = Date.now();
@@ -39,7 +37,12 @@ export async function downloadFile(
 		const provider = await providerService.getProviderInstance(providerRecord);
 		return await provider.downloadFile(file.remoteId);
 	} catch (error) {
-		logger.error({ msg: "Download file stream failed", userId, fileId, error });
+		logFileOperationDebugError({
+			operation: "download",
+			stage: "provider_stream",
+			context: { userId, workspaceId, fileId },
+			error,
+		});
 		throw error;
 	}
 }
@@ -51,8 +54,6 @@ export async function downloadFileForProxy(
 	userId: string,
 	workspaceId: string,
 ): Promise<ReadableStream> {
-	logger.debug({ msg: "Downloading file stream (proxy)", userId, fileId });
-
 	try {
 		const file = await getFileForProxy(db, fileId, workspaceId);
 		const now = Date.now();
@@ -79,10 +80,10 @@ export async function downloadFileForProxy(
 		const provider = await providerService.getProviderInstance(providerRecord);
 		return await provider.downloadFile(file.remoteId);
 	} catch (error) {
-		logger.error({
-			msg: "Download file stream (proxy) failed",
-			userId,
-			fileId,
+		logFileOperationDebugError({
+			operation: "download",
+			stage: "proxy_stream",
+			context: { userId, workspaceId, fileId },
 			error,
 		});
 		throw error;
