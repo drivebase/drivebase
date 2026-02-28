@@ -19,7 +19,7 @@ export async function syncProvider(
 	userId: string,
 	options?: { recursive?: boolean; pruneDeleted?: boolean },
 ) {
-	const { recursive = true, pruneDeleted = false } = options || {};
+	const { recursive = true, pruneDeleted = true } = options || {};
 
 	const [providerRecord] = await db
 		.select()
@@ -49,6 +49,7 @@ export async function syncProvider(
 
 	const provider = await getProviderInstance(providerRecord);
 	const seenFileRemoteIds: string[] = [];
+	const seenFolderRemoteIds: string[] = [];
 	let processedCount = 0;
 
 	const syncFolder = async (
@@ -66,6 +67,7 @@ export async function syncProvider(
 			for (const folder of listResult.folders) {
 				const cleanName = folder.name.replace(/\//g, "-");
 				const virtualPath = `${parentPath}${cleanName}/`;
+				seenFolderRemoteIds.push(folder.remoteId);
 				let [dbFolder] = await db
 					.select()
 					.from(folders)
@@ -208,22 +210,35 @@ export async function syncProvider(
 	try {
 		await syncFolder(undefined, null, "/");
 
-		if (pruneDeleted && seenFileRemoteIds.length > 0) {
+		if (pruneDeleted) {
 			await activityService.update(job.id, {
 				status: "running",
 				progress: getSyncProgress(processedCount),
 				message: "Pruning deleted items...",
 			});
-			await db
-				.delete(files)
-				.where(
-					and(
-						eq(files.providerId, providerId),
-						eq(files.nodeType, "file"),
-						isNull(files.vaultId),
-						notInArray(files.remoteId, seenFileRemoteIds),
-					),
-				);
+			if (seenFileRemoteIds.length > 0) {
+				await db
+					.delete(files)
+					.where(
+						and(
+							eq(files.providerId, providerId),
+							eq(files.nodeType, "file"),
+							isNull(files.vaultId),
+							notInArray(files.remoteId, seenFileRemoteIds),
+						),
+					);
+			}
+			if (seenFolderRemoteIds.length > 0) {
+				await db
+					.delete(folders)
+					.where(
+						and(
+							eq(folders.providerId, providerId),
+							eq(folders.nodeType, "folder"),
+							notInArray(folders.remoteId, seenFolderRemoteIds),
+						),
+					);
+			}
 		}
 
 		const quota = await provider.getQuota();

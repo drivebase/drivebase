@@ -11,15 +11,6 @@ export async function listFiles(
 	limit: number = 50,
 	offset: number = 0,
 ) {
-	logger.debug({
-		msg: "Listing files",
-		userId,
-		workspaceId,
-		folderId,
-		limit,
-		offset,
-	});
-
 	try {
 		const conditions = [
 			eq(files.nodeType, "file"),
@@ -120,8 +111,6 @@ export async function getRecentFiles(
 	workspaceId: string,
 	limit: number = 3,
 ) {
-	logger.debug({ msg: "Listing recent files", userId, workspaceId, limit });
-
 	try {
 		return await db
 			.select({ file: files })

@@ -258,6 +258,8 @@ export interface UploadPartResult {
 	partNumber: number;
 	/** ETag returned by the provider for this part */
 	etag: string;
+	/** Final remote file ID, set by providers that complete the upload on the last part (e.g. Google Drive) */
+	finalRemoteId?: string;
 }
 
 /**

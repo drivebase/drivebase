@@ -688,8 +688,9 @@ export class GoogleDriveProvider implements IStorageProvider {
 				);
 			}
 
-			// Extract file ID from response body if available
-			const body = (await response.json()) as { id?: string };
+			// Extract file ID from response body if available (body may be empty)
+			const bodyText = await response.text();
+			const body = bodyText ? (JSON.parse(bodyText) as { id?: string }) : {};
 			const remoteId = body.id ?? `pending-${Date.now()}`;
 
 			return {
@@ -737,7 +738,7 @@ export class GoogleDriveProvider implements IStorageProvider {
 			});
 
 			// 308 Resume Incomplete = part received, upload not finished
-			// 200/201 = upload complete
+			// 200/201 = upload complete (final chunk), response body contains file metadata
 			if (response.status !== 308 && !response.ok) {
 				const errorText = await response.text();
 				throw new ProviderError(
@@ -746,9 +747,19 @@ export class GoogleDriveProvider implements IStorageProvider {
 				);
 			}
 
+			let finalRemoteId: string | undefined;
+			if (response.status === 200 || response.status === 201) {
+				const bodyText = await response.text();
+				if (bodyText) {
+					const body = JSON.parse(bodyText) as { id?: string };
+					if (body.id) finalRemoteId = body.id;
+				}
+			}
+
 			return {
 				partNumber,
 				etag: response.headers.get("etag") ?? `part-${partNumber}`,
+				finalRemoteId,
 			};
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;

@@ -205,7 +205,7 @@ export function useFileSystemColumns({
 				enableHiding: false,
 				size: 30,
 				minSize: 20,
-				maxSize: 30,
+				maxSize: 40,
 				header: () => <div className="text-right" />,
 				cell: ({ row }) => {
 					const original = row.original;
