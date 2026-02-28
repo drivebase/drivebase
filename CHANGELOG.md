@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.1.3](https://github.com/drivebase/drivebase/compare/v3.1.2...v3.1.3) (2026-02-28)
+
+### 🐛 Fixes
+
+* update API URL to use relative paths ([03900f2](https://github.com/drivebase/drivebase/commit/03900f24eeb19d91273fb9b30515a79593d6f243))
+
 ## [3.1.2](https://github.com/drivebase/drivebase/compare/v3.1.1...v3.1.2) (2026-02-28)
 
 ## [3.1.1](https://github.com/drivebase/drivebase/compare/v3.1.0...v3.1.1) (2026-02-28)
