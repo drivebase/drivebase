@@ -54,7 +54,7 @@ class OcrResponse(BaseModel):
     source: str | None = None
 
 
-app = FastAPI(title="Drivebase AI Inference Service", version="3.1.1")
+app = FastAPI(title="Drivebase AI Inference Service", version="3.1.2")
 logger = logging.getLogger("drivebase.ai_inference")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
