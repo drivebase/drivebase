@@ -150,6 +150,13 @@ export async function propfind(
 		throw new ProviderError(
 			"nextcloud",
 			`PROPFIND failed: ${response.status} ${response.statusText}`,
+			{
+				op: "propfind",
+				method: "PROPFIND",
+				path,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 
@@ -179,6 +186,13 @@ export async function propfindSingle(
 		throw new ProviderError(
 			"nextcloud",
 			`PROPFIND failed: ${response.status} ${response.statusText}`,
+			{
+				op: "propfindSingle",
+				method: "PROPFIND",
+				path,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 
@@ -219,6 +233,12 @@ export async function getQuotaWebdav(
 		throw new ProviderError(
 			"nextcloud",
 			`Quota PROPFIND failed: ${response.status}`,
+			{
+				op: "getQuotaWebdav",
+				method: "PROPFIND",
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 
@@ -261,6 +281,13 @@ export async function putFile(
 		throw new ProviderError(
 			"nextcloud",
 			`PUT upload failed: ${response.status} ${response.statusText}`,
+			{
+				op: "putFile",
+				method: "PUT",
+				path,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 }
@@ -283,11 +310,21 @@ export async function getFile(
 		throw new ProviderError(
 			"nextcloud",
 			`GET download failed: ${response.status} ${response.statusText}`,
+			{
+				op: "getFile",
+				method: "GET",
+				path,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 
 	if (!response.body) {
-		throw new ProviderError("nextcloud", "No response body for file download");
+		throw new ProviderError("nextcloud", "No response body for file download", {
+			op: "getFile",
+			path,
+		});
 	}
 
 	return response.body as ReadableStream;
@@ -309,6 +346,13 @@ export async function mkcol(auth: NextcloudAuth, path: string): Promise<void> {
 		throw new ProviderError(
 			"nextcloud",
 			`MKCOL failed: ${response.status} ${response.statusText}`,
+			{
+				op: "mkcol",
+				method: "MKCOL",
+				path,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 }
@@ -331,6 +375,13 @@ export async function deleteResource(
 		throw new ProviderError(
 			"nextcloud",
 			`DELETE failed: ${response.status} ${response.statusText}`,
+			{
+				op: "deleteResource",
+				method: "DELETE",
+				path,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 }
@@ -360,6 +411,14 @@ export async function moveResource(
 		throw new ProviderError(
 			"nextcloud",
 			`MOVE failed: ${response.status} ${response.statusText}`,
+			{
+				op: "moveResource",
+				method: "MOVE",
+				sourcePath,
+				destinationPath,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 }
@@ -389,6 +448,14 @@ export async function copyResource(
 		throw new ProviderError(
 			"nextcloud",
 			`COPY failed: ${response.status} ${response.statusText}`,
+			{
+				op: "copyResource",
+				method: "COPY",
+				sourcePath,
+				destinationPath,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 }
@@ -414,6 +481,12 @@ export async function getOcsUserInfo(
 		throw new ProviderError(
 			"nextcloud",
 			`OCS user info failed: ${response.status}`,
+			{
+				op: "getOcsUserInfo",
+				method: "GET",
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 
@@ -452,6 +525,13 @@ export async function chunkedUploadInit(
 		throw new ProviderError(
 			"nextcloud",
 			`Chunked upload MKCOL failed: ${response.status} ${response.statusText}`,
+			{
+				op: "chunkedUploadInit",
+				method: "MKCOL",
+				uploadId,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 }
@@ -485,6 +565,15 @@ export async function chunkedUploadPart(
 		throw new ProviderError(
 			"nextcloud",
 			`Chunk ${chunkNumber} upload failed: ${response.status} ${response.statusText}`,
+			{
+				op: "chunkedUploadPart",
+				method: "PUT",
+				uploadId,
+				chunkNumber,
+				destinationPath,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 }
@@ -514,6 +603,14 @@ export async function chunkedUploadAssemble(
 		throw new ProviderError(
 			"nextcloud",
 			`Chunk assembly failed: ${response.status} ${response.statusText}`,
+			{
+				op: "chunkedUploadAssemble",
+				method: "MOVE",
+				uploadId,
+				destinationPath,
+				status: response.status,
+				statusText: response.statusText,
+			},
 		);
 	}
 }

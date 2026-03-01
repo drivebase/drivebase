@@ -23,6 +23,28 @@ import type { TelegramConfig } from "./schema";
 import { TelegramConfigSchema } from "./schema";
 
 /**
+ * Map Telegram/GramJS errors to a JSON-safe object for structured logging.
+ */
+function mapTelegramError(error: unknown): Record<string, unknown> {
+	if (!error || typeof error !== "object") {
+		return { rawError: String(error) };
+	}
+	const e = error as {
+		message?: string;
+		stack?: string;
+		errorMessage?: string;
+		errorCode?: number;
+		code?: string | number;
+	};
+	return {
+		message: e.message ?? e.errorMessage,
+		errorCode: e.errorCode,
+		code: e.code,
+		originalStack: e.stack,
+	};
+}
+
+/**
  * Telegram storage provider.
  *
  * Uses Telegram's "Saved Messages" as cloud storage.
@@ -73,8 +95,7 @@ export class TelegramProvider implements IStorageProvider {
 			// Fetch dialogs to populate entity cache (needed to resolve channel IDs)
 			// We limit to 50 to avoid long startup, but enough to find the storage channel if active
 			await this.client.getDialogs({ limit: 50 });
-		} catch (e) {
-			console.warn("Telegram initialization warning:", e);
+		} catch {
 			// We don't throw here to avoid crashing the whole provider initialization
 			// If actual operations (upload/download) fail, they will throw then.
 		}
@@ -88,8 +109,7 @@ export class TelegramProvider implements IStorageProvider {
 		try {
 			await this.client.getMe();
 			return true;
-		} catch (error) {
-			console.error("Telegram connection test failed:", error);
+		} catch {
 			return false;
 		}
 	}
@@ -119,7 +139,8 @@ export class TelegramProvider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("telegram", "Failed to get account info", {
-				error,
+				op: "getAccountInfo",
+				error: mapTelegramError(error),
 			});
 		}
 	}
@@ -206,7 +227,9 @@ export class TelegramProvider implements IStorageProvider {
 			return `${String(entity)}:${String(result.id)}`;
 		} catch (error) {
 			throw new ProviderError("telegram", "Failed to upload file", {
-				error,
+				op: "uploadFile",
+				remoteId,
+				error: mapTelegramError(error),
 			});
 		}
 	}
@@ -290,7 +313,9 @@ export class TelegramProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("telegram", "Failed to download file", {
-				error,
+				op: "downloadFile",
+				remoteId,
+				error: mapTelegramError(error),
 			});
 		}
 	}
@@ -337,9 +362,10 @@ export class TelegramProvider implements IStorageProvider {
 			}
 			throw new Error("No chat returned after channel creation");
 		} catch (error) {
-			// If generic error, throw
 			throw new ProviderError("telegram", "Failed to create channel", {
-				error,
+				op: "createFolder",
+				name: options.name,
+				error: mapTelegramError(error),
 			});
 		}
 	}
@@ -359,7 +385,9 @@ export class TelegramProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("telegram", "Failed to delete file", {
-				error,
+				op: "delete",
+				remoteId: options.remoteId,
+				error: mapTelegramError(error),
 			});
 		}
 	}
@@ -396,7 +424,9 @@ export class TelegramProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("telegram", "Failed to copy file", {
-				error,
+				op: "copy",
+				remoteId: _options.remoteId,
+				error: mapTelegramError(error),
 			});
 		}
 	}
@@ -466,7 +496,10 @@ export class TelegramProvider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("telegram", "Failed to list files", {
-				error,
+				op: "list",
+				folderId: options.folderId,
+				limit: options.limit,
+				error: mapTelegramError(error),
 			});
 		}
 	}
@@ -529,7 +562,9 @@ export class TelegramProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("telegram", "Failed to get file metadata", {
-				error,
+				op: "getFileMetadata",
+				remoteId,
+				error: mapTelegramError(error),
 			});
 		}
 	}
