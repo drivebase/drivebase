@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { Plus } from "lucide-react";
+import { Plus } from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import { ConditionEditor, type RuleCondition } from "./ConditionEditor";
 

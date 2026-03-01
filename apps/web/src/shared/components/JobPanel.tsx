@@ -7,7 +7,7 @@ import {
 	ChevronUp,
 	Clock3,
 	Loader2,
-} from "lucide-react";
+} from "@/shared/components/icons/solar";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useMutation } from "urql";

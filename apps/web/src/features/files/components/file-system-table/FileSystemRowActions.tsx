@@ -9,7 +9,7 @@ import {
 	Share2,
 	Star,
 	Trash,
-} from "lucide-react";
+} from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,

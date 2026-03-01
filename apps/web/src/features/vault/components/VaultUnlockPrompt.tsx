@@ -1,4 +1,4 @@
-import { Lock, Upload } from "lucide-react";
+import { Lock, Upload } from "@/shared/components/icons/solar";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

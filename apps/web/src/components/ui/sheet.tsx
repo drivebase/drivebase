@@ -1,6 +1,6 @@
 "use client";
 
-import { XIcon } from "lucide-react";
+import { XIcon } from "@/shared/components/icons/solar";
 import { Dialog as SheetPrimitive } from "radix-ui";
 import type * as React from "react";
 import { Button } from "@/components/ui/button";

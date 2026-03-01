@@ -1,4 +1,9 @@
-import { CheckCircle2, Loader2, X, XCircle } from "lucide-react";
+import {
+	CheckCircle2,
+	Loader2,
+	X,
+	XCircle,
+} from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {

@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "@/shared/components/icons/solar";
 import { FileTable } from "@/features/files/FileTable";
 import type { FileItemFragment } from "@/gql/graphql";
 

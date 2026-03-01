@@ -8,7 +8,7 @@ import {
 	User,
 	Users,
 	Wrench,
-} from "lucide-react";
+} from "@/shared/components/icons/solar";
 import { getActiveWorkspaceId } from "@/features/workspaces";
 
 const categories = [
@@ -68,7 +68,7 @@ export function SettingsCategoryNav() {
 									"text-muted-foreground hover:text-foreground hover:bg-muted/50",
 							}}
 						>
-							<category.icon className="h-5 w-5 min-w-5" />
+							<category.icon className="h-6 w-6 min-w-6" />
 							{category.label}
 						</Link>
 					</li>

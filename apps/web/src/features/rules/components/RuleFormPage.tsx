@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/shared/components/icons/solar";
 import { toast } from "sonner";
 import { useClient } from "urql";
 import { Button } from "@/components/ui/button";

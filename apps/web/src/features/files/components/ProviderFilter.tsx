@@ -1,4 +1,4 @@
-import { Filter } from "lucide-react";
+import { Filter } from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,

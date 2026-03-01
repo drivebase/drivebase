@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { Settings2, X } from "lucide-react";
+import { Settings2, X } from "@/shared/components/icons/solar";
 import { RecentActivityView } from "@/components/layout/RecentActivityView";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

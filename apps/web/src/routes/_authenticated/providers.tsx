@@ -7,7 +7,7 @@ import {
 	Github,
 	Loader2,
 	Plus,
-} from "lucide-react";
+} from "@/shared/components/icons/solar";
 import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "urql";
 import { Button } from "@/components/ui/button";

@@ -1,4 +1,4 @@
-import { Check, KeyRound, Phone } from "lucide-react";
+import { Check, KeyRound, Phone } from "@/shared/components/icons/solar";
 import { Fragment } from "react";
 
 const STEPS = [

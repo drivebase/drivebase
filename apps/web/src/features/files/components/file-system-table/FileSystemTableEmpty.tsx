@@ -1,4 +1,4 @@
-import { FolderIcon } from "lucide-react";
+import { FolderIcon } from "@/shared/components/icons/solar";
 
 interface FileSystemTableEmptyProps {
 	message?: string;

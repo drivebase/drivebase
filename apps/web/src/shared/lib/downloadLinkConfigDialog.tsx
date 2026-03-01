@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy } from "@/shared/components/icons/solar";
 import { type ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

@@ -1,4 +1,8 @@
-import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import {
+	ArrowRight,
+	CheckCircle2,
+	Loader2,
+} from "@/shared/components/icons/solar";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "urql";

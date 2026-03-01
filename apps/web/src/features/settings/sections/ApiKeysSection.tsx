@@ -1,5 +1,11 @@
 import { Trans } from "@lingui/react/macro";
-import { Check, Copy, Plus, ShieldAlert, Trash2 } from "lucide-react";
+import {
+	Check,
+	Copy,
+	Plus,
+	ShieldAlert,
+	Trash2,
+} from "@/shared/components/icons/solar";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";

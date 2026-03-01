@@ -1,4 +1,4 @@
-import { Download, Key } from "lucide-react";
+import { Download, Key } from "@/shared/components/icons/solar";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

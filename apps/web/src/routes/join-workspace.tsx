@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/shared/components/icons/solar";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

@@ -5,7 +5,7 @@ import {
 	redirect,
 	useNavigate,
 } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/shared/components/icons/solar";
 import { useEffect } from "react";
 import { useMe } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/authStore";

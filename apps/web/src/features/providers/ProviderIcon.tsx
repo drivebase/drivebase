@@ -1,4 +1,4 @@
-import { Cloud } from "lucide-react";
+import { Cloud } from "@/shared/components/icons/solar";
 import { useState } from "react";
 import { cn } from "@/shared/lib/utils";
 

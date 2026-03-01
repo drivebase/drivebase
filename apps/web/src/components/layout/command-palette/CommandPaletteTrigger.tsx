@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search } from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 
 type Props = {

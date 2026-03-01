@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { Trash2 } from "lucide-react";
+import { Trash2 } from "@/shared/components/icons/solar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

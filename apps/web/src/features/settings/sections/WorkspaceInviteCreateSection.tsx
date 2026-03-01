@@ -1,4 +1,4 @@
-import { Copy, Link2 } from "lucide-react";
+import { Copy, Link2 } from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

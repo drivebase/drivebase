@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Loader2, Shield } from "lucide-react";
+import { Loader2, Shield } from "@/shared/components/icons/solar";
 import { useProvider } from "@/features/providers/hooks/useProviders";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 

@@ -1,4 +1,4 @@
-import { RefreshCw } from "lucide-react";
+import { RefreshCw } from "@/shared/components/icons/solar";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {

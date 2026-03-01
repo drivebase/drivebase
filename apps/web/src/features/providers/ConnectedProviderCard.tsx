@@ -9,7 +9,7 @@ import {
 	RefreshCw,
 	Settings,
 	Trash2,
-} from "lucide-react";
+} from "@/shared/components/icons/solar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

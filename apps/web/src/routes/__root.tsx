@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "@/shared/components/icons/solar";
 import { Toaster } from "sonner";
 import { NotFound } from "@/components/not-found";
 import { useTheme } from "@/components/theme-provider";

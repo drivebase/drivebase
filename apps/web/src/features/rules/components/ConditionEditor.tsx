@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { X } from "lucide-react";
+import { X } from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

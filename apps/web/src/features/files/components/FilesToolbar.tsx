@@ -5,7 +5,7 @@ import {
 	Loader2,
 	Settings,
 	Upload,
-} from "lucide-react";
+} from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import { DroppableBreadcrumb } from "@/features/files/components/DroppableBreadcrumb";
 import { ProviderFilter } from "@/features/files/components/ProviderFilter";

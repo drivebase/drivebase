@@ -1,4 +1,4 @@
-import { Loader2, Shield } from "lucide-react";
+import { Loader2, Shield } from "@/shared/components/icons/solar";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

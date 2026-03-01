@@ -1,4 +1,9 @@
-import { Check, Download, Lock, ShieldCheck } from "lucide-react";
+import {
+	Check,
+	Download,
+	Lock,
+	ShieldCheck,
+} from "@/shared/components/icons/solar";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

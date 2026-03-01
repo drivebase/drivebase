@@ -1,4 +1,4 @@
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2 } from "@/shared/components/icons/solar";
 
 export function CompletionStep() {
 	return (

@@ -1,4 +1,4 @@
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2 } from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import type { WorkspaceMemberRole } from "@/gql/graphql";
 

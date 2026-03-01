@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/shared/components/icons/solar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type FieldValues, useForm } from "react-hook-form";
 import { toast } from "sonner";
