@@ -16,6 +16,7 @@ import {
 	useWorkspaces,
 } from "@/features/workspaces";
 import { WorkspaceMemberRole } from "@/gql/graphql";
+import { confirmDialog } from "@/shared/lib/confirmDialog";
 
 export function GeneralSettingsView() {
 	const { i18n } = useLingui();
@@ -95,6 +96,12 @@ export function GeneralSettingsView() {
 	};
 
 	const handleSignOut = async () => {
+		const confirmed = await confirmDialog(
+			i18n._(msg`Sign out?`),
+			i18n._(msg`You will be returned to the login page.`),
+		);
+		if (!confirmed) return;
+
 		try {
 			await logout();
 		} catch (_error) {

@@ -1,4 +1,16 @@
 """
+A registered passkey credential
+"""
+type Passkey {
+	id: ID!
+	name: String!
+	deviceType: String!
+	backedUp: Boolean!
+	createdAt: String!
+	lastUsedAt: String
+}
+
+"""
 Authentication and authorization
 """
 type Query {
@@ -6,6 +18,11 @@ type Query {
 	Get current authenticated user
 	"""
 	me: User
+
+	"""
+	List passkeys registered for the current user
+	"""
+	myPasskeys: [Passkey!]!
 }
 
 type Mutation {
@@ -48,6 +65,31 @@ type Mutation {
 	Complete user onboarding
 	"""
 	completeOnboarding: Boolean!
+
+	"""
+	Start passkey registration (returns JSON options string)
+	"""
+	startPasskeyRegistration: String!
+
+	"""
+	Verify passkey registration response and store credential
+	"""
+	verifyPasskeyRegistration(name: String!, response: String!): Passkey!
+
+	"""
+	Start passkey login — returns JSON with optionsJson and challengeId (no email needed)
+	"""
+	startPasskeyLogin: String!
+
+	"""
+	Verify passkey login response and return session
+	"""
+	verifyPasskeyLogin(challengeId: String!, response: String!): AuthResponse!
+
+	"""
+	Delete a registered passkey
+	"""
+	deletePasskey(id: ID!): Boolean!
 }
 
 input RegisterInput {

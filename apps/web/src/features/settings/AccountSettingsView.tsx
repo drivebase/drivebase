@@ -1,5 +1,6 @@
 import { AccountSettingsSection } from "@/features/settings/sections/AccountSettingsSection";
 import { ChangePasswordSection } from "@/features/settings/sections/ChangePasswordSection";
+import { PasskeysSection } from "@/features/settings/sections/PasskeysSection";
 
 export function AccountSettingsView() {
 	return (
@@ -7,6 +8,8 @@ export function AccountSettingsView() {
 			<AccountSettingsSection />
 			<div className="border-t border-border" />
 			<ChangePasswordSection />
+			<div className="border-t border-border" />
+			<PasskeysSection />
 		</div>
 	);
 }

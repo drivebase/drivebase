@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trans } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { Fingerprint, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useLogin } from "@/features/auth/hooks/useAuth";
+import { usePasskeyLogin } from "@/features/auth/hooks/usePasskeys";
 import { AuthLayout } from "./AuthLayout";
 
 const loginSchema = z.object({
@@ -26,6 +27,7 @@ const loginSchema = z.object({
 
 export function LoginPage() {
 	const [{ fetching }, login] = useLogin();
+	const [{ fetching: passkeyFetching }, passkeyLogin] = usePasskeyLogin();
 	const navigate = useNavigate();
 	const [formError, setFormError] = useState<string | null>(null);
 
@@ -44,6 +46,27 @@ export function LoginPage() {
 			navigate({ to: "/" });
 		} else if (result.error) {
 			setFormError(result.error.message.replace(/^\[GraphQL\]\s*/, ""));
+		}
+	}
+
+	async function onPasskeyLogin() {
+		setFormError(null);
+		try {
+			const result = await passkeyLogin();
+			if (result?.data?.verifyPasskeyLogin) {
+				navigate({ to: "/" });
+			} else if (result?.error) {
+				setFormError(result.error.message.replace(/^\[GraphQL\]\s*/, ""));
+			}
+		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
+			// Don't show error if user cancelled the passkey prompt
+			if (
+				!message.toLowerCase().includes("cancel") &&
+				!message.toLowerCase().includes("abort")
+			) {
+				setFormError(message);
+			}
 		}
 	}
 
@@ -115,11 +138,37 @@ export function LoginPage() {
 
 					<Button
 						type="submit"
-						disabled={fetching}
+						disabled={fetching || passkeyFetching}
 						className="w-full h-10 font-semibold shadow-md shadow-primary/20 hover:shadow-primary/30 transition-shadow"
 					>
 						{fetching && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 						<Trans>Sign In</Trans>
+					</Button>
+
+					<div className="relative">
+						<div className="absolute inset-0 flex items-center">
+							<span className="w-full border-t border-border" />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-background px-2 text-muted-foreground">
+								<Trans>Or</Trans>
+							</span>
+						</div>
+					</div>
+
+					<Button
+						type="button"
+						variant="outline"
+						disabled={fetching || passkeyFetching}
+						onClick={onPasskeyLogin}
+						className="w-full h-10"
+					>
+						{passkeyFetching ? (
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						) : (
+							<Fingerprint className="mr-2 h-4 w-4" />
+						)}
+						<Trans>Sign in with Passkey</Trans>
 					</Button>
 
 					<p className="text-center text-sm text-muted-foreground pt-2">

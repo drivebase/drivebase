@@ -11,6 +11,7 @@ export * from "./files";
 export * from "./folders";
 export * from "./jobs";
 export * from "./nodes";
+export * from "./passkeys";
 export * from "./permissions";
 export * from "./providers";
 export * from "./upload-sessions";
