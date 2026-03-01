@@ -12,22 +12,6 @@ on:
       - '.github/workflows/pr.yml'
 
 jobs:
-  assign-reviewer:
-    name: Assign Reviewer
-    runs-on: ubuntu-latest
-    if: github.event.action == 'opened'
-    steps:
-      - name: Request review from mxvsh
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.pulls.requestReviewers({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              reviewers: ['mxvsh'],
-            });
-
   install:
     name: Install
     runs-on: ubuntu-latest
