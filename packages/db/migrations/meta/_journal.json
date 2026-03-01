@@ -15,6 +15,13 @@
 			"when": 1772190330180,
 			"tag": "0001_add_file_lifecycle",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1772368970061,
+			"tag": "0002_slow_stardust",
+			"breakpoints": true
 		}
 	]
 }

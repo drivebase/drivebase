@@ -11,6 +11,10 @@ on:
       - 'bun.lock'
       - '.github/workflows/pr.yml'
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   install:
     name: Install
