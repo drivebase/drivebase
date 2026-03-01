@@ -10,7 +10,6 @@ on:
       - '**/*.json'
       - 'bun.lock'
       - '.github/workflows/pr.yml'
-      -
 
 concurrency:
   group: release
