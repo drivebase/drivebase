@@ -3,8 +3,8 @@ import { getDb } from "@drivebase/db";
 import type { YogaInitialContext } from "graphql-yoga";
 import { getSession } from "../redis/session";
 import { validateApiKey } from "../service/api-key";
-import type { JWTPayload } from "../utils/jwt";
 import { isApiKeyToken } from "../utils/api-key";
+import type { JWTPayload } from "../utils/jwt";
 import { extractToken, verifyToken } from "../utils/jwt";
 import { logger } from "../utils/logger";
 
