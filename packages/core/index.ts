@@ -28,7 +28,9 @@ export {
 	RateLimitError,
 	toJsonSafeError,
 	ValidationError,
+	toJsonSafeError,
 } from "./errors";
+export type { JsonSafeError } from "./errors";
 
 // Interfaces
 export type {
