@@ -57,10 +57,18 @@ function parentDir(path: string): string {
 
 function mapFtpError(error: unknown): Record<string, unknown> {
 	if (!error || typeof error !== "object") {
-		return { error: String(error) };
+		return { rawError: String(error) };
 	}
-	const e = error as { message?: string; code?: number };
-	return { message: e.message, code: e.code };
+	const e = error as {
+		message?: string;
+		code?: number;
+		stack?: string;
+	};
+	return {
+		message: e.message,
+		ftpCode: e.code,
+		originalStack: e.stack,
+	};
 }
 
 export class FTPProvider implements IStorageProvider {
@@ -168,6 +176,7 @@ export class FTPProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("ftp", "Failed to upload file", {
+				op: "uploadFile",
 				remoteId,
 				error: mapFtpError(error),
 			});
@@ -191,7 +200,11 @@ export class FTPProvider implements IStorageProvider {
 
 		client.downloadTo(passThrough, remoteId).catch((error: unknown) => {
 			passThrough.destroy(
-				error instanceof Error ? error : new Error(String(error)),
+				new ProviderError("ftp", "Failed to download file", {
+					op: "downloadFile",
+					remoteId,
+					error: mapFtpError(error),
+				}),
 			);
 		});
 
@@ -212,6 +225,7 @@ export class FTPProvider implements IStorageProvider {
 			return remotePath;
 		} catch (error) {
 			throw new ProviderError("ftp", "Failed to create folder", {
+				op: "createFolder",
 				remotePath,
 				error: mapFtpError(error),
 			});
@@ -230,7 +244,9 @@ export class FTPProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("ftp", "Failed to delete", {
+				op: "delete",
 				remoteId: options.remoteId,
+				isFolder: options.isFolder,
 				error: mapFtpError(error),
 			});
 		}
@@ -264,6 +280,7 @@ export class FTPProvider implements IStorageProvider {
 			await client.rename(options.remoteId, destination);
 		} catch (error) {
 			throw new ProviderError("ftp", "Failed to move", {
+				op: "move",
 				from: options.remoteId,
 				to: destination,
 				error: mapFtpError(error),
@@ -329,6 +346,7 @@ export class FTPProvider implements IStorageProvider {
 			return { files, folders };
 		} catch (error) {
 			throw new ProviderError("ftp", "Failed to list directory", {
+				op: "list",
 				remotePath,
 				error: mapFtpError(error),
 			});
@@ -358,6 +376,7 @@ export class FTPProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("ftp", "Failed to get file metadata", {
+				op: "getFileMetadata",
 				remoteId,
 				error: mapFtpError(error),
 			});
@@ -392,6 +411,7 @@ export class FTPProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("ftp", "Failed to get folder metadata", {
+				op: "getFolderMetadata",
 				remoteId,
 				error: mapFtpError(error),
 			});

@@ -17,7 +17,7 @@ import type {
 	UploadPartResult,
 	UploadResponse,
 } from "@drivebase/core";
-import { ProviderError } from "@drivebase/core";
+import { ProviderError, toJsonSafeError } from "@drivebase/core";
 import type { NextcloudConfig } from "./schema";
 import { NextcloudConfigSchema } from "./schema";
 import type { NextcloudAuth } from "./webdav-client";
@@ -114,7 +114,8 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to get quota", {
-				error: String(error),
+				op: "getQuota",
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -131,7 +132,8 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to get account info", {
-				error: String(error),
+				op: "getAccountInfo",
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -166,8 +168,9 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to upload file", {
+				op: "uploadFile",
 				remoteId,
-				error: String(error),
+				error: toJsonSafeError(error),
 			});
 		}
 
@@ -190,8 +193,9 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to download file", {
+				op: "downloadFile",
 				remoteId,
-				error: String(error),
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -207,8 +211,9 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to create folder", {
+				op: "createFolder",
 				remotePath,
-				error: String(error),
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -221,8 +226,9 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to delete", {
+				op: "delete",
 				remoteId: options.remoteId,
-				error: String(error),
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -238,9 +244,10 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to move", {
+				op: "move",
 				from: options.remoteId,
 				to: destination,
-				error: String(error),
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -257,9 +264,10 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to copy", {
+				op: "copy",
 				from: options.remoteId,
 				to: destination,
-				error: String(error),
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -296,8 +304,9 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to list directory", {
+				op: "list",
 				remotePath,
-				error: String(error),
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -326,8 +335,9 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to get file metadata", {
+				op: "getFileMetadata",
 				remoteId,
-				error: String(error),
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -350,8 +360,9 @@ export class NextcloudProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("nextcloud", "Failed to get folder metadata", {
+				op: "getFolderMetadata",
 				remoteId,
-				error: String(error),
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -400,7 +411,12 @@ export class NextcloudProvider implements IStorageProvider {
 			throw new ProviderError(
 				"nextcloud",
 				"Failed to initiate chunked upload",
-				{ error: String(error) },
+				{
+					op: "initiateMultipartUpload",
+					uploadId,
+					destPath,
+					error: toJsonSafeError(error),
+				},
 			);
 		}
 	}
@@ -439,7 +455,12 @@ export class NextcloudProvider implements IStorageProvider {
 			throw new ProviderError(
 				"nextcloud",
 				`Failed to upload chunk ${partNumber}`,
-				{ error: String(error) },
+				{
+					op: "uploadPart",
+					uploadId,
+					partNumber,
+					error: toJsonSafeError(error),
+				},
 			);
 		}
 	}
@@ -465,7 +486,12 @@ export class NextcloudProvider implements IStorageProvider {
 			throw new ProviderError(
 				"nextcloud",
 				"Failed to assemble chunked upload",
-				{ error: String(error) },
+				{
+					op: "completeMultipartUpload",
+					uploadId,
+					remoteId,
+					error: toJsonSafeError(error),
+				},
 			);
 		} finally {
 			uploadSessionSizes.delete(uploadId);
