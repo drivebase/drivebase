@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/useAuth";
+import { confirmDialog } from "@/shared/lib/confirmDialog";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { PreferencesSettingsSection } from "@/features/settings/sections/PreferencesSettingsSection";
 import { WorkspaceNameSection } from "@/features/settings/sections/WorkspaceNameSection";
@@ -95,6 +96,12 @@ export function GeneralSettingsView() {
 	};
 
 	const handleSignOut = async () => {
+		const confirmed = await confirmDialog(
+			i18n._(msg`Sign out?`),
+			i18n._(msg`You will be returned to the login page.`),
+		);
+		if (!confirmed) return;
+
 		try {
 			await logout();
 		} catch (_error) {
