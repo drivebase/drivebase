@@ -6,7 +6,7 @@ import {
 	HardDrive,
 	type LucideIcon,
 	Server,
-} from "lucide-react";
+} from "@/shared/components/icons/solar";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type DashboardStats = {

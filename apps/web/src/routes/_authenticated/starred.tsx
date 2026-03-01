@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Star } from "lucide-react";
+import { Star } from "@/shared/components/icons/solar";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { FileSystemTable } from "@/features/files/FileSystemTable";

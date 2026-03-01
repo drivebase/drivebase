@@ -4,7 +4,7 @@ import {
 	Image as ImageIcon,
 	Music,
 	Video,
-} from "lucide-react";
+} from "@/shared/components/icons/solar";
 import { Card } from "@/components/ui/card";
 import type { FolderItemFragment } from "@/gql/graphql";
 import { cn } from "@/shared/lib/utils";

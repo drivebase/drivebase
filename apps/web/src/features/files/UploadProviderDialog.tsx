@@ -1,5 +1,5 @@
 import { formatBytes } from "@drivebase/utils";
-import { FileText } from "lucide-react";
+import { FileText } from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

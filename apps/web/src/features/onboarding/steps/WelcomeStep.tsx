@@ -1,4 +1,9 @@
-import { ArrowRight, HardDrive, ShieldCheck, Zap } from "lucide-react";
+import {
+	ArrowRight,
+	HardDrive,
+	ShieldCheck,
+	Zap,
+} from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 
 interface WelcomeStepProps {

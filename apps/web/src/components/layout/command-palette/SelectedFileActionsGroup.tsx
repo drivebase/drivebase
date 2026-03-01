@@ -1,4 +1,10 @@
-import { Download, File, Search, Star, Trash2 } from "lucide-react";
+import {
+	Download,
+	File,
+	Search,
+	Star,
+	Trash2,
+} from "@/shared/components/icons/solar";
 import {
 	CommandGroup,
 	CommandItem,

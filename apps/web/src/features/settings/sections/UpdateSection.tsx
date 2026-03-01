@@ -1,5 +1,10 @@
 import { Trans } from "@lingui/react/macro";
-import { AlertCircle, CheckCircle, Loader2, RefreshCw } from "lucide-react";
+import {
+	AlertCircle,
+	CheckCircle,
+	Loader2,
+	RefreshCw,
+} from "@/shared/components/icons/solar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUpdate } from "../hooks/useUpdate";

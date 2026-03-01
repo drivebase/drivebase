@@ -1,4 +1,4 @@
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save } from "@/shared/components/icons/solar";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {

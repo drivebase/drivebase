@@ -6,7 +6,7 @@ import {
 	ImageIcon,
 	Music2,
 	Video,
-} from "lucide-react";
+} from "@/shared/components/icons/solar";
 import { getFileKind } from "@/features/files/utils";
 import { cn } from "@/shared/lib/utils";
 

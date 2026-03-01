@@ -1,4 +1,4 @@
-import { Clock3 } from "lucide-react";
+import { Clock3 } from "@/shared/components/icons/solar";
 import {
 	CommandGroup,
 	CommandItem,

@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { Download } from "lucide-react";
+import { Download } from "@/shared/components/icons/solar";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { Check } from "@/shared/components/icons/solar";
 import { Fragment, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthStore } from "@/features/auth/store/authStore";

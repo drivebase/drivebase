@@ -1,4 +1,4 @@
-import { FolderIcon } from "lucide-react";
+import { FolderIcon } from "@/shared/components/icons/solar";
 import { FileMimeIcon } from "@/features/files/FileMimeIcon";
 import type { FileItemFragment } from "@/gql/graphql";
 import type { DragItem } from "./types";

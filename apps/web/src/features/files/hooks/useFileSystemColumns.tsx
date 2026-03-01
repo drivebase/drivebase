@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { FolderIcon, Star } from "lucide-react";
+import { FolderIcon, Star } from "@/shared/components/icons/solar";
 import { useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileMimeIcon } from "@/features/files/FileMimeIcon";

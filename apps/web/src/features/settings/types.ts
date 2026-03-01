@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "@/shared/components/icons/solar";
 
 export interface SettingsSection {
 	id: string;

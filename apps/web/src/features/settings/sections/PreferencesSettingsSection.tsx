@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { Laptop, Moon, Sun } from "lucide-react";
+import { Laptop, Moon, Sun } from "@/shared/components/icons/solar";
 import { useTheme } from "@/components/theme-provider";
 import { Label } from "@/components/ui/label";
 import {

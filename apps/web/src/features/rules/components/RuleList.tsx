@@ -1,6 +1,12 @@
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+	ArrowDown,
+	ArrowUp,
+	Pencil,
+	Plus,
+	Trash2,
+} from "@/shared/components/icons/solar";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";

@@ -1,5 +1,11 @@
-import type { LucideIcon } from "lucide-react";
-import { Cloud, FolderOpen, Lock, Settings, Star } from "lucide-react";
+import type { LucideIcon } from "@/shared/components/icons/solar";
+import {
+	Cloud,
+	FolderOpen,
+	Lock,
+	Settings,
+	Star,
+} from "@/shared/components/icons/solar";
 
 export const SEARCH_LIMIT = 10;
 export const RECENT_LIMIT = 3;

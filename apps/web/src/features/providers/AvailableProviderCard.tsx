@@ -1,4 +1,4 @@
-import { ExternalLink, Plus } from "lucide-react";
+import { ExternalLink, Plus } from "@/shared/components/icons/solar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 

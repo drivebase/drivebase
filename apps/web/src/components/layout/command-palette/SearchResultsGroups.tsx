@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Folder } from "lucide-react";
+import { Folder } from "@/shared/components/icons/solar";
 import {
 	CommandEmpty,
 	CommandGroup,
