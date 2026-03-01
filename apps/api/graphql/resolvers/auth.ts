@@ -13,6 +13,17 @@ export const authQueries: QueryResolvers = {
 		const authService = new AuthService(context.db);
 		return authService.getCurrentUser(user.userId);
 	},
+
+	myPasskeys: async (_parent, _args, context) => {
+		const user = requireAuth(context);
+		const authService = new AuthService(context.db);
+		const list = await authService.getPasskeys(user.userId);
+		return list.map((pk) => ({
+			...pk,
+			createdAt: pk.createdAt.toISOString(),
+			lastUsedAt: pk.lastUsedAt?.toISOString() ?? null,
+		}));
+	},
 };
 
 export const authMutations: MutationResolvers = {
@@ -82,6 +93,44 @@ export const authMutations: MutationResolvers = {
 		const user = requireAuth(context);
 		const authService = new AuthService(context.db);
 		return authService.completeOnboarding(user.userId);
+	},
+
+	startPasskeyRegistration: async (_parent, _args, context) => {
+		const user = requireAuth(context);
+		const authService = new AuthService(context.db);
+		return authService.startPasskeyRegistration(user.userId);
+	},
+
+	verifyPasskeyRegistration: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const authService = new AuthService(context.db);
+		const pk = await authService.verifyPasskeyRegistration(
+			user.userId,
+			args.name,
+			args.response,
+		);
+		return {
+			...pk,
+			createdAt: pk.createdAt.toISOString(),
+			lastUsedAt: pk.lastUsedAt?.toISOString() ?? null,
+		};
+	},
+
+	startPasskeyLogin: async (_parent, _args, context) => {
+		const authService = new AuthService(context.db);
+		return authService.startPasskeyLogin();
+	},
+
+	verifyPasskeyLogin: async (_parent, args, context) => {
+		const authService = new AuthService(context.db);
+		return authService.verifyPasskeyLogin(args.challengeId, args.response);
+	},
+
+	deletePasskey: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const authService = new AuthService(context.db);
+		await authService.deletePasskey(user.userId, args.id);
+		return true;
 	},
 };
 

@@ -61,3 +61,58 @@ export const UPDATE_MY_PROFILE_MUTATION = graphql(`
     }
   }
 `);
+
+export const MY_PASSKEYS_QUERY = graphql(`
+  query MyPasskeys {
+    myPasskeys {
+      id
+      name
+      deviceType
+      backedUp
+      createdAt
+      lastUsedAt
+    }
+  }
+`);
+
+export const START_PASSKEY_REGISTRATION_MUTATION = graphql(`
+  mutation StartPasskeyRegistration {
+    startPasskeyRegistration
+  }
+`);
+
+export const VERIFY_PASSKEY_REGISTRATION_MUTATION = graphql(`
+  mutation VerifyPasskeyRegistration($name: String!, $response: String!) {
+    verifyPasskeyRegistration(name: $name, response: $response) {
+      id
+      name
+      deviceType
+      backedUp
+      createdAt
+      lastUsedAt
+    }
+  }
+`);
+
+export const START_PASSKEY_LOGIN_MUTATION = graphql(`
+  mutation StartPasskeyLogin {
+    startPasskeyLogin
+  }
+`);
+
+export const VERIFY_PASSKEY_LOGIN_MUTATION = graphql(`
+  mutation VerifyPasskeyLogin($challengeId: String!, $response: String!) {
+    verifyPasskeyLogin(challengeId: $challengeId, response: $response) {
+      token
+      user {
+        ...UserItem
+      }
+    }
+  }
+`);
+
+export const DELETE_PASSKEY_MUTATION = graphql(`
+  mutation DeletePasskey($id: ID!) {
+    deletePasskey(id: $id)
+  }
+`);

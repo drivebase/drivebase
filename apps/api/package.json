@@ -29,6 +29,7 @@
 		"@graphql-tools/graphql-file-loader": "^8.0.5",
 		"@graphql-tools/load": "^8.0.5",
 		"@graphql-tools/schema": "^10.0.31",
+		"@simplewebauthn/server": "^13.2.3",
 		"bcryptjs": "^3.0.3",
 		"bullmq": "5.69.3",
 		"drizzle-orm": "^0.45.1",
