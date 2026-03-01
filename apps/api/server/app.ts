@@ -9,6 +9,7 @@ import type { JWTPayload } from "../utils/jwt";
 export type AppEnv = {
 	Variables: {
 		user: JWTPayload;
+		apiKeyScopes: string[] | null;
 	};
 };
 
