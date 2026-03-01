@@ -2,6 +2,7 @@ import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import {
 	Filter,
+	Key,
 	SlidersHorizontal,
 	Sparkle,
 	User,
@@ -40,6 +41,11 @@ const categories = [
 		to: "/settings/advanced",
 		icon: Wrench,
 		label: <Trans>Advanced</Trans>,
+	},
+	{
+		to: "/settings/api-keys",
+		icon: Key,
+		label: <Trans>API Keys</Trans>,
 	},
 ] as const;
 

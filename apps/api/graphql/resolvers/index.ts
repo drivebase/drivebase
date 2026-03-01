@@ -5,6 +5,7 @@ import {
 	activityResolvers,
 	activitySubscriptions,
 } from "./activity";
+import { apiKeyMutations, apiKeyQueries } from "./api-key";
 import { authMutations, authQueries, authResponseResolvers } from "./auth";
 import {
 	fileMutations,
@@ -42,6 +43,7 @@ export const resolvers: Resolvers = {
 	...scalarResolvers,
 
 	Query: {
+		...apiKeyQueries,
 		...authQueries,
 		...userQueries,
 		...providerQueries,
@@ -55,6 +57,7 @@ export const resolvers: Resolvers = {
 	},
 
 	Mutation: {
+		...apiKeyMutations,
 		...authMutations,
 		...userMutations,
 		...providerMutations,
