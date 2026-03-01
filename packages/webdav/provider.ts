@@ -55,10 +55,26 @@ function parentDir(path: string): string {
 
 function mapWebDAVError(error: unknown): Record<string, unknown> {
 	if (!error || typeof error !== "object") {
-		return { error: String(error) };
+		return { rawError: String(error) };
 	}
-	const e = error as { message?: string; status?: number };
-	return { message: e.message, status: e.status };
+	const e = error as {
+		message?: string;
+		status?: number;
+		stack?: string;
+		response?: {
+			status?: number;
+			statusText?: string;
+			url?: string;
+			data?: unknown;
+		};
+	};
+	return {
+		message: e.message,
+		status: e.status ?? e.response?.status,
+		statusText: e.response?.statusText,
+		responseUrl: e.response?.url,
+		originalStack: e.stack,
+	};
 }
 
 function guessMimeType(name: string): string {
@@ -214,6 +230,7 @@ export class WebDAVProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("webdav", "Failed to upload file", {
+				op: "uploadFile",
 				remoteId,
 				error: mapWebDAVError(error),
 			});
@@ -238,6 +255,7 @@ export class WebDAVProvider implements IStorageProvider {
 			return Readable.toWeb(nodeStream) as unknown as ReadableStream;
 		} catch (error) {
 			throw new ProviderError("webdav", "Failed to download file", {
+				op: "downloadFile",
 				remoteId,
 				error: mapWebDAVError(error),
 			});
@@ -257,6 +275,7 @@ export class WebDAVProvider implements IStorageProvider {
 			return remotePath;
 		} catch (error) {
 			throw new ProviderError("webdav", "Failed to create folder", {
+				op: "createFolder",
 				remotePath,
 				error: mapWebDAVError(error),
 			});
@@ -270,6 +289,7 @@ export class WebDAVProvider implements IStorageProvider {
 			await client.deleteFile(options.remoteId);
 		} catch (error) {
 			throw new ProviderError("webdav", "Failed to delete", {
+				op: "delete",
 				remoteId: options.remoteId,
 				error: mapWebDAVError(error),
 			});
@@ -286,6 +306,7 @@ export class WebDAVProvider implements IStorageProvider {
 			await client.moveFile(options.remoteId, destination);
 		} catch (error) {
 			throw new ProviderError("webdav", "Failed to move", {
+				op: "move",
 				from: options.remoteId,
 				to: destination,
 				error: mapWebDAVError(error),
@@ -304,6 +325,7 @@ export class WebDAVProvider implements IStorageProvider {
 			return destination;
 		} catch (error) {
 			throw new ProviderError("webdav", "Failed to copy", {
+				op: "copy",
 				from: options.remoteId,
 				to: destination,
 				error: mapWebDAVError(error),
@@ -347,6 +369,7 @@ export class WebDAVProvider implements IStorageProvider {
 			return { files, folders };
 		} catch (error) {
 			throw new ProviderError("webdav", "Failed to list directory", {
+				op: "list",
 				remotePath,
 				error: mapWebDAVError(error),
 			});
@@ -375,6 +398,7 @@ export class WebDAVProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("webdav", "Failed to get file metadata", {
+				op: "getFileMetadata",
 				remoteId,
 				error: mapWebDAVError(error),
 			});
@@ -399,6 +423,7 @@ export class WebDAVProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("webdav", "Failed to get folder metadata", {
+				op: "getFolderMetadata",
 				remoteId,
 				error: mapWebDAVError(error),
 			});

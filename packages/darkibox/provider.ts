@@ -15,7 +15,7 @@ import type {
 	UploadOptions,
 	UploadResponse,
 } from "@drivebase/core";
-import { ProviderError } from "@drivebase/core";
+import { ProviderError, toJsonSafeError } from "@drivebase/core";
 import type { DarkiboxConfig } from "./schema";
 import { DarkiboxConfigSchema } from "./schema";
 
@@ -181,21 +181,41 @@ export class DarkiboxProvider implements IStorageProvider {
 			url.searchParams.set(k, v);
 		}
 
-		const response = await fetch(url.toString());
+		let response: Response;
+		try {
+			response = await fetch(url.toString());
+		} catch (error) {
+			throw new ProviderError(
+				"darkibox",
+				"Darkibox API request failed",
+				{ endpoint, error: toJsonSafeError(error) },
+			);
+		}
+
 		if (!response.ok) {
 			throw new ProviderError(
 				"darkibox",
 				`Darkibox API error: ${response.status} ${response.statusText}`,
-				{ endpoint, status: response.status },
+				{ endpoint, status: response.status, statusText: response.statusText },
 			);
 		}
 
-		const data = (await response.json()) as DarkiboxApiResponse<T>;
+		let data: DarkiboxApiResponse<T>;
+		try {
+			data = (await response.json()) as DarkiboxApiResponse<T>;
+		} catch (error) {
+			throw new ProviderError(
+				"darkibox",
+				"Failed to parse Darkibox API response",
+				{ endpoint, error: toJsonSafeError(error) },
+			);
+		}
+
 		if (data.status !== 200) {
 			throw new ProviderError(
 				"darkibox",
 				`Darkibox API returned error: ${data.msg}`,
-				{ endpoint, apiStatus: data.status },
+				{ endpoint, apiStatus: data.status, apiMessage: data.msg },
 			);
 		}
 		return data.result;
@@ -272,24 +292,61 @@ export class DarkiboxProvider implements IStorageProvider {
 		formData.append("file_title", pending.name);
 		formData.append("file", new Blob([new Uint8Array(buf)]), pending.name);
 
-		const response = await fetch(pending.serverUrl, {
-			method: "POST",
-			body: formData,
-		});
+		let response: Response;
+		try {
+			response = await fetch(pending.serverUrl, {
+				method: "POST",
+				body: formData,
+			});
+		} catch (error) {
+			throw new ProviderError(
+				"darkibox",
+				"Upload request failed",
+				{
+					op: "uploadFile",
+					remoteId,
+					error: toJsonSafeError(error),
+				},
+			);
+		}
 
 		if (!response.ok) {
 			throw new ProviderError(
 				"darkibox",
 				`Upload to server failed: ${response.status}`,
+				{
+					op: "uploadFile",
+					remoteId,
+					status: response.status,
+					statusText: response.statusText,
+				},
 			);
 		}
 
-		const result = (await response.json()) as DarkiboxUploadResult;
+		let result: DarkiboxUploadResult;
+		try {
+			result = (await response.json()) as DarkiboxUploadResult;
+		} catch (error) {
+			throw new ProviderError(
+				"darkibox",
+				"Failed to parse upload response",
+				{
+					op: "uploadFile",
+					remoteId,
+					error: toJsonSafeError(error),
+				},
+			);
+		}
 		const file = result.files[0];
 		if (!file || file.status !== "success") {
 			throw new ProviderError(
 				"darkibox",
 				`Upload failed: ${file?.status ?? "no file in response"}`,
+				{
+					op: "uploadFile",
+					remoteId,
+					fileStatus: file?.status,
+				},
 			);
 		}
 
@@ -333,15 +390,37 @@ export class DarkiboxProvider implements IStorageProvider {
 	async downloadFile(remoteId: string): Promise<ReadableStream> {
 		const dlResponse = await this.requestDownload({ remoteId });
 		if (dlResponse.useDirectDownload && dlResponse.downloadUrl) {
-			const response = await fetch(dlResponse.downloadUrl);
+			let response: Response;
+			try {
+				response = await fetch(dlResponse.downloadUrl);
+			} catch (error) {
+				throw new ProviderError(
+					"darkibox",
+					"Download request failed",
+					{
+						op: "downloadFile",
+						remoteId,
+						error: toJsonSafeError(error),
+					},
+				);
+			}
 			if (!response.ok) {
 				throw new ProviderError(
 					"darkibox",
 					`Download failed: ${response.status}`,
+					{
+						op: "downloadFile",
+						remoteId,
+						status: response.status,
+						statusText: response.statusText,
+					},
 				);
 			}
 			if (!response.body) {
-				throw new ProviderError("darkibox", "No response body for download");
+				throw new ProviderError("darkibox", "No response body for download", {
+					op: "downloadFile",
+					remoteId,
+				});
 			}
 			return response.body as unknown as ReadableStream;
 		}
