@@ -1,6 +1,6 @@
+import type { Database } from "@drivebase/db";
 import { apiKeys, users } from "@drivebase/db";
 import { eq } from "drizzle-orm";
-import type { Database } from "@drivebase/db";
 import { hashApiKey } from "../../../utils/api-key";
 import type { ApiKeyAuthResult } from "./types";
 

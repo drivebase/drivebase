@@ -1,6 +1,6 @@
+import { ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { apiKeys } from "@drivebase/db";
-import { ValidationError } from "@drivebase/core";
 import { generateApiKey } from "../../../utils/api-key";
 import type { CreateApiKeyInput } from "../shared/types";
 

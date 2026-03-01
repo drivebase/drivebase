@@ -1,7 +1,7 @@
+import { NotFoundError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { apiKeys } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { NotFoundError } from "@drivebase/core";
 
 export async function getApiKey(db: Database, id: string, userId: string) {
 	const row = await db
