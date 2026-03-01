@@ -26,6 +26,8 @@ services:
       - drivebase_data:/app/data
     ports:
       - '3000:3000'
+    networks:
+      - drivebase-network
 
   updater:
     image: ghcr.io/drivebase/updater:v3.1.5
@@ -38,6 +40,8 @@ services:
         ${UPDATER_SECRET:-default-updater-secret-change-in-production}
       APP_CONTAINER_NAME: drivebase_app
       APP_IMAGE: ghcr.io/drivebase/drivebase
+    networks:
+      - drivebase-network
 
   db:
     image: pgvector/pgvector:pg17
@@ -54,10 +58,10 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
-    ports:
-      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - drivebase-network
 
   redis:
     image: redis:7-alpine
@@ -71,8 +75,13 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
-    ports:
-      - '6379:6379'
+    networks:
+      - drivebase-network
+
+networks:
+  drivebase-network:
+    name: drivebase-network
+    driver: bridge
 
 volumes:
   postgres_data: null
