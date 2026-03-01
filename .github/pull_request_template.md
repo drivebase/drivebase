@@ -1,2 +1,9 @@
-## Summary
-Explain what this PR does.
+Closes #ISSUE
+
+## Changes
+
+<!-- What changed and why -->
+
+## Release Notes
+
+- N/A *or* Added/Fixed/Improved ...
