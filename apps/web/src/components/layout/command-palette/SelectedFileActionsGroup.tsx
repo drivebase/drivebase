@@ -1,10 +1,10 @@
 import {
-	Download,
-	File,
-	Search,
-	Star,
-	Trash2,
-} from "@/shared/components/icons/solar";
+	PiDownload as Download,
+	PiFile as File,
+	PiMagnifyingGlass as Search,
+	PiStar as Star,
+	PiTrash as Trash2,
+} from "react-icons/pi";
 import {
 	CommandGroup,
 	CommandItem,

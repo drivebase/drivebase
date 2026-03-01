@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { createFileRoute } from "@tanstack/react-router";
-import { Trash2 } from "@/shared/components/icons/solar";
+import { PiTrash as Trash2 } from "react-icons/pi";
 
 export const Route = createFileRoute("/_authenticated/trash")({
 	component: () => (

@@ -2,6 +2,16 @@ import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import { Link } from "@tanstack/react-router";
+import type { IconType as LucideIcon } from "react-icons";
+import {
+	PiCloud as Cloud,
+	PiFolder as Folder,
+	PiHouse as Home,
+	PiInfo as Info,
+	PiLock as Lock,
+	PiGear as Settings,
+	PiStar as Star,
+} from "react-icons/pi";
 import { WorkspaceSwitcher } from "@/components/layout/sidebar/WorkspaceSwitcher";
 import {
 	Tooltip,
@@ -10,57 +20,32 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAppUpdate } from "@/shared/hooks/useAppUpdate";
-import { cn } from "@/shared/lib/utils";
 
 type NavItem = {
-	iconClassName: string;
+	icon: LucideIcon;
 	label: MessageDescriptor;
 	to: string;
 };
 
 const topNavItems: NavItem[] = [
-	{
-		iconClassName: "icon-[solar--widget-5-linear]",
-		label: msg`Dashboard`,
-		to: "/",
-	},
-	{
-		iconClassName: "icon-[solar--folder-linear]",
-		label: msg`Files`,
-		to: "/files",
-	},
-	{
-		iconClassName: "icon-[solar--star-linear]",
-		label: msg`Starred`,
-		to: "/starred",
-	},
-	{
-		iconClassName: "icon-[solar--cloud-linear]",
-		label: msg`Providers`,
-		to: "/providers",
-	},
+	{ icon: Home, label: msg`Dashboard`, to: "/" },
+	{ icon: Folder, label: msg`Files`, to: "/files" },
+	{ icon: Star, label: msg`Starred`, to: "/starred" },
+	{ icon: Cloud, label: msg`Providers`, to: "/providers" },
 ];
 
 const bottomNavItems: NavItem[] = [
-	{
-		iconClassName: "icon-[solar--lock-linear]",
-		label: msg`Vault`,
-		to: "/vault",
-	},
-	{
-		iconClassName: "icon-[solar--settings-linear]",
-		label: msg`Settings`,
-		to: "/settings/general",
-	},
+	{ icon: Lock, label: msg`Vault`, to: "/vault" },
+	{ icon: Settings, label: msg`Settings`, to: "/settings/general" },
 ];
 
 type SidebarItemProps = {
-	iconClassName: string;
+	icon: LucideIcon;
 	label: string;
 	to: string;
 };
 
-function SidebarItem({ iconClassName, label, to }: SidebarItemProps) {
+function SidebarItem({ icon: Icon, label, to }: SidebarItemProps) {
 	return (
 		<Tooltip delayDuration={0}>
 			<TooltipTrigger asChild>
@@ -75,10 +60,7 @@ function SidebarItem({ iconClassName, label, to }: SidebarItemProps) {
 							"text-muted-foreground hover:text-foreground hover:bg-muted/50",
 					}}
 				>
-					<span
-						className={cn("inline-block h-6 w-6 shrink-0", iconClassName)}
-						aria-hidden="true"
-					/>
+					<Icon className="h-6 w-6" />
 				</Link>
 			</TooltipTrigger>
 			<TooltipContent side="right">
@@ -102,7 +84,7 @@ export function Sidebar() {
 					{topNavItems.map((item) => (
 						<SidebarItem
 							key={item.to}
-							iconClassName={item.iconClassName}
+							icon={item.icon}
 							label={i18n._(item.label)}
 							to={item.to}
 						/>
@@ -118,10 +100,7 @@ export function Sidebar() {
 								rel="noreferrer noopener"
 								className="w-12 h-12 flex items-center justify-center text-sm font-semibold"
 							>
-								<span
-									className="icon-[solar--info-circle-linear] inline-block h-6 w-6"
-									aria-hidden="true"
-								/>
+								<Info className="h-6 w-6" />
 								<span className="sr-only">
 									{i18n._(msg`Open latest release notes`)}
 								</span>
@@ -141,7 +120,7 @@ export function Sidebar() {
 					{bottomNavItems.map((item) => (
 						<SidebarItem
 							key={item.to}
-							iconClassName={item.iconClassName}
+							icon={item.icon}
 							label={i18n._(item.label)}
 							to={item.to}
 						/>

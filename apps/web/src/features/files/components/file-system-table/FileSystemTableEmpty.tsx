@@ -1,4 +1,4 @@
-import { FolderIcon } from "@/shared/components/icons/solar";
+import { PiFolder as FolderIcon } from "react-icons/pi";
 
 interface FileSystemTableEmptyProps {
 	message?: string;

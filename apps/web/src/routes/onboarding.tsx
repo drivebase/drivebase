@@ -5,8 +5,8 @@ import {
 	redirect,
 	useNavigate,
 } from "@tanstack/react-router";
-import { Loader2 } from "@/shared/components/icons/solar";
 import { useEffect } from "react";
+import { PiSpinnerGap as Loader2 } from "react-icons/pi";
 import { useMe } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/authStore";
 

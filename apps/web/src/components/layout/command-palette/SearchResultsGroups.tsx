@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Folder } from "@/shared/components/icons/solar";
+import { PiFolder as Folder } from "react-icons/pi";
 import {
 	CommandEmpty,
 	CommandGroup,

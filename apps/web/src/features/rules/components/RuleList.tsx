@@ -1,13 +1,13 @@
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import {
-	ArrowDown,
-	ArrowUp,
-	Pencil,
-	Plus,
-	Trash2,
-} from "@/shared/components/icons/solar";
 import { useCallback } from "react";
+import {
+	PiArrowDown as ArrowDown,
+	PiArrowUp as ArrowUp,
+	PiPencilSimple as Pencil,
+	PiPlus as Plus,
+	PiTrash as Trash2,
+} from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

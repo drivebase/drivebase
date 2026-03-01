@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Check } from "@/shared/components/icons/solar";
 import { Fragment, useEffect, useState } from "react";
+import { PiCheck as Check } from "react-icons/pi";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { Route } from "@/routes/onboarding/index";

@@ -1,5 +1,5 @@
 import type { Table } from "@tanstack/react-table";
-import { Columns, Trash } from "@/shared/components/icons/solar";
+import { PiColumns as Columns, PiTrash as Trash } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,

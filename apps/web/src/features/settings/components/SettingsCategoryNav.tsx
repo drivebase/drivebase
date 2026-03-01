@@ -1,14 +1,14 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import {
-	Filter,
-	Key,
-	SlidersHorizontal,
-	Sparkle,
-	User,
-	Users,
-	Wrench,
-} from "@/shared/components/icons/solar";
+	PiFunnel as Filter,
+	PiKey as Key,
+	PiSlidersHorizontal as SlidersHorizontal,
+	PiSparkle as Sparkle,
+	PiUser as User,
+	PiUsers as Users,
+	PiWrench as Wrench,
+} from "react-icons/pi";
 import { getActiveWorkspaceId } from "@/features/workspaces";
 
 const categories = [

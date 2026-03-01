@@ -1,5 +1,5 @@
-import { Loader2 } from "@/shared/components/icons/solar";
 import type { ReactNode } from "react";
+import { PiSpinnerGap as Loader2 } from "react-icons/pi";
 
 interface InfoPanelProps {
 	loading?: boolean;

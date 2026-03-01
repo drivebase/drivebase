@@ -1,12 +1,12 @@
 "use client";
 
-import {
-	CheckIcon,
-	ChevronDownIcon,
-	ChevronUpIcon,
-} from "@/shared/components/icons/solar";
 import { Select as SelectPrimitive } from "radix-ui";
 import type * as React from "react";
+import {
+	PiCheck as CheckIcon,
+	PiCaretDown as ChevronDownIcon,
+	PiCaretUp as ChevronUpIcon,
+} from "react-icons/pi";
 import { cn } from "@/lib/utils";
 
 function Select({

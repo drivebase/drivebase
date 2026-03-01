@@ -1,5 +1,9 @@
 import { Trans } from "@lingui/react/macro";
-import { Laptop, Moon, Sun } from "@/shared/components/icons/solar";
+import {
+	PiLaptop as Laptop,
+	PiMoon as Moon,
+	PiSun as Sun,
+} from "react-icons/pi";
 import { useTheme } from "@/components/theme-provider";
 import { Label } from "@/components/ui/label";
 import {

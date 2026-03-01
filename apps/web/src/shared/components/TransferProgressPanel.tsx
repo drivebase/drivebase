@@ -1,9 +1,9 @@
 import {
-	CheckCircle2,
-	Loader2,
-	X,
-	XCircle,
-} from "@/shared/components/icons/solar";
+	PiCheckCircle as CheckCircle2,
+	PiSpinnerGap as Loader2,
+	PiX as X,
+	PiXCircle as XCircle,
+} from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {

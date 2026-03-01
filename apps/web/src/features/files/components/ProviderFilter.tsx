@@ -1,4 +1,4 @@
-import { Filter } from "@/shared/components/icons/solar";
+import { PiFunnel as Filter } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,

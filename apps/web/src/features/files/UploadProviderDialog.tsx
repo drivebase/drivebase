@@ -1,5 +1,5 @@
 import { formatBytes } from "@drivebase/utils";
-import { FileText } from "@/shared/components/icons/solar";
+import { PiFileText as FileText } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

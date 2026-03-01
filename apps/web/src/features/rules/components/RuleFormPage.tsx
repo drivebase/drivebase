@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { ArrowLeft } from "@/shared/components/icons/solar";
+import { PiArrowLeft as ArrowLeft } from "react-icons/pi";
 import { toast } from "sonner";
 import { useClient } from "urql";
 import { Button } from "@/components/ui/button";
