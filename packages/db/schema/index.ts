@@ -4,6 +4,7 @@
 
 export * from "./activities";
 export * from "./ai";
+export * from "./passkeys";
 export * from "./api-keys";
 export * from "./file-download-links";
 export * from "./file-rules";

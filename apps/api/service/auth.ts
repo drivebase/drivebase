@@ -2,6 +2,14 @@ import type { UserRole } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { login, register } from "./auth/auth-credentials";
 import {
+	deletePasskey,
+	getPasskeys,
+	startPasskeyLogin,
+	startPasskeyRegistration,
+	verifyPasskeyLogin,
+	verifyPasskeyRegistration,
+} from "./auth/auth-passkey";
+import {
 	changePassword,
 	logout,
 	requestPasswordReset,
@@ -59,5 +67,33 @@ export class AuthService {
 
 	async completeOnboarding(userId: string) {
 		return completeOnboarding(this.db, userId);
+	}
+
+	async startPasskeyRegistration(userId: string) {
+		return startPasskeyRegistration(this.db, userId);
+	}
+
+	async verifyPasskeyRegistration(
+		userId: string,
+		name: string,
+		responseJson: string,
+	) {
+		return verifyPasskeyRegistration(this.db, userId, name, responseJson);
+	}
+
+	async startPasskeyLogin() {
+		return startPasskeyLogin(this.db);
+	}
+
+	async verifyPasskeyLogin(challengeId: string, responseJson: string) {
+		return verifyPasskeyLogin(this.db, challengeId, responseJson);
+	}
+
+	async getPasskeys(userId: string) {
+		return getPasskeys(this.db, userId);
+	}
+
+	async deletePasskey(userId: string, passkeyId: string) {
+		return deletePasskey(this.db, userId, passkeyId);
 	}
 }
