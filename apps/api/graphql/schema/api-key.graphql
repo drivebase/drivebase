@@ -1,0 +1,46 @@
+"""
+API key for programmatic access
+"""
+type ApiKey {
+	id: ID!
+	name: String!
+	description: String
+	keyPrefix: String!
+	scopes: [String!]!
+	expiresAt: DateTime
+	lastUsedAt: DateTime
+	isActive: Boolean!
+	createdAt: DateTime!
+	updatedAt: DateTime!
+}
+
+"""
+Result of createApiKey — fullKey is shown exactly once
+"""
+type CreateApiKeyResult {
+	apiKey: ApiKey!
+	fullKey: String!
+}
+
+input CreateApiKeyInput {
+	name: String!
+	description: String
+	scopes: [String!]!
+	expiresAt: DateTime
+}
+
+input UpdateApiKeyInput {
+	name: String
+	description: String
+}
+
+extend type Query {
+	apiKeys: [ApiKey!]!
+	apiKey(id: ID!): ApiKey!
+}
+
+extend type Mutation {
+	createApiKey(input: CreateApiKeyInput!): CreateApiKeyResult!
+	updateApiKey(id: ID!, input: UpdateApiKeyInput!): ApiKey!
+	revokeApiKey(id: ID!): Boolean!
+}
