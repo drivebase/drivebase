@@ -1,11 +1,14 @@
-name: Discord Release Notify
+name: Discord Notify
 
 on:
   release:
     types: [published]
+  pull_request:
+    types: [opened]
 
 jobs:
-  notify:
+  notify-release:
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: Send release info to Discord
@@ -27,6 +30,45 @@ jobs:
                   { name: "Version", value: $tag, inline: true }
                 ],
                 footer: { text: "GitHub Release Notification" }
+              }]
+            }')
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$payload" \
+               ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+  notify-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send PR info to Discord
+        run: |
+          SUMMARY="${{ github.event.pull_request.body }}"
+          SUMMARY="${SUMMARY:0:300}"
+          if [ ${#SUMMARY} -eq 300 ]; then
+            SUMMARY="${SUMMARY}..."
+          fi
+
+          payload=$(jq -n \
+            --arg title "${{ github.event.pull_request.title }}" \
+            --arg summary "$SUMMARY" \
+            --arg url "${{ github.event.pull_request.html_url }}" \
+            --arg author "${{ github.event.pull_request.user.login }}" \
+            --arg author_url "https://github.com/${{ github.event.pull_request.user.login }}" \
+            --arg repo "${{ github.repository }}" \
+            --arg number "#${{ github.event.pull_request.number }}" \
+            '{
+              embeds: [{
+                title: ("🔀 PR " + $number + ": " + $title),
+                url: $url,
+                description: (if $summary != "" then $summary else "_No description provided._" end),
+                color: 3447003,
+                fields: [
+                  { name: "Author", value: ("[" + $author + "](" + $author_url + ")"), inline: true },
+                  { name: "Repository", value: $repo, inline: true }
+                ],
+                footer: { text: "GitHub PR Notification" }
               }]
             }')
 
