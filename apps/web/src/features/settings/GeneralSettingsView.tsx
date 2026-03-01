@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/useAuth";
-import { confirmDialog } from "@/shared/lib/confirmDialog";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { PreferencesSettingsSection } from "@/features/settings/sections/PreferencesSettingsSection";
 import { WorkspaceNameSection } from "@/features/settings/sections/WorkspaceNameSection";
@@ -17,6 +16,7 @@ import {
 	useWorkspaces,
 } from "@/features/workspaces";
 import { WorkspaceMemberRole } from "@/gql/graphql";
+import { confirmDialog } from "@/shared/lib/confirmDialog";
 
 export function GeneralSettingsView() {
 	const { i18n } = useLingui();
