@@ -1,0 +1,76 @@
+---
+title: API Keys
+description: Programmatic access credentials for scripts and integrations
+---
+
+API keys let you authenticate against the Drivebase API without exposing your session credentials. They are long-lived, user-owned tokens with customizable scopes and an optional expiry date.
+
+---
+
+## Creating a key
+
+Go to **Settings → API Keys** and click **New Key**. Give it a name, pick a scope, and optionally set an expiry date. The full key is shown **exactly once** — copy it before closing the dialog.
+
+---
+
+## Key format
+
+Every API key starts with `drv_` followed by 40 hex characters:
+
+```
+drv_a1b2c3d4e5f6...
+```
+
+The first 12 characters (`drv_a1b2c3`) are stored as a display prefix so you can identify keys in the UI without exposing the secret.
+
+---
+
+## Authentication
+
+Pass the key as a Bearer token in the `Authorization` header — the same header used for session JWTs:
+
+```bash
+curl https://your-drivebase.example.com/graphql \
+  -H "Authorization: Bearer drv_a1b2c3d4..." \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ me { id email } }"}'
+```
+
+This works for both the GraphQL endpoint and the REST proxy endpoints (`/api/upload/proxy`, `/api/download/proxy`).
+
+---
+
+## Scopes
+
+Scopes follow an additive hierarchy — each level includes everything below it.
+
+| Scope   | Access |
+|---------|--------|
+| `read`  | List folders, browse and download files, list providers |
+| `write` | Upload, delete, move, rename files (includes `read`) |
+| `admin` | Workspace settings, provider management (includes `write`) |
+
+A key with `write` scope can do everything a `read` key can, plus write operations. A key with `admin` scope has full access.
+
+---
+
+## Expiry
+
+Keys can be set to expire at a specific date. Expired keys return a `401` immediately and cannot be reactivated — create a new key instead.
+
+Keys without an expiry date are valid indefinitely until revoked.
+
+---
+
+## Revoking a key
+
+Go to **Settings → API Keys**, click the trash icon next to the key, and confirm. Revocation is immediate and permanent — any requests using that key will return `401` straight away.
+
+---
+
+## Security notes
+
+- Store keys in environment variables or a secrets manager, never in source code.
+- Use the narrowest scope needed for the task.
+- Set an expiry date for short-lived automation.
+- Rotate keys regularly — revoke the old one after issuing a new one.
