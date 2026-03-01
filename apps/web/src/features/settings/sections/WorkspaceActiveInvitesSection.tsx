@@ -1,4 +1,4 @@
-import { Copy, Trash2 } from "@/shared/components/icons/solar";
+import { PiCopy as Copy, PiTrash as Trash2 } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import type { WorkspaceMemberRole } from "@/gql/graphql";
 

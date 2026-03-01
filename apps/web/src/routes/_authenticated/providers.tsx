@@ -1,14 +1,14 @@
 import { Trans } from "@lingui/react/macro";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
-import {
-	AlertTriangle,
-	Cloud,
-	ExternalLink,
-	Github,
-	Loader2,
-	Plus,
-} from "@/shared/components/icons/solar";
 import { useCallback, useEffect, useState } from "react";
+import {
+	PiWarning as AlertTriangle,
+	PiCloud as Cloud,
+	PiArrowSquareOut as ExternalLink,
+	PiGithubLogo as Github,
+	PiSpinnerGap as Loader2,
+	PiPlus as Plus,
+} from "react-icons/pi";
 import { useQuery } from "urql";
 import { Button } from "@/components/ui/button";
 import {

@@ -1,9 +1,9 @@
-import {
-	ChevronRightIcon,
-	MoreHorizontalIcon,
-} from "@/shared/components/icons/solar";
 import { Slot } from "radix-ui";
 import type * as React from "react";
+import {
+	PiCaretRight as ChevronRightIcon,
+	PiDotsThreeOutline as MoreHorizontalIcon,
+} from "react-icons/pi";
 import { cn } from "@/lib/utils";
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {

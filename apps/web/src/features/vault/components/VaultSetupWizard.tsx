@@ -1,10 +1,10 @@
-import {
-	Check,
-	Download,
-	Lock,
-	ShieldCheck,
-} from "@/shared/components/icons/solar";
 import { useCallback, useState } from "react";
+import {
+	PiCheck as Check,
+	PiDownload as Download,
+	PiLock as Lock,
+	PiShieldCheck as ShieldCheck,
+} from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

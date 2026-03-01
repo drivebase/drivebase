@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
-import { Mail, Shield } from "@/shared/components/icons/solar";
 import { useEffect, useState } from "react";
+import { PiEnvelope as Mail, PiShield as Shield } from "react-icons/pi";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

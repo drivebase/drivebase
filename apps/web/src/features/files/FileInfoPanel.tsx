@@ -1,5 +1,8 @@
 import { format } from "date-fns";
-import { AlertCircle, Loader2 } from "@/shared/components/icons/solar";
+import {
+	PiWarningCircle as AlertCircle,
+	PiSpinnerGap as Loader2,
+} from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

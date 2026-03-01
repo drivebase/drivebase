@@ -1,9 +1,9 @@
 import {
-	ArrowRight,
-	HardDrive,
-	ShieldCheck,
-	Zap,
-} from "@/shared/components/icons/solar";
+	PiArrowRight as ArrowRight,
+	PiHardDrives as HardDrive,
+	PiShieldCheck as ShieldCheck,
+	PiLightning as Zap,
+} from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 
 interface WelcomeStepProps {

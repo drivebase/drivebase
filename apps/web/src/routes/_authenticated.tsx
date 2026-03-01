@@ -5,8 +5,11 @@ import {
 	redirect,
 	useNavigate,
 } from "@tanstack/react-router";
-import { AlertTriangle, Loader2 } from "@/shared/components/icons/solar";
 import { useEffect } from "react";
+import {
+	PiWarning as AlertTriangle,
+	PiSpinnerGap as Loader2,
+} from "react-icons/pi";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/features/auth/hooks/useAuth";

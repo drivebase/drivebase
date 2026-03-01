@@ -1,5 +1,5 @@
-import { Download, Key } from "@/shared/components/icons/solar";
 import { useCallback, useEffect, useState } from "react";
+import { PiDownload as Download, PiKey as Key } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {

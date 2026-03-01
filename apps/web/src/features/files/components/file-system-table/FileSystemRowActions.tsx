@@ -1,15 +1,15 @@
 import { Trans } from "@lingui/react/macro";
 import {
-	Download,
-	Eye,
-	Info,
-	MoreHorizontal,
-	Move,
-	Pencil,
-	Share2,
-	Star,
-	Trash,
-} from "@/shared/components/icons/solar";
+	PiDownload as Download,
+	PiEye as Eye,
+	PiInfo as Info,
+	PiDotsThreeOutline as MoreHorizontal,
+	PiArrowsOutCardinal as Move,
+	PiPencilSimple as Pencil,
+	PiShareNetwork as Share2,
+	PiStar as Star,
+	PiTrash as Trash,
+} from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,

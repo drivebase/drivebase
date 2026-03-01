@@ -1,5 +1,5 @@
-import { Lock, Upload } from "@/shared/components/icons/solar";
 import { useCallback, useRef, useState } from "react";
+import { PiLock as Lock, PiUpload as Upload } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

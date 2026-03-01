@@ -1,4 +1,4 @@
-import { Loader2 } from "@/shared/components/icons/solar";
+import { PiSpinnerGap as Loader2 } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

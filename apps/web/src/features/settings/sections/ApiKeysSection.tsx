@@ -1,12 +1,12 @@
 import { Trans } from "@lingui/react/macro";
-import {
-	Check,
-	Copy,
-	Plus,
-	ShieldAlert,
-	Trash2,
-} from "@/shared/components/icons/solar";
 import { useCallback, useState } from "react";
+import {
+	PiCheck as Check,
+	PiCopy as Copy,
+	PiPlus as Plus,
+	PiShieldWarning as ShieldAlert,
+	PiTrash as Trash2,
+} from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

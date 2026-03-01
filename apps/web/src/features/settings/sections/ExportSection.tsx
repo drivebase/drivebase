@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
-import { Download } from "@/shared/components/icons/solar";
 import { useState } from "react";
+import { PiDownload as Download } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";

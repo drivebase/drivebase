@@ -1,11 +1,11 @@
-import type { LucideIcon } from "@/shared/components/icons/solar";
+import type { IconType as LucideIcon } from "react-icons";
 import {
-	Cloud,
-	FolderOpen,
-	Lock,
-	Settings,
-	Star,
-} from "@/shared/components/icons/solar";
+	PiCloud as Cloud,
+	PiFolderOpen as FolderOpen,
+	PiLock as Lock,
+	PiGear as Settings,
+	PiStar as Star,
+} from "react-icons/pi";
 
 export const SEARCH_LIMIT = 10;
 export const RECENT_LIMIT = 3;

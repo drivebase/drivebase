@@ -1,14 +1,14 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import {
-	AlertCircle,
-	CheckCircle2,
-	ChevronDown,
-	ChevronUp,
-	Clock3,
-	Loader2,
-} from "@/shared/components/icons/solar";
 import { useEffect, useMemo, useState } from "react";
+import {
+	PiWarningCircle as AlertCircle,
+	PiCheckCircle as CheckCircle2,
+	PiCaretDown as ChevronDown,
+	PiCaretUp as ChevronUp,
+	PiClock as Clock3,
+	PiSpinnerGap as Loader2,
+} from "react-icons/pi";
 import { toast } from "sonner";
 import { useMutation } from "urql";
 import { Button } from "@/components/ui/button";

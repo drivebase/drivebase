@@ -1,4 +1,4 @@
-import { Check, Loader2 } from "@/shared/components/icons/solar";
+import { PiCheck as Check, PiSpinnerGap as Loader2 } from "react-icons/pi";
 
 export function CompletionStep() {
 	return (

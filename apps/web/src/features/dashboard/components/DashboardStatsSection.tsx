@@ -1,12 +1,12 @@
 import { formatBytes } from "@drivebase/utils";
 import { Trans } from "@lingui/react/macro";
+import type { IconType as LucideIcon } from "react-icons";
 import {
-	Activity,
-	Files,
-	HardDrive,
-	type LucideIcon,
-	Server,
-} from "@/shared/components/icons/solar";
+	PiLightning as Activity,
+	PiFiles as Files,
+	PiHardDrives as HardDrive,
+	PiDatabase as Server,
+} from "react-icons/pi";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type DashboardStats = {

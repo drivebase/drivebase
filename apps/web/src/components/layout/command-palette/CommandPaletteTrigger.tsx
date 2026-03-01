@@ -1,4 +1,4 @@
-import { Search } from "@/shared/components/icons/solar";
+import { PiMagnifyingGlass as Search } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 
 type Props = {

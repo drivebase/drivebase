@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trans } from "@lingui/react/macro";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Check, Loader2 } from "@/shared/components/icons/solar";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { PiCheck as Check, PiSpinnerGap as Loader2 } from "react-icons/pi";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

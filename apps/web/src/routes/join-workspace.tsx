@@ -1,7 +1,7 @@
 import { Trans } from "@lingui/react/macro";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Loader2 } from "@/shared/components/icons/solar";
 import { useEffect, useRef, useState } from "react";
+import { PiSpinnerGap as Loader2 } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/features/auth/store/authStore";
