@@ -15,7 +15,6 @@ import type {
 import {
   DrivebaseError,
   AuthenticationError,
-  NotFoundError,
   NetworkError,
 } from './errors';
 
@@ -25,7 +24,7 @@ export class DrivebaseClient {
   private timeout: number;
 
   constructor(config: DrivebaseConfig = {}) {
-    this.apiKey = config.apiKey || process.env.DRIVEBASE_API_KEY || '';
+    this.apiKey = config.apiKey || (typeof process !== 'undefined' ? process.env?.DRIVEBASE_API_KEY : undefined) || '';
     this.baseUrl = config.baseUrl || 'https://api.drivebase.io';
     this.timeout = config.timeout || 30000;
 
@@ -38,17 +37,12 @@ export class DrivebaseClient {
    * Upload a file to Drivebase
    */
   async upload(
-    file: File | Buffer | Blob,
+    file: File | Blob,
     options: UploadOptions = {}
   ): Promise<UploadResult> {
     try {
       const formData = new FormData();
-      
-      if (file instanceof Buffer) {
-        formData.append('file', new Blob([file]));
-      } else {
-        formData.append('file', file);
-      }
+      formData.append('file', file);
 
       if (options.provider) {
         formData.append('provider', options.provider);
@@ -60,12 +54,27 @@ export class DrivebaseClient {
         formData.append('metadata', JSON.stringify(options.metadata));
       }
 
-      const response = await this.request('/files/upload', {
+      // Upload needs special handling - don't set Content-Type for FormData
+      const url = `${this.baseUrl}/files/upload`;
+      const response = await fetch(url, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
         body: formData,
+        signal: AbortSignal.timeout(this.timeout),
       });
 
-      return response as UploadResult;
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new DrivebaseError(
+          error.message || response.statusText,
+          error.code,
+          response.status
+        );
+      }
+
+      return await response.json();
     } catch (error) {
       throw this.handleError(error);
     }
@@ -84,12 +93,13 @@ export class DrivebaseClient {
         params.append('provider', options.provider);
       }
 
-      const response = await fetch(
-        `${this.baseUrl}/files/${fileId}/download?${params}`,
-        {
-          headers: this.getHeaders(),
-        }
-      );
+      const url = `${this.baseUrl}/files/${fileId}/download?${params}`;
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+        signal: AbortSignal.timeout(this.timeout),
+      });
 
       if (!response.ok) {
         throw new DrivebaseError(
@@ -167,7 +177,8 @@ export class DrivebaseClient {
     const response = await fetch(url, {
       ...options,
       headers: {
-        ...this.getHeaders(),
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
         ...options.headers,
       },
       signal: AbortSignal.timeout(this.timeout),
@@ -183,16 +194,6 @@ export class DrivebaseClient {
     }
 
     return response.json();
-  }
-
-  /**
-   * Get default headers for API requests
-   */
-  private getHeaders(): Record<string, string> {
-    return {
-      'Authorization': `Bearer ${this.apiKey}`,
-      'Content-Type': 'application/json',
-    };
   }
 
   /**

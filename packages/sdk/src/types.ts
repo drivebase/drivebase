@@ -28,7 +28,7 @@ export interface FileMetadata {
 export interface UploadOptions {
   provider?: string;
   path?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   onProgress?: (progress: number) => void;
 }
 
