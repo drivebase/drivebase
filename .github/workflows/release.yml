@@ -149,18 +149,17 @@ jobs:
           REGISTRY="${{ env.REGISTRY }}"
           IMAGE_NAME="${{ env.IMAGE_NAME }}"
 
-          # Create and push the manifest list
-          docker buildx imagetools create -t $REGISTRY/$IMAGE_NAME:$VERSION \
-            $REGISTRY/$IMAGE_NAME:$VERSION-amd64 \
-            $REGISTRY/$IMAGE_NAME:$VERSION-arm64
-
-          # Tag as latest if this is a release
+          # Release: tag with version + latest. Non-release: tag with short SHA version only.
           if [[ "${{ steps.version.outputs.IS_RELEASE }}" == "true" ]]; then
+            docker buildx imagetools create -t $REGISTRY/$IMAGE_NAME:$VERSION \
+              $REGISTRY/$IMAGE_NAME:$VERSION-amd64 \
+              $REGISTRY/$IMAGE_NAME:$VERSION-arm64
+
             docker buildx imagetools create -t $REGISTRY/$IMAGE_NAME:latest \
               $REGISTRY/$IMAGE_NAME:$VERSION-amd64 \
               $REGISTRY/$IMAGE_NAME:$VERSION-arm64
           else
-            docker buildx imagetools create -t $REGISTRY/$IMAGE_NAME:development \
+            docker buildx imagetools create -t $REGISTRY/$IMAGE_NAME:$VERSION \
               $REGISTRY/$IMAGE_NAME:$VERSION-amd64 \
               $REGISTRY/$IMAGE_NAME:$VERSION-arm64
           fi
@@ -319,7 +318,6 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/drivebase/updater:${{ steps.version.outputs.VERSION }}
-            ${{ steps.version.outputs.IS_RELEASE == 'false' && format('{0}/drivebase/updater:development', env.REGISTRY) || '' }}
             ${{ steps.version.outputs.IS_RELEASE == 'true' && format('{0}/drivebase/updater:latest', env.REGISTRY) || '' }}
           cache-from: type=gha,scope=updater
           cache-to: type=gha,mode=max,scope=updater
