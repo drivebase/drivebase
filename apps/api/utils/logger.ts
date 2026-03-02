@@ -1,6 +1,14 @@
+import { DrivebaseError, toJsonSafeError } from "@drivebase/core";
 import pino from "pino";
 import pretty from "pino-pretty";
 import { env } from "../config/env";
+
+/**
+ * Custom error serializer for Pino that preserves DrivebaseError metadata.
+ * Ensures providerType, code, statusCode, and details are included in logs.
+ */
+const errSerializer = (e: unknown) =>
+	e instanceof DrivebaseError ? e.toJSON() : toJsonSafeError(e);
 
 const isDevelopment = env.NODE_ENV === "development";
 
@@ -32,4 +40,13 @@ const loggerStream = isDevelopment
 			],
 		});
 
-export const logger = pino({ level: "debug" }, loggerStream);
+export const logger = pino(
+	{
+		level: "debug",
+		serializers: {
+			err: errSerializer,
+			error: errSerializer,
+		},
+	},
+	loggerStream,
+);

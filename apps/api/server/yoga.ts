@@ -44,6 +44,40 @@ function isExpectedAppErrorFromGraphQLLog(payload: unknown): boolean {
 	);
 }
 
+/**
+ * Extract the original error from a GraphQL error payload for better logging.
+ * GraphQL Yoga passes GraphQLError directly to the logger, with the original
+ * DrivebaseError buried in the `originalError` property.
+ */
+function extractOriginalError(payload: unknown): unknown {
+	if (!payload || typeof payload !== "object") return payload;
+
+	// GraphQL Yoga passes GraphQLError directly (not wrapped in { err: ... })
+	if (payload instanceof Error) {
+		const graphqlErr = payload as Error & { originalError?: unknown };
+		if (graphqlErr.originalError instanceof Error) {
+			// Return the original error so Pino logs it with full details
+			return graphqlErr.originalError;
+		}
+	}
+
+	// Fallback: check if it's wrapped in { err: ... } or { error: ... }
+	const record = payload as Record<string, unknown>;
+	const err = record.err ?? record.error;
+
+	if (err instanceof Error) {
+		const errorObj = err as Error & { originalError?: unknown };
+		if (errorObj.originalError instanceof Error) {
+			return {
+				...record,
+				err: errorObj.originalError,
+			};
+		}
+	}
+
+	return payload;
+}
+
 const graphQLLogger = {
 	debug: () => {},
 	info: (...args: unknown[]) =>
@@ -51,11 +85,12 @@ const graphQLLogger = {
 	warn: (...args: unknown[]) =>
 		(logger.warn as (...args: unknown[]) => void).apply(logger, args),
 	error: (...args: unknown[]) => {
-		if (isExpectedAppErrorFromGraphQLLog(args[0])) {
-			(logger.warn as (...args: unknown[]) => void).apply(logger, args);
+		const payload = extractOriginalError(args[0]);
+		if (isExpectedAppErrorFromGraphQLLog(payload)) {
+			(logger.warn as (...args: unknown[]) => void).call(logger, payload);
 			return;
 		}
-		(logger.error as (...args: unknown[]) => void).apply(logger, args);
+		(logger.error as (...args: unknown[]) => void).call(logger, payload);
 	},
 };
 

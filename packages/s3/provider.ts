@@ -68,18 +68,28 @@ function folderKey(prefix: string | undefined, name: string): string {
 
 function mapAwsError(error: unknown): Record<string, unknown> {
 	if (!error || typeof error !== "object") {
-		return { error: String(error) };
+		return { rawError: String(error) };
 	}
 
 	const e = error as {
 		name?: string;
 		message?: string;
-		$metadata?: { httpStatusCode?: number };
+		stack?: string;
+		$metadata?: {
+			httpStatusCode?: number;
+			requestId?: string;
+			extendedRequestId?: string;
+		};
+		$fault?: string;
 	};
 	return {
 		code: e.name,
 		message: e.message,
-		statusCode: e.$metadata?.httpStatusCode,
+		httpStatusCode: e.$metadata?.httpStatusCode,
+		requestId: e.$metadata?.requestId,
+		extendedRequestId: e.$metadata?.extendedRequestId,
+		fault: e.$fault,
+		originalStack: e.stack,
 	};
 }
 
@@ -183,6 +193,8 @@ export class S3Provider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to compute bucket usage", {
+				op: "getQuota",
+				bucket,
 				error: mapAwsError(error),
 			});
 		}
@@ -209,6 +221,9 @@ export class S3Provider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to generate upload URL", {
+				op: "requestUpload",
+				bucket,
+				remoteId: key,
 				error: mapAwsError(error),
 			});
 		}
@@ -230,6 +245,9 @@ export class S3Provider implements IStorageProvider {
 			);
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to upload file", {
+				op: "uploadFile",
+				bucket,
+				remoteId,
 				error: mapAwsError(error),
 			});
 		}
@@ -257,6 +275,9 @@ export class S3Provider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to generate download URL", {
+				op: "requestDownload",
+				bucket,
+				remoteId: options.remoteId,
 				error: mapAwsError(error),
 			});
 		}
@@ -282,6 +303,9 @@ export class S3Provider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("s3", "Failed to download file", {
+				op: "downloadFile",
+				bucket,
+				remoteId,
 				error: mapAwsError(error),
 			});
 		}
@@ -303,6 +327,9 @@ export class S3Provider implements IStorageProvider {
 			return key;
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to create folder", {
+				op: "createFolder",
+				bucket,
+				remoteId: key,
 				error: mapAwsError(error),
 			});
 		}
@@ -356,6 +383,10 @@ export class S3Provider implements IStorageProvider {
 			} while (continuationToken);
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to delete object(s)", {
+				op: "delete",
+				bucket,
+				remoteId: options.remoteId,
+				isFolder: options.isFolder,
 				error: mapAwsError(error),
 			});
 		}
@@ -393,6 +424,11 @@ export class S3Provider implements IStorageProvider {
 			);
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to move object", {
+				op: "move",
+				bucket,
+				remoteId: options.remoteId,
+				newParentId: options.newParentId,
+				newName: options.newName,
 				error: mapAwsError(error),
 			});
 		}
@@ -425,6 +461,11 @@ export class S3Provider implements IStorageProvider {
 			return destinationKey;
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to copy object", {
+				op: "copy",
+				bucket,
+				remoteId: options.remoteId,
+				targetParentId: options.targetParentId,
+				newName: options.newName,
 				error: mapAwsError(error),
 			});
 		}
@@ -475,6 +516,9 @@ export class S3Provider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to list objects", {
+				op: "list",
+				bucket,
+				prefix,
 				error: mapAwsError(error),
 			});
 		}
@@ -502,6 +546,9 @@ export class S3Provider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to read file metadata", {
+				op: "getFileMetadata",
+				bucket,
+				remoteId,
 				error: mapAwsError(error),
 			});
 		}
@@ -577,6 +624,9 @@ export class S3Provider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("s3", "Failed to initiate multipart upload", {
+				op: "initiateMultipartUpload",
+				bucket,
+				remoteId: key,
 				error: mapAwsError(error),
 			});
 		}
@@ -612,6 +662,11 @@ export class S3Provider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("s3", `Failed to upload part ${partNumber}`, {
+				op: "uploadPart",
+				bucket,
+				remoteId,
+				uploadId,
+				partNumber,
 				error: mapAwsError(error),
 			});
 		}
@@ -642,6 +697,11 @@ export class S3Provider implements IStorageProvider {
 			);
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to complete multipart upload", {
+				op: "completeMultipartUpload",
+				bucket,
+				remoteId,
+				uploadId,
+				partsCount: parts.length,
 				error: mapAwsError(error),
 			});
 		}
@@ -663,6 +723,10 @@ export class S3Provider implements IStorageProvider {
 			);
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to abort multipart upload", {
+				op: "abortMultipartUpload",
+				bucket,
+				remoteId,
+				uploadId,
 				error: mapAwsError(error),
 			});
 		}
@@ -715,6 +779,9 @@ export class S3Provider implements IStorageProvider {
 			);
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to archive object", {
+				op: "archiveFile",
+				bucket,
+				remoteId,
 				error: mapAwsError(error),
 			});
 		}
@@ -740,6 +807,11 @@ export class S3Provider implements IStorageProvider {
 			);
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to request restore", {
+				op: "requestRestore",
+				bucket,
+				remoteId,
+				days: options.days,
+				tier: options.tier,
 				error: mapAwsError(error),
 			});
 		}
@@ -793,6 +865,9 @@ export class S3Provider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("s3", "Failed to get lifecycle state", {
+				op: "getLifecycleState",
+				bucket,
+				remoteId,
 				error: mapAwsError(error),
 			});
 		}

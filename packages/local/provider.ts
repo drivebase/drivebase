@@ -39,7 +39,7 @@ import type {
 	UploadOptions,
 	UploadResponse,
 } from "@drivebase/core";
-import { ProviderError } from "@drivebase/core";
+import { ProviderError, toJsonSafeError } from "@drivebase/core";
 import type { LocalConfig } from "./schema";
 import { LocalConfigSchema } from "./schema";
 
@@ -98,7 +98,9 @@ export class LocalProvider implements IStorageProvider {
 				"local",
 				"Failed to compute local storage usage",
 				{
-					error: String(error),
+					op: "getQuota",
+					rootPath,
+					error: toJsonSafeError(error),
 				},
 			);
 		}
@@ -136,8 +138,10 @@ export class LocalProvider implements IStorageProvider {
 			await pipeline(nodeReadable, writer);
 		} catch (error) {
 			throw new ProviderError("local", "Failed to upload file", {
+				op: "uploadFile",
 				remoteId,
-				error: String(error),
+				fullPath,
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -153,15 +157,32 @@ export class LocalProvider implements IStorageProvider {
 	async downloadFile(remoteId: string): Promise<ReadableStream> {
 		const fullPath = this.resolveRemotePath(remoteId);
 
-		try {
-			const stream = createReadStream(fullPath);
-			return Readable.toWeb(stream) as unknown as ReadableStream;
-		} catch (error) {
-			throw new ProviderError("local", "Failed to download file", {
-				remoteId,
-				error: String(error),
-			});
-		}
+		const stream = createReadStream(fullPath);
+
+		// Wrap in a pass-through to catch stream errors with provider context
+		return new ReadableStream({
+			start: (controller) => {
+				stream.on("data", (chunk: Buffer) => {
+					controller.enqueue(new Uint8Array(chunk));
+				});
+				stream.on("end", () => {
+					controller.close();
+				});
+				stream.on("error", (error: Error) => {
+					controller.error(
+						new ProviderError("local", "Failed to download file", {
+							op: "downloadFile",
+							remoteId,
+							fullPath,
+							error: toJsonSafeError(error),
+						}),
+					);
+				});
+			},
+			cancel: () => {
+				stream.destroy();
+			},
+		});
 	}
 
 	async createFolder(options: CreateFolderOptions): Promise<string> {
@@ -173,8 +194,10 @@ export class LocalProvider implements IStorageProvider {
 			return remoteId;
 		} catch (error) {
 			throw new ProviderError("local", "Failed to create folder", {
+				op: "createFolder",
 				remoteId,
-				error: String(error),
+				fullPath,
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -190,8 +213,11 @@ export class LocalProvider implements IStorageProvider {
 			}
 		} catch (error) {
 			throw new ProviderError("local", "Failed to delete path", {
+				op: "delete",
 				remoteId: options.remoteId,
-				error: String(error),
+				fullPath,
+				isFolder: options.isFolder,
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -212,9 +238,12 @@ export class LocalProvider implements IStorageProvider {
 			const err = error as NodeJS.ErrnoException;
 			if (err.code !== "EXDEV") {
 				throw new ProviderError("local", "Failed to move path", {
+					op: "move",
 					remoteId: options.remoteId,
 					destinationRemoteId,
-					error: String(error),
+					sourcePath,
+					destinationPath,
+					error: toJsonSafeError(error),
 				});
 			}
 
@@ -252,9 +281,12 @@ export class LocalProvider implements IStorageProvider {
 			return destinationRemoteId;
 		} catch (error) {
 			throw new ProviderError("local", "Failed to copy path", {
+				op: "copy",
 				remoteId: options.remoteId,
 				destinationRemoteId,
-				error: String(error),
+				sourcePath,
+				destinationPath,
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -319,8 +351,10 @@ export class LocalProvider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("local", "Failed to list directory", {
+				op: "list",
 				folderId: options.folderId,
-				error: String(error),
+				targetDirectory,
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -350,8 +384,10 @@ export class LocalProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("local", "Failed to get file metadata", {
+				op: "getFileMetadata",
 				remoteId,
-				error: String(error),
+				fullPath,
+				error: toJsonSafeError(error),
 			});
 		}
 	}
@@ -379,8 +415,10 @@ export class LocalProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("local", "Failed to get folder metadata", {
+				op: "getFolderMetadata",
 				remoteId,
-				error: String(error),
+				fullPath,
+				error: toJsonSafeError(error),
 			});
 		}
 	}
