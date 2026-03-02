@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"lib": ["ESNext", "DOM"],
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleDetection": "force",
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": true,
+		"noEmit": true,
+		"strict": true,
+		"skipLibCheck": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitOverride": true,
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"outDir": "dist"
+	},
+	"include": ["src"]
+}
