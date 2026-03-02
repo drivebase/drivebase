@@ -14,10 +14,7 @@
 				"name": "conventionalcommits",
 				"types": [
 					{ "type": "feat", "section": "✨ Features", "hidden": false },
-					{ "type": "fix", "section": "🐛 Fixes", "hidden": false },
-					{ "type": "style", "section": "🎨 Styling", "hidden": false },
-					{ "type": "docs", "section": "📝 Docs", "hidden": false },
-					{ "type": "chore", "section": "🤖 Chore", "hidden": false }
+					{ "type": "fix", "section": "🐛 Fixes", "hidden": false }
 				]
 			},
 			"infile": "CHANGELOG.md",
