@@ -219,7 +219,7 @@ function VaultBrowser({ folderId }: { folderId?: string }) {
 	};
 
 	return (
-		<div className="px-8 flex flex-col gap-6 h-full relative" {...dragHandlers}>
+		<div className="p-8 flex flex-col gap-6 h-full relative" {...dragHandlers}>
 			<FilesToolbar
 				isRoot={isRoot}
 				breadcrumbs={breadcrumbs}

@@ -35,10 +35,12 @@ function EditRulePage() {
 	}
 
 	return (
-		<RuleFormPage
-			rule={result.data.fileRule}
-			onSuccess={handleBack}
-			onCancel={handleBack}
-		/>
+		<div className="p-8">
+			<RuleFormPage
+				rule={result.data.fileRule}
+				onSuccess={handleBack}
+				onCancel={handleBack}
+			/>
+		</div>
 	);
 }

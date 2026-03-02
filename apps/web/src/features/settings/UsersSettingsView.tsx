@@ -190,38 +190,44 @@ export function UsersSettingsView() {
 		<div className="space-y-8">
 			{canManageWorkspace ? (
 				<>
-					<WorkspaceInviteCreateSection
-						inviteRole={inviteRole}
-						expiresInDays={expiresInDays}
-						generatedInviteLink={generatedInviteLink}
-						onInviteRoleChange={setInviteRole}
-						onExpiresInDaysChange={setExpiresInDays}
-						onCreateInvite={handleCreateInvite}
-						onCopyInviteLink={copyInviteLink}
-					/>
+					<div className="px-8 pt-8">
+						<WorkspaceInviteCreateSection
+							inviteRole={inviteRole}
+							expiresInDays={expiresInDays}
+							generatedInviteLink={generatedInviteLink}
+							onInviteRoleChange={setInviteRole}
+							onExpiresInDaysChange={setExpiresInDays}
+							onCreateInvite={handleCreateInvite}
+							onCopyInviteLink={copyInviteLink}
+						/>
+					</div>
 					<Separator />
 				</>
 			) : null}
 
 			{shouldShowActiveInvitesSection ? (
 				<>
-					<WorkspaceActiveInvitesSection
-						invites={workspaceInvites}
-						isLoading={invitesResult.fetching}
-						onCopyInviteLink={copyInviteLink}
-						onRevokeInvite={handleRevokeInvite}
-					/>
+					<div className="px-8">
+						<WorkspaceActiveInvitesSection
+							invites={workspaceInvites}
+							isLoading={invitesResult.fetching}
+							onCopyInviteLink={copyInviteLink}
+							onRevokeInvite={handleRevokeInvite}
+						/>
+					</div>
 					<Separator />
 				</>
 			) : null}
 
-			<WorkspaceMembersSection
-				members={membersResult.data?.workspaceMembers ?? []}
-				isLoading={membersResult.fetching}
-				canManageWorkspace={canManageWorkspace}
-				onUpdateRole={handleUpdateRole}
-				onRemoveMember={handleRemoveMember}
-			/>
+			<div className="px-8">
+				<WorkspaceMembersSection
+					members={membersResult.data?.workspaceMembers ?? []}
+					isLoading={membersResult.fetching}
+					canManageWorkspace={canManageWorkspace}
+					onUpdateRole={handleUpdateRole}
+					onRemoveMember={handleRemoveMember}
+				/>
+			</div>
 		</div>
 	);
 }

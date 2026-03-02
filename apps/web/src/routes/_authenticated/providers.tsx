@@ -138,7 +138,7 @@ function ProvidersPage() {
 	const isLoading = availableFetching || connectedFetching;
 
 	return (
-		<div className="px-8 flex flex-col gap-8 h-full overflow-y-auto">
+		<div className="p-8 flex flex-col gap-8 h-full overflow-y-auto">
 			{displayError && (
 				<div className="bg-destructive/15 text-destructive p-4  flex items-center gap-2">
 					<AlertTriangle className="h-5 w-5" />

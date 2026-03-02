@@ -47,8 +47,8 @@ export function SettingsCategoryNav() {
 	const workspaceId = getActiveWorkspaceId();
 
 	return (
-		<nav className="w-72 shrink-0 pr-4 h-full flex flex-col">
-			<ul className="space-y-1">
+		<nav className="w-72 border-r shrink-0 h-full flex flex-col">
+			<ul>
 				{categories.map((category) => (
 					<li key={category.to}>
 						<Link

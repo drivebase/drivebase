@@ -9,11 +9,19 @@ export function AdvancedSettingsView() {
 
 	return (
 		<div className="space-y-8">
-			<UpdateSection />
+			<div className="px-8 pt-8">
+				<UpdateSection />
+			</div>
 			<Separator />
-			<ExportSection onExport={exportWorkspace} isExporting={isExporting} />
+
+			<div className="px-8">
+				<ExportSection onExport={exportWorkspace} isExporting={isExporting} />
+			</div>
 			<Separator />
-			<VaultKeySection />
+
+			<div className="px-8">
+				<VaultKeySection />
+			</div>
 		</div>
 	);
 }

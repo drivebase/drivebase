@@ -165,7 +165,7 @@ function FilesPage() {
 			onDragCancel={dnd.handleDragCancel}
 		>
 			<div
-				className="px-8 flex flex-col gap-6 h-full relative"
+				className="p-8 flex flex-col gap-6 h-full relative"
 				{...dragHandlers}
 			>
 				<FilesToolbar
