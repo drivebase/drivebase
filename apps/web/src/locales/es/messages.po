@@ -116,19 +116,27 @@ msgstr ""
 #: src/routes/_authenticated/providers.tsx:303
 #: src/routes/_authenticated/vault.tsx:290
 #: src/routes/_workspace/workspaces.create.tsx:166
-#: src/shared/components/JobPanel.tsx:218
+#: src/shared/components/JobPanel.tsx:217
 #: src/shared/lib/downloadLinkConfigDialog.tsx:286
 msgid "Cancel"
 msgstr "Cancelar"
 
 #. placeholder {0}: job.title
 #: src/shared/components/JobPanel.tsx:142
-msgid "Cancel \"{0}\"? This will stop the provider transfer."
+msgid "Cancel \"{0}\"? This will stop the job."
+msgstr ""
+
+#: src/shared/components/JobPanel.tsx:142
+#~ msgid "Cancel \"{0}\"? This will stop the provider transfer."
+#~ msgstr ""
+
+#: src/shared/components/JobPanel.tsx:141
+msgid "Cancel job"
 msgstr ""
 
 #: src/shared/components/JobPanel.tsx:141
-msgid "Cancel transfer"
-msgstr ""
+#~ msgid "Cancel transfer"
+#~ msgstr ""
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:89
 msgid "Change password"
@@ -286,6 +294,10 @@ msgstr "Carpeta de destino (opcional)"
 msgid "Destination Provider"
 msgstr "Proveedor de destino"
 
+#: src/features/settings/sections/SmartSearchSection.tsx:35
+msgid "Disabled"
+msgstr ""
+
 #: src/routes/_authenticated/providers.tsx:313
 msgid "Disconnect"
 msgstr ""
@@ -338,6 +350,7 @@ msgid "Email"
 msgstr "Correo electrónico"
 
 #: src/features/rules/components/RuleForm.tsx:132
+#: src/features/settings/sections/SmartSearchSection.tsx:35
 msgid "Enabled"
 msgstr "Habilitado"
 
@@ -383,10 +396,19 @@ msgstr "Exporta los datos de tu espacio de trabajo incluyendo archivos, carpetas
 msgid "Exporting..."
 msgstr "Exportando..."
 
+#: src/features/settings/sections/SmartSearchSection.tsx:22
+msgid "Extract text from documents and images for deep content search."
+msgstr ""
+
 #: src/shared/components/JobPanel.tsx:154
 #: src/shared/components/JobPanel.tsx:158
-msgid "Failed to cancel transfer"
+msgid "Failed to cancel job"
 msgstr ""
+
+#: src/shared/components/JobPanel.tsx:154
+#: src/shared/components/JobPanel.tsx:158
+#~ msgid "Failed to cancel transfer"
+#~ msgstr ""
 
 #: src/routes/connect/telegram.tsx:85
 msgid "Failed to complete connection"
@@ -683,6 +705,10 @@ msgstr ""
 msgid "Password"
 msgstr ""
 
+#: src/features/settings/sections/SmartSearchSection.tsx:40
+msgid "Press Tab in the search palette (Cmd+K) to switch to Smart Search mode."
+msgstr ""
+
 #: src/features/settings/sections/AccountSettingsSection.tsx:48
 msgid "Profile updated"
 msgstr "Perfil actualizado"
@@ -837,16 +863,20 @@ msgstr ""
 msgid "Sign in with Passkey"
 msgstr ""
 
-#: src/features/settings/GeneralSettingsView.tsx:134
+#: src/features/settings/GeneralSettingsView.tsx:164
 msgid "Sign out"
 msgstr "Cerrar sesión"
 
-#: src/features/settings/GeneralSettingsView.tsx:100
+#: src/features/settings/GeneralSettingsView.tsx:123
 msgid "Sign out?"
 msgstr ""
 
 #: src/features/auth/LoginPage.tsx:183
 msgid "Sign up"
+msgstr ""
+
+#: src/features/settings/sections/SmartSearchSection.tsx:19
+msgid "Smart Search"
 msgstr ""
 
 #: src/routes/__root.tsx:54
@@ -941,7 +971,7 @@ msgstr "No se puede conectar a la API en este momento. Verifica el servidor e in
 msgid "Unable to load Drivebase"
 msgstr "No se puede cargar Drivebase"
 
-#: src/features/settings/GeneralSettingsView.tsx:109
+#: src/features/settings/GeneralSettingsView.tsx:132
 msgid "Unable to sign out from server. Signing out locally."
 msgstr "No se puede cerrar sesión desde el servidor. Cerrando sesión localmente."
 
@@ -1025,7 +1055,7 @@ msgstr "Espacios de trabajo"
 msgid "You haven't starred any folders yet."
 msgstr ""
 
-#: src/features/settings/GeneralSettingsView.tsx:101
+#: src/features/settings/GeneralSettingsView.tsx:124
 msgid "You will be returned to the login page."
 msgstr ""
 

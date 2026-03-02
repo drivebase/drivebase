@@ -116,19 +116,27 @@ msgstr "Available Providers"
 #: src/routes/_authenticated/providers.tsx:303
 #: src/routes/_authenticated/vault.tsx:290
 #: src/routes/_workspace/workspaces.create.tsx:166
-#: src/shared/components/JobPanel.tsx:218
+#: src/shared/components/JobPanel.tsx:217
 #: src/shared/lib/downloadLinkConfigDialog.tsx:286
 msgid "Cancel"
 msgstr "Cancel"
 
 #. placeholder {0}: job.title
 #: src/shared/components/JobPanel.tsx:142
-msgid "Cancel \"{0}\"? This will stop the provider transfer."
-msgstr "Cancel \"{0}\"? This will stop the provider transfer."
+msgid "Cancel \"{0}\"? This will stop the job."
+msgstr "Cancel \"{0}\"? This will stop the job."
+
+#: src/shared/components/JobPanel.tsx:142
+#~ msgid "Cancel \"{0}\"? This will stop the provider transfer."
+#~ msgstr "Cancel \"{0}\"? This will stop the provider transfer."
 
 #: src/shared/components/JobPanel.tsx:141
-msgid "Cancel transfer"
-msgstr "Cancel transfer"
+msgid "Cancel job"
+msgstr "Cancel job"
+
+#: src/shared/components/JobPanel.tsx:141
+#~ msgid "Cancel transfer"
+#~ msgstr "Cancel transfer"
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:89
 msgid "Change password"
@@ -286,6 +294,10 @@ msgstr "Destination Folder (optional)"
 msgid "Destination Provider"
 msgstr "Destination Provider"
 
+#: src/features/settings/sections/SmartSearchSection.tsx:35
+msgid "Disabled"
+msgstr "Disabled"
+
 #: src/routes/_authenticated/providers.tsx:313
 msgid "Disconnect"
 msgstr "Disconnect"
@@ -338,6 +350,7 @@ msgid "Email"
 msgstr "Email"
 
 #: src/features/rules/components/RuleForm.tsx:132
+#: src/features/settings/sections/SmartSearchSection.tsx:35
 msgid "Enabled"
 msgstr "Enabled"
 
@@ -383,10 +396,19 @@ msgstr "Export your workspace data including files, folders, and optionally prov
 msgid "Exporting..."
 msgstr "Exporting..."
 
+#: src/features/settings/sections/SmartSearchSection.tsx:22
+msgid "Extract text from documents and images for deep content search."
+msgstr "Extract text from documents and images for deep content search."
+
 #: src/shared/components/JobPanel.tsx:154
 #: src/shared/components/JobPanel.tsx:158
-msgid "Failed to cancel transfer"
-msgstr "Failed to cancel transfer"
+msgid "Failed to cancel job"
+msgstr "Failed to cancel job"
+
+#: src/shared/components/JobPanel.tsx:154
+#: src/shared/components/JobPanel.tsx:158
+#~ msgid "Failed to cancel transfer"
+#~ msgstr "Failed to cancel transfer"
 
 #: src/routes/connect/telegram.tsx:85
 msgid "Failed to complete connection"
@@ -683,6 +705,10 @@ msgstr "Passkeys"
 msgid "Password"
 msgstr "Password"
 
+#: src/features/settings/sections/SmartSearchSection.tsx:40
+msgid "Press Tab in the search palette (Cmd+K) to switch to Smart Search mode."
+msgstr "Press Tab in the search palette (Cmd+K) to switch to Smart Search mode."
+
 #: src/features/settings/sections/AccountSettingsSection.tsx:48
 msgid "Profile updated"
 msgstr "Profile updated"
@@ -837,17 +863,21 @@ msgstr "Sign In"
 msgid "Sign in with Passkey"
 msgstr "Sign in with Passkey"
 
-#: src/features/settings/GeneralSettingsView.tsx:134
+#: src/features/settings/GeneralSettingsView.tsx:164
 msgid "Sign out"
 msgstr "Sign out"
 
-#: src/features/settings/GeneralSettingsView.tsx:100
+#: src/features/settings/GeneralSettingsView.tsx:123
 msgid "Sign out?"
 msgstr "Sign out?"
 
 #: src/features/auth/LoginPage.tsx:183
 msgid "Sign up"
 msgstr "Sign up"
+
+#: src/features/settings/sections/SmartSearchSection.tsx:19
+msgid "Smart Search"
+msgstr "Smart Search"
 
 #: src/routes/__root.tsx:54
 msgid "Something went wrong while loading the app."
@@ -941,7 +971,7 @@ msgstr "Unable to connect to the API right now. Check the server and try again."
 msgid "Unable to load Drivebase"
 msgstr "Unable to load Drivebase"
 
-#: src/features/settings/GeneralSettingsView.tsx:109
+#: src/features/settings/GeneralSettingsView.tsx:132
 msgid "Unable to sign out from server. Signing out locally."
 msgstr "Unable to sign out from server. Signing out locally."
 
@@ -1025,7 +1055,7 @@ msgstr "Workspaces"
 msgid "You haven't starred any folders yet."
 msgstr "You haven't starred any folders yet."
 
-#: src/features/settings/GeneralSettingsView.tsx:101
+#: src/features/settings/GeneralSettingsView.tsx:124
 msgid "You will be returned to the login page."
 msgstr "You will be returned to the login page."
 
