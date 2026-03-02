@@ -3,13 +3,13 @@ title: API Keys
 description: Programmatic access credentials for scripts and integrations
 ---
 
-API keys let you authenticate against the Drivebase API without exposing your session credentials. They are long-lived, user-owned tokens with customizable scopes and an optional expiry date.
+API keys let you authenticate against the Drivebase API without exposing your session credentials. They are long-lived, user-owned tokens with customizable scopes, optional provider restrictions, and an optional expiry date.
 
 ---
 
 ## Creating a key
 
-Go to **Settings → API Keys** and click **New Key**. Give it a name, pick a scope, and optionally set an expiry date. The full key is shown **exactly once** — copy it before closing the dialog.
+Go to **Settings → API Keys** and click **New Key**. Give it a name, pick at least one scope, optionally restrict access to specific providers, and optionally set an expiry date. The full key is shown **exactly once** — copy it before closing the dialog.
 
 ---
 
@@ -52,6 +52,32 @@ Scopes follow an additive hierarchy — each level includes everything below it.
 
 A key with `write` scope can do everything a `read` key can, plus write operations. A key with `admin` scope has full access.
 
+You can assign multiple scopes to a single key, but because scopes are hierarchical you only need the highest one you require (e.g. selecting `write` alone is sufficient — you don't need to also check `read`).
+
+---
+
+## Provider access
+
+By default a key has access to **all** connected storage providers in your workspace. You can restrict a key to a subset of providers and, for each provider, set an optional **base path** that limits operations to that folder subtree.
+
+### Restricting providers
+
+In the **Create API Key** dialog, click **Restrict providers** to expand the provider list. Check the providers you want to allow — unchecked providers will be inaccessible with that key.
+
+### Base path
+
+Each selected provider has a base path (default `/`). When a base path is set, the key can only read or write within that folder and its descendants. For example, setting `/backups` means the key cannot access `/documents` even if the scope would otherwise permit it.
+
+| Base path | Accessible paths |
+|-----------|-----------------|
+| `/` (default) | Entire provider |
+| `/backups` | `/backups`, `/backups/2025`, … |
+| `/team/assets` | `/team/assets`, `/team/assets/images`, … |
+
+### Behaviour when no providers are restricted
+
+If you leave provider access set to **All providers**, the key works across every provider connected to the workspace, both now and in the future.
+
 ---
 
 ## Expiry
@@ -72,5 +98,6 @@ Go to **Settings → API Keys**, click the trash icon next to the key, and confi
 
 - Store keys in environment variables or a secrets manager, never in source code.
 - Use the narrowest scope needed for the task.
+- Restrict provider access and set a base path when the key only needs to touch one folder.
 - Set an expiry date for short-lived automation.
 - Rotate keys regularly — revoke the old one after issuing a new one.
