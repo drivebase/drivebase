@@ -12,10 +12,10 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 function SettingsPage() {
 	return (
-		<div className="px-4 h-full">
-			<div className="flex gap-8 h-full">
+		<div className="h-full">
+			<div className="flex h-full">
 				<SettingsCategoryNav />
-				<div className="flex-1 overflow-y-auto pb-8">
+				<div className="flex-1 overflow-y-auto">
 					<Outlet />
 				</div>
 			</div>

@@ -172,7 +172,7 @@ function StarredPage() {
 	}
 
 	return (
-		<div className="px-8 flex flex-col gap-10 h-full overflow-y-auto">
+		<div className="p-8 flex flex-col gap-10 h-full overflow-y-auto">
 			<section>
 				<FileSystemTable
 					files={fileList.items}

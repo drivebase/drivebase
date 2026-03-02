@@ -3,6 +3,7 @@ import { useLingui } from "@lingui/react";
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { PiSignOutLight } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/useAuth";
@@ -138,29 +139,36 @@ export function GeneralSettingsView() {
 	};
 
 	return (
-		<div className="space-y-8">
+		<div className="space-y-8 py-8">
 			{activeWorkspace ? (
 				<>
-					<WorkspaceNameSection
-						name={workspaceName}
-						canEdit={canManageWorkspace}
-						isSaving={updateWorkspaceNameResult.fetching}
-						onNameChange={setWorkspaceName}
-						onSave={handleUpdateWorkspaceName}
-					/>
+					<div className="px-8">
+						<WorkspaceNameSection
+							name={workspaceName}
+							canEdit={canManageWorkspace}
+							isSaving={updateWorkspaceNameResult.fetching}
+							onNameChange={setWorkspaceName}
+							onSave={handleUpdateWorkspaceName}
+						/>
+					</div>
 					<div className="border-t border-border" />
-					<SmartSearchSection
-						enabled={activeWorkspace.smartSearchEnabled}
-						canEdit={canManageWorkspace}
-						isSaving={updateSmartSearchResult.fetching}
-						onToggle={handleToggleSmartSearch}
-					/>
+					<div className="px-8">
+						<SmartSearchSection
+							enabled={activeWorkspace.smartSearchEnabled}
+							canEdit={canManageWorkspace}
+							isSaving={updateSmartSearchResult.fetching}
+							onToggle={handleToggleSmartSearch}
+						/>
+					</div>
 					<div className="border-t border-border" />
 				</>
 			) : null}
-			<PreferencesSettingsSection />
-			<div className="border-t border-border pt-6">
+			<div className="px-8">
+				<PreferencesSettingsSection />
+			</div>
+			<div className="border-t border-border p-8">
 				<Button variant="outline" onClick={handleSignOut}>
+					<PiSignOutLight className="mr-1 w-4 h-4" />
 					<Trans>Sign out</Trans>
 				</Button>
 			</div>
