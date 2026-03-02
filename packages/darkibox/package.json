@@ -1,6 +1,6 @@
 {
 	"name": "@drivebase/darkibox",
-	"version": "0.1.0",
+	"version": "3.3.0",
 	"module": "index.ts",
 	"type": "module",
 	"private": true,
