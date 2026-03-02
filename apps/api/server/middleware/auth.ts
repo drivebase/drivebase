@@ -36,6 +36,7 @@ export async function authMiddleware(
 			role: result.role,
 		});
 		c.set("apiKeyScopes", result.scopes);
+		c.set("apiKeyProviderScopes", result.providerScopes);
 		await next();
 		return;
 	}
@@ -44,6 +45,7 @@ export async function authMiddleware(
 		const payload = await verifyToken(token);
 		c.set("user", payload);
 		c.set("apiKeyScopes", null);
+		c.set("apiKeyProviderScopes", null);
 		await next();
 	} catch (_error) {
 		return c.json({ error: "Invalid token" }, 401);

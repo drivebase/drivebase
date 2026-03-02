@@ -15,6 +15,13 @@
 			"when": 1772463415234,
 			"tag": "0001_add-smart-search",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1772467896431,
+			"tag": "0002_add_api_key_provider_scopes",
+			"breakpoints": true
 		}
 	]
 }
