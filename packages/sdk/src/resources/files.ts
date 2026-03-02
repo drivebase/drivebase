@@ -26,7 +26,6 @@ import type {
 	PathContents,
 	ProgressCallback,
 	RecentFilesParams,
-	SearchParams,
 	SmartSearchResult,
 	UploadOptions,
 } from "../types.ts";

@@ -1,8 +1,8 @@
 import {
 	ApiError,
 	AuthenticationError,
-	NetworkError,
 	type GraphQLError,
+	NetworkError,
 } from "./errors.ts";
 
 interface HttpClientConfig {
