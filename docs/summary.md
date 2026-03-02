@@ -13,17 +13,15 @@ Drivebase is a cloud-agnostic file management app that lets users organize and a
 - Supports encrypted Vault uploads and isolated vault file access paths.
 - Supports rule-based Smart Upload behavior.
 - Supports chunked uploads with session restore, queue processing, cancel, and retry flows.
-- Provides background jobs for upload/sync/transfer/analysis via BullMQ workers.
-- Includes optional AI processing/search pipeline with inference service integration.
+- Provides background jobs for upload/sync/transfer via BullMQ workers.
 
 ## How it works (repo-based architecture)
 - **Web client (`apps/web`)**: React + TanStack Router + URQL client; sends GraphQL operations and uses feature modules (files, providers, vault, rules, settings).
 - **API (`apps/api`)**: Bun runtime with Hono routing + GraphQL Yoga at `/graphql`; mounts core and provider plugin routes.
-- **Business layer**: service modules handle auth, files/folders, providers, workspaces, vault, rules, exports, and AI settings/jobs.
-- **Async workers**: upload/sync/transfer/analysis workers process queued jobs.
-- **Data layer**: Postgres stores app/domain and AI artifacts; Redis backs queue/session/cache/rate-limit behaviors.
+- **Business layer**: service modules handle auth, files/folders, providers, workspaces, vault, rules, and exports.
+- **Async workers**: upload/sync/transfer workers process queued jobs.
+- **Data layer**: Postgres stores app/domain data; Redis backs queue/session/cache/rate-limit behaviors.
 - **Provider integrations**: provider packages are mounted as plugins and can expose routes.
-- **Optional AI service**: separate `ai-inference` service exposes embed/OCR/object detection/model endpoints; API orchestrates jobs and persistence.
 
 ## How to run (minimal getting started)
 1. Recommended quickstart:

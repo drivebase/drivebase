@@ -32,8 +32,7 @@
 				{
 					"file": "render.yaml",
 					"type": "text/plain"
-				},
-				"services/ai-inference/app.py"
+				}
 			]
 		}
 	}

@@ -13,6 +13,10 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/settings/sections/ApiKeysSection.tsx:280
+msgid "(optional)"
+msgstr ""
+
 #: src/shared/lib/downloadLinkConfigDialog.tsx:222
 #: src/shared/lib/downloadLinkConfigDialog.tsx:238
 msgid "0 for unlimited"
@@ -26,11 +30,11 @@ msgstr ""
 msgid "Account"
 msgstr "الحساب"
 
-#: src/features/rules/components/RuleList.tsx:143
+#: src/features/rules/components/RuleList.tsx:149
 msgid "Actions"
 msgstr "الإجراءات"
 
-#: src/components/layout/RecentActivityView.tsx:153
+#: src/components/layout/RecentActivityView.tsx:157
 msgid "Activity"
 msgstr "النشاط"
 
@@ -42,7 +46,11 @@ msgstr "إضافة شرط"
 msgid "Add OR group"
 msgstr "إضافة مجموعة OR"
 
-#: src/features/rules/components/RuleList.tsx:115
+#: src/features/settings/sections/PasskeysSection.tsx:144
+msgid "Add Passkey"
+msgstr ""
+
+#: src/features/rules/components/RuleList.tsx:121
 msgid "Add Rule"
 msgstr "إضافة قاعدة"
 
@@ -54,14 +62,9 @@ msgstr "إضافة قاعدة"
 msgid "Added {0} to starred"
 msgstr ""
 
-#: src/features/settings/components/SettingsCategoryNav.tsx:42
+#: src/features/settings/components/SettingsCategoryNav.tsx:37
 msgid "Advanced"
 msgstr "متقدم"
-
-#: src/features/settings/AiSettingsView.tsx:14
-#: src/features/settings/components/SettingsCategoryNav.tsx:37
-msgid "AI"
-msgstr ""
 
 #: src/features/rules/components/ConditionGroupEditor.tsx:90
 msgid "All conditions must match (AND)"
@@ -75,7 +78,16 @@ msgstr "جميع الملفات"
 msgid "Already have an account?"
 msgstr ""
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:29
+#: src/features/settings/sections/ApiKeysSection.tsx:398
+msgid "API Key"
+msgstr ""
+
+#: src/features/settings/components/SettingsCategoryNav.tsx:42
+#: src/features/settings/sections/ApiKeysSection.tsx:150
+msgid "API Keys"
+msgstr ""
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:33
 msgid "Appearance"
 msgstr "المظهر"
 
@@ -91,7 +103,7 @@ msgstr ""
 #~ msgid "Automatically route uploaded files based on conditions."
 #~ msgstr "توجيه الملفات المرفوعة تلقائيًا بناءً على الشروط."
 
-#: src/features/rules/components/RuleList.tsx:107
+#: src/features/rules/components/RuleList.tsx:113
 msgid "Automatically route uploaded files to specific providers and folders based on file attributes."
 msgstr "توجيه الملفات المرفوعة تلقائيًا إلى مزودي خدمة وملفات معينة بناءً على خصائص الملف."
 
@@ -100,6 +112,7 @@ msgid "Available Providers"
 msgstr ""
 
 #: src/features/rules/components/RuleForm.tsx:209
+#: src/features/settings/sections/ApiKeysSection.tsx:364
 #: src/routes/_authenticated/providers.tsx:303
 #: src/routes/_authenticated/vault.tsx:290
 #: src/routes/_workspace/workspaces.create.tsx:166
@@ -125,15 +138,15 @@ msgstr "تغيير كلمة المرور"
 msgid "Change Password"
 msgstr "تغيير كلمة المرور"
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:44
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:48
 msgid "Choose light, dark, or system theme"
 msgstr "اختر المظهر الفاتح أو الداكن أو مظهر النظام"
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:85
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:89
 msgid "Choose your preferred language"
 msgstr "اختر لغتك المفضلة"
 
-#: src/components/layout/RecentActivityView.tsx:94
+#: src/components/layout/RecentActivityView.tsx:98
 #: src/shared/components/JobPanel.tsx:177
 msgid "Clear"
 msgstr ""
@@ -143,7 +156,7 @@ msgid "Close panel"
 msgstr "إغلاق اللوحة"
 
 #: src/features/rules/components/RuleForm.tsx:189
-#: src/features/rules/components/RuleList.tsx:137
+#: src/features/rules/components/RuleList.tsx:143
 msgid "Conditions"
 msgstr "الشروط"
 
@@ -159,7 +172,7 @@ msgstr ""
 msgid "Connected Storage"
 msgstr ""
 
-#: src/routes/_authenticated.tsx:72
+#: src/routes/_authenticated.tsx:75
 msgid "Connection failed"
 msgstr "فشل الاتصال"
 
@@ -185,9 +198,17 @@ msgstr ""
 msgid "Couldn't find what you were looking for?"
 msgstr ""
 
+#: src/features/settings/sections/ApiKeysSection.tsx:367
+msgid "Create"
+msgstr ""
+
 #: src/features/auth/RegisterPage.tsx:59
 #: src/features/auth/RegisterPage.tsx:120
 msgid "Create Account"
+msgstr ""
+
+#: src/features/settings/sections/ApiKeysSection.tsx:258
+msgid "Create API Key"
 msgstr ""
 
 #: src/features/files/components/file-system-table/FileSystemRowActions.tsx:147
@@ -201,8 +222,8 @@ msgstr ""
 msgid "Create Folder"
 msgstr ""
 
-#: src/features/rules/components/RuleFormPage.tsx:63
-#: src/features/rules/components/RuleFormPage.tsx:73
+#: src/features/rules/components/RuleFormPage.tsx:69
+#: src/features/rules/components/RuleFormPage.tsx:79
 msgid "Create Rule"
 msgstr "إنشاء قاعدة"
 
@@ -215,23 +236,31 @@ msgstr "إنشاء مساحة عمل"
 msgid "Create Workspace"
 msgstr ""
 
+#: src/features/settings/sections/ApiKeysSection.tsx:205
+msgid "Created"
+msgstr ""
+
 #: src/routes/_authenticated/vault.tsx:297
 msgid "Creating..."
+msgstr ""
+
+#: src/features/settings/sections/ApiKeysSection.tsx:367
+msgid "Creating…"
 msgstr ""
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:62
 msgid "Current password"
 msgstr "كلمة المرور الحالية"
 
-#: src/features/settings/sections/UpdateSection.tsx:48
+#: src/features/settings/sections/UpdateSection.tsx:53
 msgid "Current version"
 msgstr "الإصدار الحالي"
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:32
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:36
 msgid "Customize the appearance of the application. Automatically switch between day and night themes."
 msgstr "خصص مظهر التطبيق. التبديل تلقائيًا بين المظاهر النهارية والليلية."
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:66
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:70
 msgid "Dark"
 msgstr "داكن"
 
@@ -241,7 +270,11 @@ msgstr "داكن"
 msgid "Dashboard"
 msgstr "لوحة التحكم"
 
-#: src/features/rules/components/RuleList.tsx:140
+#: src/features/settings/sections/ApiKeysSection.tsx:278
+msgid "Description"
+msgstr ""
+
+#: src/features/rules/components/RuleList.tsx:146
 msgid "Destination"
 msgstr "الوجهة"
 
@@ -265,14 +298,19 @@ msgstr ""
 msgid "Dismiss"
 msgstr ""
 
+#: src/features/settings/sections/ApiKeysSection.tsx:248
+msgid "documentation"
+msgstr ""
+
 #: src/components/layout/Header.tsx:117
 #~ msgid "Documents"
 #~ msgstr "المستندات"
 
-#: src/features/auth/LoginPage.tsx:126
+#: src/features/auth/LoginPage.tsx:178
 msgid "Don't have an account?"
 msgstr ""
 
+#: src/features/settings/sections/ApiKeysSection.tsx:438
 #: src/shared/lib/downloadLinkConfigDialog.tsx:286
 msgid "Done"
 msgstr ""
@@ -289,11 +327,11 @@ msgstr ""
 msgid "Drivebase. Secure file storage."
 msgstr ""
 
-#: src/features/rules/components/RuleFormPage.tsx:63
+#: src/features/rules/components/RuleFormPage.tsx:69
 msgid "Edit Rule"
 msgstr "تحرير القاعدة"
 
-#: src/features/auth/LoginPage.tsx:70
+#: src/features/auth/LoginPage.tsx:96
 #: src/features/auth/RegisterPage.tsx:77
 #: src/features/settings/sections/AccountSettingsSection.tsx:104
 msgid "Email"
@@ -311,12 +349,20 @@ msgstr "كلمة مرور التشفير"
 msgid "Enter your email below to create your account"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:53
+#: src/features/auth/LoginPage.tsx:79
 msgid "Enter your email to sign in to your account"
+msgstr ""
+
+#: src/features/settings/sections/ApiKeysSection.tsx:211
+msgid "Expires"
 msgstr ""
 
 #: src/shared/lib/downloadLinkConfigDialog.tsx:230
 msgid "Expires in days"
+msgstr ""
+
+#: src/features/settings/sections/ApiKeysSection.tsx:323
+msgid "Expiry"
 msgstr ""
 
 #. placeholder {0}: state.maxExpiresInDays
@@ -416,7 +462,7 @@ msgstr ""
 msgid "Folder Name"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:98
+#: src/features/auth/LoginPage.tsx:124
 msgid "Forgot password?"
 msgstr ""
 
@@ -428,8 +474,12 @@ msgstr "عام"
 msgid "Generate new link"
 msgstr ""
 
-#: src/components/layout/RecentActivityView.tsx:196
+#: src/components/layout/RecentActivityView.tsx:200
 msgid "Hide JSON"
+msgstr ""
+
+#: src/features/settings/sections/ApiKeysSection.tsx:431
+msgid "I've copied the key and stored it safely."
 msgstr ""
 
 #: src/components/layout/Header.tsx:123
@@ -456,7 +506,7 @@ msgstr ""
 msgid "Invite revoked"
 msgstr ""
 
-#: src/components/layout/RecentActivityView.tsx:172
+#: src/components/layout/RecentActivityView.tsx:176
 msgid "Job ID"
 msgstr ""
 
@@ -468,32 +518,45 @@ msgstr ""
 msgid "Joining workspace…"
 msgstr ""
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:82
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:86
 msgid "Language"
 msgstr "اللغة"
 
-#: src/features/settings/sections/UpdateSection.tsx:57
+#: src/features/settings/sections/ApiKeysSection.tsx:219
+msgid "Last used"
+msgstr ""
+
+#: src/features/settings/sections/UpdateSection.tsx:62
 msgid "Latest version"
 msgstr "أحدث إصدار"
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:60
+#: src/features/settings/sections/ApiKeysSection.tsx:241
+msgid "Learn how to use API keys in the"
+msgstr ""
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:64
 msgid "Light"
 msgstr "فاتح"
+
+#: src/features/settings/sections/PasskeysSection.tsx:81
+msgid "Loading passkeys…"
+msgstr ""
 
 #: src/routes/_authenticated/settings/rules_.$ruleId.tsx:24
 msgid "Loading rule..."
 msgstr ""
 
-#: src/routes/_authenticated.tsx:42
+#: src/routes/_authenticated.tsx:45
 msgid "Loading your account..."
 msgstr "جارٍ تحميل حسابك..."
 
+#: src/features/settings/sections/ApiKeysSection.tsx:166
 #: src/routes/_authenticated/vault.tsx:60
 #: src/routes/onboarding.tsx:56
 msgid "Loading..."
 msgstr ""
 
-#: src/features/settings/sections/UpdateSection.tsx:41
+#: src/features/settings/sections/UpdateSection.tsx:46
 msgid "Manage application updates."
 msgstr "إدارة تحديثات التطبيق."
 
@@ -527,26 +590,47 @@ msgid "My Account"
 msgstr "حسابي"
 
 #: src/features/rules/components/RuleForm.tsx:115
-#: src/features/rules/components/RuleList.tsx:134
+#: src/features/rules/components/RuleList.tsx:140
 #: src/features/settings/sections/AccountSettingsSection.tsx:84
+#: src/features/settings/sections/ApiKeysSection.tsx:265
 #: src/features/settings/sections/WorkspaceNameSection.tsx:29
 #: src/routes/_workspace/workspaces.create.tsx:97
 msgid "Name"
 msgstr "الاسم"
 
+#: src/features/settings/sections/PasskeysSection.tsx:129
+msgid "Name (optional)"
+msgstr ""
+
 #: src/features/settings/sections/AccountSettingsSection.tsx:32
 msgid "Name is required"
 msgstr "الاسم مطلوب"
+
+#: src/features/settings/sections/ApiKeysSection.tsx:356
+msgid "Never expires"
+msgstr ""
+
+#: src/features/settings/sections/ApiKeysSection.tsx:160
+msgid "New Key"
+msgstr ""
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:74
 msgid "New password"
 msgstr "كلمة المرور الجديدة"
 
+#: src/features/settings/sections/ApiKeysSection.tsx:170
+msgid "No API keys yet."
+msgstr ""
+
+#: src/features/settings/sections/PasskeysSection.tsx:85
+msgid "No passkeys registered yet."
+msgstr ""
+
 #: src/routes/_authenticated/providers.tsx:183
 msgid "No providers connected"
 msgstr ""
 
-#: src/components/layout/RecentActivityView.tsx:110
+#: src/components/layout/RecentActivityView.tsx:114
 msgid "No recent activity"
 msgstr "لا يوجد نشاط حديث"
 
@@ -554,7 +638,7 @@ msgstr "لا يوجد نشاط حديث"
 #~ msgid "No results found."
 #~ msgstr "لم يتم العثور على نتائج."
 
-#: src/features/rules/components/RuleList.tsx:121
+#: src/features/rules/components/RuleList.tsx:127
 msgid "No rules yet. Create a rule to automatically route files on upload."
 msgstr "لا توجد قواعد حتى الآن. قم بإنشاء قاعدة لتوجيه الملفات تلقائيًا عند التحميل."
 
@@ -570,20 +654,31 @@ msgstr ""
 #~ msgid "No updates yet"
 #~ msgstr "لا توجد تحديثات حتى الآن"
 
-#: src/features/settings/AiSettingsView.tsx:17
 #: src/features/settings/UsersSettingsView.tsx:183
 msgid "No workspace selected."
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx:105
+msgid "Open latest release notes"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx:157
+msgid "Or"
 msgstr ""
 
 #: src/features/rules/components/ConditionGroupEditor.tsx:81
 msgid "OR"
 msgstr "أو"
 
-#: src/features/rules/components/RuleList.tsx:131
+#: src/features/rules/components/RuleList.tsx:137
 msgid "Order"
 msgstr "الترتيب"
 
-#: src/features/auth/LoginPage.tsx:91
+#: src/features/settings/sections/PasskeysSection.tsx:69
+msgid "Passkeys"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx:117
 #: src/features/auth/RegisterPage.tsx:97
 msgid "Password"
 msgstr ""
@@ -592,12 +687,16 @@ msgstr ""
 msgid "Profile updated"
 msgstr "تم تحديث الملف الشخصي"
 
+#: src/features/settings/sections/ApiKeysSection.tsx:153
+msgid "Programmatic access credentials for scripts and integrations."
+msgstr ""
+
 #: src/components/layout/Sidebar.tsx:34
 #: src/config/pageTitles.ts:8
 msgid "Providers"
 msgstr "مزودو الخدمة"
 
-#: src/components/layout/RecentActivityView.tsx:84
+#: src/components/layout/RecentActivityView.tsx:88
 msgid "Recent Activity"
 msgstr ""
 
@@ -621,6 +720,10 @@ msgstr ""
 msgid "Remove condition"
 msgstr "إزالة الشرط"
 
+#: src/features/settings/sections/ApiKeysSection.tsx:341
+msgid "Remove expiry"
+msgstr ""
+
 #: src/features/rules/components/ConditionGroupEditor.tsx:100
 msgid "Remove group"
 msgstr "إزالة المجموعة"
@@ -637,9 +740,13 @@ msgstr ""
 msgid "Request a Provider"
 msgstr ""
 
-#: src/routes/_authenticated.tsx:76
+#: src/routes/_authenticated.tsx:79
 msgid "Retry"
 msgstr "إعادة المحاولة"
+
+#: src/features/settings/sections/ApiKeysSection.tsx:184
+msgid "Revoked"
+msgstr ""
 
 #: src/features/settings/sections/AccountSettingsSection.tsx:111
 msgid "Role"
@@ -653,7 +760,7 @@ msgstr "الجذر (بدون مجلد)"
 msgid "Rule not found"
 msgstr ""
 
-#: src/features/rules/components/RuleList.tsx:104
+#: src/features/rules/components/RuleList.tsx:110
 #: src/features/settings/components/SettingsCategoryNav.tsx:32
 msgid "Rules"
 msgstr "القواعد"
@@ -664,14 +771,22 @@ msgstr "القواعد"
 msgid "Save"
 msgstr "حفظ"
 
-#: src/features/rules/components/RuleFormPage.tsx:73
+#: src/features/rules/components/RuleFormPage.tsx:79
 msgid "Save Changes"
 msgstr "حفظ التغييرات"
+
+#: src/features/settings/sections/ApiKeysSection.tsx:383
+msgid "Save your API key"
+msgstr ""
 
 #: src/features/settings/sections/AccountSettingsSection.tsx:95
 #: src/features/settings/sections/WorkspaceNameSection.tsx:38
 msgid "Saving..."
 msgstr "جارٍ الحفظ..."
+
+#: src/features/settings/sections/ApiKeysSection.tsx:294
+msgid "Scopes"
+msgstr ""
 
 #: src/components/layout/Header.tsx:92
 #~ msgid "Search files..."
@@ -685,12 +800,16 @@ msgstr "جارٍ الحفظ..."
 msgid "Server may be unreachable"
 msgstr "قد يكون الخادم غير متاح"
 
-#: src/routes/_authenticated.tsx:60
+#: src/routes/_authenticated.tsx:63
 msgid "Server Unreachable"
 msgstr "الخادم غير متاح"
 
 #: src/features/files/useFileActions.tsx:22
 msgid "Set download limit and expiry for this file."
+msgstr ""
+
+#: src/features/settings/sections/ApiKeysSection.tsx:343
+msgid "Set expiry"
 msgstr ""
 
 #: src/routes/_workspace/workspaces.create.tsx:76
@@ -702,7 +821,7 @@ msgstr ""
 msgid "Settings"
 msgstr "الإعدادات"
 
-#: src/components/layout/RecentActivityView.tsx:198
+#: src/components/layout/RecentActivityView.tsx:202
 msgid "Show JSON"
 msgstr ""
 
@@ -710,15 +829,23 @@ msgstr ""
 msgid "Sign in"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:122
+#: src/features/auth/LoginPage.tsx:148
 msgid "Sign In"
 msgstr ""
 
-#: src/features/settings/GeneralSettingsView.tsx:127
+#: src/features/auth/LoginPage.tsx:174
+msgid "Sign in with Passkey"
+msgstr ""
+
+#: src/features/settings/GeneralSettingsView.tsx:134
 msgid "Sign out"
 msgstr "تسجيل الخروج"
 
-#: src/features/auth/LoginPage.tsx:131
+#: src/features/settings/GeneralSettingsView.tsx:100
+msgid "Sign out?"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx:183
 msgid "Sign up"
 msgstr ""
 
@@ -748,7 +875,11 @@ msgstr ""
 msgid "Sync enabled"
 msgstr ""
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:72
+#: src/features/settings/sections/PasskeysSection.tsx:102
+msgid "Synced"
+msgstr ""
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:76
 msgid "System"
 msgstr "النظام"
 
@@ -756,9 +887,13 @@ msgstr "النظام"
 msgid "Telegram connected successfully!"
 msgstr ""
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:41
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:45
 msgid "Theme"
 msgstr "المظهر"
+
+#: src/features/settings/sections/ApiKeysSection.tsx:390
+msgid "This key will not be shown again. Copy it now and store it somewhere safe."
+msgstr ""
 
 #: src/features/settings/sections/ExportSection.tsx:92
 msgid "This password will be used to encrypt your export file. Keep it safe, as you'll need it to import the data."
@@ -798,7 +933,7 @@ msgstr ""
 #~ msgid "Type to search files"
 #~ msgstr "اكتب للبحث عن الملفات"
 
-#: src/routes/_authenticated.tsx:63
+#: src/routes/_authenticated.tsx:66
 msgid "Unable to connect to the API right now. Check the server and try again."
 msgstr "غير قادر على الاتصال بالـ API في الوقت الحالي. تحقق من الخادم وحاول مرة أخرى."
 
@@ -806,20 +941,20 @@ msgstr "غير قادر على الاتصال بالـ API في الوقت ال�
 msgid "Unable to load Drivebase"
 msgstr "غير قادر على تحميل Drivebase"
 
-#: src/features/settings/GeneralSettingsView.tsx:102
+#: src/features/settings/GeneralSettingsView.tsx:109
 msgid "Unable to sign out from server. Signing out locally."
 msgstr "غير قادر على تسجيل الخروج من الخادم. جارٍ تسجيل الخروج محليًا."
 
-#: src/features/settings/sections/UpdateSection.tsx:65
+#: src/features/settings/sections/UpdateSection.tsx:70
 msgid "Update available"
 msgstr "تحديث متاح"
 
 #. placeholder {0}: latestGithubVersion ?? "unknown"
-#: src/components/layout/Sidebar.tsx:109
+#: src/components/layout/Sidebar.tsx:112
 msgid "Update available: v{0})"
 msgstr ""
 
-#: src/features/settings/sections/UpdateSection.tsx:104
+#: src/features/settings/sections/UpdateSection.tsx:109
 msgid "Update now"
 msgstr "التحديث الآن"
 
@@ -831,18 +966,22 @@ msgstr "تحديث كلمة مرور حسابك."
 msgid "Update your workspace display name."
 msgstr "تحديث اسم عرض مساحة العمل."
 
-#: src/features/settings/sections/UpdateSection.tsx:74
+#: src/features/settings/sections/UpdateSection.tsx:79
 msgid "Updated! The app will reload shortly."
 msgstr "تم التحديث! سيتم إعادة تحميل التطبيق قريبًا."
 
-#: src/features/settings/sections/UpdateSection.tsx:38
+#: src/features/settings/sections/UpdateSection.tsx:43
 msgid "Updates"
 msgstr "التحديثات"
 
 #: src/features/settings/sections/ChangePasswordSection.tsx:87
-#: src/features/settings/sections/UpdateSection.tsx:95
+#: src/features/settings/sections/UpdateSection.tsx:100
 msgid "Updating..."
 msgstr "جارٍ التحديث..."
+
+#: src/features/settings/sections/PasskeysSection.tsx:72
+msgid "Use biometrics or a security key to sign in without a password."
+msgstr ""
 
 #: src/features/settings/components/SettingsCategoryNav.tsx:27
 #: src/features/settings/UsersSettingsView.tsx:180
@@ -862,11 +1001,11 @@ msgstr ""
 #~ msgid "Videos"
 #~ msgstr "الفيديوهات"
 
-#: src/features/settings/sections/UpdateSection.tsx:116
+#: src/features/settings/sections/UpdateSection.tsx:121
 msgid "View releases"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:52
+#: src/features/auth/LoginPage.tsx:78
 msgid "Welcome Back"
 msgstr ""
 
@@ -884,6 +1023,10 @@ msgstr "مساحات العمل"
 
 #: src/features/dashboard/components/StarredFoldersSection.tsx:42
 msgid "You haven't starred any folders yet."
+msgstr ""
+
+#: src/features/settings/GeneralSettingsView.tsx:101
+msgid "You will be returned to the login page."
 msgstr ""
 
 #: src/routes/_authenticated/trash.tsx:13

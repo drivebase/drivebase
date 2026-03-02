@@ -2,13 +2,8 @@ import { useMemo } from "react";
 import {
 	useRecentFiles,
 	useSearchFiles,
-	useSearchFilesAi,
 	useSearchFolders,
 } from "@/features/files/hooks/useFiles";
-import {
-	getActiveWorkspaceId,
-	useWorkspaceAiSettings,
-} from "@/features/workspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import {
 	NAVIGATION_ITEMS,
@@ -35,51 +30,30 @@ type MergedSearchResult =
 
 type Params = {
 	open: boolean;
-	isAiMode: boolean;
 	hasQuery: boolean;
 	debouncedQuery: string;
 	deletedFileIds: Set<string>;
 };
 
 export function usePaletteSearchData({
-	open,
-	isAiMode,
+	open: _open,
 	hasQuery,
 	debouncedQuery,
 	deletedFileIds,
 }: Params) {
-	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
-	const [workspaceAiSettingsResult] = useWorkspaceAiSettings(
-		activeWorkspaceId,
-		!open || !isAiMode || !activeWorkspaceId,
-	);
-	const aiProcessingEnabled =
-		workspaceAiSettingsResult.data?.workspaceAiSettings?.enabled === true;
-	const aiProcessingDisabled =
-		workspaceAiSettingsResult.data?.workspaceAiSettings?.enabled === false;
-	const canRunAiSearch = hasQuery && isAiMode && aiProcessingEnabled;
-
 	const { data: recentData } = useRecentFiles(RECENT_LIMIT);
 	const filesSearchResult = useSearchFiles(
-		hasQuery && !isAiMode ? debouncedQuery : "",
-		SEARCH_LIMIT,
-	);
-	const filesAiSearchResult = useSearchFilesAi(
-		canRunAiSearch ? debouncedQuery : "",
+		hasQuery ? debouncedQuery : "",
 		SEARCH_LIMIT,
 	);
 	const foldersSearchResult = useSearchFolders(
-		hasQuery && !isAiMode ? debouncedQuery : "",
+		hasQuery ? debouncedQuery : "",
 		SEARCH_LIMIT,
 	);
 
 	const searchFiles =
 		(filesSearchResult.data?.searchFiles as FileItemFragment[] | undefined) ??
 		[];
-	const aiSearchFiles =
-		(filesAiSearchResult.data?.searchFilesAi as
-			| FileItemFragment[]
-			| undefined) ?? [];
 	const searchFolders =
 		(foldersSearchResult.data?.searchFolders as
 			| FolderItemFragment[]
@@ -139,10 +113,6 @@ export function usePaletteSearchData({
 				.map((item) => item.file),
 		[mergedResults],
 	);
-	const visibleAiFileResults = useMemo(
-		() => aiSearchFiles.filter((file) => !deletedFileIds.has(file.id)),
-		[aiSearchFiles, deletedFileIds],
-	);
 	const visibleFolderResults = useMemo(
 		() =>
 			mergedResults
@@ -166,10 +136,8 @@ export function usePaletteSearchData({
 	}, [hasQuery, debouncedQuery]);
 
 	return {
-		aiProcessingDisabled,
 		visibleRecentFiles,
 		matchedNavigationItems,
-		visibleAiFileResults,
 		visibleFileResults,
 		visibleFolderResults,
 		mergedResultsCount: mergedResults.length,

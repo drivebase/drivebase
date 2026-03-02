@@ -1,11 +1,7 @@
 import { readFile } from "node:fs/promises";
+import { ensureVectorExtension } from "@drivebase/db";
 import { env } from "./config/env";
 import { mountPluginRoutes } from "./config/providers";
-import { closeAnalysisQueue } from "./queue/analysis-queue";
-import {
-	startAnalysisWorker,
-	stopAnalysisWorker,
-} from "./queue/analysis-worker";
 import { closeFileLifecycleQueue } from "./queue/file-lifecycle-queue";
 import {
 	startFileLifecycleWorker,
@@ -53,6 +49,8 @@ ${grey}  Drivebase collects anonymous usage telemetry to help improve the produc
 `);
 }
 
+await ensureVectorExtension();
+
 /**
  * Initialize application (create default user if needed)
  */
@@ -88,7 +86,6 @@ const server = Bun.serve({
 startUploadWorker();
 startSyncWorker();
 startTransferWorker();
-startAnalysisWorker();
 startFileLifecycleWorker();
 
 logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
@@ -112,8 +109,6 @@ async function shutdown() {
 	await closeSyncQueue();
 	await stopTransferWorker();
 	await closeTransferQueue();
-	await stopAnalysisWorker();
-	await closeAnalysisQueue();
 	await stopFileLifecycleWorker();
 	await closeFileLifecycleQueue();
 	telemetry.capture("server_shutdown");

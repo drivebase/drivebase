@@ -1,7 +1,6 @@
 import { files, getDb } from "@drivebase/db";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
-import { enqueueFileAnalysis } from "../../service/ai/analysis-jobs";
 import { FileService } from "../../service/file";
 import { logFileOperationDebugError } from "../../service/file/shared/file-error-log";
 import { ProviderService } from "../../service/provider";
@@ -71,16 +70,6 @@ export async function handleUploadProxy(c: Context<AppEnv>): Promise<Response> {
 			size_bucket: fileSizeBucket(file.size ?? 0),
 			vault: !!file.vaultId,
 		});
-
-		const resolvedWorkspaceId = file.workspaceId ?? workspaceId;
-		if (resolvedWorkspaceId) {
-			await enqueueFileAnalysis(db, file.id, resolvedWorkspaceId, "upload");
-		} else {
-			logger.debug({
-				msg: "Skipping file analysis enqueue after proxy upload: workspace not resolved",
-				fileId,
-			});
-		}
 
 		return c.json({ success: true });
 	} catch (error) {
