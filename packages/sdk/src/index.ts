@@ -1,4 +1,5 @@
 export { DrivebaseClient } from "./client.ts";
+export type { GraphQLError } from "./errors.ts";
 export {
 	ApiError,
 	AuthenticationError,
@@ -6,7 +7,6 @@ export {
 	NetworkError,
 	UploadError,
 } from "./errors.ts";
-export type { GraphQLError } from "./errors.ts";
 export type {
 	ChunkedUploadSession,
 	ContentsParams,

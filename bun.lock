@@ -5,7 +5,7 @@
     "": {
       "name": "drivebase",
       "devDependencies": {
-        "@biomejs/biome": "^2.3.14",
+        "@biomejs/biome": "2.4.5",
         "@commitlint/cli": "^20.4.1",
         "@commitlint/config-conventional": "^20.4.1",
         "@release-it/bumper": "^7.0.5",
