@@ -1,5 +1,38 @@
 # Changelog
 
+## [3.2.0](https://github.com/drivebase/drivebase/compare/v3.1.5...v3.2.0) (2026-03-02)
+
+### ✨ Features
+
+* add passkey authentication support ([64ddabd](https://github.com/drivebase/drivebase/commit/64ddabd17c4ae027585b673581fdb544500f57ab))
+
+### 🎨 Styling
+
+* add confirmation dialog before sign out ([a3bf825](https://github.com/drivebase/drivebase/commit/a3bf825087de642921319e4f5824c34d3947bd96))
+* migrate icons to solar ([1609493](https://github.com/drivebase/drivebase/commit/1609493d5f15cbd8f7d8a974320f261e2f54be03))
+* replace icons with Pi variants in PasskeysSection ([00f1edc](https://github.com/drivebase/drivebase/commit/00f1edc4f6ea0eaa3e6bc01d6b88bb9bb88706ec))
+
+### 📝 Docs
+
+* add api key docs ([4fa333b](https://github.com/drivebase/drivebase/commit/4fa333bba8bb0b0724e716aa379aa98adae2ae29))
+* replace AI agent instructions with review guide ([f3f99d4](https://github.com/drivebase/drivebase/commit/f3f99d49cfabb46d483c0bf501e113cd5047534a))
+* update .rules.md ([10a5aff](https://github.com/drivebase/drivebase/commit/10a5aff50861381632ff8d880cb70bf6bbdd09d2))
+* update banner image ([2101dae](https://github.com/drivebase/drivebase/commit/2101dae316c7d4d8d6279008ce2d2227fd9823a0))
+* update pull req. template ([9551090](https://github.com/drivebase/drivebase/commit/955109078dff14a206d83b2c7f0bea5018bb9177))
+* update pull_request ([c68b88f](https://github.com/drivebase/drivebase/commit/c68b88fd1a982f779541a1be7c04d2b7b6b45d43))
+* update rules.md ([400d006](https://github.com/drivebase/drivebase/commit/400d006193283128986c56a18c6f53682c2869c6))
+
+### 🤖 Chore
+
+* add drivebase-network to prod compose and update discord/pr ([b6a4b61](https://github.com/drivebase/drivebase/commit/b6a4b613d9eae455bfd17d70792116fe36713f98))
+* format ([8e72735](https://github.com/drivebase/drivebase/commit/8e72735f3ce1f5df63110a23882e909e245ebcd7))
+* format ([ffe8fe2](https://github.com/drivebase/drivebase/commit/ffe8fe255cb3bc9f619d2b8a5bfe19f80767a2c6))
+* invalid YAML in PR workflow paths ([563b6dc](https://github.com/drivebase/drivebase/commit/563b6dc5f5c8b087c8f98b19559182da65d10fc8))
+* migrate to pi icons ([e770f17](https://github.com/drivebase/drivebase/commit/e770f170189829b3a3cfc20b92734d9ab041f9cf))
+* reemove AI related stuffs ([ba2d582](https://github.com/drivebase/drivebase/commit/ba2d582b38103969823f9bca2293b635e032418d))
+* remove redundant actions ([0445d1c](https://github.com/drivebase/drivebase/commit/0445d1cbfa749e23d8ea4489421f7a36a732850d))
+* unexpose db and redis ports in prod compose ([8921371](https://github.com/drivebase/drivebase/commit/89213710611f1ad3fc04631d85f7f2da7eb6c8d5))
+
 ## [3.1.5](https://github.com/drivebase/drivebase/compare/v3.1.4...v3.1.5) (2026-02-28)
 
 ### 🐛 Fixes
