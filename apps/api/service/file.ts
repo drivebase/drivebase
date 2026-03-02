@@ -24,6 +24,7 @@ import {
 	revokeFileDownloadLink,
 	searchFiles,
 	searchFolders,
+	smartSearch,
 	starFile,
 	unstarFile,
 } from "./file/index";
@@ -305,5 +306,16 @@ export class FileService {
 
 	consumeFileDownloadLink(token: string) {
 		return consumeFileDownloadLink(this.db, token);
+	}
+
+	smartSearch(
+		userId: string,
+		query: string,
+		limit?: number,
+		preferredWorkspaceId?: string,
+	) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			smartSearch(this.db, workspaceId, query, limit),
+		);
 	}
 }

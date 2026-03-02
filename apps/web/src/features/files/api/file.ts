@@ -81,6 +81,18 @@ export const SEARCH_FOLDERS_QUERY = graphql(`
   }
 `);
 
+export const SMART_SEARCH_QUERY = graphql(`
+  query SmartSearch($query: String!, $limit: Int) {
+    smartSearch(query: $query, limit: $limit) {
+      file {
+        ...FileItem
+      }
+      headline
+      rank
+    }
+  }
+`);
+
 export const RECENT_FILES_QUERY = graphql(`
   query RecentFiles($limit: Int) {
     recentFiles(limit: $limit) {

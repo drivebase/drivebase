@@ -4,20 +4,18 @@ import { files, folders, getDb } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { and, eq } from "drizzle-orm";
 import { env } from "../config/env";
-import { createBullMQConnection, getRedis } from "../redis/client";
+import { createBullMQConnection } from "../redis/client";
 import { ActivityService } from "../service/activity";
 import { ProviderService } from "../service/provider";
+import {
+	assertNotCancelled as assertJobNotCancelled,
+	clearJobCancellation,
+	JobCancelledError,
+} from "../utils/job-cancel";
 import { logger } from "../utils/logger";
 import type { ProviderTransferJobData } from "./transfer-queue";
 
 const DEFAULT_TRANSFER_CHUNK_SIZE = 8 * 1024 * 1024;
-
-class TransferCancelledError extends Error {
-	constructor() {
-		super("Transfer cancelled");
-		this.name = "TransferCancelledError";
-	}
-}
 
 interface TransferManifest {
 	fileId: string;
@@ -38,10 +36,6 @@ let transferWorker: Worker<ProviderTransferJobData> | null = null;
 
 function getTransferCacheRoot(): string {
 	return env.TRANSFER_CACHE_DIR ?? join(env.DATA_DIR, "transfers");
-}
-
-function getTransferCancelKey(jobId: string): string {
-	return `transfer:cancel:${jobId}`;
 }
 
 function clampProgress(value: number): number {
@@ -93,7 +87,6 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 			const providerService = new ProviderService(db);
 			const { jobId, workspaceId, userId, fileId, targetProviderId } =
 				bullJob.data;
-			const redis = getRedis();
 
 			logger.debug({
 				msg: "[transfer] job started",
@@ -103,12 +96,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				attempt: bullJob.attemptsMade + 1,
 			});
 
-			const assertNotCancelled = async () => {
-				const cancelled = await redis.get(getTransferCancelKey(jobId));
-				if (cancelled) {
-					throw new TransferCancelledError();
-				}
-			};
+			const assertNotCancelled = () => assertJobNotCancelled(jobId);
 			const updateActivity = async (input: {
 				progress?: number;
 				message?: string;
@@ -650,7 +638,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				logger.debug({ msg: "[transfer] done", jobId, fileName: file.name });
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
-				if (error instanceof TransferCancelledError) {
+				if (error instanceof JobCancelledError) {
 					logger.debug({ msg: "[transfer] cancelled", jobId });
 					await activityService.update(jobId, {
 						status: "error",
@@ -735,7 +723,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 				}
 				throw error;
 			} finally {
-				await redis.del(getTransferCancelKey(jobId)).catch(() => {});
+				await clearJobCancellation(jobId);
 				if (sourceProvider) {
 					await sourceProvider.cleanup().catch(() => {});
 				}

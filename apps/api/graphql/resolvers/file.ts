@@ -174,6 +174,25 @@ export const fileQueries: QueryResolvers = {
 		);
 	},
 
+	smartSearch: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		const results = await fileService.smartSearch(
+			user.userId,
+			args.query,
+			args.limit ?? undefined,
+			workspaceId,
+		);
+
+		return results.map((r) => ({
+			file: r.file,
+			headline: r.headline,
+			rank: r.rank,
+		}));
+	},
+
 	recentFiles: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);

@@ -11,6 +11,7 @@ import {
 	revokeWorkspaceInvite,
 	updateWorkspaceMemberRole,
 	updateWorkspaceName,
+	updateWorkspaceSmartSearch,
 	updateWorkspaceSyncOperationsToProvider,
 } from "../../service/workspace";
 import type {
@@ -33,6 +34,7 @@ function toWorkspaceType(workspace: {
 	color: string;
 	ownerId: string;
 	syncOperationsToProvider: boolean;
+	smartSearchEnabled: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 }): WorkspaceType {
@@ -223,6 +225,24 @@ export const workspaceMutations: MutationResolvers = {
 			"admin",
 		]);
 		return revokeWorkspaceInvite(context.db, args.workspaceId, args.inviteId);
+	},
+
+	updateWorkspaceSmartSearch: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(
+			context.db,
+			args.input.workspaceId,
+			user.userId,
+			["owner", "admin"],
+		);
+
+		const workspace = await updateWorkspaceSmartSearch(
+			context.db,
+			args.input.workspaceId,
+			args.input.enabled,
+		);
+
+		return toWorkspaceType(workspace);
 	},
 };
 
