@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
-import { Fingerprint, Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { PiFingerprint, PiPlus, PiSpinner, PiTrash } from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -77,7 +77,7 @@ export function PasskeysSection() {
 
 			{fetching ? (
 				<div className="flex items-center gap-2 text-sm text-muted-foreground">
-					<Loader2 className="h-4 w-4 animate-spin" />
+					<PiSpinner className="h-4 w-4 animate-spin" />
 					<Trans>Loading passkeys…</Trans>
 				</div>
 			) : passkeys.length === 0 ? (
@@ -92,7 +92,7 @@ export function PasskeysSection() {
 							className="flex items-center justify-between rounded-md border border-border px-4 py-3"
 						>
 							<div className="flex items-center gap-3">
-								<Fingerprint className="h-4 w-4 text-muted-foreground shrink-0" />
+								<PiFingerprint className="h-4 w-4 text-muted-foreground shrink-0" />
 								<div>
 									<p className="text-sm font-medium">{pk.name}</p>
 									<p className="text-xs text-muted-foreground">
@@ -113,9 +113,9 @@ export function PasskeysSection() {
 								className="text-muted-foreground hover:text-destructive"
 							>
 								{deletingId === pk.id ? (
-									<Loader2 className="h-4 w-4 animate-spin" />
+									<PiSpinner className="h-4 w-4 animate-spin" />
 								) : (
-									<Trash2 className="h-4 w-4" />
+									<PiTrash className="h-4 w-4" />
 								)}
 							</Button>
 						</li>
@@ -137,9 +137,9 @@ export function PasskeysSection() {
 				</div>
 				<Button onClick={handleAdd} disabled={isAdding}>
 					{isAdding ? (
-						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						<PiSpinner className="mr-2 h-4 w-4 animate-spin" />
 					) : (
-						<Plus className="mr-2 h-4 w-4" />
+						<PiPlus className="mr-2 h-4 w-4" />
 					)}
 					<Trans>Add Passkey</Trans>
 				</Button>
