@@ -1,6 +1,4 @@
-
-
-<img width="2167" height="1579" alt="drivebase-banner" src="https://github.com/user-attachments/assets/77f0b47e-6230-42ef-bd07-368a7de36a48" />
+<img width="2167" height="1579" alt="drivebase-banner" src="https://github.com/user-attachments/assets/4ce62659-1f4e-42e0-8074-4f85fb14e53e" />
 
 <p align="center">
   <a href="https://t.me/+fWEMYD3gp61lYWZl">
