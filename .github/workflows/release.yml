@@ -80,7 +80,7 @@ jobs:
             VERSION="${GITHUB_REF#refs/tags/}"
             IS_RELEASE=true
           else
-            VERSION="development"
+            VERSION="${GITHUB_SHA::7}"
             IS_RELEASE=false
           fi
 
@@ -129,7 +129,7 @@ jobs:
             VERSION="${GITHUB_REF#refs/tags/}"
             IS_RELEASE=true
           else
-            VERSION="development"
+            VERSION="${GITHUB_SHA::7}"
             IS_RELEASE=false
           fi
 
@@ -157,6 +157,10 @@ jobs:
           # Tag as latest if this is a release
           if [[ "${{ steps.version.outputs.IS_RELEASE }}" == "true" ]]; then
             docker buildx imagetools create -t $REGISTRY/$IMAGE_NAME:latest \
+              $REGISTRY/$IMAGE_NAME:$VERSION-amd64 \
+              $REGISTRY/$IMAGE_NAME:$VERSION-arm64
+          else
+            docker buildx imagetools create -t $REGISTRY/$IMAGE_NAME:development \
               $REGISTRY/$IMAGE_NAME:$VERSION-amd64 \
               $REGISTRY/$IMAGE_NAME:$VERSION-arm64
           fi
@@ -190,7 +194,7 @@ jobs:
             VERSION="${GITHUB_REF#refs/tags/}"
             IS_RELEASE=true
           else
-            VERSION="development"
+            VERSION="${GITHUB_SHA::7}"
             IS_RELEASE=false
           fi
 
@@ -290,7 +294,7 @@ jobs:
             VERSION="${GITHUB_REF#refs/tags/}"
             IS_RELEASE=true
           else
-            VERSION="development"
+            VERSION="${GITHUB_SHA::7}"
             IS_RELEASE=false
           fi
 
@@ -315,6 +319,7 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/drivebase/updater:${{ steps.version.outputs.VERSION }}
+            ${{ steps.version.outputs.IS_RELEASE == 'false' && format('{0}/drivebase/updater:development', env.REGISTRY) || '' }}
             ${{ steps.version.outputs.IS_RELEASE == 'true' && format('{0}/drivebase/updater:latest', env.REGISTRY) || '' }}
           cache-from: type=gha,scope=updater
           cache-to: type=gha,mode=max,scope=updater
