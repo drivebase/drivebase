@@ -1,13 +1,14 @@
 import { ValidationError } from "@drivebase/core";
 import { type Job as DbJob, jobs, users } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
+import { getExtractionQueue } from "../../queue/extraction-queue";
 import {
 	buildTransferQueueJobId,
 	getTransferQueue,
 } from "../../queue/transfer-queue";
-import { getRedis } from "../../redis/client";
 import { ActivityService } from "../../service/activity";
 import { getAccessibleWorkspaceId } from "../../service/workspace";
+import { requestJobCancellation } from "../../utils/job-cancel";
 import {
 	type ActivityResolvers,
 	type Job,
@@ -92,9 +93,11 @@ export const activityResolvers: ActivityResolvers = {
 	},
 };
 
-function getTransferCancelKey(jobId: string): string {
-	return `transfer:cancel:${jobId}`;
-}
+/** Job types that support cancellation and their queue lookup logic. */
+const CANCELLABLE_JOB_TYPES = new Set([
+	"provider_transfer",
+	"smart-search-indexing",
+]);
 
 export const activityMutations: MutationResolvers = {
 	clearActivities: async (_parent, args, context) => {
@@ -102,7 +105,7 @@ export const activityMutations: MutationResolvers = {
 		const activityService = new ActivityService(context.db);
 		return activityService.deleteForUser(user.userId, args.ids);
 	},
-	cancelTransferJob: async (_parent, args, context) => {
+	cancelJob: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const workspaceId = await getAccessibleWorkspaceId(
 			context.db,
@@ -121,14 +124,40 @@ export const activityMutations: MutationResolvers = {
 			throw new ValidationError("Job not found");
 		}
 
-		if (job.type !== "provider_transfer") {
-			throw new ValidationError("Only provider transfer jobs can be cancelled");
+		if (!CANCELLABLE_JOB_TYPES.has(job.type)) {
+			throw new ValidationError(
+				`Jobs of type "${job.type}" cannot be cancelled`,
+			);
 		}
 
 		if (job.status === "completed") {
 			throw new ValidationError("Job is already completed");
 		}
 
+		// Set generic Redis cancel flag
+		await requestJobCancellation(job.id);
+
+		// Try to remove pending BullMQ jobs from the appropriate queue
+		await removePendingQueueJobs(job);
+
+		// Mark job as cancelled
+		await activityService.update(job.id, {
+			status: "error",
+			message: "Cancelled",
+			metadata: {
+				...(job.metadata ?? {}),
+				phase: "cancelled",
+				cancelled: true,
+			},
+		});
+
+		return true;
+	},
+};
+
+/** Remove pending BullMQ jobs for a given tracking job, based on job type. */
+async function removePendingQueueJobs(job: DbJob): Promise<void> {
+	if (job.type === "provider_transfer") {
 		const fileId =
 			typeof job.metadata?.fileId === "string" ? job.metadata.fileId : null;
 		const targetProviderId =
@@ -136,51 +165,29 @@ export const activityMutations: MutationResolvers = {
 				? job.metadata.targetProviderId
 				: null;
 
-		if (!fileId || !targetProviderId) {
-			throw new ValidationError("Transfer metadata not found");
+		if (fileId && targetProviderId) {
+			const queue = getTransferQueue();
+			const queueJobId = buildTransferQueueJobId(fileId, targetProviderId);
+			const queueJob = await queue.getJob(queueJobId);
+			const state = queueJob ? await queueJob.getState() : null;
+			if (
+				queueJob &&
+				(state === "waiting" || state === "delayed" || state === "prioritized")
+			) {
+				await queueJob.remove().catch(() => {});
+			}
 		}
-
-		const transferQueue = getTransferQueue();
-		const transferQueueJobId = buildTransferQueueJobId(
-			fileId,
-			targetProviderId,
-		);
-		const queueJob = await transferQueue.getJob(transferQueueJobId);
-		const queueState = queueJob ? await queueJob.getState() : null;
-		const redis = getRedis();
-		await redis.set(getTransferCancelKey(job.id), "1", "EX", 24 * 60 * 60);
-
-		if (
-			queueJob &&
-			(queueState === "waiting" ||
-				queueState === "delayed" ||
-				queueState === "prioritized")
-		) {
-			await queueJob.remove();
-			await activityService.update(job.id, {
-				status: "error",
-				message: "Transfer cancelled",
-				metadata: {
-					...(job.metadata ?? {}),
-					phase: "cancelled",
-					cancelled: true,
-				},
-			});
-			return true;
+	} else if (job.type === "smart-search-indexing") {
+		// Drain waiting extraction jobs that belong to this tracking job
+		const queue = getExtractionQueue();
+		const waiting = await queue.getJobs(["waiting", "delayed"]);
+		for (const queueJob of waiting) {
+			if (queueJob.data?.trackingJobId === job.id) {
+				await queueJob.remove().catch(() => {});
+			}
 		}
-
-		await activityService.update(job.id, {
-			status: "error",
-			message: "Transfer cancellation requested",
-			metadata: {
-				...(job.metadata ?? {}),
-				phase: "cancelling",
-				cancelled: true,
-			},
-		});
-		return true;
-	},
-};
+	}
+}
 
 export const activitySubscriptions: SubscriptionResolvers = {
 	jobUpdated: {

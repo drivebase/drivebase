@@ -7,6 +7,7 @@ import {
 	REVOKE_WORKSPACE_INVITE_MUTATION,
 	UPDATE_WORKSPACE_MEMBER_ROLE_MUTATION,
 	UPDATE_WORKSPACE_NAME_MUTATION,
+	UPDATE_WORKSPACE_SMART_SEARCH_MUTATION,
 	UPDATE_WORKSPACE_SYNC_OPERATIONS_MUTATION,
 	WORKSPACE_INVITES_QUERY,
 	WORKSPACE_MEMBERS_QUERY,
@@ -81,5 +82,10 @@ export function useRevokeWorkspaceInvite() {
 
 export function useAcceptWorkspaceInvite() {
 	const [result, execute] = useMutation(ACCEPT_WORKSPACE_INVITE_MUTATION);
+	return [result, execute] as const;
+}
+
+export function useUpdateWorkspaceSmartSearch() {
+	const [result, execute] = useMutation(UPDATE_WORKSPACE_SMART_SEARCH_MUTATION);
 	return [result, execute] as const;
 }

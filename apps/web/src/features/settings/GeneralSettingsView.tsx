@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { PreferencesSettingsSection } from "@/features/settings/sections/PreferencesSettingsSection";
+import { SmartSearchSection } from "@/features/settings/sections/SmartSearchSection";
 import { WorkspaceNameSection } from "@/features/settings/sections/WorkspaceNameSection";
 import {
 	getActiveWorkspaceId,
 	useUpdateWorkspaceName,
+	useUpdateWorkspaceSmartSearch,
 	useWorkspaceMembers,
 	useWorkspaces,
 } from "@/features/workspaces";
@@ -62,6 +64,8 @@ export function GeneralSettingsView() {
 
 	const [updateWorkspaceNameResult, updateWorkspaceName] =
 		useUpdateWorkspaceName();
+	const [updateSmartSearchResult, updateSmartSearch] =
+		useUpdateWorkspaceSmartSearch();
 	const [workspaceName, setWorkspaceName] = useState("");
 
 	useEffect(() => {
@@ -95,6 +99,25 @@ export function GeneralSettingsView() {
 		reexecuteWorkspaces({ requestPolicy: "network-only" });
 	};
 
+	const handleToggleSmartSearch = async (enabled: boolean) => {
+		if (!workspaceId || !canManageWorkspace) {
+			return;
+		}
+
+		const result = await updateSmartSearch({
+			input: { workspaceId, enabled },
+		});
+
+		if (result.error || !result.data?.updateWorkspaceSmartSearch) {
+			toast.error(
+				result.error?.message ?? "Failed to update smart search setting",
+			);
+			return;
+		}
+
+		reexecuteWorkspaces({ requestPolicy: "network-only" });
+	};
+
 	const handleSignOut = async () => {
 		const confirmed = await confirmDialog(
 			i18n._(msg`Sign out?`),
@@ -124,6 +147,13 @@ export function GeneralSettingsView() {
 						isSaving={updateWorkspaceNameResult.fetching}
 						onNameChange={setWorkspaceName}
 						onSave={handleUpdateWorkspaceName}
+					/>
+					<div className="border-t border-border" />
+					<SmartSearchSection
+						enabled={activeWorkspace.smartSearchEnabled}
+						canEdit={canManageWorkspace}
+						isSaving={updateSmartSearchResult.fetching}
+						onToggle={handleToggleSmartSearch}
 					/>
 					<div className="border-t border-border" />
 				</>

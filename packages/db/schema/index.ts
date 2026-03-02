@@ -4,6 +4,7 @@
 
 export * from "./activities";
 export * from "./api-keys";
+export * from "./file-contents";
 export * from "./file-download-links";
 export * from "./file-rules";
 export * from "./files";

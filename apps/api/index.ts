@@ -2,6 +2,11 @@ import { readFile } from "node:fs/promises";
 import { ensureVectorExtension } from "@drivebase/db";
 import { env } from "./config/env";
 import { mountPluginRoutes } from "./config/providers";
+import { closeExtractionQueue } from "./queue/extraction-queue";
+import {
+	startExtractionWorker,
+	stopExtractionWorker,
+} from "./queue/extraction-worker";
 import { closeFileLifecycleQueue } from "./queue/file-lifecycle-queue";
 import {
 	startFileLifecycleWorker,
@@ -87,6 +92,7 @@ startUploadWorker();
 startSyncWorker();
 startTransferWorker();
 startFileLifecycleWorker();
+startExtractionWorker();
 
 logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
 
@@ -111,6 +117,8 @@ async function shutdown() {
 	await closeTransferQueue();
 	await stopFileLifecycleWorker();
 	await closeFileLifecycleQueue();
+	await stopExtractionWorker();
+	await closeExtractionQueue();
 	telemetry.capture("server_shutdown");
 	await telemetry.shutdown();
 	process.exit(0);

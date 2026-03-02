@@ -111,6 +111,7 @@ export async function acceptWorkspaceInvite(
 			workspaceName: workspaces.name,
 			workspaceColor: workspaces.color,
 			workspaceSyncOperationsToProvider: workspaces.syncOperationsToProvider,
+			workspaceSmartSearchEnabled: workspaces.smartSearchEnabled,
 			workspaceCreatedAt: workspaces.createdAt,
 			workspaceUpdatedAt: workspaces.updatedAt,
 		})
@@ -158,6 +159,7 @@ export async function acceptWorkspaceInvite(
 		color: invite.workspaceColor,
 		ownerId: invite.ownerId,
 		syncOperationsToProvider: invite.workspaceSyncOperationsToProvider,
+		smartSearchEnabled: invite.workspaceSmartSearchEnabled,
 		createdAt: invite.workspaceCreatedAt,
 		updatedAt: invite.workspaceUpdatedAt,
 	};

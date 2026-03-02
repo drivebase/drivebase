@@ -18,6 +18,7 @@ import {
 	REVOKE_FILE_DOWNLOAD_LINK_MUTATION,
 	SEARCH_FILES_QUERY,
 	SEARCH_FOLDERS_QUERY,
+	SMART_SEARCH_QUERY,
 	STAR_FILE_MUTATION,
 	STARRED_FILES_QUERY,
 	UNSTAR_FILE_MUTATION,
@@ -67,6 +68,15 @@ export function useSearchFolders(query: string, limit = 20) {
 		query: SEARCH_FOLDERS_QUERY,
 		variables: { query, limit },
 		pause: !query,
+	});
+	return result;
+}
+
+export function useSmartSearch(query: string, limit = 20, pause = false) {
+	const [result] = useQuery({
+		query: SMART_SEARCH_QUERY,
+		variables: { query, limit },
+		pause: !query || pause,
 	});
 	return result;
 }

@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { getActiveWorkspaceId } from "@/features/workspaces";
 import { type Job, JobStatus } from "@/gql/graphql";
-import { CANCEL_TRANSFER_JOB_MUTATION } from "@/shared/api/activity";
+import { CANCEL_JOB_MUTATION } from "@/shared/api/activity";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
 import { useActivityStore } from "@/shared/store/activityStore";
 import {
@@ -59,7 +59,7 @@ export function JobPanel() {
 	const [hiddenJobs, setHiddenJobs] = useState<HiddenJobsMap>(() =>
 		getInitialHiddenJobs(workspaceId),
 	);
-	const [, cancelTransferJob] = useMutation(CANCEL_TRANSFER_JOB_MUTATION);
+	const [, cancelJob] = useMutation(CANCEL_JOB_MUTATION);
 	const jobsMap = useActivityStore((state) => state.jobs);
 
 	const jobs = useMemo(
@@ -136,10 +136,10 @@ export function JobPanel() {
 		);
 	}
 
-	const handleCancelTransfer = async (job: Job) => {
+	const handleCancelJob = async (job: Job) => {
 		const confirmed = await confirmDialog(
-			t`Cancel transfer`,
-			t`Cancel "${job.title}"? This will stop the provider transfer.`,
+			t`Cancel job`,
+			t`Cancel "${job.title}"? This will stop the job.`,
 		);
 		if (!confirmed) return;
 
@@ -149,13 +149,13 @@ export function JobPanel() {
 			return next;
 		});
 		try {
-			const result = await cancelTransferJob({ jobId: job.id });
-			if (result.error || !result.data?.cancelTransferJob) {
-				throw new Error(result.error?.message ?? t`Failed to cancel transfer`);
+			const result = await cancelJob({ jobId: job.id });
+			if (result.error || !result.data?.cancelJob) {
+				throw new Error(result.error?.message ?? t`Failed to cancel job`);
 			}
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : t`Failed to cancel transfer`,
+				error instanceof Error ? error.message : t`Failed to cancel job`,
 			);
 		} finally {
 			setCancellingJobIds((prev) => {
@@ -206,13 +206,12 @@ export function JobPanel() {
 									</div>
 								</div>
 								<div className="shrink-0 flex items-center gap-2">
-									{job.type === "provider_transfer" &&
-									(job.status === JobStatus.Pending ||
-										job.status === JobStatus.Running) ? (
+									{job.status === JobStatus.Pending ||
+									job.status === JobStatus.Running ? (
 										<Button
 											size="sm"
 											variant="outline"
-											onClick={() => void handleCancelTransfer(job)}
+											onClick={() => void handleCancelJob(job)}
 											disabled={cancellingJobIds.has(job.id)}
 										>
 											<Trans>Cancel</Trans>

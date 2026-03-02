@@ -22,6 +22,7 @@ type Workspace {
 	color: WorkspaceColor!
 	ownerId: ID!
 	syncOperationsToProvider: Boolean!
+	smartSearchEnabled: Boolean!
 	createdAt: DateTime!
 	updatedAt: DateTime!
 }
@@ -111,6 +112,11 @@ input UpdateWorkspaceSyncOperationsInput {
 	enabled: Boolean!
 }
 
+input UpdateWorkspaceSmartSearchInput {
+	workspaceId: ID!
+	enabled: Boolean!
+}
+
 extend type Mutation {
 	"""
 	Create a new workspace
@@ -153,4 +159,11 @@ extend type Mutation {
 	Revoke a workspace invite link
 	"""
 	revokeWorkspaceInvite(workspaceId: ID!, inviteId: ID!): Boolean!
+
+	"""
+	Toggle smart search for workspace (indexes file contents on first enable)
+	"""
+	updateWorkspaceSmartSearch(
+		input: UpdateWorkspaceSmartSearchInput!
+	): Workspace!
 }

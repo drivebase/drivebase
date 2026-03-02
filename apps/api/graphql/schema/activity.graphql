@@ -39,9 +39,10 @@ extend type Query {
 
 extend type Mutation {
 	"""
-	Cancel a queued or running provider transfer job
+	Cancel a queued or running job. Supports any cancellable job type
+	(e.g. provider_transfer, smart-search-indexing).
 	"""
-	cancelTransferJob(jobId: ID!): Boolean!
+	cancelJob(jobId: ID!): Boolean!
 
 	"""
 	Delete activities by ID for the current user

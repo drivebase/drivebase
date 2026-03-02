@@ -10,6 +10,7 @@ export const WORKSPACES_QUERY = graphql(`
       color
       ownerId
       syncOperationsToProvider
+      smartSearchEnabled
       createdAt
       updatedAt
     }
@@ -80,6 +81,7 @@ export const UPDATE_WORKSPACE_NAME_MUTATION = graphql(`
       color
       ownerId
       syncOperationsToProvider
+      smartSearchEnabled
       createdAt
       updatedAt
     }
@@ -94,6 +96,7 @@ export const UPDATE_WORKSPACE_SYNC_OPERATIONS_MUTATION = graphql(`
       color
       ownerId
       syncOperationsToProvider
+      smartSearchEnabled
       createdAt
       updatedAt
     }
@@ -120,6 +123,22 @@ export const ACCEPT_WORKSPACE_INVITE_MUTATION = graphql(`
       color
       ownerId
       syncOperationsToProvider
+      smartSearchEnabled
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const UPDATE_WORKSPACE_SMART_SEARCH_MUTATION = graphql(`
+  mutation UpdateWorkspaceSmartSearch($input: UpdateWorkspaceSmartSearchInput!) {
+    updateWorkspaceSmartSearch(input: $input) {
+      id
+      name
+      color
+      ownerId
+      syncOperationsToProvider
+      smartSearchEnabled
       createdAt
       updatedAt
     }

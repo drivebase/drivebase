@@ -101,6 +101,11 @@ extend type Query {
 	searchFolders(query: String!, limit: Int): [Folder!]!
 
 	"""
+	Smart search: full-text search on extracted file contents
+	"""
+	smartSearch(query: String!, limit: Int): [SmartSearchResult!]!
+
+	"""
 	Get recent files sorted by latest created/updated timestamp
 	"""
 	recentFiles(limit: Int): [File!]!
@@ -304,4 +309,13 @@ type UploadSessionInfo {
 	providerBytesTransferred: Float!
 	errorMessage: String
 	createdAt: String!
+}
+
+"""
+Smart search result with content match details
+"""
+type SmartSearchResult {
+	file: File!
+	headline: String!
+	rank: Float!
 }

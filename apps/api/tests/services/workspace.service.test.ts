@@ -27,6 +27,7 @@ type WorkspaceRow = {
 	color: string;
 	ownerId: string;
 	syncOperationsToProvider: boolean;
+	smartSearchEnabled: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 };
@@ -80,6 +81,7 @@ describe("workspace service", () => {
 			color: "sky",
 			ownerId: "user-1",
 			syncOperationsToProvider: false,
+			smartSearchEnabled: false,
 			createdAt: now,
 			updatedAt: now,
 		};
@@ -126,6 +128,7 @@ describe("workspace service", () => {
 				color: "sky",
 				ownerId: "user-2",
 				syncOperationsToProvider: false,
+				smartSearchEnabled: false,
 				createdAt: now,
 				updatedAt: now,
 			},
