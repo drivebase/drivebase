@@ -8,6 +8,10 @@ export const API_KEYS_QUERY = graphql(`
       description
       keyPrefix
       scopes
+      providerScopes {
+        providerId
+        basePath
+      }
       expiresAt
       lastUsedAt
       isActive
@@ -26,6 +30,10 @@ export const CREATE_API_KEY_MUTATION = graphql(`
         description
         keyPrefix
         scopes
+        providerScopes {
+          providerId
+          basePath
+        }
         expiresAt
         isActive
         createdAt

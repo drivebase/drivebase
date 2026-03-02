@@ -7,11 +7,23 @@ type ApiKey {
 	description: String
 	keyPrefix: String!
 	scopes: [String!]!
+	"""
+	Per-provider access restrictions. If null/empty, key has access to all providers.
+	"""
+	providerScopes: [ApiKeyProviderScope!]
 	expiresAt: DateTime
 	lastUsedAt: DateTime
 	isActive: Boolean!
 	createdAt: DateTime!
 	updatedAt: DateTime!
+}
+
+"""
+Provider-level access scope for an API key
+"""
+type ApiKeyProviderScope {
+	providerId: ID!
+	basePath: String!
 }
 
 """
@@ -22,10 +34,16 @@ type CreateApiKeyResult {
 	fullKey: String!
 }
 
+input ApiKeyProviderScopeInput {
+	providerId: ID!
+	basePath: String
+}
+
 input CreateApiKeyInput {
 	name: String!
 	description: String
 	scopes: [String!]!
+	providerScopes: [ApiKeyProviderScopeInput!]
 	expiresAt: DateTime
 }
 

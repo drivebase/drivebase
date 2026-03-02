@@ -28,6 +28,12 @@ export const apiKeyMutations: MutationResolvers = {
 			name: input.name,
 			description: input.description ?? null,
 			scopes: input.scopes,
+			providerScopes: input.providerScopes
+				? input.providerScopes.map((ps) => ({
+						providerId: ps.providerId,
+						basePath: ps.basePath ?? null,
+					}))
+				: null,
 			expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
 		});
 	},

@@ -24,6 +24,15 @@ export async function createApiKey(
 
 	const { fullKey, keyHash, keyPrefix } = generateApiKey();
 
+	// Normalize provider scopes: default basePath to "/"
+	const providerScopes =
+		input.providerScopes && input.providerScopes.length > 0
+			? input.providerScopes.map((ps) => ({
+					providerId: ps.providerId,
+					basePath: ps.basePath?.trim() || "/",
+				}))
+			: null;
+
 	const [apiKey] = await db
 		.insert(apiKeys)
 		.values({
@@ -32,6 +41,7 @@ export async function createApiKey(
 			keyHash,
 			keyPrefix,
 			scopes: input.scopes,
+			providerScopes,
 			userId,
 			expiresAt: input.expiresAt ?? null,
 		})
