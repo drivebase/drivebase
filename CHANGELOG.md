@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.3.0](https://github.com/drivebase/drivebase/compare/v3.2.0...v3.3.0) (2026-03-02)
+
+### ✨ Features
+
+* add smart search with text extraction ([e3ca67c](https://github.com/drivebase/drivebase/commit/e3ca67c86074c97ff1b5e8e457711b13fca47463))
+* **api-keys:** add provider scope with optional base path ([4bfe146](https://github.com/drivebase/drivebase/commit/4bfe1464030c4cf5f2bc7f0889df0c348b9e454c))
+
+### 🐛 Fixes
+
+* update Docker image tagging logic for releases and non-releases ([811205f](https://github.com/drivebase/drivebase/commit/811205f826984b87368c613eda6445b51e3e47c7))
+
 ## [3.2.0](https://github.com/drivebase/drivebase/compare/v3.1.5...v3.2.0) (2026-03-02)
 
 ### ✨ Features
