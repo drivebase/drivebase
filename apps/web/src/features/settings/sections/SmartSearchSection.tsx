@@ -21,7 +21,6 @@ export function SmartSearchSection(props: SmartSearchSectionProps) {
 				<p className="text-sm text-muted-foreground">
 					<Trans>
 						Extract text from documents and images for deep content search.
-						Supports PDFs, images (OCR), Office documents, and text files.
 					</Trans>
 				</p>
 			</div>
