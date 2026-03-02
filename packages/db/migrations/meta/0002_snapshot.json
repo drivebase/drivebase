@@ -1,6 +1,6 @@
 {
-	"id": "9f7b67fb-64e6-4112-a290-4740036f53d6",
-	"prevId": "c079ca8d-ca1c-4c5e-905d-6b6df3d1df9a",
+	"id": "4beacea6-3fde-4381-9bfc-6d0bc5fac7cc",
+	"prevId": "3fed6d14-b3ba-41f4-8dfc-a4d56af46dde",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -187,6 +187,12 @@
 					"primaryKey": false,
 					"notNull": true
 				},
+				"provider_scopes": {
+					"name": "provider_scopes",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
 				"user_id": {
 					"name": "user_id",
 					"type": "text",
@@ -267,8 +273,8 @@
 			"checkConstraints": {},
 			"isRLSEnabled": false
 		},
-		"public.file_analysis_runs": {
-			"name": "file_analysis_runs",
+		"public.file_contents": {
+			"name": "file_contents",
 			"schema": "",
 			"columns": {
 				"id": {
@@ -277,8 +283,8 @@
 					"primaryKey": true,
 					"notNull": true
 				},
-				"file_id": {
-					"name": "file_id",
+				"node_id": {
+					"name": "node_id",
 					"type": "text",
 					"primaryKey": false,
 					"notNull": true
@@ -289,88 +295,54 @@
 					"primaryKey": false,
 					"notNull": true
 				},
-				"analysis_key": {
-					"name": "analysis_key",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"trigger": {
-					"name": "trigger",
-					"type": "analysis_trigger",
-					"typeSchema": "public",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "'upload'"
-				},
-				"status": {
-					"name": "status",
-					"type": "analysis_status",
-					"typeSchema": "public",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "'pending'"
-				},
-				"embedding_status": {
-					"name": "embedding_status",
-					"type": "analysis_status",
-					"typeSchema": "public",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "'pending'"
-				},
-				"ocr_status": {
-					"name": "ocr_status",
-					"type": "analysis_status",
-					"typeSchema": "public",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "'pending'"
-				},
-				"embedding_error": {
-					"name": "embedding_error",
+				"extracted_text": {
+					"name": "extracted_text",
 					"type": "text",
 					"primaryKey": false,
 					"notNull": false
 				},
-				"ocr_error": {
-					"name": "ocr_error",
+				"search_vector": {
+					"name": "search_vector",
+					"type": "tsvector",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"extraction_method": {
+					"name": "extraction_method",
 					"type": "text",
 					"primaryKey": false,
 					"notNull": false
 				},
-				"tier_embedding": {
-					"name": "tier_embedding",
-					"type": "analysis_model_tier",
+				"extraction_status": {
+					"name": "extraction_status",
+					"type": "extraction_status",
 					"typeSchema": "public",
 					"primaryKey": false,
 					"notNull": true,
-					"default": "'medium'"
+					"default": "'pending'"
 				},
-				"tier_ocr": {
-					"name": "tier_ocr",
-					"type": "analysis_model_tier",
-					"typeSchema": "public",
+				"error_message": {
+					"name": "error_message",
+					"type": "text",
 					"primaryKey": false,
-					"notNull": true,
-					"default": "'medium'"
+					"notNull": false
 				},
-				"attempt_count": {
-					"name": "attempt_count",
+				"language": {
+					"name": "language",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'english'"
+				},
+				"page_count": {
+					"name": "page_count",
 					"type": "integer",
 					"primaryKey": false,
-					"notNull": true,
-					"default": 0
-				},
-				"started_at": {
-					"name": "started_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
 					"notNull": false
 				},
-				"completed_at": {
-					"name": "completed_at",
-					"type": "timestamp with time zone",
+				"word_count": {
+					"name": "word_count",
+					"type": "integer",
 					"primaryKey": false,
 					"notNull": false
 				},
@@ -390,360 +362,23 @@
 				}
 			},
 			"indexes": {
-				"file_analysis_runs_analysis_key_idx": {
-					"name": "file_analysis_runs_analysis_key_idx",
+				"file_contents_search_vector_idx": {
+					"name": "file_contents_search_vector_idx",
 					"columns": [
 						{
-							"expression": "analysis_key",
+							"expression": "search_vector",
 							"isExpression": false,
 							"asc": true,
 							"nulls": "last"
 						}
 					],
-					"isUnique": true,
+					"isUnique": false,
 					"concurrently": false,
-					"method": "btree",
-					"with": {}
-				}
-			},
-			"foreignKeys": {
-				"file_analysis_runs_file_id_nodes_id_fk": {
-					"name": "file_analysis_runs_file_id_nodes_id_fk",
-					"tableFrom": "file_analysis_runs",
-					"tableTo": "nodes",
-					"columnsFrom": ["file_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				},
-				"file_analysis_runs_workspace_id_workspaces_id_fk": {
-					"name": "file_analysis_runs_workspace_id_workspaces_id_fk",
-					"tableFrom": "file_analysis_runs",
-					"tableTo": "workspaces",
-					"columnsFrom": ["workspace_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				}
-			},
-			"compositePrimaryKeys": {},
-			"uniqueConstraints": {},
-			"policies": {},
-			"checkConstraints": {},
-			"isRLSEnabled": false
-		},
-		"public.file_embeddings": {
-			"name": "file_embeddings",
-			"schema": "",
-			"columns": {
-				"id": {
-					"name": "id",
-					"type": "text",
-					"primaryKey": true,
-					"notNull": true
-				},
-				"file_id": {
-					"name": "file_id",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"workspace_id": {
-					"name": "workspace_id",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"run_id": {
-					"name": "run_id",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"model_name": {
-					"name": "model_name",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"model_tier": {
-					"name": "model_tier",
-					"type": "analysis_model_tier",
-					"typeSchema": "public",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"embedding": {
-					"name": "embedding",
-					"type": "vector(512)",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"created_at": {
-					"name": "created_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				}
-			},
-			"indexes": {
-				"file_embeddings_file_model_run_idx": {
-					"name": "file_embeddings_file_model_run_idx",
-					"columns": [
-						{
-							"expression": "file_id",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						},
-						{
-							"expression": "model_name",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						},
-						{
-							"expression": "run_id",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						}
-					],
-					"isUnique": true,
-					"concurrently": false,
-					"method": "btree",
-					"with": {}
-				}
-			},
-			"foreignKeys": {
-				"file_embeddings_file_id_nodes_id_fk": {
-					"name": "file_embeddings_file_id_nodes_id_fk",
-					"tableFrom": "file_embeddings",
-					"tableTo": "nodes",
-					"columnsFrom": ["file_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				},
-				"file_embeddings_workspace_id_workspaces_id_fk": {
-					"name": "file_embeddings_workspace_id_workspaces_id_fk",
-					"tableFrom": "file_embeddings",
-					"tableTo": "workspaces",
-					"columnsFrom": ["workspace_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				},
-				"file_embeddings_run_id_file_analysis_runs_id_fk": {
-					"name": "file_embeddings_run_id_file_analysis_runs_id_fk",
-					"tableFrom": "file_embeddings",
-					"tableTo": "file_analysis_runs",
-					"columnsFrom": ["run_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				}
-			},
-			"compositePrimaryKeys": {},
-			"uniqueConstraints": {},
-			"policies": {},
-			"checkConstraints": {},
-			"isRLSEnabled": false
-		},
-		"public.file_extracted_text": {
-			"name": "file_extracted_text",
-			"schema": "",
-			"columns": {
-				"id": {
-					"name": "id",
-					"type": "text",
-					"primaryKey": true,
-					"notNull": true
-				},
-				"file_id": {
-					"name": "file_id",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"workspace_id": {
-					"name": "workspace_id",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"run_id": {
-					"name": "run_id",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"source": {
-					"name": "source",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"language": {
-					"name": "language",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"text": {
-					"name": "text",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"created_at": {
-					"name": "created_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				}
-			},
-			"indexes": {},
-			"foreignKeys": {
-				"file_extracted_text_file_id_nodes_id_fk": {
-					"name": "file_extracted_text_file_id_nodes_id_fk",
-					"tableFrom": "file_extracted_text",
-					"tableTo": "nodes",
-					"columnsFrom": ["file_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				},
-				"file_extracted_text_workspace_id_workspaces_id_fk": {
-					"name": "file_extracted_text_workspace_id_workspaces_id_fk",
-					"tableFrom": "file_extracted_text",
-					"tableTo": "workspaces",
-					"columnsFrom": ["workspace_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				},
-				"file_extracted_text_run_id_file_analysis_runs_id_fk": {
-					"name": "file_extracted_text_run_id_file_analysis_runs_id_fk",
-					"tableFrom": "file_extracted_text",
-					"tableTo": "file_analysis_runs",
-					"columnsFrom": ["run_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				}
-			},
-			"compositePrimaryKeys": {},
-			"uniqueConstraints": {},
-			"policies": {},
-			"checkConstraints": {},
-			"isRLSEnabled": false
-		},
-		"public.file_text_chunks": {
-			"name": "file_text_chunks",
-			"schema": "",
-			"columns": {
-				"id": {
-					"name": "id",
-					"type": "text",
-					"primaryKey": true,
-					"notNull": true
-				},
-				"file_id": {
-					"name": "file_id",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"workspace_id": {
-					"name": "workspace_id",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"run_id": {
-					"name": "run_id",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"source": {
-					"name": "source",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"chunk_index": {
-					"name": "chunk_index",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"text": {
-					"name": "text",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"model_name": {
-					"name": "model_name",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"model_tier": {
-					"name": "model_tier",
-					"type": "analysis_model_tier",
-					"typeSchema": "public",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"embedding": {
-					"name": "embedding",
-					"type": "vector(512)",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"created_at": {
-					"name": "created_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				}
-			},
-			"indexes": {
-				"file_text_chunks_file_run_chunk_idx": {
-					"name": "file_text_chunks_file_run_chunk_idx",
-					"columns": [
-						{
-							"expression": "file_id",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						},
-						{
-							"expression": "run_id",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						},
-						{
-							"expression": "chunk_index",
-							"isExpression": false,
-							"asc": true,
-							"nulls": "last"
-						}
-					],
-					"isUnique": true,
-					"concurrently": false,
-					"method": "btree",
+					"method": "gin",
 					"with": {}
 				},
-				"file_text_chunks_workspace_idx": {
-					"name": "file_text_chunks_workspace_idx",
+				"file_contents_workspace_idx": {
+					"name": "file_contents_workspace_idx",
 					"columns": [
 						{
 							"expression": "workspace_id",
@@ -757,11 +392,11 @@
 					"method": "btree",
 					"with": {}
 				},
-				"file_text_chunks_file_idx": {
-					"name": "file_text_chunks_file_idx",
+				"file_contents_status_idx": {
+					"name": "file_contents_status_idx",
 					"columns": [
 						{
-							"expression": "file_id",
+							"expression": "extraction_status",
 							"isExpression": false,
 							"asc": true,
 							"nulls": "last"
@@ -774,119 +409,18 @@
 				}
 			},
 			"foreignKeys": {
-				"file_text_chunks_file_id_nodes_id_fk": {
-					"name": "file_text_chunks_file_id_nodes_id_fk",
-					"tableFrom": "file_text_chunks",
+				"file_contents_node_id_nodes_id_fk": {
+					"name": "file_contents_node_id_nodes_id_fk",
+					"tableFrom": "file_contents",
 					"tableTo": "nodes",
-					"columnsFrom": ["file_id"],
+					"columnsFrom": ["node_id"],
 					"columnsTo": ["id"],
 					"onDelete": "cascade",
 					"onUpdate": "no action"
 				},
-				"file_text_chunks_workspace_id_workspaces_id_fk": {
-					"name": "file_text_chunks_workspace_id_workspaces_id_fk",
-					"tableFrom": "file_text_chunks",
-					"tableTo": "workspaces",
-					"columnsFrom": ["workspace_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				},
-				"file_text_chunks_run_id_file_analysis_runs_id_fk": {
-					"name": "file_text_chunks_run_id_file_analysis_runs_id_fk",
-					"tableFrom": "file_text_chunks",
-					"tableTo": "file_analysis_runs",
-					"columnsFrom": ["run_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				}
-			},
-			"compositePrimaryKeys": {},
-			"uniqueConstraints": {},
-			"policies": {},
-			"checkConstraints": {},
-			"isRLSEnabled": false
-		},
-		"public.workspace_ai_progress": {
-			"name": "workspace_ai_progress",
-			"schema": "",
-			"columns": {
-				"workspace_id": {
-					"name": "workspace_id",
-					"type": "text",
-					"primaryKey": true,
-					"notNull": true
-				},
-				"eligible_files": {
-					"name": "eligible_files",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true,
-					"default": 0
-				},
-				"processed_files": {
-					"name": "processed_files",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true,
-					"default": 0
-				},
-				"pending_files": {
-					"name": "pending_files",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true,
-					"default": 0
-				},
-				"running_files": {
-					"name": "running_files",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true,
-					"default": 0
-				},
-				"failed_files": {
-					"name": "failed_files",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true,
-					"default": 0
-				},
-				"skipped_files": {
-					"name": "skipped_files",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true,
-					"default": 0
-				},
-				"completed_files": {
-					"name": "completed_files",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true,
-					"default": 0
-				},
-				"completion_pct": {
-					"name": "completion_pct",
-					"type": "real",
-					"primaryKey": false,
-					"notNull": true,
-					"default": 0
-				},
-				"updated_at": {
-					"name": "updated_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				}
-			},
-			"indexes": {},
-			"foreignKeys": {
-				"workspace_ai_progress_workspace_id_workspaces_id_fk": {
-					"name": "workspace_ai_progress_workspace_id_workspaces_id_fk",
-					"tableFrom": "workspace_ai_progress",
+				"file_contents_workspace_id_workspaces_id_fk": {
+					"name": "file_contents_workspace_id_workspaces_id_fk",
+					"tableFrom": "file_contents",
 					"tableTo": "workspaces",
 					"columnsFrom": ["workspace_id"],
 					"columnsTo": ["id"],
@@ -895,94 +429,13 @@
 				}
 			},
 			"compositePrimaryKeys": {},
-			"uniqueConstraints": {},
-			"policies": {},
-			"checkConstraints": {},
-			"isRLSEnabled": false
-		},
-		"public.workspace_ai_settings": {
-			"name": "workspace_ai_settings",
-			"schema": "",
-			"columns": {
-				"workspace_id": {
-					"name": "workspace_id",
-					"type": "text",
-					"primaryKey": true,
-					"notNull": true
-				},
-				"enabled": {
-					"name": "enabled",
-					"type": "boolean",
-					"primaryKey": false,
-					"notNull": true,
-					"default": false
-				},
-				"models_ready": {
-					"name": "models_ready",
-					"type": "boolean",
-					"primaryKey": false,
-					"notNull": true,
-					"default": false
-				},
-				"embedding_tier": {
-					"name": "embedding_tier",
-					"type": "analysis_model_tier",
-					"typeSchema": "public",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "'medium'"
-				},
-				"ocr_tier": {
-					"name": "ocr_tier",
-					"type": "analysis_model_tier",
-					"typeSchema": "public",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "'medium'"
-				},
-				"max_concurrency": {
-					"name": "max_concurrency",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true,
-					"default": 2
-				},
-				"config": {
-					"name": "config",
-					"type": "jsonb",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "'{}'::jsonb"
-				},
-				"created_at": {
-					"name": "created_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				},
-				"updated_at": {
-					"name": "updated_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
+			"uniqueConstraints": {
+				"file_contents_node_id_unique": {
+					"name": "file_contents_node_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["node_id"]
 				}
 			},
-			"indexes": {},
-			"foreignKeys": {
-				"workspace_ai_settings_workspace_id_workspaces_id_fk": {
-					"name": "workspace_ai_settings_workspace_id_workspaces_id_fk",
-					"tableFrom": "workspace_ai_settings",
-					"tableTo": "workspaces",
-					"columnsFrom": ["workspace_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				}
-			},
-			"compositePrimaryKeys": {},
-			"uniqueConstraints": {},
 			"policies": {},
 			"checkConstraints": {},
 			"isRLSEnabled": false
@@ -1631,6 +1084,105 @@
 			},
 			"compositePrimaryKeys": {},
 			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.passkeys": {
+			"name": "passkeys",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'Passkey'"
+				},
+				"credential_id": {
+					"name": "credential_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"public_key": {
+					"name": "public_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"counter": {
+					"name": "counter",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"device_type": {
+					"name": "device_type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"backed_up": {
+					"name": "backed_up",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"transports": {
+					"name": "transports",
+					"type": "text[]",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"last_used_at": {
+					"name": "last_used_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"passkeys_user_id_users_id_fk": {
+					"name": "passkeys_user_id_users_id_fk",
+					"tableFrom": "passkeys",
+					"tableTo": "users",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"passkeys_credential_id_unique": {
+					"name": "passkeys_credential_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["credential_id"]
+				}
+			},
 			"policies": {},
 			"checkConstraints": {},
 			"isRLSEnabled": false
@@ -2662,6 +2214,13 @@
 					"notNull": true,
 					"default": false
 				},
+				"smart_search_enabled": {
+					"name": "smart_search_enabled",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
 				"created_at": {
 					"name": "created_at",
 					"type": "timestamp with time zone",
@@ -2697,25 +2256,10 @@
 		}
 	},
 	"enums": {
-		"public.analysis_model_tier": {
-			"name": "analysis_model_tier",
+		"public.extraction_status": {
+			"name": "extraction_status",
 			"schema": "public",
-			"values": ["lightweight", "medium", "heavy"]
-		},
-		"public.analysis_status": {
-			"name": "analysis_status",
-			"schema": "public",
-			"values": ["pending", "running", "completed", "failed", "skipped"]
-		},
-		"public.analysis_task_type": {
-			"name": "analysis_task_type",
-			"schema": "public",
-			"values": ["embedding", "ocr"]
-		},
-		"public.analysis_trigger": {
-			"name": "analysis_trigger",
-			"schema": "public",
-			"values": ["upload", "manual_reprocess", "backfill", "provider_sync"]
+			"values": ["pending", "processing", "completed", "failed", "unsupported"]
 		},
 		"public.job_status": {
 			"name": "job_status",

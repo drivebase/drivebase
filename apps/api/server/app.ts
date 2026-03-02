@@ -10,6 +10,7 @@ export type AppEnv = {
 	Variables: {
 		user: JWTPayload;
 		apiKeyScopes: string[] | null;
+		apiKeyProviderScopes: { providerId: string; basePath: string }[] | null;
 	};
 };
 

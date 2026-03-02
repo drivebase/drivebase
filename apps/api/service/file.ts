@@ -23,8 +23,8 @@ import {
 	requestUpload,
 	revokeFileDownloadLink,
 	searchFiles,
-	searchFilesAi,
 	searchFolders,
+	smartSearch,
 	starFile,
 	unstarFile,
 } from "./file/index";
@@ -105,17 +105,6 @@ export class FileService {
 	) {
 		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
 			searchFiles(this.db, userId, workspaceId, query, limit),
-		);
-	}
-
-	searchFilesAi(
-		userId: string,
-		query: string,
-		limit?: number,
-		preferredWorkspaceId?: string,
-	) {
-		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
-			searchFilesAi(this.db, userId, workspaceId, query, limit),
 		);
 	}
 
@@ -317,5 +306,16 @@ export class FileService {
 
 	consumeFileDownloadLink(token: string) {
 		return consumeFileDownloadLink(this.db, token);
+	}
+
+	smartSearch(
+		userId: string,
+		query: string,
+		limit?: number,
+		preferredWorkspaceId?: string,
+	) {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			smartSearch(this.db, workspaceId, query, limit),
+		);
 	}
 }

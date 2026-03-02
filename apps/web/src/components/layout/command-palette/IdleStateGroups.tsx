@@ -1,4 +1,4 @@
-import { Clock3 } from "@/shared/components/icons/solar";
+import { PiClock as Clock3 } from "react-icons/pi";
 import {
 	CommandGroup,
 	CommandItem,

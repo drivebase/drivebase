@@ -16,5 +16,10 @@ function NewRulePage() {
 		navigate({ to: "/settings/rules" });
 	};
 
-	return <RuleFormPage onSuccess={handleSuccess} onCancel={handleCancel} />;
+	return (
+		<div className="p-8">
+			{" "}
+			<RuleFormPage onSuccess={handleSuccess} onCancel={handleCancel} />
+		</div>
+	);
 }

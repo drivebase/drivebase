@@ -1,14 +1,13 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import {
-	Filter,
-	Key,
-	SlidersHorizontal,
-	Sparkle,
-	User,
-	Users,
-	Wrench,
-} from "@/shared/components/icons/solar";
+	PiFunnel as Filter,
+	PiKey as Key,
+	PiSlidersHorizontal as SlidersHorizontal,
+	PiUser as User,
+	PiUsers as Users,
+	PiWrench as Wrench,
+} from "react-icons/pi";
 import { getActiveWorkspaceId } from "@/features/workspaces";
 
 const categories = [
@@ -33,11 +32,6 @@ const categories = [
 		label: <Trans>Rules</Trans>,
 	},
 	{
-		to: "/settings/ai",
-		icon: Sparkle,
-		label: <Trans>AI</Trans>,
-	},
-	{
 		to: "/settings/advanced",
 		icon: Wrench,
 		label: <Trans>Advanced</Trans>,
@@ -53,8 +47,8 @@ export function SettingsCategoryNav() {
 	const workspaceId = getActiveWorkspaceId();
 
 	return (
-		<nav className="w-72 shrink-0 pr-4 h-full flex flex-col">
-			<ul className="space-y-1">
+		<nav className="w-72 border-r shrink-0 h-full flex flex-col">
+			<ul>
 				{categories.map((category) => (
 					<li key={category.to}>
 						<Link

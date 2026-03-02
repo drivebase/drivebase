@@ -1,14 +1,21 @@
-import { files, getDb, storageProviders } from "@drivebase/db";
+import {
+	fileContents,
+	files,
+	getDb,
+	storageProviders,
+	workspaces,
+} from "@drivebase/db";
 import { Worker } from "bullmq";
 import { eq } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
 import { createBullMQConnection } from "../redis/client";
-import { enqueueFileAnalysis } from "../service/ai/analysis-jobs";
 import { logFileOperationDebugError } from "../service/file/shared/file-error-log";
 import { UploadSessionManager } from "../service/file/upload";
 import { ProviderService } from "../service/provider";
 import { fileSizeBucket, telemetry } from "../telemetry";
+import { isExtractionSupported } from "../utils/extraction";
 import { logger } from "../utils/logger";
+import { getExtractionQueue } from "./extraction-queue";
 import type { UploadJobData } from "./upload-queue";
 
 let uploadWorker: Worker<UploadJobData> | null = null;
@@ -227,29 +234,6 @@ export function startUploadWorker(): Worker<UploadJobData> {
 				// Mark session completed
 				await sessionManager.markCompleted(sessionId);
 
-				if (fileId) {
-					const [uploadedFile] = await db
-						.select({
-							id: files.id,
-							workspaceId: storageProviders.workspaceId,
-						})
-						.from(files)
-						.innerJoin(
-							storageProviders,
-							eq(storageProviders.id, files.providerId),
-						)
-						.where(eq(files.id, fileId))
-						.limit(1);
-					if (uploadedFile?.workspaceId) {
-						await enqueueFileAnalysis(
-							db,
-							uploadedFile.id,
-							uploadedFile.workspaceId,
-							"upload",
-						);
-					}
-				}
-
 				// Publish final progress event
 				publishProgress(sessionId, {
 					sessionId,
@@ -272,6 +256,11 @@ export function startUploadWorker(): Worker<UploadJobData> {
 					jobId: job.id,
 					sessionId,
 				});
+
+				// Auto-extract content if smart search is enabled
+				if (fileId) {
+					await enqueueExtractionIfEnabled(db, fileId, mimeType);
+				}
 			} catch (error) {
 				const errorMessage =
 					error instanceof Error ? error.message : String(error);
@@ -340,6 +329,84 @@ export async function stopUploadWorker(): Promise<void> {
 		await uploadWorker.close();
 		uploadWorker = null;
 		logger.info("Upload worker stopped");
+	}
+}
+
+/**
+ * Enqueue content extraction if the workspace has smart search enabled.
+ */
+async function enqueueExtractionIfEnabled(
+	db: ReturnType<typeof getDb>,
+	fileId: string,
+	mimeType: string,
+): Promise<void> {
+	try {
+		if (!isExtractionSupported(mimeType)) {
+			logger.debug({
+				msg: "Auto-extract skipped: unsupported MIME type",
+				fileId,
+				mimeType,
+			});
+			return;
+		}
+
+		const [file] = await db
+			.select({
+				providerId: files.providerId,
+				workspaceId: storageProviders.workspaceId,
+			})
+			.from(files)
+			.innerJoin(storageProviders, eq(files.providerId, storageProviders.id))
+			.where(eq(files.id, fileId))
+			.limit(1);
+
+		if (!file?.workspaceId) return;
+
+		const [workspace] = await db
+			.select({ smartSearchEnabled: workspaces.smartSearchEnabled })
+			.from(workspaces)
+			.where(eq(workspaces.id, file.workspaceId))
+			.limit(1);
+
+		if (!workspace?.smartSearchEnabled) {
+			logger.debug({
+				msg: "Auto-extract skipped: smart search disabled for workspace",
+				fileId,
+				workspaceId: file.workspaceId,
+			});
+			return;
+		}
+
+		logger.debug({
+			msg: "Auto-extract: enqueueing extraction for uploaded file",
+			fileId,
+			mimeType,
+			workspaceId: file.workspaceId,
+		});
+
+		// Create file_contents record and enqueue extraction
+		await db
+			.insert(fileContents)
+			.values({
+				nodeId: fileId,
+				workspaceId: file.workspaceId,
+				extractionStatus: "pending",
+			})
+			.onConflictDoNothing();
+
+		const queue = getExtractionQueue();
+		await queue.add(
+			`extract-${fileId}`,
+			{ nodeId: fileId, workspaceId: file.workspaceId },
+			{ jobId: `extract-${fileId}` },
+		);
+	} catch (error) {
+		// Don't fail the upload if extraction enqueueing fails
+		logger.warn({
+			msg: "Failed to enqueue content extraction",
+			fileId,
+			error: error instanceof Error ? error.message : String(error),
+		});
 	}
 }
 

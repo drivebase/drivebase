@@ -1,5 +1,5 @@
-import { Loader2, Save } from "@/shared/components/icons/solar";
 import { useEffect, useState } from "react";
+import { PiSpinnerGap as Loader2, PiFloppyDisk as Save } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

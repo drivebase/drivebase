@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { X } from "@/shared/components/icons/solar";
+import { PiX as X } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

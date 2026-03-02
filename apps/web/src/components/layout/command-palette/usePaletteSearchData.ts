@@ -2,13 +2,9 @@ import { useMemo } from "react";
 import {
 	useRecentFiles,
 	useSearchFiles,
-	useSearchFilesAi,
 	useSearchFolders,
+	useSmartSearch,
 } from "@/features/files/hooks/useFiles";
-import {
-	getActiveWorkspaceId,
-	useWorkspaceAiSettings,
-} from "@/features/workspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import {
 	NAVIGATION_ITEMS,
@@ -16,6 +12,13 @@ import {
 	RECENT_LIMIT,
 	SEARCH_LIMIT,
 } from "./constants";
+import type { SearchMode } from "./usePaletteUiState";
+
+export type SmartSearchResultItem = {
+	file: FileItemFragment;
+	headline: string;
+	rank: number;
+};
 
 type MergedSearchResult =
 	| {
@@ -35,57 +38,63 @@ type MergedSearchResult =
 
 type Params = {
 	open: boolean;
-	isAiMode: boolean;
 	hasQuery: boolean;
 	debouncedQuery: string;
 	deletedFileIds: Set<string>;
+	searchMode: SearchMode;
 };
 
 export function usePaletteSearchData({
-	open,
-	isAiMode,
+	open: _open,
 	hasQuery,
 	debouncedQuery,
 	deletedFileIds,
+	searchMode,
 }: Params) {
-	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
-	const [workspaceAiSettingsResult] = useWorkspaceAiSettings(
-		activeWorkspaceId,
-		!open || !isAiMode || !activeWorkspaceId,
-	);
-	const aiProcessingEnabled =
-		workspaceAiSettingsResult.data?.workspaceAiSettings?.enabled === true;
-	const aiProcessingDisabled =
-		workspaceAiSettingsResult.data?.workspaceAiSettings?.enabled === false;
-	const canRunAiSearch = hasQuery && isAiMode && aiProcessingEnabled;
+	const isFilenameMode = searchMode === "filename";
+	const isSmartMode = searchMode === "smart";
 
 	const { data: recentData } = useRecentFiles(RECENT_LIMIT);
 	const filesSearchResult = useSearchFiles(
-		hasQuery && !isAiMode ? debouncedQuery : "",
-		SEARCH_LIMIT,
-	);
-	const filesAiSearchResult = useSearchFilesAi(
-		canRunAiSearch ? debouncedQuery : "",
+		hasQuery && isFilenameMode ? debouncedQuery : "",
 		SEARCH_LIMIT,
 	);
 	const foldersSearchResult = useSearchFolders(
-		hasQuery && !isAiMode ? debouncedQuery : "",
+		hasQuery && isFilenameMode ? debouncedQuery : "",
 		SEARCH_LIMIT,
+	);
+	const smartSearchResult = useSmartSearch(
+		hasQuery ? debouncedQuery : "",
+		SEARCH_LIMIT,
+		!isSmartMode,
 	);
 
 	const searchFiles =
 		(filesSearchResult.data?.searchFiles as FileItemFragment[] | undefined) ??
 		[];
-	const aiSearchFiles =
-		(filesAiSearchResult.data?.searchFilesAi as
-			| FileItemFragment[]
-			| undefined) ?? [];
 	const searchFolders =
 		(foldersSearchResult.data?.searchFolders as
 			| FolderItemFragment[]
 			| undefined) ?? [];
 	const recentFiles =
 		(recentData?.recentFiles as FileItemFragment[] | undefined) ?? [];
+
+	const smartSearchResults: SmartSearchResultItem[] = useMemo(() => {
+		if (!isSmartMode || !hasQuery) return [];
+		const results = smartSearchResult.data?.smartSearch;
+		if (!results) return [];
+		return (
+			results as Array<{
+				file: FileItemFragment;
+				headline: string;
+				rank: number;
+			}>
+		).map((r) => ({
+			file: r.file as FileItemFragment,
+			headline: r.headline,
+			rank: r.rank,
+		}));
+	}, [isSmartMode, hasQuery, smartSearchResult.data]);
 
 	const visibleRecentFiles = useMemo(
 		() =>
@@ -96,7 +105,7 @@ export function usePaletteSearchData({
 	);
 
 	const mergedResults = useMemo(() => {
-		if (!hasQuery) return [] as MergedSearchResult[];
+		if (!hasQuery || isSmartMode) return [] as MergedSearchResult[];
 
 		const normalizedQuery = debouncedQuery.toLowerCase();
 		const score = (name: string) =>
@@ -127,7 +136,14 @@ export function usePaletteSearchData({
 					a.priority - b.priority || a.name.localeCompare(b.name, undefined),
 			)
 			.slice(0, SEARCH_LIMIT);
-	}, [hasQuery, debouncedQuery, searchFiles, searchFolders, deletedFileIds]);
+	}, [
+		hasQuery,
+		isSmartMode,
+		debouncedQuery,
+		searchFiles,
+		searchFolders,
+		deletedFileIds,
+	]);
 
 	const visibleFileResults = useMemo(
 		() =>
@@ -138,10 +154,6 @@ export function usePaletteSearchData({
 				)
 				.map((item) => item.file),
 		[mergedResults],
-	);
-	const visibleAiFileResults = useMemo(
-		() => aiSearchFiles.filter((file) => !deletedFileIds.has(file.id)),
-		[aiSearchFiles, deletedFileIds],
 	);
 	const visibleFolderResults = useMemo(
 		() =>
@@ -154,7 +166,7 @@ export function usePaletteSearchData({
 		[mergedResults],
 	);
 	const matchedNavigationItems = useMemo(() => {
-		if (!hasQuery) return [] as NavigationItem[];
+		if (!hasQuery || isSmartMode) return [] as NavigationItem[];
 
 		const normalizedQuery = debouncedQuery.toLowerCase();
 		const score = (label: string) =>
@@ -163,15 +175,15 @@ export function usePaletteSearchData({
 		return NAVIGATION_ITEMS.filter((item) =>
 			item.label.toLowerCase().includes(normalizedQuery),
 		).sort((a, b) => score(a.label) - score(b.label));
-	}, [hasQuery, debouncedQuery]);
+	}, [hasQuery, isSmartMode, debouncedQuery]);
 
 	return {
-		aiProcessingDisabled,
 		visibleRecentFiles,
 		matchedNavigationItems,
-		visibleAiFileResults,
 		visibleFileResults,
 		visibleFolderResults,
 		mergedResultsCount: mergedResults.length,
+		smartSearchResults,
+		isSmartSearchFetching: smartSearchResult.fetching,
 	};
 }

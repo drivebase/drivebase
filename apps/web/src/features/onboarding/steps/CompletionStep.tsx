@@ -1,9 +1,9 @@
-import {
-	ArrowRight,
-	CheckCircle2,
-	Loader2,
-} from "@/shared/components/icons/solar";
 import { useState } from "react";
+import {
+	PiArrowRight as ArrowRight,
+	PiCheckCircle as CheckCircle2,
+	PiSpinnerGap as Loader2,
+} from "react-icons/pi";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "urql";
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Loader2, Shield } from "@/shared/components/icons/solar";
+import { PiSpinnerGap as Loader2, PiShield as Shield } from "react-icons/pi";
 import { useProvider } from "@/features/providers/hooks/useProviders";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 

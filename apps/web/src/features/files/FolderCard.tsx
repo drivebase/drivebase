@@ -1,10 +1,10 @@
 import {
-	FileText,
-	FolderIcon,
-	Image as ImageIcon,
-	Music,
-	Video,
-} from "@/shared/components/icons/solar";
+	PiFileText as FileText,
+	PiFolder as FolderIcon,
+	PiImage as ImageIcon,
+	PiMusicNote as Music,
+	PiVideoCamera as Video,
+} from "react-icons/pi";
 import { Card } from "@/components/ui/card";
 import type { FolderItemFragment } from "@/gql/graphql";
 import { cn } from "@/shared/lib/utils";

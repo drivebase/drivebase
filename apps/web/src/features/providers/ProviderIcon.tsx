@@ -1,5 +1,5 @@
-import { Cloud } from "@/shared/components/icons/solar";
 import { useState } from "react";
+import { PiCloud as Cloud } from "react-icons/pi";
 import { cn } from "@/shared/lib/utils";
 
 interface ProviderIconProps {

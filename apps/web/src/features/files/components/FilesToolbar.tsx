@@ -1,11 +1,11 @@
 import {
-	ChevronRight,
-	FolderPlus,
-	Home,
-	Loader2,
-	Settings,
-	Upload,
-} from "@/shared/components/icons/solar";
+	PiCaretRight as ChevronRight,
+	PiFolderPlus as FolderPlus,
+	PiHouse as Home,
+	PiSpinnerGap as Loader2,
+	PiGear as Settings,
+	PiUpload as Upload,
+} from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import { DroppableBreadcrumb } from "@/features/files/components/DroppableBreadcrumb";
 import { ProviderFilter } from "@/features/files/components/ProviderFilter";

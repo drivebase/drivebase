@@ -2,14 +2,16 @@ import { useEffect, useState } from "react";
 import type { FileItemFragment } from "@/gql/graphql";
 import { useDebouncedValue } from "./useDebouncedValue";
 
+export type SearchMode = "filename" | "smart";
+
 export function usePaletteUiState() {
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
-	const [isAiMode, setIsAiMode] = useState(false);
 	const [selectedFile, setSelectedFile] = useState<FileItemFragment | null>(
 		null,
 	);
 	const [deletedFileIds, setDeletedFileIds] = useState<Set<string>>(new Set());
+	const [searchMode, setSearchMode] = useState<SearchMode>("filename");
 
 	const debouncedQuery = useDebouncedValue(query.trim(), 200);
 	const hasQuery = debouncedQuery.length > 0;
@@ -30,7 +32,7 @@ export function usePaletteUiState() {
 		if (!open) {
 			setQuery("");
 			setSelectedFile(null);
-			setIsAiMode(false);
+			setSearchMode("filename");
 		}
 	}, [open]);
 
@@ -41,11 +43,11 @@ export function usePaletteUiState() {
 		setQuery,
 		debouncedQuery,
 		hasQuery,
-		isAiMode,
-		toggleAiMode: () => setIsAiMode((prev) => !prev),
 		selectedFile,
 		setSelectedFile,
 		deletedFileIds,
 		setDeletedFileIds,
+		searchMode,
+		setSearchMode,
 	};
 }

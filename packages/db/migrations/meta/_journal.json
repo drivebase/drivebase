@@ -5,29 +5,22 @@
 		{
 			"idx": 0,
 			"version": "7",
-			"when": 1772084772859,
+			"when": 1772442284235,
 			"tag": "0000_init",
 			"breakpoints": true
 		},
 		{
 			"idx": 1,
 			"version": "7",
-			"when": 1772190330180,
-			"tag": "0001_add_file_lifecycle",
+			"when": 1772463415234,
+			"tag": "0001_add-smart-search",
 			"breakpoints": true
 		},
 		{
 			"idx": 2,
 			"version": "7",
-			"when": 1772368970061,
-			"tag": "0002_slow_stardust",
-			"breakpoints": true
-		},
-		{
-			"idx": 3,
-			"version": "7",
-			"when": 1772371403916,
-			"tag": "0003_add_passkeys",
+			"when": 1772467896431,
+			"tag": "0002_add_api_key_provider_scopes",
 			"breakpoints": true
 		}
 	]

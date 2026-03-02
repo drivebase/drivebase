@@ -1,4 +1,7 @@
-import { ExternalLink, Plus } from "@/shared/components/icons/solar";
+import {
+	PiArrowSquareOut as ExternalLink,
+	PiPlus as Plus,
+} from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 

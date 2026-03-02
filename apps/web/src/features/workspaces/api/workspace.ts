@@ -10,6 +10,7 @@ export const WORKSPACES_QUERY = graphql(`
       color
       ownerId
       syncOperationsToProvider
+      smartSearchEnabled
       createdAt
       updatedAt
     }
@@ -80,6 +81,7 @@ export const UPDATE_WORKSPACE_NAME_MUTATION = graphql(`
       color
       ownerId
       syncOperationsToProvider
+      smartSearchEnabled
       createdAt
       updatedAt
     }
@@ -94,103 +96,10 @@ export const UPDATE_WORKSPACE_SYNC_OPERATIONS_MUTATION = graphql(`
       color
       ownerId
       syncOperationsToProvider
+      smartSearchEnabled
       createdAt
       updatedAt
     }
-  }
-`);
-
-export const WORKSPACE_AI_SETTINGS_QUERY = graphql(`
-  query GetWorkspaceAiSettings($workspaceId: ID!) {
-    workspaceAiSettings(workspaceId: $workspaceId) {
-      workspaceId
-      enabled
-      modelsReady
-      embeddingTier
-      ocrTier
-      maxConcurrency
-      config
-      updatedAt
-    }
-  }
-`);
-
-export const WORKSPACE_AI_PROGRESS_QUERY = graphql(`
-  query GetWorkspaceAiProgress($workspaceId: ID!) {
-    workspaceAiProgress(workspaceId: $workspaceId) {
-      workspaceId
-      eligibleFiles
-      processedFiles
-      pendingFiles
-      runningFiles
-      failedFiles
-      skippedFiles
-      completedFiles
-      completionPct
-      updatedAt
-    }
-  }
-`);
-
-export const WORKSPACE_AI_PROGRESS_UPDATED_SUBSCRIPTION = graphql(`
-  subscription WorkspaceAiProgressUpdated($workspaceId: ID!) {
-    workspaceAiProgressUpdated(workspaceId: $workspaceId) {
-      workspaceId
-      eligibleFiles
-      processedFiles
-      pendingFiles
-      runningFiles
-      failedFiles
-      skippedFiles
-      completedFiles
-      completionPct
-      updatedAt
-    }
-  }
-`);
-
-export const UPDATE_WORKSPACE_AI_SETTINGS_MUTATION = graphql(`
-  mutation UpdateWorkspaceAiSettings($input: UpdateWorkspaceAiSettingsInput!) {
-    updateWorkspaceAiSettings(input: $input) {
-      workspaceId
-      enabled
-      modelsReady
-      embeddingTier
-      ocrTier
-      maxConcurrency
-      config
-      updatedAt
-    }
-  }
-`);
-
-export const PREPARE_WORKSPACE_AI_MODELS_MUTATION = graphql(`
-  mutation PrepareWorkspaceAiModels($workspaceId: ID!, $tasks: [AiModelTask!]) {
-    prepareWorkspaceAiModels(workspaceId: $workspaceId, tasks: $tasks)
-  }
-`);
-
-export const START_WORKSPACE_AI_PROCESSING_MUTATION = graphql(`
-  mutation StartWorkspaceAiProcessing($workspaceId: ID!) {
-    startWorkspaceAiProcessing(workspaceId: $workspaceId)
-  }
-`);
-
-export const STOP_WORKSPACE_AI_PROCESSING_MUTATION = graphql(`
-  mutation StopWorkspaceAiProcessing($workspaceId: ID!) {
-    stopWorkspaceAiProcessing(workspaceId: $workspaceId)
-  }
-`);
-
-export const DELETE_WORKSPACE_AI_DATA_MUTATION = graphql(`
-  mutation DeleteWorkspaceAiData($workspaceId: ID!) {
-    deleteWorkspaceAiData(workspaceId: $workspaceId)
-  }
-`);
-
-export const RETRY_WORKSPACE_AI_FAILED_FILES_MUTATION = graphql(`
-  mutation RetryWorkspaceAiFailedFiles($workspaceId: ID!) {
-    retryWorkspaceAiFailedFiles(workspaceId: $workspaceId)
   }
 `);
 
@@ -214,6 +123,22 @@ export const ACCEPT_WORKSPACE_INVITE_MUTATION = graphql(`
       color
       ownerId
       syncOperationsToProvider
+      smartSearchEnabled
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const UPDATE_WORKSPACE_SMART_SEARCH_MUTATION = graphql(`
+  mutation UpdateWorkspaceSmartSearch($input: UpdateWorkspaceSmartSearchInput!) {
+    updateWorkspaceSmartSearch(input: $input) {
+      id
+      name
+      color
+      ownerId
+      syncOperationsToProvider
+      smartSearchEnabled
       createdAt
       updatedAt
     }

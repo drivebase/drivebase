@@ -1,6 +1,6 @@
-import { Loader2 } from "@/shared/components/icons/solar";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { PiSpinnerGap as Loader2 } from "react-icons/pi";
 import { useQuery } from "urql";
 import { Button } from "@/components/ui/button";
 import {

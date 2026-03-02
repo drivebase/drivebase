@@ -1,11 +1,12 @@
-import { Link } from "@tanstack/react-router";
+import { useCallback, useMemo } from "react";
+import { Badge } from "@/components/ui/badge";
 import {
 	Command,
 	CommandDialog,
-	CommandEmpty,
 	CommandInput,
 	CommandList,
 } from "@/components/ui/command";
+import { getActiveWorkspaceId, useWorkspaces } from "@/features/workspaces";
 import { CommandPaletteTrigger } from "./command-palette/CommandPaletteTrigger";
 import { IdleStateGroups } from "./command-palette/IdleStateGroups";
 import { SearchResultsGroups } from "./command-palette/SearchResultsGroups";
@@ -14,6 +15,29 @@ import { useCommandPaletteController } from "./command-palette/useCommandPalette
 
 export function CommandPalette() {
 	const controller = useCommandPaletteController();
+	const [workspacesResult] = useWorkspaces(false);
+
+	const smartSearchEnabled = useMemo(() => {
+		const workspaceId = getActiveWorkspaceId();
+		const workspaces = workspacesResult.data?.workspaces;
+		if (!workspaces || !workspaceId) return false;
+		const ws = (
+			workspaces as Array<{ id: string; smartSearchEnabled: boolean }>
+		).find((w) => w.id === workspaceId);
+		return ws?.smartSearchEnabled ?? false;
+	}, [workspacesResult.data]);
+
+	const isSmartMode = controller.searchMode === "smart";
+
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent) => {
+			if (e.key === "Tab" && smartSearchEnabled && !controller.selectedFile) {
+				e.preventDefault();
+				controller.setSearchMode(isSmartMode ? "filename" : "smart");
+			}
+		},
+		[smartSearchEnabled, isSmartMode, controller],
+	);
 
 	return (
 		<>
@@ -26,22 +50,34 @@ export function CommandPalette() {
 				description="Search files, folders, and navigation"
 			>
 				<div className="w-full">
-					<Command shouldFilter={false} className="w-full">
-						<CommandInput
-							placeholder={
-								controller.isAiMode
-									? "AI mode: describe what you want to find"
-									: "Search files and folders... (Press Tab for AI Mode)"
-							}
-							value={controller.query}
-							onValueChange={controller.setQuery}
-							onKeyDown={(event) => {
-								if (event.key === "Tab") {
-									event.preventDefault();
-									controller.toggleAiMode();
+					<Command
+						shouldFilter={false}
+						className="w-full"
+						onKeyDown={handleKeyDown}
+					>
+						<div className="relative">
+							<CommandInput
+								placeholder={
+									isSmartMode
+										? "Search file contents..."
+										: "Search files and folders..."
 								}
-							}}
-						/>
+								value={controller.query}
+								onValueChange={controller.setQuery}
+							/>
+							{smartSearchEnabled && (
+								<div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+									{isSmartMode && (
+										<Badge variant="secondary" className="text-xs px-1.5 py-0">
+											Smart Search
+										</Badge>
+									)}
+									<kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+										Tab
+									</kbd>
+								</div>
+							)}
+						</div>
 						<CommandList>
 							{controller.selectedFile ? (
 								<SelectedFileActionsGroup
@@ -54,38 +90,16 @@ export function CommandPalette() {
 								/>
 							) : controller.hasQuery ? (
 								<SearchResultsGroups
-									isAiMode={controller.isAiMode}
-									aiProcessingDisabled={controller.aiProcessingDisabled}
 									matchedNavigationItems={controller.matchedNavigationItems}
-									visibleAiFileResults={controller.visibleAiFileResults}
 									visibleFileResults={controller.visibleFileResults}
 									visibleFolderResults={controller.visibleFolderResults}
 									mergedResultsCount={controller.mergedResultsCount}
+									smartSearchResults={controller.smartSearchResults}
+									isSmartMode={isSmartMode}
 									onSelectNavigation={controller.navigateTo}
-									onSelectAiFile={controller.setSelectedFile}
 									onSelectFile={controller.setSelectedFile}
 									onSelectFolder={controller.openFolder}
 								/>
-							) : controller.isAiMode ? (
-								controller.aiProcessingDisabled ? (
-									<CommandEmpty asChild>
-										<div className="space-y-2">
-											<h1 className="font-medium">
-												AI processing is disabled.
-											</h1>
-											<p className="text-muted-foreground">
-												Enable from{" "}
-												<Link to="/settings/ai" className="underline">
-													Settings &gt; AI
-												</Link>
-											</p>
-										</div>
-									</CommandEmpty>
-								) : (
-									<CommandEmpty>
-										Type a query to search in AI mode.
-									</CommandEmpty>
-								)
 							) : (
 								<IdleStateGroups
 									recentFiles={controller.visibleRecentFiles}

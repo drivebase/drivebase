@@ -73,18 +73,22 @@ export const SEARCH_FILES_QUERY = graphql(`
   }
 `);
 
-export const SEARCH_FILES_AI_QUERY = graphql(`
-  query SearchFilesAi($query: String!, $limit: Int) {
-    searchFilesAi(query: $query, limit: $limit) {
-      ...FileItem
-    }
-  }
-`);
-
 export const SEARCH_FOLDERS_QUERY = graphql(`
   query SearchFolders($query: String!, $limit: Int) {
     searchFolders(query: $query, limit: $limit) {
       ...FolderItem
+    }
+  }
+`);
+
+export const SMART_SEARCH_QUERY = graphql(`
+  query SmartSearch($query: String!, $limit: Int) {
+    smartSearch(query: $query, limit: $limit) {
+      file {
+        ...FileItem
+      }
+      headline
+      rank
     }
   }
 `);

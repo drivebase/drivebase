@@ -1,6 +1,7 @@
 export { createDefaultWorkspace } from "./create-default-workspace";
 export { createWorkspace } from "./create-workspace";
 export { updateWorkspaceName } from "./update-workspace-name";
+export { updateWorkspaceSmartSearch } from "./update-workspace-smart-search";
 export { updateWorkspaceSyncOperationsToProvider } from "./update-workspace-sync-operations-to-provider";
 export {
 	acceptWorkspaceInvite,

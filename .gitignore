@@ -43,3 +43,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # I18n generated files
 apps/web/src/locales/*/messages.ts
+
+# Tesseract OCR data
+*.traineddata

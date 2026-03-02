@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import { Check, Copy } from "@/shared/components/icons/solar";
 import { type ReactNode, useEffect, useState } from "react";
+import { PiCheck as Check, PiCopy as Copy } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {

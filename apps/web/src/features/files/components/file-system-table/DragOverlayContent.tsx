@@ -1,4 +1,4 @@
-import { FolderIcon } from "@/shared/components/icons/solar";
+import { PiFolder as FolderIcon } from "react-icons/pi";
 import { FileMimeIcon } from "@/features/files/FileMimeIcon";
 import type { FileItemFragment } from "@/gql/graphql";
 import type { DragItem } from "./types";

@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { FolderIcon, Star } from "@/shared/components/icons/solar";
 import { useMemo } from "react";
+import { PiFolder as FolderIcon, PiStar as Star } from "react-icons/pi";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileMimeIcon } from "@/features/files/FileMimeIcon";
 import { formatFileTypeLabel, formatSize } from "@/features/files/utils";

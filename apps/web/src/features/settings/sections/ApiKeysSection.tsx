@@ -1,12 +1,13 @@
 import { Trans } from "@lingui/react/macro";
-import {
-	Check,
-	Copy,
-	Plus,
-	ShieldAlert,
-	Trash2,
-} from "@/shared/components/icons/solar";
 import { useCallback, useState } from "react";
+import {
+	PiCheck as Check,
+	PiCopy as Copy,
+	PiFolder as Folder,
+	PiPlus as Plus,
+	PiShieldWarning as ShieldAlert,
+	PiTrash as Trash2,
+} from "react-icons/pi";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useProviders } from "@/features/providers";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
 import {
 	useApiKeys,
@@ -55,6 +57,7 @@ export function ApiKeysSection() {
 	const [{ data, fetching }, refetch] = useApiKeys();
 	const [, createKey] = useCreateApiKey();
 	const [, revokeKey] = useRevokeApiKey();
+	const providersResult = useProviders();
 
 	// Create dialog
 	const [createOpen, setCreateOpen] = useState(false);
@@ -63,6 +66,11 @@ export function ApiKeysSection() {
 	const [selectedScopes, setSelectedScopes] = useState<string[]>(["read"]);
 	const [expiresAt, setExpiresAt] = useState("");
 	const [isCreating, setIsCreating] = useState(false);
+
+	// Provider scopes: null = all providers, otherwise restricted list
+	const [providerScopes, setProviderScopes] = useState<
+		{ providerId: string; basePath: string }[] | null
+	>(null);
 
 	// Reveal dialog (shown once after creation)
 	const [revealKey, setRevealKey] = useState<string | null>(null);
@@ -91,6 +99,7 @@ export function ApiKeysSection() {
 					name: name.trim(),
 					description: description.trim() || null,
 					scopes: selectedScopes,
+					providerScopes: providerScopes,
 					expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
 				},
 			});
@@ -106,13 +115,22 @@ export function ApiKeysSection() {
 			setDescription("");
 			setSelectedScopes(["read"]);
 			setExpiresAt("");
+			setProviderScopes(null);
 			refetch({ requestPolicy: "network-only" });
 		} catch {
 			toast.error("Failed to create API key");
 		} finally {
 			setIsCreating(false);
 		}
-	}, [name, description, selectedScopes, expiresAt, createKey, refetch]);
+	}, [
+		name,
+		description,
+		selectedScopes,
+		providerScopes,
+		expiresAt,
+		createKey,
+		refetch,
+	]);
 
 	const handleRevoke = useCallback(
 		async (id: string, keyName: string) => {
@@ -200,6 +218,14 @@ export function ApiKeysSection() {
 											{s}
 										</Badge>
 									))}
+									{key.providerScopes && key.providerScopes.length > 0 && (
+										<>
+											<span>·</span>
+											<Badge variant="outline" className="text-xs">
+												<Trans>{key.providerScopes.length} provider(s)</Trans>
+											</Badge>
+										</>
+									)}
 									<span>·</span>
 									<span>
 										<Trans>Created</Trans> {formatDate(key.createdAt)}
@@ -315,6 +341,114 @@ export function ApiKeysSection() {
 									</div>
 								))}
 							</div>
+						</div>
+
+						{/* Provider Scopes */}
+						<div className="space-y-2">
+							<div className="flex items-center justify-between">
+								<div>
+									<Label>
+										<Trans>Provider access</Trans>
+									</Label>
+									<p className="text-xs text-muted-foreground">
+										{providerScopes === null ? (
+											<Trans>All providers</Trans>
+										) : (
+											<Trans>
+												{providerScopes.length} provider(s) selected
+											</Trans>
+										)}
+									</p>
+								</div>
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									className="h-auto py-0.5 px-2 text-xs"
+									onClick={() =>
+										setProviderScopes(providerScopes === null ? [] : null)
+									}
+								>
+									{providerScopes === null ? (
+										<Trans>Restrict providers</Trans>
+									) : (
+										<Trans>Allow all</Trans>
+									)}
+								</Button>
+							</div>
+							{providerScopes !== null && (
+								<div className="space-y-2 border rounded p-3">
+									{(providersResult.data?.storageProviders ?? []).map(
+										(provider) => {
+											const entry = providerScopes.find(
+												(ps) => ps.providerId === provider.id,
+											);
+											const selected = !!entry;
+											return (
+												<div key={provider.id} className="space-y-1.5">
+													<div className="flex items-center gap-2">
+														<Checkbox
+															id={`provider-${provider.id}`}
+															checked={selected}
+															onCheckedChange={(checked) => {
+																if (checked) {
+																	setProviderScopes([
+																		...providerScopes,
+																		{ providerId: provider.id, basePath: "/" },
+																	]);
+																} else {
+																	setProviderScopes(
+																		providerScopes.filter(
+																			(ps) => ps.providerId !== provider.id,
+																		),
+																	);
+																}
+															}}
+														/>
+														<label
+															htmlFor={`provider-${provider.id}`}
+															className="text-sm font-medium cursor-pointer"
+														>
+															{provider.name}
+														</label>
+														<Badge variant="secondary" className="text-xs">
+															{provider.type}
+														</Badge>
+													</div>
+													{selected && (
+														<div className="ml-6 flex items-center gap-2">
+															<Folder className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+															<Input
+																value={entry.basePath}
+																onChange={(e) => {
+																	setProviderScopes(
+																		providerScopes.map((ps) =>
+																			ps.providerId === provider.id
+																				? {
+																						...ps,
+																						basePath: e.target.value || "/",
+																					}
+																				: ps,
+																		),
+																	);
+																}}
+																placeholder="/"
+																className="h-7 text-xs font-mono"
+															/>
+														</div>
+													)}
+												</div>
+											);
+										},
+									)}
+									{(providersResult.data?.storageProviders ?? []).length ===
+										0 && (
+										<p className="text-xs text-muted-foreground">
+											<Trans>No providers connected.</Trans>
+										</p>
+									)}
+								</div>
+							)}
 						</div>
 
 						<div className="space-y-2">

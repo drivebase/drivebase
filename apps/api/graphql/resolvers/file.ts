@@ -4,7 +4,6 @@ import { S3Provider } from "@drivebase/s3";
 import { and, eq } from "drizzle-orm";
 import { getPublicApiBaseUrl } from "../../config/url";
 import { getUploadQueue } from "../../queue/upload-queue";
-import { enqueueFileAnalysis } from "../../service/ai/analysis-jobs";
 import { FileService } from "../../service/file";
 import { UploadSessionManager } from "../../service/file/upload";
 import { ProviderService } from "../../service/provider";
@@ -162,19 +161,6 @@ export const fileQueries: QueryResolvers = {
 		);
 	},
 
-	searchFilesAi: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
-		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
-
-		return fileService.searchFilesAi(
-			user.userId,
-			args.query,
-			args.limit ?? undefined,
-			workspaceId,
-		);
-	},
-
 	searchFolders: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		const fileService = new FileService(context.db);
@@ -186,6 +172,25 @@ export const fileQueries: QueryResolvers = {
 			args.limit ?? undefined,
 			workspaceId,
 		);
+	},
+
+	smartSearch: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		const fileService = new FileService(context.db);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+
+		const results = await fileService.smartSearch(
+			user.userId,
+			args.query,
+			args.limit ?? undefined,
+			workspaceId,
+		);
+
+		return results.map((r) => ({
+			file: r.file,
+			headline: r.headline,
+			rank: r.rank,
+		}));
 	},
 
 	recentFiles: async (_parent, args, context) => {
@@ -595,18 +600,6 @@ export const fileMutations: MutationResolvers = {
 
 		// Mark session completed
 		await sessionManager.markCompleted(args.sessionId);
-
-		if (session.fileId && context.headers) {
-			const workspaceHeaderId = context.headers.get("x-workspace-id");
-			if (workspaceHeaderId) {
-				await enqueueFileAnalysis(
-					context.db,
-					session.fileId,
-					workspaceHeaderId,
-					"upload",
-				);
-			}
-		}
 
 		// Clean up Redis
 		await redis.del(`upload:s3multipart:${args.sessionId}`);

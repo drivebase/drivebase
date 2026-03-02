@@ -14,6 +14,7 @@ export async function validateApiKey(
 		.select({
 			id: apiKeys.id,
 			scopes: apiKeys.scopes,
+			providerScopes: apiKeys.providerScopes,
 			isActive: apiKeys.isActive,
 			expiresAt: apiKeys.expiresAt,
 			userId: apiKeys.userId,
@@ -41,5 +42,6 @@ export async function validateApiKey(
 		email: row.email,
 		role: row.role,
 		scopes: row.scopes,
+		providerScopes: row.providerScopes ?? null,
 	};
 }

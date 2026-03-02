@@ -1,8 +1,11 @@
 "use client";
 
 import { Command as CommandPrimitive } from "cmdk";
-import { CheckIcon, SearchIcon } from "@/shared/components/icons/solar";
 import type * as React from "react";
+import {
+	PiCheck as CheckIcon,
+	PiMagnifyingGlass as SearchIcon,
+} from "react-icons/pi";
 import {
 	Dialog,
 	DialogContent,

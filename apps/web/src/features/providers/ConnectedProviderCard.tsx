@@ -1,15 +1,15 @@
 import { formatBytes } from "@drivebase/utils";
 import {
-	AlertCircle,
-	CheckCircle2,
-	Info,
-	Link2,
-	MoreVertical,
-	Pencil,
-	RefreshCw,
-	Settings,
-	Trash2,
-} from "@/shared/components/icons/solar";
+	PiWarningCircle as AlertCircle,
+	PiCheckCircle as CheckCircle2,
+	PiInfo as Info,
+	PiLink as Link2,
+	PiDotsThreeOutlineVertical as MoreVertical,
+	PiPencilSimple as Pencil,
+	PiArrowsClockwise as RefreshCw,
+	PiGear as Settings,
+	PiTrash as Trash2,
+} from "react-icons/pi";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

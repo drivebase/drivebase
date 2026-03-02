@@ -1,5 +1,5 @@
-import { RefreshCw } from "@/shared/components/icons/solar";
 import { useState } from "react";
+import { PiArrowsClockwise as RefreshCw } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

@@ -1,8 +1,11 @@
 "use client";
 
-import { CheckIcon, ChevronRightIcon } from "@/shared/components/icons/solar";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import type * as React from "react";
+import {
+	PiCheck as CheckIcon,
+	PiCaretRight as ChevronRightIcon,
+} from "react-icons/pi";
 import { cn } from "@/lib/utils";
 
 function DropdownMenu({

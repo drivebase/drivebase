@@ -1,14 +1,14 @@
 import { Trans } from "@lingui/react/macro";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
-import {
-	AlertTriangle,
-	Cloud,
-	ExternalLink,
-	Github,
-	Loader2,
-	Plus,
-} from "@/shared/components/icons/solar";
 import { useCallback, useEffect, useState } from "react";
+import {
+	PiWarning as AlertTriangle,
+	PiCloud as Cloud,
+	PiArrowSquareOut as ExternalLink,
+	PiGithubLogo as Github,
+	PiSpinnerGap as Loader2,
+	PiPlus as Plus,
+} from "react-icons/pi";
 import { useQuery } from "urql";
 import { Button } from "@/components/ui/button";
 import {
@@ -138,7 +138,7 @@ function ProvidersPage() {
 	const isLoading = availableFetching || connectedFetching;
 
 	return (
-		<div className="px-8 flex flex-col gap-8 h-full overflow-y-auto">
+		<div className="p-8 flex flex-col gap-8 h-full overflow-y-auto">
 			{displayError && (
 				<div className="bg-destructive/15 text-destructive p-4  flex items-center gap-2">
 					<AlertTriangle className="h-5 w-5" />

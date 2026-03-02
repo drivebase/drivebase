@@ -16,9 +16,9 @@ import {
 	REQUEST_FILE_RESTORE_MUTATION,
 	REQUEST_UPLOAD_MUTATION,
 	REVOKE_FILE_DOWNLOAD_LINK_MUTATION,
-	SEARCH_FILES_AI_QUERY,
 	SEARCH_FILES_QUERY,
 	SEARCH_FOLDERS_QUERY,
+	SMART_SEARCH_QUERY,
 	STAR_FILE_MUTATION,
 	STARRED_FILES_QUERY,
 	UNSTAR_FILE_MUTATION,
@@ -63,20 +63,20 @@ export function useSearchFiles(query: string, limit = 20) {
 	return result;
 }
 
-export function useSearchFilesAi(query: string, limit = 20) {
+export function useSearchFolders(query: string, limit = 20) {
 	const [result] = useQuery({
-		query: SEARCH_FILES_AI_QUERY,
+		query: SEARCH_FOLDERS_QUERY,
 		variables: { query, limit },
 		pause: !query,
 	});
 	return result;
 }
 
-export function useSearchFolders(query: string, limit = 20) {
+export function useSmartSearch(query: string, limit = 20, pause = false) {
 	const [result] = useQuery({
-		query: SEARCH_FOLDERS_QUERY,
+		query: SMART_SEARCH_QUERY,
 		variables: { query, limit },
-		pause: !query,
+		pause: !query || pause,
 	});
 	return result;
 }

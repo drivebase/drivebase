@@ -96,14 +96,14 @@ extend type Query {
 	searchFiles(query: String!, limit: Int): [File!]!
 
 	"""
-	Semantic AI search for files
-	"""
-	searchFilesAi(query: String!, limit: Int): [File!]!
-
-	"""
 	Search folders by name
 	"""
 	searchFolders(query: String!, limit: Int): [Folder!]!
+
+	"""
+	Smart search: full-text search on extracted file contents
+	"""
+	smartSearch(query: String!, limit: Int): [SmartSearchResult!]!
 
 	"""
 	Get recent files sorted by latest created/updated timestamp
@@ -309,4 +309,13 @@ type UploadSessionInfo {
 	providerBytesTransferred: Float!
 	errorMessage: String
 	createdAt: String!
+}
+
+"""
+Smart search result with content match details
+"""
+type SmartSearchResult {
+	file: File!
+	headline: String!
+	rank: Float!
 }

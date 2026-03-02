@@ -1,12 +1,12 @@
 import {
-	FileArchive,
-	FileCode2,
-	FileIcon,
-	FileText,
-	ImageIcon,
-	Music2,
-	Video,
-} from "@/shared/components/icons/solar";
+	PiFileArchive as FileArchive,
+	PiFileCode as FileCode2,
+	PiFile as FileIcon,
+	PiFileText as FileText,
+	PiImage as ImageIcon,
+	PiMusicNotes as Music2,
+	PiVideoCamera as Video,
+} from "react-icons/pi";
 import { getFileKind } from "@/features/files/utils";
 import { cn } from "@/shared/lib/utils";
 

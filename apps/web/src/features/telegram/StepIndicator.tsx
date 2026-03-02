@@ -1,5 +1,9 @@
-import { Check, KeyRound, Phone } from "@/shared/components/icons/solar";
 import { Fragment } from "react";
+import {
+	PiCheck as Check,
+	PiKey as KeyRound,
+	PiPhone as Phone,
+} from "react-icons/pi";
 
 const STEPS = [
 	{ id: 1, label: "Phone", icon: Phone },

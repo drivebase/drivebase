@@ -3,15 +3,18 @@ import { useLingui } from "@lingui/react";
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { PiSignOutLight } from "react-icons/pi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { PreferencesSettingsSection } from "@/features/settings/sections/PreferencesSettingsSection";
+import { SmartSearchSection } from "@/features/settings/sections/SmartSearchSection";
 import { WorkspaceNameSection } from "@/features/settings/sections/WorkspaceNameSection";
 import {
 	getActiveWorkspaceId,
 	useUpdateWorkspaceName,
+	useUpdateWorkspaceSmartSearch,
 	useWorkspaceMembers,
 	useWorkspaces,
 } from "@/features/workspaces";
@@ -62,6 +65,8 @@ export function GeneralSettingsView() {
 
 	const [updateWorkspaceNameResult, updateWorkspaceName] =
 		useUpdateWorkspaceName();
+	const [updateSmartSearchResult, updateSmartSearch] =
+		useUpdateWorkspaceSmartSearch();
 	const [workspaceName, setWorkspaceName] = useState("");
 
 	useEffect(() => {
@@ -95,6 +100,25 @@ export function GeneralSettingsView() {
 		reexecuteWorkspaces({ requestPolicy: "network-only" });
 	};
 
+	const handleToggleSmartSearch = async (enabled: boolean) => {
+		if (!workspaceId || !canManageWorkspace) {
+			return;
+		}
+
+		const result = await updateSmartSearch({
+			input: { workspaceId, enabled },
+		});
+
+		if (result.error || !result.data?.updateWorkspaceSmartSearch) {
+			toast.error(
+				result.error?.message ?? "Failed to update smart search setting",
+			);
+			return;
+		}
+
+		reexecuteWorkspaces({ requestPolicy: "network-only" });
+	};
+
 	const handleSignOut = async () => {
 		const confirmed = await confirmDialog(
 			i18n._(msg`Sign out?`),
@@ -115,22 +139,36 @@ export function GeneralSettingsView() {
 	};
 
 	return (
-		<div className="space-y-8">
+		<div className="space-y-8 py-8">
 			{activeWorkspace ? (
 				<>
-					<WorkspaceNameSection
-						name={workspaceName}
-						canEdit={canManageWorkspace}
-						isSaving={updateWorkspaceNameResult.fetching}
-						onNameChange={setWorkspaceName}
-						onSave={handleUpdateWorkspaceName}
-					/>
+					<div className="px-8">
+						<WorkspaceNameSection
+							name={workspaceName}
+							canEdit={canManageWorkspace}
+							isSaving={updateWorkspaceNameResult.fetching}
+							onNameChange={setWorkspaceName}
+							onSave={handleUpdateWorkspaceName}
+						/>
+					</div>
+					<div className="border-t border-border" />
+					<div className="px-8">
+						<SmartSearchSection
+							enabled={activeWorkspace.smartSearchEnabled}
+							canEdit={canManageWorkspace}
+							isSaving={updateSmartSearchResult.fetching}
+							onToggle={handleToggleSmartSearch}
+						/>
+					</div>
 					<div className="border-t border-border" />
 				</>
 			) : null}
-			<PreferencesSettingsSection />
-			<div className="border-t border-border pt-6">
+			<div className="px-8">
+				<PreferencesSettingsSection />
+			</div>
+			<div className="border-t border-border p-8">
 				<Button variant="outline" onClick={handleSignOut}>
+					<PiSignOutLight className="mr-1 w-4 h-4" />
 					<Trans>Sign out</Trans>
 				</Button>
 			</div>

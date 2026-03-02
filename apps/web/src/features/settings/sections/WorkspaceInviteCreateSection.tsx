@@ -1,4 +1,4 @@
-import { Copy, Link2 } from "@/shared/components/icons/solar";
+import { PiCopy as Copy, PiLink as Link2 } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

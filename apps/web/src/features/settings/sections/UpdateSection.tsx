@@ -1,10 +1,10 @@
 import { Trans } from "@lingui/react/macro";
 import {
-	AlertCircle,
-	CheckCircle,
-	Loader2,
-	RefreshCw,
-} from "@/shared/components/icons/solar";
+	PiWarningCircle as AlertCircle,
+	PiCheckCircle as CheckCircle,
+	PiSpinnerGap as Loader2,
+	PiArrowsClockwise as RefreshCw,
+} from "react-icons/pi";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUpdate } from "../hooks/useUpdate";

@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/drivebase/drivebase:v3.1.5
+    image: ghcr.io/drivebase/drivebase:v3.2.0
     container_name: drivebase_app
     restart: unless-stopped
     environment:
@@ -13,7 +13,6 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
       API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
       SKIP_DB_MIGRATIONS: ${SKIP_DB_MIGRATIONS:-false}
-      AI_INFERENCE_URL: ${AI_INFERENCE_URL:-http://ai-inference:8010}
       UPDATER_URL: http://updater:4500
       UPDATER_SECRET: >-
         ${UPDATER_SECRET:-default-updater-secret-change-in-production}
@@ -30,7 +29,7 @@ services:
       - drivebase-network
 
   updater:
-    image: ghcr.io/drivebase/updater:v3.1.5
+    image: ghcr.io/drivebase/updater:v3.2.0
     container_name: drivebase_updater
     restart: unless-stopped
     volumes:

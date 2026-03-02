@@ -33,7 +33,6 @@ import {
 	workspaceMutations,
 	workspaceQueries,
 	workspaceResolvers,
-	workspaceSubscriptions,
 } from "./workspace";
 
 /**
@@ -81,7 +80,6 @@ export const resolvers: Resolvers = {
 	Subscription: {
 		...activitySubscriptions,
 		...fileSubscriptions,
-		...workspaceSubscriptions,
 	},
 
 	AuthResponse: authResponseResolvers,

@@ -17,6 +17,7 @@ export const workspaces = pgTable("workspaces", {
 	syncOperationsToProvider: boolean("sync_operations_to_provider")
 		.notNull()
 		.default(false),
+	smartSearchEnabled: boolean("smart_search_enabled").notNull().default(false),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.notNull()
 		.defaultNow(),
