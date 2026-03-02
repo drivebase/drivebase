@@ -4,7 +4,6 @@ import {
 	PiFunnel as Filter,
 	PiKey as Key,
 	PiSlidersHorizontal as SlidersHorizontal,
-	PiSparkle as Sparkle,
 	PiUser as User,
 	PiUsers as Users,
 	PiWrench as Wrench,
@@ -31,11 +30,6 @@ const categories = [
 		to: "/settings/rules",
 		icon: Filter,
 		label: <Trans>Rules</Trans>,
-	},
-	{
-		to: "/settings/ai",
-		icon: Sparkle,
-		label: <Trans>AI</Trans>,
 	},
 	{
 		to: "/settings/advanced",

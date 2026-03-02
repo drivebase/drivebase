@@ -5,7 +5,6 @@ import { useDebouncedValue } from "./useDebouncedValue";
 export function usePaletteUiState() {
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
-	const [isAiMode, setIsAiMode] = useState(false);
 	const [selectedFile, setSelectedFile] = useState<FileItemFragment | null>(
 		null,
 	);
@@ -30,7 +29,6 @@ export function usePaletteUiState() {
 		if (!open) {
 			setQuery("");
 			setSelectedFile(null);
-			setIsAiMode(false);
 		}
 	}, [open]);
 
@@ -41,8 +39,6 @@ export function usePaletteUiState() {
 		setQuery,
 		debouncedQuery,
 		hasQuery,
-		isAiMode,
-		toggleAiMode: () => setIsAiMode((prev) => !prev),
 		selectedFile,
 		setSelectedFile,
 		deletedFileIds,

@@ -1,8 +1,6 @@
-import { Link } from "@tanstack/react-router";
 import {
 	Command,
 	CommandDialog,
-	CommandEmpty,
 	CommandInput,
 	CommandList,
 } from "@/components/ui/command";
@@ -28,19 +26,9 @@ export function CommandPalette() {
 				<div className="w-full">
 					<Command shouldFilter={false} className="w-full">
 						<CommandInput
-							placeholder={
-								controller.isAiMode
-									? "AI mode: describe what you want to find"
-									: "Search files and folders... (Press Tab for AI Mode)"
-							}
+							placeholder="Search files and folders..."
 							value={controller.query}
 							onValueChange={controller.setQuery}
-							onKeyDown={(event) => {
-								if (event.key === "Tab") {
-									event.preventDefault();
-									controller.toggleAiMode();
-								}
-							}}
 						/>
 						<CommandList>
 							{controller.selectedFile ? (
@@ -54,38 +42,14 @@ export function CommandPalette() {
 								/>
 							) : controller.hasQuery ? (
 								<SearchResultsGroups
-									isAiMode={controller.isAiMode}
-									aiProcessingDisabled={controller.aiProcessingDisabled}
 									matchedNavigationItems={controller.matchedNavigationItems}
-									visibleAiFileResults={controller.visibleAiFileResults}
 									visibleFileResults={controller.visibleFileResults}
 									visibleFolderResults={controller.visibleFolderResults}
 									mergedResultsCount={controller.mergedResultsCount}
 									onSelectNavigation={controller.navigateTo}
-									onSelectAiFile={controller.setSelectedFile}
 									onSelectFile={controller.setSelectedFile}
 									onSelectFolder={controller.openFolder}
 								/>
-							) : controller.isAiMode ? (
-								controller.aiProcessingDisabled ? (
-									<CommandEmpty asChild>
-										<div className="space-y-2">
-											<h1 className="font-medium">
-												AI processing is disabled.
-											</h1>
-											<p className="text-muted-foreground">
-												Enable from{" "}
-												<Link to="/settings/ai" className="underline">
-													Settings &gt; AI
-												</Link>
-											</p>
-										</div>
-									</CommandEmpty>
-								) : (
-									<CommandEmpty>
-										Type a query to search in AI mode.
-									</CommandEmpty>
-								)
 							) : (
 								<IdleStateGroups
 									recentFiles={controller.visibleRecentFiles}

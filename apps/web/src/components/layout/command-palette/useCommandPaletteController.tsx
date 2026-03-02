@@ -6,7 +6,6 @@ export function useCommandPaletteController() {
 	const state = usePaletteUiState();
 	const searchData = usePaletteSearchData({
 		open: state.open,
-		isAiMode: state.isAiMode,
 		hasQuery: state.hasQuery,
 		debouncedQuery: state.debouncedQuery,
 		deletedFileIds: state.deletedFileIds,
@@ -23,15 +22,11 @@ export function useCommandPaletteController() {
 		setOpen: state.setOpen,
 		query: state.query,
 		setQuery: state.setQuery,
-		isAiMode: state.isAiMode,
-		toggleAiMode: state.toggleAiMode,
 		hasQuery: state.hasQuery,
 		selectedFile: state.selectedFile,
 		setSelectedFile: state.setSelectedFile,
-		aiProcessingDisabled: searchData.aiProcessingDisabled,
 		visibleRecentFiles: searchData.visibleRecentFiles,
 		matchedNavigationItems: searchData.matchedNavigationItems,
-		visibleAiFileResults: searchData.visibleAiFileResults,
 		visibleFileResults: searchData.visibleFileResults,
 		visibleFolderResults: searchData.visibleFolderResults,
 		mergedResultsCount: searchData.mergedResultsCount,
