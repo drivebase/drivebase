@@ -24,6 +24,38 @@ import type { GoogleDriveConfig } from "./schema";
 import { GoogleDriveConfigSchema } from "./schema";
 
 /**
+ * Map Google API errors to a JSON-safe object for structured logging.
+ */
+function mapGoogleError(error: unknown): Record<string, unknown> {
+	if (!error || typeof error !== "object") {
+		return { rawError: String(error) };
+	}
+	const e = error as {
+		message?: string;
+		stack?: string;
+		response?: {
+			status?: number;
+			statusText?: string;
+			data?: unknown;
+			config?: { url?: string; method?: string };
+		};
+		code?: string | number;
+		errors?: unknown[];
+	};
+	return {
+		message: e.message,
+		httpStatus: e.response?.status,
+		statusText: e.response?.statusText,
+		responseData: e.response?.data,
+		requestUrl: e.response?.config?.url,
+		requestMethod: e.response?.config?.method,
+		code: e.code,
+		errors: e.errors,
+		originalStack: e.stack,
+	};
+}
+
+/**
  * Google Drive storage provider
  */
 export class GoogleDriveProvider implements IStorageProvider {
@@ -90,8 +122,7 @@ export class GoogleDriveProvider implements IStorageProvider {
 
 			await this.drive.about.get({ fields: "user" });
 			return true;
-		} catch (error) {
-			console.error("Google Drive connection test failed:", error);
+		} catch {
 			return false;
 		}
 	}
@@ -117,7 +148,10 @@ export class GoogleDriveProvider implements IStorageProvider {
 				available: limit ? limit - usage : undefined,
 			};
 		} catch (error) {
-			throw new ProviderError("google_drive", "Failed to get quota", { error });
+			throw new ProviderError("google_drive", "Failed to get quota", {
+				op: "getQuota",
+				error: mapGoogleError(error),
+			});
 		}
 	}
 
@@ -138,7 +172,8 @@ export class GoogleDriveProvider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("google_drive", "Failed to get account info", {
-				error,
+				op: "getAccountInfo",
+				error: mapGoogleError(error),
 			});
 		}
 	}
@@ -183,7 +218,10 @@ export class GoogleDriveProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("google_drive", "Failed to request upload", {
-				error,
+				op: "requestUpload",
+				name: options.name,
+				parentId: options.parentId,
+				error: mapGoogleError(error),
 			});
 		}
 	}
@@ -234,7 +272,9 @@ export class GoogleDriveProvider implements IStorageProvider {
 		} catch (error) {
 			if (error instanceof ProviderError) throw error;
 			throw new ProviderError("google_drive", "Failed to upload file", {
-				error,
+				op: "uploadFile",
+				remoteId,
+				error: mapGoogleError(error),
 			});
 		}
 
@@ -308,7 +348,13 @@ export class GoogleDriveProvider implements IStorageProvider {
 							controller.close();
 						});
 						nodeStream.on("error", (error: Error) => {
-							controller.error(error);
+							controller.error(
+								new ProviderError("google_drive", "Download stream failed", {
+									op: "downloadFile",
+									remoteId,
+									error: mapGoogleError(error),
+								}),
+							);
 						});
 					},
 				});
@@ -330,13 +376,21 @@ export class GoogleDriveProvider implements IStorageProvider {
 						controller.close();
 					});
 					nodeStream.on("error", (error: Error) => {
-						controller.error(error);
+						controller.error(
+							new ProviderError("google_drive", "Download stream failed", {
+								op: "downloadFile",
+								remoteId,
+								error: mapGoogleError(error),
+							}),
+						);
 					});
 				},
 			});
 		} catch (error) {
 			throw new ProviderError("google_drive", "Failed to download file", {
-				error,
+				op: "downloadFile",
+				remoteId,
+				error: mapGoogleError(error),
 			});
 		}
 	}
@@ -395,7 +449,10 @@ export class GoogleDriveProvider implements IStorageProvider {
 			return response.data.id;
 		} catch (error) {
 			throw new ProviderError("google_drive", "Failed to create folder", {
-				error,
+				op: "createFolder",
+				name: options.name,
+				parentId: options.parentId,
+				error: mapGoogleError(error),
 			});
 		}
 	}
@@ -411,7 +468,11 @@ export class GoogleDriveProvider implements IStorageProvider {
 				fileId: options.remoteId,
 			});
 		} catch (error) {
-			throw new ProviderError("google_drive", "Failed to delete", { error });
+			throw new ProviderError("google_drive", "Failed to delete", {
+				op: "delete",
+				remoteId: options.remoteId,
+				error: mapGoogleError(error),
+			});
 		}
 	}
 
@@ -446,7 +507,13 @@ export class GoogleDriveProvider implements IStorageProvider {
 
 			await drive.files.update(updateData);
 		} catch (error) {
-			throw new ProviderError("google_drive", "Failed to move", { error });
+			throw new ProviderError("google_drive", "Failed to move", {
+				op: "move",
+				remoteId: options.remoteId,
+				newParentId: options.newParentId,
+				newName: options.newName,
+				error: mapGoogleError(error),
+			});
 		}
 	}
 
@@ -482,7 +549,13 @@ export class GoogleDriveProvider implements IStorageProvider {
 
 			return response.data.id;
 		} catch (error) {
-			throw new ProviderError("google_drive", "Failed to copy", { error });
+			throw new ProviderError("google_drive", "Failed to copy", {
+				op: "copy",
+				remoteId: options.remoteId,
+				targetParentId: options.targetParentId,
+				newName: options.newName,
+				error: mapGoogleError(error),
+			});
 		}
 	}
 
@@ -549,7 +622,9 @@ export class GoogleDriveProvider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("google_drive", "Failed to list files", {
-				error,
+				op: "list",
+				folderId: options.folderId,
+				error: mapGoogleError(error),
 			});
 		}
 	}
@@ -586,7 +661,9 @@ export class GoogleDriveProvider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("google_drive", "Failed to get file metadata", {
-				error,
+				op: "getFileMetadata",
+				remoteId,
+				error: mapGoogleError(error),
 			});
 		}
 	}
@@ -620,7 +697,9 @@ export class GoogleDriveProvider implements IStorageProvider {
 			};
 		} catch (error) {
 			throw new ProviderError("google_drive", "Failed to get folder metadata", {
-				error,
+				op: "getFolderMetadata",
+				remoteId,
+				error: mapGoogleError(error),
 			});
 		}
 	}
@@ -702,7 +781,12 @@ export class GoogleDriveProvider implements IStorageProvider {
 			throw new ProviderError(
 				"google_drive",
 				"Failed to initiate resumable upload",
-				{ error },
+				{
+					op: "initiateMultipartUpload",
+					name: options.name,
+					parentId: options.parentId,
+					error: mapGoogleError(error),
+				},
 			);
 		}
 	}
@@ -766,7 +850,11 @@ export class GoogleDriveProvider implements IStorageProvider {
 			throw new ProviderError(
 				"google_drive",
 				`Failed to upload part ${partNumber}`,
-				{ error },
+				{
+					op: "uploadPart",
+					partNumber,
+					error: mapGoogleError(error),
+				},
 			);
 		}
 	}

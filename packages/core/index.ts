@@ -13,6 +13,7 @@ export {
 	ProviderType,
 	UserRole,
 } from "./enums";
+export type { JsonSafeError } from "./errors";
 // Errors
 export {
 	AuthenticationError,
@@ -25,6 +26,7 @@ export {
 	ProviderError,
 	QuotaExceededError,
 	RateLimitError,
+	toJsonSafeError,
 	ValidationError,
 } from "./errors";
 
