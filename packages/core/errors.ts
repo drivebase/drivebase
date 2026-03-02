@@ -1,4 +1,38 @@
 /**
+ * JSON-safe representation of an error for structured logging
+ */
+export type JsonSafeError = {
+	name?: string;
+	message: string;
+	stack?: string;
+	code?: unknown;
+	status?: unknown;
+	statusCode?: unknown;
+};
+
+/**
+ * Convert an unknown caught error to a JSON-safe object for structured logging.
+ * Handles DrivebaseError (calls toJSON), standard Error, and unknown values.
+ */
+export function toJsonSafeError(error: unknown): JsonSafeError {
+	if (error instanceof DrivebaseError) {
+		return error.toJSON() as JsonSafeError;
+	}
+	if (error instanceof Error) {
+		const anyErr = error as Error & Record<string, unknown>;
+		return {
+			name: error.name,
+			message: error.message,
+			stack: error.stack,
+			code: anyErr.code,
+			status: anyErr.status,
+			statusCode: anyErr.statusCode,
+		};
+	}
+	return { message: String(error) };
+}
+
+/**
  * Base error class for Drivebase errors
  */
 export class DrivebaseError extends Error {
@@ -11,6 +45,20 @@ export class DrivebaseError extends Error {
 		super(message);
 		this.name = this.constructor.name;
 		Error.captureStackTrace(this, this.constructor);
+	}
+
+	/**
+	 * Serialize error to JSON for structured logging (Pino compatibility)
+	 */
+	toJSON(): Record<string, unknown> {
+		return {
+			name: this.name,
+			message: this.message,
+			stack: this.stack,
+			code: this.code,
+			statusCode: this.statusCode,
+			details: this.details,
+		};
 	}
 }
 
@@ -87,6 +135,13 @@ export class ProviderError extends DrivebaseError {
 		details?: Record<string, unknown>,
 	) {
 		super(message, "PROVIDER_ERROR", 500, details);
+	}
+
+	override toJSON(): Record<string, unknown> {
+		return {
+			...super.toJSON(),
+			providerType: this.providerType,
+		};
 	}
 }
 
