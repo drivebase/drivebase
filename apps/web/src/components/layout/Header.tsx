@@ -11,7 +11,7 @@ export function Header() {
 
 	return (
 		<header className="flex items-center justify-between px-8 py-5 border-b">
-			<h1 className="text-3xl font-bold text-foreground">{pageTitle}</h1>
+			<h1 className="text-2xl font-bold text-foreground">{pageTitle}</h1>
 			<div className="flex items-center gap-4 flex-1 ml-8 justify-end">
 				<CommandPalette />
 			</div>
