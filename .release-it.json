@@ -1,7 +1,8 @@
 {
 	"git": {
 		"tagName": "v${version}",
-		"commitMessage": "chore: release v${version}"
+		"commitMessage": "chore: release v${version}",
+		"changelog": false
 	},
 	"hooks": {
 		"after:bump": "bun scripts/prepend-pr-notes.ts ${latestTag}"
@@ -12,17 +13,6 @@
 		"releaseName": "v${version}"
 	},
 	"plugins": {
-		"@release-it/conventional-changelog": {
-			"preset": {
-				"name": "conventionalcommits",
-				"types": [
-					{ "type": "feat", "section": "✨ Features", "hidden": false },
-					{ "type": "fix", "section": "🐛 Fixes", "hidden": false }
-				]
-			},
-			"infile": "CHANGELOG.md",
-			"strictSemVer": true
-		},
 		"@release-it/bumper": {
 			"out": [
 				{

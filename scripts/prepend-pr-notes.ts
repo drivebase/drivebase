@@ -43,11 +43,22 @@ const LABEL_CATEGORIES: LabelCategory[] = [
 	{ label: "type: dependencies", emoji: "📦", title: "Dependencies" },
 ];
 
-const AREA_MAP: Record<string, string> = {
+const AREA_MAP: Record<string, AreaKey> = {
 	"area: api": "api",
 	"area: web": "web",
 	"area: providers": "providers",
 	"area: database": "db",
+};
+
+const AREA_ALIASES: Record<string, AreaKey> = {
+	api: "api",
+	web: "web",
+	provider: "providers",
+	providers: "providers",
+	db: "db",
+	database: "db",
+	others: "others",
+	other: "others",
 };
 
 const AREA_ORDER: Array<{ key: AreaKey; title: string }> = [
@@ -125,15 +136,31 @@ function buildEntries(pr: PR): string[] {
 	return [`- ${pr.title} ${link}`];
 }
 
-function pickArea(pr: PR): AreaKey {
-	const area = pr.labels.find((l) => AREA_MAP[l]);
-	if (!area) return "others";
+function normalizeAreaCandidate(value: string): AreaKey | null {
+	const normalized = value.trim().toLowerCase();
+	return AREA_ALIASES[normalized] ?? null;
+}
 
-	const mapped = AREA_MAP[area];
-	if (mapped === "api") return "api";
-	if (mapped === "web") return "web";
-	if (mapped === "providers") return "providers";
-	if (mapped === "db") return "db";
+function extractAreaFromTitle(title: string): AreaKey | null {
+	const conventionalScope = title.match(/^[a-z]+\(([^)]+)\)\s*!?\s*:/i);
+	if (!conventionalScope) return null;
+
+	const scope = conventionalScope[1];
+	for (const token of scope.split(/[\s,/|+]+/)) {
+		if (!token) continue;
+		const area = normalizeAreaCandidate(token);
+		if (area) return area;
+	}
+
+	return null;
+}
+
+function pickArea(pr: PR): AreaKey {
+	const areaLabel = pr.labels.find((l) => AREA_MAP[l]);
+	if (areaLabel) return AREA_MAP[areaLabel];
+
+	const titleArea = extractAreaFromTitle(pr.title);
+	if (titleArea) return titleArea;
 
 	return "others";
 }
