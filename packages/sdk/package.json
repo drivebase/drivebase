@@ -6,6 +6,15 @@
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
+	"keywords": [
+		"drivebase",
+		"storage",
+		"s3",
+		"google-drive",
+		"api",
+		"sdk",
+		"client"
+	],
 	"repository": {
 		"url": "https://github.com/drivebase/drivebase",
 		"directory": "packages/sdk"
