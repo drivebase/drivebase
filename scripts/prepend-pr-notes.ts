@@ -215,7 +215,6 @@ function generateSection(prs: PR[]): string {
 	);
 
 	if (hasUncategorized) {
-		lines.push("### Others");
 		for (const area of AREA_ORDER) {
 			const entries = uncategorized[area.key];
 			if (entries.length === 0) continue;
