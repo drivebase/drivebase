@@ -3,6 +3,24 @@ import { sliceIntoChunks } from "../src/utils/chunk.ts";
 import { withRetry } from "../src/utils/retry.ts";
 
 describe("sliceIntoChunks", () => {
+	it("throws RangeError for chunkSize of zero", () => {
+		expect(() => sliceIntoChunks(new Blob([new Uint8Array(100)]), 0)).toThrow(
+			RangeError,
+		);
+	});
+
+	it("throws RangeError for negative chunkSize", () => {
+		expect(() => sliceIntoChunks(new Blob([new Uint8Array(100)]), -1)).toThrow(
+			RangeError,
+		);
+	});
+
+	it("throws RangeError for non-integer chunkSize", () => {
+		expect(() => sliceIntoChunks(new Blob([new Uint8Array(100)]), 1.5)).toThrow(
+			RangeError,
+		);
+	});
+
 	it("returns a single chunk for data smaller than chunkSize", () => {
 		const data = new Blob([new Uint8Array(100)]);
 		const chunks = sliceIntoChunks(data, 1024);
