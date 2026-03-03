@@ -1,0 +1,48 @@
+---
+title: TypeScript SDK
+description: Overview of @drivebase/sdk for browser and server apps.
+---
+
+The `@drivebase/sdk` package provides a typed client for interacting with Drivebase.
+
+## Install
+
+```bash
+bun add @drivebase/sdk
+```
+
+Or:
+
+```bash
+npm install @drivebase/sdk
+```
+
+## Initialize Client
+
+```ts
+import { DrivebaseClient } from "@drivebase/sdk";
+
+const client = new DrivebaseClient({
+  apiKey: process.env.DRIVEBASE_API_KEY!,
+  workspaceId: process.env.DRIVEBASE_WORKSPACE_ID!,
+  baseUrl: "https://your-drivebase-instance.com",
+});
+```
+
+## Client Options
+
+- `apiKey` (required): API key sent as `Authorization: Bearer ...`
+- `workspaceId` (required): workspace context sent as `x-workspace-id`
+- `baseUrl` (optional): API base URL (defaults to `http://localhost:4000`)
+- `fetch` (optional): custom fetch implementation
+
+## SDK Sections
+
+- [Files Methods](/sdk/files)
+- [Folders Methods](/sdk/folders)
+- [Uploads and Downloads](/sdk/uploads-downloads)
+- [Error Handling](/sdk/errors)
+
+## Source
+
+- [`packages/sdk/README.md`](https://github.com/drivebase/drivebase/blob/main/packages/sdk/README.md)

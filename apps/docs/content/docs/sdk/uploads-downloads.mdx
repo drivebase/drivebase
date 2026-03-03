@@ -1,0 +1,63 @@
+---
+title: Uploads and Downloads
+description: Top upload/download methods in @drivebase/sdk.
+---
+
+## upload
+
+Use `client.files.upload(options, onProgress?)` to upload a file.
+
+```ts
+const file = await client.files.upload(
+  {
+    data: fileBlob,
+    name: "report.pdf",
+    mimeType: "application/pdf",
+    size: fileBlob.size,
+    providerId: "provider_123",
+    folderId: "folder_456", // optional
+  },
+  (progress) => {
+    console.log(progress.phase, progress.percent);
+  },
+);
+
+console.log(file.id, file.virtualPath);
+```
+
+### Progress callback
+
+`onProgress` reports:
+
+- `loaded`: uploaded bytes
+- `total`: total bytes
+- `percent`: integer percentage
+- `phase`: `uploading`, `transferring`, or `complete`
+
+The SDK automatically chooses simple upload or chunked upload based on file size.
+
+## download
+
+Use `client.files.download(id)` to get a URL and lazy stream function.
+
+```ts
+const download = await client.files.download("file_123");
+
+// Use URL directly (e.g. link/open)
+console.log(download.url);
+
+// Or stream contents
+const stream = await download.stream();
+```
+
+Depending on provider capability, `url` can be:
+
+- Direct provider URL
+- Drivebase proxy URL (`/api/download/proxy?...`)
+
+## Minimal browser example
+
+```ts
+const { url } = await client.files.download("file_123");
+window.open(url, "_blank");
+```
