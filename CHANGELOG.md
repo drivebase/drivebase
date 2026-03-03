@@ -2,6 +2,26 @@
 
 ## [3.3.0](https://github.com/drivebase/drivebase/compare/v3.2.0...v3.3.0) (2026-03-02)
 
+
+### Features
+#### Others
+- feat: add js/ts sdk support ([21fbd7c](https://github.com/drivebase/drivebase/commit/21fbd7c570886307cdff815bec5bd7ac6bb13955))
+
+### Improvements
+#### Others
+- ci: add workflow to label first-time contributors' issues and PRs ([8419201](https://github.com/drivebase/drivebase/commit/841920108a84fac485d2dfef3fd269bcc7953274))
+- chore: set apps/* ([65101d8](https://github.com/drivebase/drivebase/commit/65101d82d0bacccf698061ab9a51e81c1324eb04))
+
+### Documentation
+#### Others
+- docs: update api key docs with more scope ([e7c08ad](https://github.com/drivebase/drivebase/commit/e7c08ad94a4465835e3b76377643363333c6d3fd))
+
+#### Others
+- Feat/sdk ([#121](https://github.com/drivebase/drivebase/pull/121))
+
+---
+
+
 ### ✨ Features
 
 * add smart search with text extraction ([e3ca67c](https://github.com/drivebase/drivebase/commit/e3ca67c86074c97ff1b5e8e457711b13fca47463))
