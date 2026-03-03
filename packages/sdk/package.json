@@ -6,6 +6,10 @@
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
+	"repository": {
+		"url": "https://github.com/drivebase/drivebase",
+		"directory": "packages/sdk"
+	},
 	"exports": {
 		".": {
 			"import": {
