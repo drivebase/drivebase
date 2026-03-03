@@ -11,6 +11,12 @@ export function sliceIntoChunks(
 	data: Blob | ArrayBufferView | ArrayBuffer,
 	chunkSize: number,
 ): Blob[] {
+	if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
+		throw new RangeError(
+			`chunkSize must be a positive integer, got ${chunkSize}`,
+		);
+	}
+
 	let blob: Blob;
 	if (data instanceof Blob) {
 		blob = data;
