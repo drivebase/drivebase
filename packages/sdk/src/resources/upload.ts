@@ -202,7 +202,10 @@ export class UploadManager {
 		const parts: Array<{ partNumber: number; etag: string }> = [];
 
 		for (let i = 0; i < chunks.length; i++) {
-			const chunk = chunks[i]!;
+			const chunk = chunks[i];
+			if (!chunk) {
+				throw new UploadError(`Missing chunk at index ${i} for S3 upload`);
+			}
 			const partUrl = urls[i];
 			if (!partUrl) {
 				throw new UploadError(`Missing presigned URL for part ${i + 1}`);
@@ -248,7 +251,10 @@ export class UploadManager {
 		onProgress?: ProgressCallback,
 	): Promise<void> {
 		for (let i = 0; i < chunks.length; i++) {
-			const chunk = chunks[i]!;
+			const chunk = chunks[i];
+			if (!chunk) {
+				throw new UploadError("Missing chunk during proxy upload");
+			}
 
 			await withRetry(async () => {
 				const response = await this.http.rest("POST", "/api/upload/chunk", {
