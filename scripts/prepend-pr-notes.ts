@@ -27,6 +27,23 @@ interface PR {
 	user: string;
 }
 
+interface Commit {
+	sha: string;
+	message: string;
+	html_url: string;
+	author: string;
+}
+
+interface ChangelogItem {
+	title: string;
+	body: string | null;
+	url: string;
+	labels: string[];
+	kind: "pr" | "commit";
+	number?: number;
+	sha?: string;
+}
+
 type AreaKey = "api" | "web" | "providers" | "db" | "others";
 
 interface CategoryGroup extends LabelCategory {
@@ -108,6 +125,44 @@ function fetchMergedPRs(repo: string, sinceDate: string | null): PR[] {
 	return JSON.parse(json) as PR[];
 }
 
+function fetchCommits(repo: string, sinceDate: string | null): Commit[] {
+	const sincePart = sinceDate ? `&since=${encodeURIComponent(sinceDate)}` : "";
+	const jq =
+		"[.[] | {sha,message:.commit.message,html_url,author:(.author.login // .commit.author.name)}]";
+
+	const json = run(
+		`gh api "repos/${repo}/commits?sha=main&per_page=100${sincePart}" --jq '${jq}'`,
+	);
+
+	return JSON.parse(json) as Commit[];
+}
+
+function fetchPrCommitShas(repo: string, prs: PR[]): Set<string> {
+	const shas = new Set<string>();
+
+	for (const pr of prs) {
+		try {
+			const output = run(
+				`gh api --paginate "repos/${repo}/pulls/${pr.number}/commits?per_page=100" --jq '.[].sha'`,
+			);
+
+			if (!output) continue;
+
+			for (const sha of output.split("\n")) {
+				const normalized = sha.trim();
+				if (!normalized) continue;
+				shas.add(normalized);
+			}
+		} catch (err) {
+			console.warn(
+				`Failed to fetch commit SHAs for PR #${pr.number}: ${(err as Error).message}`,
+			);
+		}
+	}
+
+	return shas;
+}
+
 function extractBullets(body: string | null): string[] | null {
 	if (!body) return null;
 
@@ -136,6 +191,76 @@ function buildEntries(pr: PR): string[] {
 	return [`- ${pr.title} ${link}`];
 }
 
+function buildCommitEntries(commit: Commit): string[] {
+	const shortSha = commit.sha.slice(0, 7);
+	const link = `([${shortSha}](${commit.html_url}))`;
+	const bullets = extractBullets(commit.message);
+
+	if (bullets) {
+		return bullets.map((b) => `- ${b} ${link}`);
+	}
+
+	const title = commit.message.split("\n")[0]?.trim() || "Unnamed commit";
+	return [`- ${title} ${link}`];
+}
+
+function extractCommitType(title: string): string | null {
+	const conventionalType = title.match(/^([a-z]+)(?:\([^)]+\))?\s*!?\s*:/i);
+	return conventionalType ? conventionalType[1].toLowerCase() : null;
+}
+
+function isDependencyCommit(title: string): boolean {
+	const lower = title.toLowerCase();
+	return lower.includes("deps") || lower.includes("dependenc");
+}
+
+function inferCategoryLabelFromTitle(title: string): string | null {
+	if (isDependencyCommit(title)) return "type: dependencies";
+
+	const commitType = extractCommitType(title);
+	if (!commitType) return null;
+
+	if (commitType === "feat") return "type: feature";
+	if (commitType === "fix") return "type: bug";
+	if (commitType === "docs") return "type: documentation";
+	if (
+		["refactor", "perf", "chore", "style", "test", "build", "ci"].includes(
+			commitType,
+		)
+	) {
+		return "type: enhancement";
+	}
+
+	return null;
+}
+
+function extractReferencedPrNumbers(text: string): number[] {
+	const regex = /#(\d+)/g;
+	const seen: Record<string, true> = {};
+	const result: number[] = [];
+
+	let match: RegExpExecArray | null = regex.exec(text);
+	while (match) {
+		const value = Number.parseInt(match[1], 10);
+		const key = String(value);
+		if (!seen[key]) {
+			seen[key] = true;
+			result.push(value);
+		}
+		match = regex.exec(text);
+	}
+
+	return result;
+}
+
+function isMergeCommit(message: string): boolean {
+	const firstLine = message.split("\n")[0]?.trim().toLowerCase() ?? "";
+	return (
+		firstLine.startsWith("merge pull request #") ||
+		firstLine.startsWith("merge branch ")
+	);
+}
+
 function normalizeAreaCandidate(value: string): AreaKey | null {
 	const normalized = value.trim().toLowerCase();
 	return AREA_ALIASES[normalized] ?? null;
@@ -155,11 +280,11 @@ function extractAreaFromTitle(title: string): AreaKey | null {
 	return null;
 }
 
-function pickArea(pr: PR): AreaKey {
-	const areaLabel = pr.labels.find((l) => AREA_MAP[l]);
+function pickAreaFromItem(item: ChangelogItem): AreaKey {
+	const areaLabel = item.labels.find((l) => AREA_MAP[l]);
 	if (areaLabel) return AREA_MAP[areaLabel];
 
-	const titleArea = extractAreaFromTitle(pr.title);
+	const titleArea = extractAreaFromTitle(item.title);
 	if (titleArea) return titleArea;
 
 	return "others";
@@ -175,22 +300,53 @@ function createEmptyAreas(): Record<AreaKey, string[]> {
 	};
 }
 
-function generateSection(prs: PR[]): string {
+function generateSection(items: ChangelogItem[]): string {
 	const groups = new Map<string, CategoryGroup>();
 	const uncategorized = createEmptyAreas();
+	const seenEntries = new Set<string>();
 
-	for (const pr of prs) {
-		const entries = buildEntries(pr);
-		const area = pickArea(pr);
-		const category = LABEL_CATEGORIES.find((c) => pr.labels.includes(c.label));
+	const pushUniqueEntries = (target: string[], entries: string[]) => {
+		for (const entry of entries) {
+			if (seenEntries.has(entry)) continue;
+			seenEntries.add(entry);
+			target.push(entry);
+		}
+	};
+
+	for (const item of items) {
+		const entries =
+			item.kind === "pr"
+				? buildEntries({
+						body: item.body,
+						html_url: item.url,
+						labels: item.labels,
+						number: item.number ?? 0,
+						title: item.title,
+						user: "",
+					})
+				: buildCommitEntries({
+						author: "",
+						html_url: item.url,
+						message: item.body ?? item.title,
+						sha: item.sha ?? "",
+					});
+
+		const area = pickAreaFromItem(item);
+		const inferredCategoryLabel =
+			item.kind === "commit" ? inferCategoryLabelFromTitle(item.title) : null;
+		const category = LABEL_CATEGORIES.find(
+			(c) => item.labels.includes(c.label) || c.label === inferredCategoryLabel,
+		);
 
 		if (category) {
 			if (!groups.has(category.label)) {
 				groups.set(category.label, { ...category, areas: createEmptyAreas() });
 			}
-			groups.get(category.label)!.areas[area].push(...entries);
+			const categoryGroup = groups.get(category.label);
+			if (!categoryGroup) continue;
+			pushUniqueEntries(categoryGroup.areas[area], entries);
 		} else {
-			uncategorized[area].push(...entries);
+			pushUniqueEntries(uncategorized[area], entries);
 		}
 	}
 
@@ -198,7 +354,8 @@ function generateSection(prs: PR[]): string {
 
 	for (const cat of LABEL_CATEGORIES) {
 		if (!groups.has(cat.label)) continue;
-		const g = groups.get(cat.label)!;
+		const g = groups.get(cat.label);
+		if (!g) continue;
 		lines.push(`### ${g.title}`);
 
 		for (const area of AREA_ORDER) {
@@ -239,7 +396,14 @@ function prependToChangelog(section: string): void {
 		return;
 	}
 
-	const insertAfter = headerMatch.index! + headerMatch[0].length;
+	if (typeof headerMatch.index !== "number") {
+		console.warn(
+			"Could not determine version header position in CHANGELOG.md — skipping prepend.",
+		);
+		return;
+	}
+
+	const insertAfter = headerMatch.index + headerMatch[0].length;
 	const before = changelog.slice(0, insertAfter);
 	const after = changelog.slice(insertAfter);
 	const block = `\n\n${section}\n\n---\n\n`;
@@ -282,12 +446,50 @@ try {
 	process.exit(1);
 }
 
-console.log(`Found ${prs.length} merged PR(s)`);
+let commits: Commit[];
+try {
+	commits = fetchCommits(repo, tagDate);
+} catch (err) {
+	console.error("Failed to fetch commits from GitHub:", (err as Error).message);
+	process.exit(1);
+}
 
-if (prs.length === 0) {
+const prNumbers = new Set(prs.map((pr) => pr.number));
+const prCommitShas = fetchPrCommitShas(repo, prs);
+const standaloneCommits = commits.filter((commit) => {
+	if (prCommitShas.has(commit.sha)) return false;
+	if (isMergeCommit(commit.message)) return false;
+	const referencedPrNumbers = extractReferencedPrNumbers(commit.message);
+	return !referencedPrNumbers.some((number) => prNumbers.has(number));
+});
+
+console.log(
+	`Found ${prs.length} merged PR(s) and ${standaloneCommits.length} standalone commit(s)`,
+);
+
+if (prs.length === 0 && standaloneCommits.length === 0) {
 	console.log("Nothing to prepend.");
 	process.exit(0);
 }
 
-const section = generateSection(prs);
+const items: ChangelogItem[] = [
+	...prs.map((pr) => ({
+		body: pr.body,
+		kind: "pr" as const,
+		labels: pr.labels,
+		number: pr.number,
+		title: pr.title,
+		url: pr.html_url,
+	})),
+	...standaloneCommits.map((commit) => ({
+		body: commit.message,
+		kind: "commit" as const,
+		labels: [],
+		sha: commit.sha,
+		title: commit.message.split("\n")[0]?.trim() || "Unnamed commit",
+		url: commit.html_url,
+	})),
+];
+
+const section = generateSection(items);
 prependToChangelog(section);
