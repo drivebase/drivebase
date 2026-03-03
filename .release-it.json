@@ -23,6 +23,9 @@
 		"@release-it/bumper": {
 			"out": [
 				{
+					"file": "packages/sdk/package.json"
+				},
+				{
 					"file": "docker/compose.prod.yaml",
 					"type": "text/plain"
 				},
