@@ -27,8 +27,10 @@ interface PR {
 	user: string;
 }
 
+type AreaKey = "api" | "web" | "providers" | "db" | "others";
+
 interface CategoryGroup extends LabelCategory {
-	entries: string[];
+	areas: Record<AreaKey, string[]>;
 }
 
 // Label → changelog category mapping (order = priority in output)
@@ -47,6 +49,14 @@ const AREA_MAP: Record<string, string> = {
 	"area: providers": "providers",
 	"area: database": "db",
 };
+
+const AREA_ORDER: Array<{ key: AreaKey; title: string }> = [
+	{ key: "api", title: "API" },
+	{ key: "web", title: "Web" },
+	{ key: "providers", title: "Providers" },
+	{ key: "db", title: "Database" },
+	{ key: "others", title: "Others" },
+];
 
 function run(cmd: string): string {
 	return execSync(cmd, {
@@ -104,34 +114,56 @@ function extractBullets(body: string | null): string[] | null {
 }
 
 function buildEntries(pr: PR): string[] {
-	const areas = pr.labels.filter((l) => AREA_MAP[l]).map((l) => AREA_MAP[l]);
-	const areaTag = areas.length > 0 ? ` **[${areas.join(", ")}]**` : "";
 	const link = `([#${pr.number}](${pr.html_url}))`;
 	const bullets = extractBullets(pr.body);
 
 	if (bullets) {
-		return bullets.map((b) => `- ${b}${areaTag} ${link}`);
+		return bullets.map((b) => `- ${b} ${link}`);
 	}
 
 	// Fallback to PR title — shouldn't reach here if the CI gate is enforced
-	return [`- ${pr.title}${areaTag} ${link}`];
+	return [`- ${pr.title} ${link}`];
+}
+
+function pickArea(pr: PR): AreaKey {
+	const area = pr.labels.find((l) => AREA_MAP[l]);
+	if (!area) return "others";
+
+	const mapped = AREA_MAP[area];
+	if (mapped === "api") return "api";
+	if (mapped === "web") return "web";
+	if (mapped === "providers") return "providers";
+	if (mapped === "db") return "db";
+
+	return "others";
+}
+
+function createEmptyAreas(): Record<AreaKey, string[]> {
+	return {
+		api: [],
+		web: [],
+		providers: [],
+		db: [],
+		others: [],
+	};
 }
 
 function generateSection(prs: PR[]): string {
 	const groups = new Map<string, CategoryGroup>();
-	const other: string[] = [];
+	const uncategorized = createEmptyAreas();
 
 	for (const pr of prs) {
 		const entries = buildEntries(pr);
+		const area = pickArea(pr);
 		const category = LABEL_CATEGORIES.find((c) => pr.labels.includes(c.label));
 
 		if (category) {
 			if (!groups.has(category.label)) {
-				groups.set(category.label, { ...category, entries: [] });
+				groups.set(category.label, { ...category, areas: createEmptyAreas() });
 			}
-			groups.get(category.label)!.entries.push(...entries);
+			groups.get(category.label)!.areas[area].push(...entries);
 		} else {
-			other.push(...entries);
+			uncategorized[area].push(...entries);
 		}
 	}
 
@@ -140,15 +172,30 @@ function generateSection(prs: PR[]): string {
 	for (const cat of LABEL_CATEGORIES) {
 		if (!groups.has(cat.label)) continue;
 		const g = groups.get(cat.label)!;
-		lines.push(`#### ${g.emoji} ${g.title}`);
-		lines.push(...g.entries);
-		lines.push("");
+		lines.push(`### ${g.title}`);
+
+		for (const area of AREA_ORDER) {
+			const entries = g.areas[area.key];
+			if (entries.length === 0) continue;
+			lines.push(`#### ${area.title}`);
+			lines.push(...entries);
+			lines.push("");
+		}
 	}
 
-	if (other.length > 0) {
-		lines.push("#### 📋 Other");
-		lines.push(...other);
-		lines.push("");
+	const hasUncategorized = AREA_ORDER.some(
+		(area) => uncategorized[area.key].length > 0,
+	);
+
+	if (hasUncategorized) {
+		lines.push("### Others");
+		for (const area of AREA_ORDER) {
+			const entries = uncategorized[area.key];
+			if (entries.length === 0) continue;
+			lines.push(`#### ${area.title}`);
+			lines.push(...entries);
+			lines.push("");
+		}
 	}
 
 	return lines.join("\n").trimEnd();
@@ -169,7 +216,7 @@ function prependToChangelog(section: string): void {
 	const insertAfter = headerMatch.index! + headerMatch[0].length;
 	const before = changelog.slice(0, insertAfter);
 	const after = changelog.slice(insertAfter);
-	const block = `\n### Release Notes\n\n${section}\n\n---\n\n`;
+	const block = `\n\n${section}\n\n---\n\n`;
 
 	writeFileSync("CHANGELOG.md", before + block + after, "utf8");
 	console.log("✓ Prepended PR release notes to CHANGELOG.md");
