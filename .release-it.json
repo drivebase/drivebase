@@ -3,6 +3,9 @@
 		"tagName": "v${version}",
 		"commitMessage": "chore: release v${version}"
 	},
+	"hooks": {
+		"after:bump": "bun scripts/prepend-pr-notes.ts ${latestTag}"
+	},
 	"github": {
 		"release": false,
 		"tokenRef": "GITHUB_TOKEN",

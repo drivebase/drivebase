@@ -1,0 +1,94 @@
+name: PR Release Notes Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, labeled, unlabeled]
+
+jobs:
+  check:
+    name: Release Notes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Validate Release Notes section
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(l => l.name);
+
+            // Dependency PRs (Dependabot, Renovate) are exempt
+            if (labels.includes('type: dependencies')) {
+              console.log('Skipping release notes check for dependency PR.');
+              return;
+            }
+
+            const body = pr.body || '';
+            const MARKER = '<!-- release-notes-bot -->';
+
+            // Validate: ## Release Notes section with at least one bullet
+            const match = body.match(/##\s+Release Notes?\s*\n([\s\S]*?)(?=\n##\s|\s*$)/i);
+            let errorMsg = null;
+
+            if (!match) {
+              errorMsg = 'missing a `## Release Notes` section';
+            } else {
+              const bullets = match[1].split('\n').filter(l => /^\s*[-*]\s+\S/.test(l));
+              if (bullets.length === 0) {
+                errorMsg = '`## Release Notes` section has no bullet points';
+              }
+            }
+
+            // Find an existing bot comment to update rather than spam
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+            });
+            const botComment = comments.find(c => c.body.includes(MARKER));
+
+            if (errorMsg) {
+              const body = [
+                MARKER,
+                `👋 **Release Notes required** — this PR is ${errorMsg}.`,
+                '',
+                'Please update the PR description to include at least one bullet point under `## Release Notes`:',
+                '',
+                '````markdown',
+                '## Release Notes',
+                '- Brief description of the user-facing change',
+                '````',
+                '',
+                '> These notes appear in `CHANGELOG.md` and the GitHub release body.',
+              ].join('\n');
+
+              if (botComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body,
+                });
+              }
+
+              core.setFailed(`PR is ${errorMsg}`);
+            } else {
+              // Check passed — clean up any previous error comment
+              if (botComment) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                });
+                console.log('Removed previous release notes error comment.');
+              }
+              console.log('Release Notes check passed.');
+            }
