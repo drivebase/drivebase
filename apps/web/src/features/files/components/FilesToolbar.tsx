@@ -81,7 +81,7 @@ export function FilesToolbar({
 						: (crumb.folderId ?? `__disabled_${index}__`);
 					const canDrop = !isLast && crumb.folderId !== null;
 					return (
-						<div key={`${crumb.name}-${index}`} className="flex items-center">
+						<div key={`${crumb.folderId}`} className="flex items-center">
 							<ChevronRight size={14} className="mx-1 opacity-50" />
 							<DroppableBreadcrumb
 								id={droppableId}
