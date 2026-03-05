@@ -1,4 +1,4 @@
 module.exports = {
-  siteUrl: "https://drivebase.io",
+  siteUrl: "https://www.drivebase.io",
   generateRobotsTxt: true, // (optional)
 };
