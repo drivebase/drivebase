@@ -29,9 +29,9 @@ export function StatusBar() {
           }}
           className="flex whitespace-nowrap w-max"
         >
-          {[...statusItems, ...statusItems].map((item, i) => (
+          {[...statusItems, ...statusItems].map((item) => (
             <div
-              key={`${item.label}-${i}`}
+              key={`${item.label}`}
               className="p-4 flex items-center space-x-3 group hover:bg-secondary transition-colors cursor-default border-r border-border w-64 shrink-0"
             >
               {item.image ? (
