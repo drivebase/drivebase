@@ -7,7 +7,7 @@ const footerLinks = [
   {
     title: "Product",
     links: [
-      { label: "AI", href: "/docs/ai" },
+      { label: "SDK", href: "/docs/sdk" },
       { label: "Vault", href: "/docs/vault" },
       { label: "Storage Providers", href: "/docs/storage-providers/overview" },
       { label: "Using Drivebase", href: "/docs/using-drivebase" },
@@ -37,7 +37,7 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-background py-16 border-t border-border">
+    <footer className="bg-background py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
           <div className="col-span-2">
@@ -80,7 +80,7 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Drivebase. All rights reserved.
           </div>

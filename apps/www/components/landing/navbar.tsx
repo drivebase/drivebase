@@ -36,9 +36,6 @@ export function Navbar() {
                 width={32}
                 height={32}
               />
-              <span className="text-foreground font-bold text-lg tracking-tight">
-                Drivebase
-              </span>
             </Link>
           </div>
 
