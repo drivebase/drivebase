@@ -80,6 +80,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
+              data-nosnippet
               className="mb-8 flex items-center justify-between bg-secondary/30 border border-border p-3 max-w-xl"
             >
               <code className="text-sm font-mono text-muted-foreground break-all">

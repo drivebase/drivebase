@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   ArchitectureSection,
   CapabilitiesGrid,
@@ -9,6 +10,14 @@ import {
   StatusBar,
   UserTypesSection,
 } from "@/components/landing";
+
+export const metadata: Metadata = {
+  description:
+    "Manage files across cloud and local storage providers from one dashboard. Drivebase unifies uploads, sync, and automation for modern teams.",
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default function HomePage() {
   return (
