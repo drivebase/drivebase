@@ -16,12 +16,21 @@ enum WorkspaceMemberRole {
 	VIEWER
 }
 
+enum WorkspaceAutoSyncScope {
+	ALL
+	SELECTED
+}
+
 type Workspace {
 	id: ID!
 	name: String!
 	color: WorkspaceColor!
 	ownerId: ID!
 	syncOperationsToProvider: Boolean!
+	autoSyncEnabled: Boolean!
+	autoSyncCron: String
+	autoSyncScope: WorkspaceAutoSyncScope!
+	autoSyncProviderIds: [ID!]!
 	smartSearchEnabled: Boolean!
 	createdAt: DateTime!
 	updatedAt: DateTime!
@@ -117,6 +126,14 @@ input UpdateWorkspaceSmartSearchInput {
 	enabled: Boolean!
 }
 
+input UpdateWorkspaceAutoSyncInput {
+	workspaceId: ID!
+	enabled: Boolean!
+	cron: String
+	scope: WorkspaceAutoSyncScope!
+	providerIds: [ID!]
+}
+
 extend type Mutation {
 	"""
 	Create a new workspace
@@ -166,4 +183,9 @@ extend type Mutation {
 	updateWorkspaceSmartSearch(
 		input: UpdateWorkspaceSmartSearchInput!
 	): Workspace!
+
+	"""
+	Update scheduled auto-sync for workspace providers
+	"""
+	updateWorkspaceAutoSync(input: UpdateWorkspaceAutoSyncInput!): Workspace!
 }

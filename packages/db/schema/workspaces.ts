@@ -1,6 +1,11 @@
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
 import { users } from "./users";
+
+export const workspaceAutoSyncScopeEnum = pgEnum("workspace_auto_sync_scope", [
+	"all",
+	"selected",
+]);
 
 /**
  * Workspaces table
@@ -17,6 +22,11 @@ export const workspaces = pgTable("workspaces", {
 	syncOperationsToProvider: boolean("sync_operations_to_provider")
 		.notNull()
 		.default(false),
+	autoSyncEnabled: boolean("auto_sync_enabled").notNull().default(false),
+	autoSyncCron: text("auto_sync_cron"),
+	autoSyncScope: workspaceAutoSyncScopeEnum("auto_sync_scope")
+		.notNull()
+		.default("all"),
 	smartSearchEnabled: boolean("smart_search_enabled").notNull().default(false),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.notNull()
