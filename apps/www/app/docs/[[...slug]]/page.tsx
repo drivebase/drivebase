@@ -7,16 +7,14 @@ import {
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { LLMCopyButton, ViewOptions } from "@/components/ai/page-actions";
+import { gitConfig } from "@/lib/layout.shared";
 import { getPageImage, source } from "@/lib/source";
 import { getMDXComponents } from "@/mdx-components";
 
-type DocsPageProps = {
-  params: Promise<{ slug?: string[] }>;
-};
-
-export default async function Page({ params }: DocsPageProps) {
-  const { slug } = await params;
-  const page = source.getPage(slug);
+export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
+  const params = await props.params;
+  const page = source.getPage(params.slug);
   if (!page) notFound();
 
   const MDX = page.data.body;
@@ -27,6 +25,14 @@ export default async function Page({ params }: DocsPageProps) {
       <DocsDescription className="mb-0">
         {page.data.description}
       </DocsDescription>
+      <div className="flex flex-row gap-2 items-center border-b pb-6">
+        <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
+        <ViewOptions
+          markdownUrl={`${page.url}.mdx`}
+          // update it to match your repo
+          githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/content/docs/${page.path}`}
+        />
+      </div>
       <DocsBody>
         <MDX
           components={getMDXComponents({
@@ -43,11 +49,11 @@ export async function generateStaticParams() {
   return source.generateParams();
 }
 
-export async function generateMetadata({
-  params,
-}: DocsPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const page = source.getPage(slug);
+export async function generateMetadata(
+  props: PageProps<"/docs/[[...slug]]">,
+): Promise<Metadata> {
+  const params = await props.params;
+  const page = source.getPage(params.slug);
   if (!page) notFound();
 
   return {

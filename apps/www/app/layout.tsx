@@ -1,11 +1,8 @@
-import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import "./global.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { baseOptions } from "@/lib/layout.shared";
-import { source } from "@/lib/source";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,9 +16,10 @@ export const metadata: Metadata = {
   applicationName: "Drivebase",
   title: {
     template: "%s | Drivebase",
-    default: "Drivebase Docs",
+    default: "Drivebase - Self-Hosted Cloud File Manager",
   },
-  description: "Documentation for Drivebase.",
+  description:
+    "The unified file storage API for modern applications. Seamlessly integrate secure, scalable file storage with support for S3, Google Drive, and local storage.",
   keywords: [
     "file storage",
     "s3",
@@ -41,8 +39,8 @@ export const metadata: Metadata = {
     follow: true,
   },
   openGraph: {
-    title: "Drivebase Docs",
-    description: "Documentation for Drivebase.",
+    title: "Drivebase - Self-Hosted Cloud File Manager",
+    description: "The unified file storage API for modern applications.",
     url: "https://drivebase.io",
     siteName: "Drivebase",
     images: [
@@ -58,8 +56,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Drivebase Docs",
-    description: "Documentation for Drivebase.",
+    title: "Drivebase - Self-Hosted Cloud File Manager",
+    description: "The unified file storage API for modern applications.",
     images: ["/drivebase-banner.png"],
   },
   icons: {
@@ -73,14 +71,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
-        <RootProvider>
-          <DocsLayout tree={source.getPageTree()} {...baseOptions()}>
-            {children}
-          </DocsLayout>
-        </RootProvider>
+        <RootProvider>{children}</RootProvider>
       </body>
       {process.env.NODE_ENV === "production" && (
-        <GoogleAnalytics gaId="G-1Y4NXMQPWJ" />
+        <GoogleAnalytics gaId="G-60H49RJF0W" />
       )}
     </html>
   );
