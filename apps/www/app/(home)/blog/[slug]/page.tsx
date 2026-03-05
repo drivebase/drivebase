@@ -48,7 +48,7 @@ export async function generateMetadata(props: {
       type: "article",
       publishedTime: new Date(page.data.date).toISOString(),
       authors: [page.data.author],
-      url: `/blogs/${page.slugs[0]}`,
+      url: `/blog/${page.slugs[0]}`,
       images,
     },
     twitter: {
@@ -76,7 +76,7 @@ export default async function Page(props: {
         <div className="max-w-7xl mx-auto pt-16 pb-24 md:pt-24 md:pb-32 px-6 lg:px-8 border-x border-border">
           <div className="max-w-4xl mx-auto">
             <Link
-              href="/blogs"
+              href="/blog"
               className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground mb-8 transition-colors"
             >
               <ArrowLeft className="size-4" />

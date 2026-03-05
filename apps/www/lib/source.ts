@@ -11,7 +11,7 @@ export const source = loader({
 });
 
 export const blog = loader({
-  baseUrl: "/blogs",
+  baseUrl: "/blog",
   source: toFumadocsSource(blogPosts, []),
 });
 
