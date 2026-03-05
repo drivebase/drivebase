@@ -17,9 +17,17 @@ export async function syncProvider(
 	providerId: string,
 	workspaceId: string,
 	userId: string,
-	options?: { recursive?: boolean; pruneDeleted?: boolean },
+	options?: {
+		recursive?: boolean;
+		pruneDeleted?: boolean;
+		suppressActivity?: boolean;
+	},
 ) {
-	const { recursive = true, pruneDeleted = true } = options || {};
+	const {
+		recursive = true,
+		pruneDeleted = true,
+		suppressActivity = false,
+	} = options || {};
 
 	const [providerRecord] = await db
 		.select()
@@ -34,18 +42,23 @@ export async function syncProvider(
 	if (!providerRecord) throw new NotFoundError("Provider");
 
 	const syncStartTime = Date.now();
-	const activityService = new ActivityService(db);
-	const job = await activityService.create(workspaceId, {
-		type: "sync",
-		title: `Syncing ${providerRecord.name}`,
-		message: "Starting sync...",
-		metadata: { providerId, recursive, pruneDeleted },
-	});
-	await activityService.update(job.id, {
-		status: "running",
-		message: "Starting sync...",
-		progress: 0,
-	});
+	const activityService = suppressActivity ? null : new ActivityService(db);
+	const job = activityService
+		? await activityService.create(workspaceId, {
+				type: "sync",
+				title: `Syncing ${providerRecord.name}`,
+				message: "Starting sync...",
+				metadata: { providerId, recursive, pruneDeleted },
+			})
+		: null;
+
+	if (activityService && job) {
+		await activityService.update(job.id, {
+			status: "running",
+			message: "Starting sync...",
+			progress: 0,
+		});
+	}
 
 	const provider = await getProviderInstance(providerRecord);
 	const seenFileRemoteIds: string[] = [];
@@ -117,7 +130,7 @@ export async function syncProvider(
 				}
 
 				processedCount++;
-				if (processedCount % 10 === 0) {
+				if (processedCount % 10 === 0 && activityService && job) {
 					await activityService.update(job.id, {
 						status: "running",
 						progress: getSyncProgress(processedCount),
@@ -195,7 +208,7 @@ export async function syncProvider(
 				} catch {}
 
 				processedCount++;
-				if (processedCount % 10 === 0) {
+				if (processedCount % 10 === 0 && activityService && job) {
 					await activityService.update(job.id, {
 						status: "running",
 						progress: getSyncProgress(processedCount),
@@ -211,11 +224,13 @@ export async function syncProvider(
 		await syncFolder(undefined, null, "/");
 
 		if (pruneDeleted) {
-			await activityService.update(job.id, {
-				status: "running",
-				progress: getSyncProgress(processedCount),
-				message: "Pruning deleted items...",
-			});
+			if (activityService && job) {
+				await activityService.update(job.id, {
+					status: "running",
+					progress: getSyncProgress(processedCount),
+					message: "Pruning deleted items...",
+				});
+			}
 			if (seenFileRemoteIds.length > 0) {
 				await db
 					.delete(files)
@@ -254,24 +269,26 @@ export async function syncProvider(
 			.returning();
 
 		if (!updated) throw new Error("Failed to update provider");
-		await activityService.complete(
-			job.id,
-			`Sync completed successfully (${processedCount} items)`,
-		);
-		await activityService.log({
-			kind: "provider.sync.completed",
-			title: "Provider sync completed",
-			summary: providerRecord.name,
-			status: "success",
-			userId,
-			workspaceId,
-			details: {
-				providerId: providerRecord.id,
-				providerType: providerRecord.type,
-				processedCount,
-				jobId: job.id,
-			},
-		});
+		if (activityService && job) {
+			await activityService.complete(
+				job.id,
+				`Sync completed successfully (${processedCount} items)`,
+			);
+			await activityService.log({
+				kind: "provider.sync.completed",
+				title: "Provider sync completed",
+				summary: providerRecord.name,
+				status: "success",
+				userId,
+				workspaceId,
+				details: {
+					providerId: providerRecord.id,
+					providerType: providerRecord.type,
+					processedCount,
+					jobId: job.id,
+				},
+			});
+		}
 		telemetry.capture("provider_sync_completed", {
 			type: providerRecord.type,
 			duration_ms: Date.now() - syncStartTime,
@@ -279,21 +296,23 @@ export async function syncProvider(
 		return updated;
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);
-		await activityService.fail(job.id, `Sync failed: ${msg}`);
-		await activityService.log({
-			kind: "provider.sync.failed",
-			title: "Provider sync failed",
-			summary: providerRecord.name,
-			status: "error",
-			userId,
-			workspaceId,
-			details: {
-				providerId: providerRecord.id,
-				providerType: providerRecord.type,
-				jobId: job.id,
-				error: msg,
-			},
-		});
+		if (activityService && job) {
+			await activityService.fail(job.id, `Sync failed: ${msg}`);
+			await activityService.log({
+				kind: "provider.sync.failed",
+				title: "Provider sync failed",
+				summary: providerRecord.name,
+				status: "error",
+				userId,
+				workspaceId,
+				details: {
+					providerId: providerRecord.id,
+					providerType: providerRecord.type,
+					jobId: job.id,
+					error: msg,
+				},
+			});
+		}
 		throw error;
 	} finally {
 		await provider.cleanup();

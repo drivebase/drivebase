@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { ensureVectorExtension } from "@drivebase/db";
+import { ensureVectorExtension, getDb } from "@drivebase/db";
 import { env } from "./config/env";
 import { mountPluginRoutes } from "./config/providers";
 import { closeExtractionQueue } from "./queue/extraction-queue";
@@ -24,6 +24,7 @@ import { startUploadWorker, stopUploadWorker } from "./queue/upload-worker";
 import { createApp } from "./server/app";
 import { mountCoreRoutes } from "./server/routes/core";
 import { yoga } from "./server/yoga";
+import { reconcileWorkspaceAutoSyncSchedules } from "./service/workspace";
 import { isFirstRun, telemetry } from "./telemetry";
 import { initializeApp } from "./utils/init";
 import { logger } from "./utils/logger";
@@ -93,6 +94,8 @@ startSyncWorker();
 startTransferWorker();
 startFileLifecycleWorker();
 startExtractionWorker();
+
+await reconcileWorkspaceAutoSyncSchedules(getDb());
 
 logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
 
