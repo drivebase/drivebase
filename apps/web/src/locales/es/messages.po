@@ -611,6 +611,14 @@ msgstr "Miembros en este espacio de trabajo."
 msgid "My Account"
 msgstr "Mi cuenta"
 
+#: src/components/layout/RightPanel.tsx:50
+msgid "Open panel"
+msgstr ""
+
+#: src/components/layout/RightPanel.tsx:48
+msgid "Collapse panel"
+msgstr ""
+
 #: src/features/rules/components/RuleForm.tsx:115
 #: src/features/rules/components/RuleList.tsx:140
 #: src/features/settings/sections/AccountSettingsSection.tsx:84

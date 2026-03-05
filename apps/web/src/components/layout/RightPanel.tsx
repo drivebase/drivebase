@@ -1,6 +1,11 @@
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { PiSlidersHorizontal as Settings2, PiX as X } from "react-icons/pi";
+import {
+	PiArrowLeft,
+	PiArrowRight,
+	PiSlidersHorizontal as Settings2,
+	PiX as X,
+} from "react-icons/pi";
 import { RecentActivityView } from "@/components/layout/RecentActivityView";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -51,11 +56,38 @@ export function RightPanel() {
 	const user = useAuthStore((state) => state.user);
 	const content = useRightPanelStore((state) => state.content);
 	const clearContent = useRightPanelStore((state) => state.clearContent);
+	const collapsed = useRightPanelStore((state) => state.collapsed);
+	const setCollapsed = useRightPanelStore((state) => state.setCollapsed);
 
 	if (!user) return null;
 
+	// when collapsed we render a slim toggle bar
+	if (collapsed) {
+		return (
+			<div className="w-8 h-full py-6 flex items-center justify-center border-l bg-background">
+				<Button variant="ghost" size="icon" onClick={() => setCollapsed(false)}>
+					<PiArrowLeft className="h-4 w-4" />
+					<span className="sr-only">
+						<Trans>Open panel</Trans>
+					</span>
+				</Button>
+			</div>
+		);
+	}
+
 	return (
-		<div className="w-80 py-6 flex flex-col gap-8 shrink-0 relative">
+		<div className="w-80 py-6 flex flex-col gap-8 shrink-0 relative transition-all duration-200">
+			<Button
+				variant="ghost"
+				size="icon"
+				onClick={() => setCollapsed(true)}
+				className="absolute top-4 left-4"
+			>
+				<PiArrowRight className="h-4 w-4" />
+				<span className="sr-only">
+					<Trans>Collapse panel</Trans>
+				</span>
+			</Button>
 			{content ? (
 				<div className="relative px-4">
 					<Button
