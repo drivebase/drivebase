@@ -266,7 +266,7 @@ export function ApiKeysSection() {
 			<p className="text-sm text-muted-foreground">
 				<Trans>Learn how to use API keys in the</Trans>{" "}
 				<a
-					href="https://docs.drivebase.io/api"
+					href="https://drivebase.io/docs/api"
 					target="_blank"
 					rel="noopener noreferrer"
 					className="underline underline-offset-4 hover:text-foreground"
