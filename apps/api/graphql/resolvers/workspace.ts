@@ -5,10 +5,12 @@ import {
 	getWorkspaceStats,
 	listAccessibleWorkspaces,
 	listActiveWorkspaceInvites,
+	listWorkspaceAutoSyncProviderIds,
 	listWorkspaceMembers,
 	removeWorkspaceMember,
 	requireWorkspaceRole,
 	revokeWorkspaceInvite,
+	updateWorkspaceAutoSync,
 	updateWorkspaceMemberRole,
 	updateWorkspaceName,
 	updateWorkspaceSmartSearch,
@@ -17,6 +19,7 @@ import {
 import type {
 	MutationResolvers,
 	QueryResolvers,
+	WorkspaceAutoSyncScope,
 	WorkspaceColor,
 	WorkspaceInvite,
 	WorkspaceInviteResolvers,
@@ -34,6 +37,9 @@ function toWorkspaceType(workspace: {
 	color: string;
 	ownerId: string;
 	syncOperationsToProvider: boolean;
+	autoSyncEnabled: boolean;
+	autoSyncCron: string | null;
+	autoSyncScope: string;
 	smartSearchEnabled: boolean;
 	createdAt: Date;
 	updatedAt: Date;
@@ -41,6 +47,9 @@ function toWorkspaceType(workspace: {
 	return {
 		...workspace,
 		color: workspace.color.toUpperCase() as WorkspaceColor,
+		autoSyncScope:
+			workspace.autoSyncScope.toUpperCase() as WorkspaceAutoSyncScope,
+		autoSyncProviderIds: [],
 	};
 }
 
@@ -244,10 +253,33 @@ export const workspaceMutations: MutationResolvers = {
 
 		return toWorkspaceType(workspace);
 	},
+
+	updateWorkspaceAutoSync: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(
+			context.db,
+			args.input.workspaceId,
+			user.userId,
+			["owner", "admin"],
+		);
+
+		const workspace = await updateWorkspaceAutoSync(context.db, {
+			workspaceId: args.input.workspaceId,
+			enabled: args.input.enabled,
+			cron: args.input.cron ?? null,
+			scope: args.input.scope.toLowerCase() as "all" | "selected",
+			providerIds: args.input.providerIds ?? [],
+		});
+
+		return toWorkspaceType(workspace);
+	},
 };
 
 export const workspaceResolvers: WorkspaceResolvers = {
 	color: (parent) => parent.color.toUpperCase() as never,
+	autoSyncScope: (parent) => parent.autoSyncScope.toUpperCase() as never,
+	autoSyncProviderIds: async (parent, _args, context) =>
+		listWorkspaceAutoSyncProviderIds(context.db, parent.id),
 };
 
 export const workspaceMemberResolvers: WorkspaceMemberResolvers = {

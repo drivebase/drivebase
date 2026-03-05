@@ -8,17 +8,20 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { useProviders } from "@/features/providers/hooks/useProviders";
 import { PreferencesSettingsSection } from "@/features/settings/sections/PreferencesSettingsSection";
 import { SmartSearchSection } from "@/features/settings/sections/SmartSearchSection";
+import { WorkspaceAutoSyncSection } from "@/features/settings/sections/WorkspaceAutoSyncSection";
 import { WorkspaceNameSection } from "@/features/settings/sections/WorkspaceNameSection";
 import {
 	getActiveWorkspaceId,
+	useUpdateWorkspaceAutoSync,
 	useUpdateWorkspaceName,
 	useUpdateWorkspaceSmartSearch,
 	useWorkspaceMembers,
 	useWorkspaces,
 } from "@/features/workspaces";
-import { WorkspaceMemberRole } from "@/gql/graphql";
+import { WorkspaceAutoSyncScope, WorkspaceMemberRole } from "@/gql/graphql";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
 
 export function GeneralSettingsView() {
@@ -67,11 +70,33 @@ export function GeneralSettingsView() {
 		useUpdateWorkspaceName();
 	const [updateSmartSearchResult, updateSmartSearch] =
 		useUpdateWorkspaceSmartSearch();
+	const [updateAutoSyncResult, updateAutoSync] = useUpdateWorkspaceAutoSync();
+	const providersResult = useProviders();
 	const [workspaceName, setWorkspaceName] = useState("");
+	const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
+	const [autoSyncCron, setAutoSyncCron] = useState("0 * * * *");
+	const [autoSyncScope, setAutoSyncScope] = useState<WorkspaceAutoSyncScope>(
+		WorkspaceAutoSyncScope.All,
+	);
+	const [autoSyncProviderIds, setAutoSyncProviderIds] = useState<string[]>([]);
 
 	useEffect(() => {
 		setWorkspaceName(activeWorkspace?.name ?? "");
 	}, [activeWorkspace?.name]);
+
+	useEffect(() => {
+		setAutoSyncEnabled(activeWorkspace?.autoSyncEnabled ?? false);
+		setAutoSyncCron(activeWorkspace?.autoSyncCron ?? "0 * * * *");
+		setAutoSyncScope(
+			activeWorkspace?.autoSyncScope ?? WorkspaceAutoSyncScope.All,
+		);
+		setAutoSyncProviderIds(activeWorkspace?.autoSyncProviderIds ?? []);
+	}, [
+		activeWorkspace?.autoSyncEnabled,
+		activeWorkspace?.autoSyncCron,
+		activeWorkspace?.autoSyncProviderIds,
+		activeWorkspace?.autoSyncScope,
+	]);
 
 	const handleUpdateWorkspaceName = async () => {
 		if (!workspaceId || !canManageWorkspace) {
@@ -119,6 +144,49 @@ export function GeneralSettingsView() {
 		reexecuteWorkspaces({ requestPolicy: "network-only" });
 	};
 
+	const handleToggleAutoSyncProvider = (
+		providerId: string,
+		selected: boolean,
+	) => {
+		setAutoSyncProviderIds((previous) => {
+			if (selected) {
+				if (previous.includes(providerId)) return previous;
+				return [...previous, providerId];
+			}
+
+			return previous.filter((id) => id !== providerId);
+		});
+	};
+
+	const handleSaveAutoSync = async () => {
+		if (!workspaceId || !canManageWorkspace) {
+			return;
+		}
+
+		const result = await updateAutoSync({
+			input: {
+				workspaceId,
+				enabled: autoSyncEnabled,
+				cron: autoSyncEnabled ? autoSyncCron.trim() : null,
+				scope: autoSyncScope,
+				providerIds:
+					autoSyncScope === WorkspaceAutoSyncScope.Selected
+						? autoSyncProviderIds
+						: [],
+			},
+		});
+
+		if (result.error || !result.data?.updateWorkspaceAutoSync) {
+			toast.error(
+				result.error?.message ?? "Failed to update auto sync settings",
+			);
+			return;
+		}
+
+		toast.success("Auto sync settings updated");
+		reexecuteWorkspaces({ requestPolicy: "network-only" });
+	};
+
 	const handleSignOut = async () => {
 		const confirmed = await confirmDialog(
 			i18n._(msg`Sign out?`),
@@ -158,6 +226,25 @@ export function GeneralSettingsView() {
 							canEdit={canManageWorkspace}
 							isSaving={updateSmartSearchResult.fetching}
 							onToggle={handleToggleSmartSearch}
+						/>
+					</div>
+					<div className="border-t border-border" />
+					<div className="px-8">
+						<WorkspaceAutoSyncSection
+							enabled={autoSyncEnabled}
+							cron={autoSyncCron}
+							scope={autoSyncScope}
+							selectedProviderIds={autoSyncProviderIds}
+							providers={providersResult.data?.storageProviders ?? []}
+							canEdit={canManageWorkspace}
+							isSaving={updateAutoSyncResult.fetching}
+							onEnabledChange={setAutoSyncEnabled}
+							onCronChange={setAutoSyncCron}
+							onScopeChange={(scope) =>
+								setAutoSyncScope(scope as WorkspaceAutoSyncScope)
+							}
+							onProviderToggle={handleToggleAutoSyncProvider}
+							onSave={handleSaveAutoSync}
 						/>
 					</div>
 					<div className="border-t border-border" />
