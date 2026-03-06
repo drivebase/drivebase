@@ -170,9 +170,29 @@ async function listCollectionContents(
 	resource: Extract<WebDavResource, { kind: "root" | "directory" }>,
 ): Promise<ContentsResult> {
 	if (resource.kind === "root") {
-		return getRootContents(db, principal, scopes);
+		const contents = await getRootContents(db, principal, scopes);
+		return contents;
 	}
-	return getDirectoryContents(db, principal, resource);
+	const contents = await getDirectoryContents(db, principal, resource);
+	logger.debug({
+		msg: "Loaded WebDAV directory contents",
+		requestPath: resource.requestPath,
+		directoryId: resource.node.id,
+		providerId: resource.provider.id,
+		folderCount: contents.folders.length,
+		fileCount: contents.files.length,
+		folders: contents.folders.map((folder) => ({
+			id: folder.id,
+			name: folder.name,
+			providerId: folder.providerId,
+		})),
+		files: contents.files.map((file) => ({
+			id: file.id,
+			name: file.name,
+			providerId: file.providerId,
+		})),
+	});
+	return contents;
 }
 
 function resolveScopeForNode(
@@ -312,6 +332,7 @@ export async function resolveWebDavResource(
 			requestPath,
 			segment,
 			index,
+			currentPath: current.requestPath,
 		});
 		throw new NotFoundError("WebDAV resource");
 	}

@@ -5,6 +5,13 @@ import { resolveWebDavPrincipalScopes } from "@/service/webdav/query/resolve-web
 import { logger } from "@/utils/runtime/logger";
 import type { AppEnv } from "../../app";
 
+function isFinderProbePath(path: string): boolean {
+	return path
+		.split("/")
+		.filter(Boolean)
+		.some((segment) => segment === ".DS_Store" || segment.startsWith("._"));
+}
+
 function decodeBasicAuth(
 	header: string | undefined,
 ): { username: string; password: string } | null {
@@ -27,13 +34,15 @@ export async function webDavAuthMiddleware(
 	c: Context<AppEnv>,
 	next: Next,
 ): Promise<Response | undefined> {
-	logger.debug({
-		msg: "Received WebDAV request",
-		method: c.req.method,
-		path: c.req.path,
-		userAgent: c.req.header("user-agent") ?? null,
-		hasAuthorization: Boolean(c.req.header("authorization")),
-	});
+	if (!isFinderProbePath(c.req.path)) {
+		logger.debug({
+			msg: "Received WebDAV request",
+			method: c.req.method,
+			path: c.req.path,
+			userAgent: c.req.header("user-agent") ?? null,
+			hasAuthorization: Boolean(c.req.header("authorization")),
+		});
+	}
 
 	const auth = decodeBasicAuth(c.req.header("authorization"));
 	if (!auth) {

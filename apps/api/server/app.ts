@@ -6,6 +6,7 @@ import type {
 } from "@/service/webdav/shared/types";
 import { env } from "../config/env";
 import type { JWTPayload } from "../utils/auth/jwt";
+import { logger } from "../utils/runtime/logger";
 
 /**
  * Hono app environment with typed context variables
@@ -36,6 +37,28 @@ export function createApp(): Hono<AppEnv> {
 		allowMethods: ["POST", "GET", "PUT", "OPTIONS"],
 		allowHeaders: ["Content-Type", "Authorization", "x-workspace-id"],
 		exposeHeaders: ["Content-Disposition"],
+	});
+
+	app.use("/dav", async (c, next) => {
+		logger.debug({
+			msg: "API received WebDAV request",
+			method: c.req.method,
+			path: c.req.path,
+			userAgent: c.req.header("user-agent") ?? null,
+			origin: c.req.header("origin") ?? null,
+		});
+		await next();
+	});
+
+	app.use("/dav/*", async (c, next) => {
+		logger.debug({
+			msg: "API received WebDAV request",
+			method: c.req.method,
+			path: c.req.path,
+			userAgent: c.req.header("user-agent") ?? null,
+			origin: c.req.header("origin") ?? null,
+		});
+		await next();
 	});
 
 	// Global CORS middleware

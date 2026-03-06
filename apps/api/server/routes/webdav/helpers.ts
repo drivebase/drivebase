@@ -16,6 +16,20 @@ export function getWebDavRequestPath(c: Context<AppEnv>): string {
 	return path || "/";
 }
 
+export function isFinderMetadataProbe(path: string): boolean {
+	return path
+		.split("/")
+		.filter(Boolean)
+		.some((segment) => segment === ".DS_Store" || segment.startsWith("._"));
+}
+
+class IgnoredWebDavProbeError extends Error {
+	constructor() {
+		super("Ignored WebDAV client probe");
+		this.name = "IgnoredWebDavProbeError";
+	}
+}
+
 export function buildDavHeaders(extra?: Record<string, string>) {
 	return {
 		DAV: "1",
@@ -35,6 +49,10 @@ export async function resolveRequestResource(
 	}
 
 	const requestPath = getWebDavRequestPath(c);
+	if (isFinderMetadataProbe(requestPath)) {
+		throw new IgnoredWebDavProbeError();
+	}
+
 	logger.debug({
 		msg: "Resolving WebDAV resource",
 		method: c.req.method,
@@ -58,14 +76,16 @@ export async function buildPropfindResponse(
 	const depth = c.req.header("Depth") ?? "1";
 	const resources: WebDavResource[] = [resource];
 	const db = getDb();
-	logger.debug({
-		msg: "Handling WebDAV PROPFIND",
-		requestPath: resource.requestPath,
-		resourceKind: resource.kind,
-		depth,
-		userId: principal.userId,
-		workspaceId: principal.workspaceId,
-	});
+	if (resource.kind !== "root") {
+		logger.debug({
+			msg: "Handling WebDAV PROPFIND",
+			requestPath: resource.requestPath,
+			resourceKind: resource.kind,
+			depth,
+			userId: principal.userId,
+			workspaceId: principal.workspaceId,
+		});
+	}
 
 	if (depth !== "0" && resource.kind !== "file") {
 		const children = await listWebDavCollectionMembers(
@@ -79,12 +99,14 @@ export async function buildPropfindResponse(
 
 	const url = new URL(c.req.url);
 	const xml = buildPropfindXml(url, resources);
-	logger.debug({
-		msg: "Built WebDAV PROPFIND response",
-		requestPath: resource.requestPath,
-		resourceKind: resource.kind,
-		responseCount: resources.length,
-	});
+	if (resource.kind !== "root") {
+		logger.debug({
+			msg: "Built WebDAV PROPFIND response",
+			requestPath: resource.requestPath,
+			resourceKind: resource.kind,
+			responseCount: resources.length,
+		});
+	}
 	return new Response(xml, {
 		status: 207,
 		headers: buildDavHeaders({
@@ -161,6 +183,13 @@ export async function streamWebDavFile(
 }
 
 export function mapWebDavError(error: unknown): Response {
+	if (error instanceof IgnoredWebDavProbeError) {
+		return new Response("Not found", {
+			status: 404,
+			headers: buildDavHeaders(),
+		});
+	}
+
 	logger.debug({
 		msg: "WebDAV request failed",
 		error: error instanceof Error ? error.message : String(error),
