@@ -184,8 +184,7 @@ export function WebDavSection() {
 					</h3>
 					<p className="text-sm text-muted-foreground">
 						<Trans>
-							Expose workspace files through a read-only WebDAV endpoint with
-							standalone usernames and app passwords.
+							Expose workspace files through a read-only WebDAV endpoint.
 						</Trans>
 					</p>
 				</div>
