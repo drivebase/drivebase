@@ -22,13 +22,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useProviders } from "@/features/providers";
 import {
@@ -76,7 +69,6 @@ export function WebDavSection() {
 	const [createOpen, setCreateOpen] = useState(false);
 	const [name, setName] = useState("");
 	const [username, setUsername] = useState("");
-	const [userId, setUserId] = useState("");
 	const [allProviders, setAllProviders] = useState(true);
 	const [providerScopes, setProviderScopes] = useState<
 		{ providerId: string; basePath: string }[]
@@ -88,9 +80,17 @@ export function WebDavSection() {
 	} | null>(null);
 	const [copied, setCopied] = useState(false);
 
-	const members = membersResult.data?.workspaceMembers ?? [];
 	const providers = providersResult.data?.storageProviders ?? [];
 	const credentials = data?.webDavCredentials ?? [];
+	const sortedCredentials = useMemo(() => {
+		return [...credentials].sort((a, b) => {
+			if (a.isActive !== b.isActive) {
+				return a.isActive ? -1 : 1;
+			}
+
+			return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+		});
+	}, [credentials]);
 	const endpoint =
 		typeof window !== "undefined" ? `${window.location.origin}/dav` : "/dav";
 
@@ -98,7 +98,6 @@ export function WebDavSection() {
 		if (
 			!name.trim() ||
 			!username.trim() ||
-			!userId ||
 			(!allProviders && providerScopes.length === 0)
 		) {
 			toast.error("Fill out all required fields");
@@ -111,7 +110,6 @@ export function WebDavSection() {
 				input: {
 					name: name.trim(),
 					username: username.trim(),
-					userId,
 					providerScopes: allProviders ? null : providerScopes,
 				},
 			});
@@ -123,7 +121,6 @@ export function WebDavSection() {
 			setCreateOpen(false);
 			setName("");
 			setUsername("");
-			setUserId("");
 			setAllProviders(true);
 			setProviderScopes([]);
 			setRevealed({
@@ -188,7 +185,7 @@ export function WebDavSection() {
 					<p className="text-sm text-muted-foreground">
 						<Trans>
 							Expose workspace files through a read-only WebDAV endpoint with
-							user-bound app passwords.
+							standalone usernames and app passwords.
 						</Trans>
 					</p>
 				</div>
@@ -211,17 +208,17 @@ export function WebDavSection() {
 				</p>
 			</div>
 
-			{fetching && credentials.length === 0 ? (
+			{fetching && sortedCredentials.length === 0 ? (
 				<p className="text-sm text-muted-foreground">
 					<Trans>Loading...</Trans>
 				</p>
-			) : credentials.length === 0 ? (
+			) : sortedCredentials.length === 0 ? (
 				<p className="text-sm text-muted-foreground">
 					<Trans>No WebDAV credentials yet.</Trans>
 				</p>
 			) : (
 				<div className="border divide-y">
-					{credentials.map((credential) => (
+					{sortedCredentials.map((credential) => (
 						<div
 							key={credential.id}
 							className="p-4 flex items-start justify-between gap-4"
@@ -236,9 +233,6 @@ export function WebDavSection() {
 										</Badge>
 									)}
 								</div>
-								<p className="text-sm text-muted-foreground">
-									{credential.userName} · {credential.userEmail}
-								</p>
 								<div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
 									<Badge variant="outline" className="text-xs">
 										{credential.providerScopes
@@ -326,23 +320,6 @@ export function WebDavSection() {
 								onChange={(e) => setUsername(e.target.value)}
 								placeholder="alice.webdav"
 							/>
-						</div>
-						<div className="space-y-2">
-							<Label>
-								<Trans>Drivebase User</Trans>
-							</Label>
-							<Select value={userId} onValueChange={setUserId}>
-								<SelectTrigger>
-									<SelectValue placeholder="Select a workspace member" />
-								</SelectTrigger>
-								<SelectContent>
-									{members.map((member) => (
-										<SelectItem key={member.userId} value={member.userId}>
-											{member.name} ({member.email})
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
 						</div>
 						<div className="space-y-3">
 							<div>

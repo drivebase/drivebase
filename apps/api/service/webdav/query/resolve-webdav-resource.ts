@@ -19,7 +19,6 @@ import type { WebDavResolvedProviderScope } from "../shared/types";
 
 type WebDavPrincipalRef = {
 	workspaceId: string;
-	userId: string;
 };
 
 function isDirectoryResource(
@@ -66,19 +65,13 @@ async function getScopedRootContents(
 ): Promise<ContentsResult> {
 	const providerIds = [scope.providerId];
 	if (scope.basePath === "/") {
-		return getContents(
-			db,
-			principal.workspaceId,
-			principal.userId,
-			undefined,
-			providerIds,
-		);
+		return getContents(db, principal.workspaceId, null, undefined, providerIds);
 	}
 
 	const rootContents = await getContents(
 		db,
 		principal.workspaceId,
-		principal.userId,
+		null,
 		undefined,
 		providerIds,
 	);
@@ -91,7 +84,7 @@ async function getScopedRootContents(
 		const nextContents = await getContents(
 			db,
 			principal.workspaceId,
-			principal.userId,
+			null,
 			currentFolder.id,
 			providerIds,
 		);
@@ -104,7 +97,6 @@ async function getScopedRootContents(
 		logger.debug({
 			msg: "Scoped WebDAV base path folder was not found",
 			workspaceId: principal.workspaceId,
-			userId: principal.userId,
 			providerId: scope.providerId,
 			basePath: scope.basePath,
 		});
@@ -114,7 +106,7 @@ async function getScopedRootContents(
 	return getContents(
 		db,
 		principal.workspaceId,
-		principal.userId,
+		null,
 		currentFolder.id,
 		providerIds,
 	);
@@ -135,7 +127,7 @@ async function getRootContents(
 	scopes: WebDavResolvedProviderScope[] | null,
 ): Promise<ContentsResult> {
 	if (!scopes || scopes.length === 0) {
-		return getContents(db, principal.workspaceId, principal.userId);
+		return getContents(db, principal.workspaceId, null);
 	}
 
 	const results = await Promise.all(
@@ -154,13 +146,9 @@ async function getDirectoryContents(
 	principal: WebDavPrincipalRef,
 	resource: Extract<WebDavResource, { kind: "directory" }>,
 ): Promise<ContentsResult> {
-	return getContents(
-		db,
-		principal.workspaceId,
-		principal.userId,
-		resource.node.id,
-		[resource.provider.id],
-	);
+	return getContents(db, principal.workspaceId, null, resource.node.id, [
+		resource.provider.id,
+	]);
 }
 
 async function listCollectionContents(
@@ -268,7 +256,6 @@ export async function resolveWebDavResource(
 		logger.debug({
 			msg: "Resolved WebDAV root resource",
 			workspaceId: principal.workspaceId,
-			userId: principal.userId,
 			scopedProviderCount: scopes?.length ?? 0,
 		});
 		return {

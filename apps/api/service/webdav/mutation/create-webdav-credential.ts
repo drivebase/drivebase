@@ -1,12 +1,6 @@
 import { ConflictError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import {
-	users,
-	storageProviders,
-	webdavCredentials,
-	workspaceMemberships,
-	workspaces,
-} from "@drivebase/db";
+import { storageProviders, webdavCredentials } from "@drivebase/db";
 import { and, eq, inArray } from "drizzle-orm";
 import { hashPassword } from "@/utils/auth/password";
 import { listWebDavCredentials } from "../query";
@@ -29,42 +23,6 @@ export async function createWebDavCredential(
 	const username = normalizeWebDavUsername(input.username);
 	const providerScopes = normalizeWebDavProviderScopes(input.providerScopes);
 	const providerIds = providerScopes?.map((scope) => scope.providerId) ?? [];
-
-	const [user] = await db
-		.select({ id: users.id })
-		.from(users)
-		.where(eq(users.id, input.userId))
-		.limit(1);
-	if (!user) {
-		throw new ValidationError("Selected user was not found");
-	}
-
-	const [membership] = await db
-		.select({ userId: workspaces.ownerId })
-		.from(workspaces)
-		.where(
-			and(eq(workspaces.id, workspaceId), eq(workspaces.ownerId, input.userId)),
-		)
-		.limit(1);
-
-	if (!membership) {
-		const [workspaceMembership] = await db
-			.select({ userId: workspaceMemberships.userId })
-			.from(workspaceMemberships)
-			.where(
-				and(
-					eq(workspaceMemberships.workspaceId, workspaceId),
-					eq(workspaceMemberships.userId, input.userId),
-				),
-			)
-			.limit(1);
-
-		if (!workspaceMembership) {
-			throw new ValidationError(
-				"Selected user must belong to the active workspace",
-			);
-		}
-	}
 
 	const [existing] = await db
 		.select({ id: webdavCredentials.id })
@@ -101,7 +59,6 @@ export async function createWebDavCredential(
 		.insert(webdavCredentials)
 		.values({
 			workspaceId,
-			userId: input.userId,
 			name: input.name.trim(),
 			username,
 			passwordHash,

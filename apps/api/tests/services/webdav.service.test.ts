@@ -1,12 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
 const verifyPassword = mock();
-const getWorkspaceAccessRole = mock();
 const getWebDavCredentialByUsername = mock();
-
-mock.module("../../service/workspace", () => ({
-	getWorkspaceAccessRole,
-}));
 
 mock.module("../../utils/auth/password", () => ({
 	verifyPassword,
@@ -59,7 +54,6 @@ describe("authenticateWebDavCredential", () => {
 
 	beforeEach(() => {
 		verifyPassword.mockReset();
-		getWorkspaceAccessRole.mockReset();
 		getWebDavCredentialByUsername.mockReset();
 		db.update.mockReset();
 		db.set.mockReset();
@@ -75,18 +69,13 @@ describe("authenticateWebDavCredential", () => {
 		getWebDavCredentialByUsername.mockResolvedValue({
 			credentialId: "cred-1",
 			workspaceId: "ws-1",
-			userId: "user-1",
-			email: "user@example.com",
-			name: "Alice",
-			role: "viewer",
-			userIsActive: true,
+			name: "Mac Finder access",
 			username: "alice.webdav",
 			passwordHash: "hash",
 			providerScopes: [{ providerId: "provider-1", basePath: "/docs" }],
 			isActive: true,
 		});
 		verifyPassword.mockResolvedValue(true);
-		getWorkspaceAccessRole.mockResolvedValue("viewer");
 
 		const result = await authenticateWebDavCredential(
 			db as any,
@@ -97,10 +86,7 @@ describe("authenticateWebDavCredential", () => {
 		expect(result).toEqual({
 			credentialId: "cred-1",
 			workspaceId: "ws-1",
-			userId: "user-1",
-			email: "user@example.com",
-			name: "Alice",
-			role: "viewer",
+			name: "Mac Finder access",
 			username: "alice.webdav",
 			providerScopes: [{ providerId: "provider-1", basePath: "/docs" }],
 		});
@@ -111,18 +97,13 @@ describe("authenticateWebDavCredential", () => {
 		getWebDavCredentialByUsername.mockResolvedValue({
 			credentialId: "cred-1",
 			workspaceId: "ws-1",
-			userId: "user-1",
-			email: "user@example.com",
-			name: "Alice",
-			role: "viewer",
-			userIsActive: true,
+			name: "Mac Finder access",
 			username: "alice.webdav",
 			passwordHash: "hash",
 			providerScopes: null,
 			isActive: true,
 		});
 		verifyPassword.mockResolvedValue(true);
-		getWorkspaceAccessRole.mockResolvedValue("viewer");
 
 		const result = await authenticateWebDavCredential(
 			db as any,
@@ -133,29 +114,23 @@ describe("authenticateWebDavCredential", () => {
 		expect(result.providerScopes).toBeNull();
 	});
 
-	it("rejects credentials whose users lost workspace access", async () => {
+	it("rejects inactive credentials", async () => {
 		getWebDavCredentialByUsername.mockResolvedValue({
 			credentialId: "cred-1",
 			workspaceId: "ws-1",
-			userId: "user-1",
-			email: "user@example.com",
-			name: "Alice",
-			role: "viewer",
-			userIsActive: true,
+			name: "Mac Finder access",
 			username: "alice.webdav",
 			passwordHash: "hash",
 			providerScopes: [{ providerId: "provider-1", basePath: "/" }],
-			isActive: true,
+			isActive: false,
 		});
-		verifyPassword.mockResolvedValue(true);
-		getWorkspaceAccessRole.mockResolvedValue(null);
 
 		try {
 			await authenticateWebDavCredential(db as any, "alice.webdav", "secret");
 			throw new Error("Expected authenticateWebDavCredential to throw");
 		} catch (error) {
 			expect(error instanceof Error ? error.message : String(error)).toContain(
-				"workspace",
+				"credentials",
 			);
 		}
 	});

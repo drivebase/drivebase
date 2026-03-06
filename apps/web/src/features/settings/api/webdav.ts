@@ -5,9 +5,6 @@ export const WEBDAV_CREDENTIALS_QUERY = graphql(`
     webDavCredentials {
       id
       workspaceId
-      userId
-      userName
-      userEmail
       name
       username
       providerScopes {
@@ -28,9 +25,6 @@ export const CREATE_WEBDAV_CREDENTIAL_MUTATION = graphql(`
       credential {
         id
         workspaceId
-        userId
-        userName
-        userEmail
         name
         username
         providerScopes {

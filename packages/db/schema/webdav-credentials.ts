@@ -8,7 +8,6 @@ import {
 	uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { createId } from "../utils";
-import { users } from "./users";
 import { workspaces } from "./workspaces";
 
 export const webdavCredentials = pgTable(
@@ -20,9 +19,6 @@ export const webdavCredentials = pgTable(
 		workspaceId: text("workspace_id")
 			.notNull()
 			.references(() => workspaces.id, { onDelete: "cascade" }),
-		userId: text("user_id")
-			.notNull()
-			.references(() => users.id, { onDelete: "cascade" }),
 		name: text("name").notNull(),
 		username: text("username").notNull(),
 		passwordHash: text("password_hash").notNull(),
@@ -41,7 +37,6 @@ export const webdavCredentials = pgTable(
 	},
 	(table) => [
 		index("webdav_credentials_workspace_id_idx").on(table.workspaceId),
-		index("webdav_credentials_user_id_idx").on(table.userId),
 		uniqueIndex("webdav_credentials_username_unique").on(table.username),
 	],
 );

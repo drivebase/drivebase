@@ -59,12 +59,14 @@ function toWebReadableStream(
 	nodeStream: NodeJS.ReadableStream,
 	providerErrorFactory: (error: unknown) => ProviderError,
 ): ReadableStream<Uint8Array> {
+	let closed = false;
+	let finalized = false;
+	let cleanup = () => {};
+	let destroyNodeStream = () => {};
+
 	return new ReadableStream<Uint8Array>({
 		start(controller) {
-			let closed = false;
-			let finalized = false;
-
-			const destroyNodeStream = () => {
+			destroyNodeStream = () => {
 				if (
 					"destroy" in nodeStream &&
 					typeof nodeStream.destroy === "function"
@@ -73,7 +75,7 @@ function toWebReadableStream(
 				}
 			};
 
-			const cleanup = () => {
+			cleanup = () => {
 				nodeStream.off("data", onData);
 				nodeStream.off("end", onEnd);
 				nodeStream.off("close", onClose);

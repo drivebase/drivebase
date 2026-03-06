@@ -9,7 +9,6 @@ export interface WebDavProviderScope {
 }
 
 export interface CreateWebDavCredentialInput {
-	userId: string;
 	name: string;
 	username: string;
 	providerScopes?: WebDavProviderScopeInput[] | null;
@@ -18,10 +17,7 @@ export interface CreateWebDavCredentialInput {
 export interface WebDavAuthResult {
 	credentialId: string;
 	workspaceId: string;
-	userId: string;
-	email: string;
 	name: string;
-	role: string;
 	username: string;
 	providerScopes: WebDavProviderScope[] | null;
 }

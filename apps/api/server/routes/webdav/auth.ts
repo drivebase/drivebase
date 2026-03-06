@@ -70,7 +70,7 @@ export async function webDavAuthMiddleware(
 		logger.debug({
 			msg: "WebDAV authentication succeeded",
 			username: principal.username,
-			userId: principal.userId,
+			credentialId: principal.credentialId,
 			workspaceId: principal.workspaceId,
 			scopeCount: scopes?.length ?? 0,
 		});

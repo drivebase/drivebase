@@ -1,5 +1,5 @@
 import type { Database } from "@drivebase/db";
-import { users, webdavCredentials } from "@drivebase/db";
+import { webdavCredentials } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 
 export async function getWebDavCredentialByUsername(
@@ -10,18 +10,13 @@ export async function getWebDavCredentialByUsername(
 		.select({
 			credentialId: webdavCredentials.id,
 			workspaceId: webdavCredentials.workspaceId,
-			userId: webdavCredentials.userId,
-			email: users.email,
-			name: users.name,
-			role: users.role,
-			userIsActive: users.isActive,
+			name: webdavCredentials.name,
 			username: webdavCredentials.username,
 			passwordHash: webdavCredentials.passwordHash,
 			providerScopes: webdavCredentials.providerScopes,
 			isActive: webdavCredentials.isActive,
 		})
 		.from(webdavCredentials)
-		.innerJoin(users, eq(users.id, webdavCredentials.userId))
 		.where(
 			and(
 				eq(webdavCredentials.username, username),

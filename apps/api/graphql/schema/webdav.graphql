@@ -1,12 +1,9 @@
 """
-Hosted WebDAV credentials bound to existing users
+Hosted standalone WebDAV credentials
 """
 type WebDavCredential {
 	id: ID!
 	workspaceId: ID!
-	userId: ID!
-	userName: String!
-	userEmail: String!
 	name: String!
 	username: String!
 	providerScopes: [ApiKeyProviderScope!]
@@ -22,7 +19,6 @@ type CreateWebDavCredentialResult {
 }
 
 input CreateWebDavCredentialInput {
-	userId: ID!
 	name: String!
 	username: String!
 	providerScopes: [ApiKeyProviderScopeInput!]

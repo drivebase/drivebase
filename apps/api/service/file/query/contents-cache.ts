@@ -11,7 +11,7 @@ function normalizeNullableId(value: string | null | undefined): string | null {
 export async function refreshSingleFolderCache(
 	db: Database,
 	workspaceId: string,
-	userId: string,
+	userId: string | null,
 	providerRecord: typeof storageProviders.$inferSelect,
 	remoteFolderId: string | undefined,
 	parentDbId: string | null,

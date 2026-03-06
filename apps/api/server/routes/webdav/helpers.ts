@@ -1,7 +1,7 @@
 import { ConflictError, DrivebaseError, NotFoundError } from "@drivebase/core";
 import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
-import { ProviderService } from "@/service/provider";
+import { getProvider, getProviderInstance } from "@/service/provider/query";
 import {
 	listWebDavCollectionMembers,
 	resolveWebDavResource,
@@ -57,7 +57,7 @@ export async function resolveRequestResource(
 		msg: "Resolving WebDAV resource",
 		method: c.req.method,
 		requestPath,
-		userId: principal.userId,
+		credentialId: principal.credentialId,
 		workspaceId: principal.workspaceId,
 	});
 
@@ -82,7 +82,7 @@ export async function buildPropfindResponse(
 			requestPath: resource.requestPath,
 			resourceKind: resource.kind,
 			depth,
-			userId: principal.userId,
+			credentialId: principal.credentialId,
 			workspaceId: principal.workspaceId,
 		});
 	}
@@ -130,7 +130,7 @@ export async function streamWebDavFile(
 			requestPath: resource.requestPath,
 			resourceKind: resource.kind,
 			method: c.req.method,
-			userId: principal.userId,
+			credentialId: principal.credentialId,
 			workspaceId: principal.workspaceId,
 		});
 
@@ -149,13 +149,12 @@ export async function streamWebDavFile(
 		});
 	}
 
-	const providerService = new ProviderService(getDb());
-	const providerRecord = await providerService.getProvider(
+	const providerRecord = await getProvider(
+		getDb(),
 		resource.provider.id,
-		principal.userId,
 		principal.workspaceId,
 	);
-	const provider = await providerService.getProviderInstance(providerRecord);
+	const provider = await getProviderInstance(providerRecord);
 	const stream = await provider.downloadFile(resource.node.remoteId);
 	logger.debug({
 		msg: "Streaming WebDAV file",

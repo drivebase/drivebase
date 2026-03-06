@@ -35,7 +35,6 @@ export const webDavMutations: MutationResolvers = {
 		]);
 
 		return createWebDavCredential(context.db, workspaceId, {
-			userId: args.input.userId,
 			name: args.input.name,
 			username: args.input.username,
 			providerScopes: args.input.providerScopes
