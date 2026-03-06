@@ -12,7 +12,7 @@ export interface CreateWebDavCredentialInput {
 	userId: string;
 	name: string;
 	username: string;
-	providerScopes: WebDavProviderScopeInput[];
+	providerScopes?: WebDavProviderScopeInput[] | null;
 }
 
 export interface WebDavAuthResult {
@@ -23,7 +23,7 @@ export interface WebDavAuthResult {
 	name: string;
 	role: string;
 	username: string;
-	providerScopes: WebDavProviderScope[];
+	providerScopes: WebDavProviderScope[] | null;
 }
 
 export interface WebDavResolvedProviderScope extends WebDavProviderScope {

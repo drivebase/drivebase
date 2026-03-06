@@ -15,10 +15,10 @@ function normalizeScopePath(basePath?: string | null): string {
 }
 
 export function normalizeWebDavProviderScopes(
-	inputScopes: WebDavProviderScopeInput[],
-): WebDavProviderScope[] {
-	if (inputScopes.length === 0) {
-		throw new ValidationError("Select at least one provider scope");
+	inputScopes?: WebDavProviderScopeInput[] | null,
+): WebDavProviderScope[] | null {
+	if (!inputScopes || inputScopes.length === 0) {
+		return null;
 	}
 
 	const seenProviderIds = new Set<string>();

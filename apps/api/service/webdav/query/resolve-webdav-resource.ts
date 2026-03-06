@@ -1,233 +1,246 @@
 import { NotFoundError } from "@drivebase/core";
-import type { Database, Node, StorageProvider } from "@drivebase/db";
-import { files, folders, storageProviders } from "@drivebase/db";
-import { and, eq, isNull } from "drizzle-orm";
-import { refreshSingleFolderCache } from "@/service/file/query/contents-cache";
+import type {
+	ContentsResult,
+	FileRecord,
+	FolderRecord,
+} from "@/service/file/types";
+import { getContents } from "@/service/file/query/contents";
 import { logger } from "@/utils/runtime/logger";
+import type { Database, StorageProvider } from "@drivebase/db";
+import { storageProviders } from "@drivebase/db";
+import { and, eq, inArray } from "drizzle-orm";
 import {
 	ensureTrailingSlash,
 	normalizeWebDavRequestPath,
 	splitWebDavPath,
-	toFolderVirtualPath,
 } from "../shared/path";
 import type { WebDavResource } from "../shared/resource-types";
 import type { WebDavResolvedProviderScope } from "../shared/types";
 
-async function getProviderRecord(
+type WebDavPrincipalRef = {
+	workspaceId: string;
+	userId: string;
+};
+
+function isDirectoryResource(
+	resource: WebDavResource,
+): resource is Extract<WebDavResource, { kind: "directory" }> {
+	return resource.kind === "directory";
+}
+
+function isFileResource(
+	resource: WebDavResource,
+): resource is Extract<WebDavResource, { kind: "file" }> {
+	return resource.kind === "file";
+}
+
+async function getProviderMap(
 	db: Database,
 	workspaceId: string,
-	providerId: string,
-): Promise<StorageProvider> {
-	const [provider] = await db
-		.select()
+	providerIds: string[],
+): Promise<Map<string, Pick<StorageProvider, "id" | "name" | "workspaceId">>> {
+	if (providerIds.length === 0) return new Map();
+
+	const providers = await db
+		.select({
+			id: storageProviders.id,
+			name: storageProviders.name,
+			workspaceId: storageProviders.workspaceId,
+		})
 		.from(storageProviders)
 		.where(
 			and(
-				eq(storageProviders.id, providerId),
 				eq(storageProviders.workspaceId, workspaceId),
+				inArray(storageProviders.id, providerIds),
 				eq(storageProviders.isActive, true),
 			),
-		)
-		.limit(1);
+		);
 
-	if (!provider) {
-		throw new NotFoundError("Provider");
-	}
-
-	return provider;
+	return new Map(providers.map((provider) => [provider.id, provider]));
 }
 
-async function findFolderByVirtualPath(
+async function getScopedRootContents(
 	db: Database,
-	workspaceId: string,
-	providerId: string,
-	virtualPath: string,
-): Promise<Node | null> {
-	return db
-		.select()
-		.from(folders)
-		.where(
-			and(
-				eq(folders.workspaceId, workspaceId),
-				eq(folders.providerId, providerId),
-				eq(folders.nodeType, "folder"),
-				eq(folders.virtualPath, ensureTrailingSlash(virtualPath)),
-				eq(folders.isDeleted, false),
-				isNull(folders.vaultId),
-			),
-		)
-		.limit(1)
-		.then((rows) => rows[0] ?? null);
-}
-
-async function ensureFolderPathWarmed(
-	db: Database,
-	workspaceId: string,
-	userId: string,
-	provider: StorageProvider,
-	virtualPath: string,
-): Promise<Node | null> {
-	if (virtualPath === "/") {
-		logger.debug({
-			msg: "Warming WebDAV provider root",
-			workspaceId,
-			userId,
-			providerId: provider.id,
-		});
-		await refreshSingleFolderCache(
+	principal: WebDavPrincipalRef,
+	scope: WebDavResolvedProviderScope,
+): Promise<ContentsResult> {
+	const providerIds = [scope.providerId];
+	if (scope.basePath === "/") {
+		return getContents(
 			db,
-			workspaceId,
-			userId,
-			provider,
+			principal.workspaceId,
+			principal.userId,
 			undefined,
-			null,
-			"/",
+			providerIds,
 		);
-		return null;
 	}
 
-	const segments = splitWebDavPath(virtualPath);
-	let parentDbId: string | null = null;
-	let remoteFolderId: string | undefined;
-	let traversedPath = "/";
-	let currentFolder: Node | null = null;
-
-	for (const segment of segments) {
-		logger.debug({
-			msg: "Warming WebDAV folder segment",
-			workspaceId,
-			userId,
-			providerId: provider.id,
-			segment,
-			traversedPath,
-			parentDbId,
-		});
-		await refreshSingleFolderCache(
-			db,
-			workspaceId,
-			userId,
-			provider as StorageProvider,
-			remoteFolderId,
-			parentDbId,
-			traversedPath,
-		);
-		traversedPath = ensureTrailingSlash(`${traversedPath}${segment}`);
-		currentFolder = await findFolderByVirtualPath(
-			db,
-			workspaceId,
-			provider.id,
-			traversedPath,
-		);
-		if (!currentFolder) {
-			logger.debug({
-				msg: "WebDAV folder segment not found after warming",
-				workspaceId,
-				providerId: provider.id,
-				traversedPath,
-			});
-			return null;
-		}
-		parentDbId = currentFolder.id;
-		remoteFolderId = currentFolder.remoteId;
-	}
-
-	return currentFolder;
-}
-
-async function warmChildren(
-	db: Database,
-	workspaceId: string,
-	userId: string,
-	provider: StorageProvider,
-	folder: Node | null,
-	parentPath: string,
-) {
-	logger.debug({
-		msg: "Warming WebDAV collection children",
-		workspaceId,
-		userId,
-		providerId: provider.id,
-		folderId: folder?.id ?? null,
-		parentPath,
-	});
-	await refreshSingleFolderCache(
-		db,
-		workspaceId,
-		userId,
-		provider,
-		folder?.remoteId,
-		folder?.id ?? null,
-		toFolderVirtualPath(parentPath),
-	);
-}
-
-export async function warmWebDavCollection(
-	db: Database,
-	principal: {
-		workspaceId: string;
-		userId: string;
-	},
-	resource: WebDavResource,
-) {
-	if (resource.kind === "root" || resource.kind === "file") return;
-	await warmChildren(
+	const rootContents = await getContents(
 		db,
 		principal.workspaceId,
 		principal.userId,
-		resource.provider as StorageProvider,
-		resource.kind === "providerRoot" ? resource.scopeFolder : resource.node,
-		resource.kind === "providerRoot"
-			? resource.scope.basePath
-			: resource.node.virtualPath,
+		undefined,
+		providerIds,
+	);
+
+	const segments = splitWebDavPath(scope.basePath);
+	let currentFolder: (typeof rootContents.folders)[number] | undefined =
+		rootContents.folders.find((folder) => folder.name === segments[0]);
+
+	for (let index = 1; index < segments.length && currentFolder; index += 1) {
+		const nextContents = await getContents(
+			db,
+			principal.workspaceId,
+			principal.userId,
+			currentFolder.id,
+			providerIds,
+		);
+		currentFolder = nextContents.folders.find(
+			(folder) => folder.name === segments[index],
+		);
+	}
+
+	if (!currentFolder) {
+		logger.debug({
+			msg: "Scoped WebDAV base path folder was not found",
+			workspaceId: principal.workspaceId,
+			userId: principal.userId,
+			providerId: scope.providerId,
+			basePath: scope.basePath,
+		});
+		return { files: [], folders: [], folder: null };
+	}
+
+	return getContents(
+		db,
+		principal.workspaceId,
+		principal.userId,
+		currentFolder.id,
+		providerIds,
 	);
 }
 
-export async function listDirectoryChildren(
-	db: Database,
-	workspaceId: string,
-	providerId: string,
-	folderId: string | null,
-) {
-	const [folderRows, fileRows] = await Promise.all([
-		db
-			.select()
-			.from(folders)
-			.where(
-				and(
-					eq(folders.workspaceId, workspaceId),
-					eq(folders.providerId, providerId),
-					eq(folders.nodeType, "folder"),
-					folderId ? eq(folders.parentId, folderId) : isNull(folders.parentId),
-					eq(folders.isDeleted, false),
-					isNull(folders.vaultId),
-				),
-			)
-			.orderBy(folders.name),
-		db
-			.select()
-			.from(files)
-			.where(
-				and(
-					eq(files.providerId, providerId),
-					eq(files.nodeType, "file"),
-					folderId ? eq(files.folderId, folderId) : isNull(files.folderId),
-					eq(files.isDeleted, false),
-					isNull(files.vaultId),
-				),
-			)
-			.orderBy(files.name),
-	]);
+function dedupeById<T extends { id: string }>(items: T[]): T[] {
+	const seen = new Set<string>();
+	return items.filter((item) => {
+		if (seen.has(item.id)) return false;
+		seen.add(item.id);
+		return true;
+	});
+}
 
-	return { folders: folderRows, files: fileRows };
+async function getRootContents(
+	db: Database,
+	principal: WebDavPrincipalRef,
+	scopes: WebDavResolvedProviderScope[] | null,
+): Promise<ContentsResult> {
+	if (!scopes || scopes.length === 0) {
+		return getContents(db, principal.workspaceId, principal.userId);
+	}
+
+	const results = await Promise.all(
+		scopes.map((scope) => getScopedRootContents(db, principal, scope)),
+	);
+
+	return {
+		files: dedupeById(results.flatMap((result) => result.files)),
+		folders: dedupeById(results.flatMap((result) => result.folders)),
+		folder: null,
+	};
+}
+
+async function getDirectoryContents(
+	db: Database,
+	principal: WebDavPrincipalRef,
+	resource: Extract<WebDavResource, { kind: "directory" }>,
+): Promise<ContentsResult> {
+	return getContents(
+		db,
+		principal.workspaceId,
+		principal.userId,
+		resource.node.id,
+		[resource.provider.id],
+	);
+}
+
+async function listCollectionContents(
+	db: Database,
+	principal: WebDavPrincipalRef,
+	scopes: WebDavResolvedProviderScope[] | null,
+	resource: Extract<WebDavResource, { kind: "root" | "directory" }>,
+): Promise<ContentsResult> {
+	if (resource.kind === "root") {
+		return getRootContents(db, principal, scopes);
+	}
+	return getDirectoryContents(db, principal, resource);
+}
+
+function resolveScopeForNode(
+	scopes: WebDavResolvedProviderScope[] | null,
+	node: FolderRecord | FileRecord,
+): WebDavResolvedProviderScope | null {
+	return scopes?.find((scope) => scope.providerId === node.providerId) ?? null;
+}
+
+function toChildResource(
+	resource: Extract<WebDavResource, { kind: "root" | "directory" }>,
+	node: FolderRecord | FileRecord,
+	provider: Pick<StorageProvider, "id" | "name" | "workspaceId">,
+	scopes: WebDavResolvedProviderScope[] | null,
+): WebDavResource {
+	const requestPath =
+		resource.kind === "root"
+			? `/${node.name}`
+			: `${resource.requestPath}/${node.name}`.replace(/\/+/g, "/");
+	const hrefPath =
+		node.nodeType === "folder" ? ensureTrailingSlash(requestPath) : requestPath;
+
+	return {
+		kind: node.nodeType === "folder" ? "directory" : "file",
+		requestPath,
+		hrefPath,
+		scope: resolveScopeForNode(scopes, node),
+		provider,
+		node,
+	};
+}
+
+export async function listWebDavCollectionMembers(
+	db: Database,
+	principal: WebDavPrincipalRef,
+	scopes: WebDavResolvedProviderScope[] | null,
+	resource: Extract<WebDavResource, { kind: "root" | "directory" }>,
+): Promise<WebDavResource[]> {
+	const contents = await listCollectionContents(
+		db,
+		principal,
+		scopes,
+		resource,
+	);
+	const providerIds = Array.from(
+		new Set(
+			[...contents.folders, ...contents.files].map((entry) => entry.providerId),
+		),
+	);
+	const providerMap = await getProviderMap(
+		db,
+		principal.workspaceId,
+		providerIds,
+	);
+
+	return [...contents.folders, ...contents.files]
+		.map((entry) => {
+			const provider = providerMap.get(entry.providerId);
+			if (!provider) return null;
+			return toChildResource(resource, entry, provider, scopes);
+		})
+		.filter((entry): entry is WebDavResource => entry !== null);
 }
 
 export async function resolveWebDavResource(
 	db: Database,
-	principal: {
-		workspaceId: string;
-		userId: string;
-	},
-	scopes: WebDavResolvedProviderScope[],
+	principal: WebDavPrincipalRef,
+	scopes: WebDavResolvedProviderScope[] | null,
 	rawRequestPath: string,
 ): Promise<WebDavResource> {
 	const requestPath = normalizeWebDavRequestPath(rawRequestPath);
@@ -236,6 +249,7 @@ export async function resolveWebDavResource(
 			msg: "Resolved WebDAV root resource",
 			workspaceId: principal.workspaceId,
 			userId: principal.userId,
+			scopedProviderCount: scopes?.length ?? 0,
 		});
 		return {
 			kind: "root",
@@ -245,143 +259,62 @@ export async function resolveWebDavResource(
 	}
 
 	const segments = splitWebDavPath(requestPath);
-	const [providerSegment, ...remainder] = segments;
-	const scope = scopes.find(
-		(entry) => entry.providerSegment === providerSegment,
-	);
-	if (!scope) {
-		logger.debug({
-			msg: "WebDAV provider segment not in allowed scopes",
-			requestPath,
-			providerSegment,
-			allowedProviderSegments: scopes.map((entry) => entry.providerSegment),
-		});
-		throw new NotFoundError("WebDAV resource");
-	}
-
-	const provider = await getProviderRecord(
-		db,
-		principal.workspaceId,
-		scope.providerId,
-	);
-	const scopeFolder = await ensureFolderPathWarmed(
-		db,
-		principal.workspaceId,
-		principal.userId,
-		provider,
-		scope.basePath,
-	);
-
-	if (remainder.length === 0) {
-		logger.debug({
-			msg: "Resolved WebDAV provider root",
-			requestPath,
-			providerId: provider.id,
-			basePath: scope.basePath,
-		});
-		return {
-			kind: "providerRoot",
-			requestPath,
-			hrefPath: ensureTrailingSlash(`/${providerSegment}`),
-			scope,
-			provider,
-			scopeFolder,
-		};
-	}
-
-	const relativePath = `/${remainder.join("/")}`;
-	const combinedPath =
-		scope.basePath === "/"
-			? relativePath
-			: `${scope.basePath}${relativePath === "/" ? "" : relativePath}`;
-	const parentSegments = splitWebDavPath(relativePath).slice(0, -1);
-	const targetName = remainder.at(-1) ?? "";
-	const parentVirtualPath =
-		parentSegments.length === 0
-			? scope.basePath
-			: `${scope.basePath === "/" ? "" : scope.basePath}/${parentSegments.join("/")}`;
-	const parentFolder = await ensureFolderPathWarmed(
-		db,
-		principal.workspaceId,
-		principal.userId,
-		provider,
-		parentVirtualPath || "/",
-	);
-
-	await warmChildren(
-		db,
-		principal.workspaceId,
-		principal.userId,
-		provider,
-		parentFolder,
-		parentVirtualPath || "/",
-	);
-
-	const folderVirtualPath = toFolderVirtualPath(combinedPath);
-	const folder = await findFolderByVirtualPath(
-		db,
-		principal.workspaceId,
-		provider.id,
-		folderVirtualPath,
-	);
-	if (folder) {
-		logger.debug({
-			msg: "Resolved WebDAV directory resource",
-			requestPath,
-			providerId: provider.id,
-			nodeId: folder.id,
-			virtualPath: folder.virtualPath,
-		});
-		return {
-			kind: "directory",
-			requestPath,
-			hrefPath: ensureTrailingSlash(requestPath),
-			scope,
-			provider,
-			node: folder,
-		};
-	}
-
-	const [file] = await db
-		.select()
-		.from(files)
-		.where(
-			and(
-				eq(files.providerId, provider.id),
-				eq(files.nodeType, "file"),
-				parentFolder
-					? eq(files.folderId, parentFolder.id)
-					: isNull(files.folderId),
-				eq(files.name, targetName),
-				eq(files.isDeleted, false),
-				isNull(files.vaultId),
-			),
-		)
-		.limit(1);
-	if (!file) {
-		logger.debug({
-			msg: "WebDAV file resource not found",
-			requestPath,
-			providerId: provider.id,
-			parentVirtualPath,
-			targetName,
-		});
-		throw new NotFoundError("WebDAV resource");
-	}
-
-	logger.debug({
-		msg: "Resolved WebDAV file resource",
-		requestPath,
-		providerId: provider.id,
-		nodeId: file.id,
-		virtualPath: file.virtualPath,
-	});
-	return {
-		kind: "file",
-		requestPath,
-		hrefPath: requestPath,
-		scope,
-		provider,
-		node: file,
+	let current: Extract<WebDavResource, { kind: "root" | "directory" }> = {
+		kind: "root",
+		requestPath: "/",
+		hrefPath: "/",
 	};
+
+	for (let index = 0; index < segments.length; index += 1) {
+		const segment = segments[index];
+		const children = await listWebDavCollectionMembers(
+			db,
+			principal,
+			scopes,
+			current,
+		);
+		const folderMatch = children.find(
+			(child): child is Extract<WebDavResource, { kind: "directory" }> =>
+				isDirectoryResource(child) && child.node.name === segment,
+		);
+		if (folderMatch) {
+			if (index === segments.length - 1) {
+				logger.debug({
+					msg: "Resolved WebDAV directory resource",
+					requestPath: folderMatch.requestPath,
+					providerId: folderMatch.provider.id,
+					nodeId: folderMatch.node.id,
+					virtualPath: folderMatch.node.virtualPath,
+				});
+				return folderMatch;
+			}
+			current = folderMatch;
+			continue;
+		}
+
+		const fileMatch = children.find(
+			(child): child is Extract<WebDavResource, { kind: "file" }> =>
+				isFileResource(child) && child.node.name === segment,
+		);
+		if (fileMatch && index === segments.length - 1) {
+			logger.debug({
+				msg: "Resolved WebDAV file resource",
+				requestPath: fileMatch.requestPath,
+				providerId: fileMatch.provider.id,
+				nodeId: fileMatch.node.id,
+				virtualPath: fileMatch.node.virtualPath,
+			});
+			return fileMatch;
+		}
+
+		logger.debug({
+			msg: "WebDAV path segment not found",
+			requestPath,
+			segment,
+			index,
+		});
+		throw new NotFoundError("WebDAV resource");
+	}
+
+	throw new NotFoundError("WebDAV resource");
 }

@@ -48,6 +48,8 @@ export async function authenticateWebDavCredential(
 		name: record.name,
 		role: workspaceRole,
 		username: record.username,
-		providerScopes: normalizeWebDavProviderScopes(record.providerScopes ?? []),
+		providerScopes: normalizeWebDavProviderScopes(
+			record.providerScopes ?? null,
+		),
 	};
 }

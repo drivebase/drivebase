@@ -20,6 +20,11 @@ import { authenticateWebDavCredential } from "../../service/webdav/auth";
 import { normalizeWebDavProviderScopes } from "../../service/webdav/shared/scope";
 
 describe("normalizeWebDavProviderScopes", () => {
+	it("returns null when no provider restriction is configured", () => {
+		expect(normalizeWebDavProviderScopes(null)).toBeNull();
+		expect(normalizeWebDavProviderScopes([])).toBeNull();
+	});
+
 	it("normalizes blank values to root", () => {
 		expect(
 			normalizeWebDavProviderScopes([{ providerId: "p1", basePath: "   " }]),
@@ -102,6 +107,32 @@ describe("authenticateWebDavCredential", () => {
 		expect(db.update).toHaveBeenCalled();
 	});
 
+	it("returns null scopes when the credential allows all providers", async () => {
+		getWebDavCredentialByUsername.mockResolvedValue({
+			credentialId: "cred-1",
+			workspaceId: "ws-1",
+			userId: "user-1",
+			email: "user@example.com",
+			name: "Alice",
+			role: "viewer",
+			userIsActive: true,
+			username: "alice.webdav",
+			passwordHash: "hash",
+			providerScopes: null,
+			isActive: true,
+		});
+		verifyPassword.mockResolvedValue(true);
+		getWorkspaceAccessRole.mockResolvedValue("viewer");
+
+		const result = await authenticateWebDavCredential(
+			db as any,
+			"alice.webdav",
+			"secret",
+		);
+
+		expect(result.providerScopes).toBeNull();
+	});
+
 	it("rejects credentials whose users lost workspace access", async () => {
 		getWebDavCredentialByUsername.mockResolvedValue({
 			credentialId: "cred-1",
@@ -119,8 +150,13 @@ describe("authenticateWebDavCredential", () => {
 		verifyPassword.mockResolvedValue(true);
 		getWorkspaceAccessRole.mockResolvedValue(null);
 
-		await expect(
-			authenticateWebDavCredential(db as any, "alice.webdav", "secret"),
-		).rejects.toThrow("workspace");
+		try {
+			await authenticateWebDavCredential(db as any, "alice.webdav", "secret");
+			throw new Error("Expected authenticateWebDavCredential to throw");
+		} catch (error) {
+			expect(error instanceof Error ? error.message : String(error)).toContain(
+				"workspace",
+			);
+		}
 	});
 });

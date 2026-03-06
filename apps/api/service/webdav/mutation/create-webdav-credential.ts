@@ -28,7 +28,7 @@ export async function createWebDavCredential(
 
 	const username = normalizeWebDavUsername(input.username);
 	const providerScopes = normalizeWebDavProviderScopes(input.providerScopes);
-	const providerIds = providerScopes.map((scope) => scope.providerId);
+	const providerIds = providerScopes?.map((scope) => scope.providerId) ?? [];
 
 	const [user] = await db
 		.select({ id: users.id })
@@ -75,21 +75,23 @@ export async function createWebDavCredential(
 		throw new ConflictError("WebDAV username is already in use");
 	}
 
-	const providers = await db
-		.select({ id: storageProviders.id })
-		.from(storageProviders)
-		.where(
-			and(
-				eq(storageProviders.workspaceId, workspaceId),
-				eq(storageProviders.isActive, true),
-				inArray(storageProviders.id, providerIds),
-			),
-		);
+	if (providerIds.length > 0) {
+		const providers = await db
+			.select({ id: storageProviders.id })
+			.from(storageProviders)
+			.where(
+				and(
+					eq(storageProviders.workspaceId, workspaceId),
+					eq(storageProviders.isActive, true),
+					inArray(storageProviders.id, providerIds),
+				),
+			);
 
-	if (providers.length !== providerIds.length) {
-		throw new ValidationError(
-			"All provider scopes must reference active providers in this workspace",
-		);
+		if (providers.length !== providerIds.length) {
+			throw new ValidationError(
+				"All provider scopes must reference active providers in this workspace",
+			);
+		}
 	}
 
 	const password = generateWebDavPassword();
@@ -103,7 +105,7 @@ export async function createWebDavCredential(
 			name: input.name.trim(),
 			username,
 			passwordHash,
-			providerScopes,
+			providerScopes: providerScopes ?? null,
 		})
 		.returning();
 

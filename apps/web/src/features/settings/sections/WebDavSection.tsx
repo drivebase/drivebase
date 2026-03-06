@@ -77,6 +77,7 @@ export function WebDavSection() {
 	const [name, setName] = useState("");
 	const [username, setUsername] = useState("");
 	const [userId, setUserId] = useState("");
+	const [allProviders, setAllProviders] = useState(true);
 	const [providerScopes, setProviderScopes] = useState<
 		{ providerId: string; basePath: string }[]
 	>([]);
@@ -98,7 +99,7 @@ export function WebDavSection() {
 			!name.trim() ||
 			!username.trim() ||
 			!userId ||
-			providerScopes.length === 0
+			(!allProviders && providerScopes.length === 0)
 		) {
 			toast.error("Fill out all required fields");
 			return;
@@ -111,7 +112,7 @@ export function WebDavSection() {
 					name: name.trim(),
 					username: username.trim(),
 					userId,
-					providerScopes,
+					providerScopes: allProviders ? null : providerScopes,
 				},
 			});
 
@@ -123,6 +124,7 @@ export function WebDavSection() {
 			setName("");
 			setUsername("");
 			setUserId("");
+			setAllProviders(true);
 			setProviderScopes([]);
 			setRevealed({
 				username: result.data.createWebDavCredential.credential.username,
@@ -239,7 +241,9 @@ export function WebDavSection() {
 								</p>
 								<div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
 									<Badge variant="outline" className="text-xs">
-										{credential.providerScopes.length} provider(s)
+										{credential.providerScopes
+											? `${credential.providerScopes.length} provider(s)`
+											: "All providers"}
 									</Badge>
 									<span>·</span>
 									<span>
@@ -251,7 +255,7 @@ export function WebDavSection() {
 									</span>
 								</div>
 								<div className="space-y-1 pt-1">
-									{credential.providerScopes.map((scope) => {
+									{credential.providerScopes?.map((scope) => {
 										const provider = providers.find(
 											(entry) => entry.id === scope.providerId,
 										);
@@ -267,7 +271,14 @@ export function WebDavSection() {
 												<span>{scope.basePath}</span>
 											</div>
 										);
-									})}
+									}) ?? (
+										<div className="text-xs text-muted-foreground">
+											<Trans>
+												Serves the merged workspace root across all accessible
+												providers.
+											</Trans>
+										</div>
+									)}
 								</div>
 							</div>
 							{credential.isActive && (
@@ -336,76 +347,112 @@ export function WebDavSection() {
 						<div className="space-y-3">
 							<div>
 								<Label>
-									<Trans>Provider scopes</Trans>
+									<Trans>Provider access</Trans>
 								</Label>
 								<p className="text-xs text-muted-foreground mt-1">
 									<Trans>
-										Select which providers this credential can browse and the
-										root path it should see for each one.
+										Leave provider restrictions off to serve the merged
+										Drivebase root. Enable restrictions only when this
+										credential should see specific providers or base paths.
+									</Trans>
+								</p>
+							</div>
+							<div className="border p-3 space-y-2">
+								<label
+									htmlFor="webdav-all-providers"
+									className="flex items-center gap-2 text-sm font-medium"
+								>
+									<Checkbox
+										id="webdav-all-providers"
+										checked={allProviders}
+										onCheckedChange={(checked) => {
+											const nextValue = checked === true;
+											setAllProviders(nextValue);
+											if (nextValue) {
+												setProviderScopes([]);
+											}
+										}}
+									/>
+									<span>
+										<Trans>Allow all providers</Trans>
+									</span>
+								</label>
+								<p className="text-xs text-muted-foreground">
+									<Trans>
+										When enabled, WebDAV root matches the merged Drivebase file
+										view across the whole workspace.
 									</Trans>
 								</p>
 							</div>
 							<div className="space-y-3 max-h-72 overflow-y-auto pr-1">
-								{providers.map((provider) => {
-									const entry = providerScopes.find(
-										(scope) => scope.providerId === provider.id,
-									);
-									return (
-										<div key={provider.id} className="border p-3 space-y-2">
-											<div className="flex items-center justify-between gap-3">
-												<label
-													htmlFor={`webdav-provider-${provider.id}`}
-													className="flex items-center gap-2 text-sm font-medium"
-												>
-													<Checkbox
-														id={`webdav-provider-${provider.id}`}
-														checked={Boolean(entry)}
-														onCheckedChange={(checked) => {
-															if (checked) {
-																setProviderScopes((current) => [
-																	...current,
-																	{ providerId: provider.id, basePath: "/" },
-																]);
-																return;
-															}
-															setProviderScopes((current) =>
-																current.filter(
-																	(scope) => scope.providerId !== provider.id,
-																),
-															);
-														}}
-													/>
-													<span>{provider.name}</span>
-												</label>
-												<Badge variant="secondary">{provider.type}</Badge>
-											</div>
-											{entry ? (
-												<div className="space-y-2">
-													<Label htmlFor={`webdav-base-path-${provider.id}`}>
-														<Trans>Base path</Trans>
-													</Label>
-													<Input
-														id={`webdav-base-path-${provider.id}`}
-														value={entry.basePath}
-														onChange={(e) =>
-															setProviderScopes((current) =>
-																current.map((scope) =>
-																	scope.providerId === provider.id
-																		? {
-																				...scope,
-																				basePath: e.target.value || "/",
-																			}
-																		: scope,
-																),
-															)
-														}
-														placeholder="/"
-													/>
+								{allProviders
+									? null
+									: providers.map((provider) => {
+											const entry = providerScopes.find(
+												(scope) => scope.providerId === provider.id,
+											);
+											return (
+												<div key={provider.id} className="border p-3 space-y-2">
+													<div className="flex items-center justify-between gap-3">
+														<label
+															htmlFor={`webdav-provider-${provider.id}`}
+															className="flex items-center gap-2 text-sm font-medium"
+														>
+															<Checkbox
+																id={`webdav-provider-${provider.id}`}
+																checked={Boolean(entry)}
+																onCheckedChange={(checked) => {
+																	if (checked) {
+																		setProviderScopes((current) => [
+																			...current,
+																			{
+																				providerId: provider.id,
+																				basePath: "/",
+																			},
+																		]);
+																		return;
+																	}
+																	setProviderScopes((current) =>
+																		current.filter(
+																			(scope) =>
+																				scope.providerId !== provider.id,
+																		),
+																	);
+																}}
+															/>
+															<span>{provider.name}</span>
+														</label>
+														<Badge variant="secondary">{provider.type}</Badge>
+													</div>
+													{entry ? (
+														<div className="space-y-2">
+															<Label
+																htmlFor={`webdav-base-path-${provider.id}`}
+															>
+																<Trans>Base path</Trans>
+															</Label>
+															<Input
+																id={`webdav-base-path-${provider.id}`}
+																value={entry.basePath}
+																onChange={(e) =>
+																	setProviderScopes((current) =>
+																		current.map((scope) =>
+																			scope.providerId === provider.id
+																				? {
+																						...scope,
+																						basePath: e.target.value || "/",
+																					}
+																				: scope,
+																		),
+																	)
+																}
+																placeholder="/"
+															/>
+														</div>
+													) : null}
 												</div>
-											) : null}
-										</div>
-									);
-								})}
+											);
+										})}
 							</div>
 						</div>
 					</div>

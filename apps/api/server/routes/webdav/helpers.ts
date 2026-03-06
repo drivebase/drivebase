@@ -3,9 +3,8 @@ import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
 import { ProviderService } from "@/service/provider";
 import {
-	listDirectoryChildren,
+	listWebDavCollectionMembers,
 	resolveWebDavResource,
-	warmWebDavCollection,
 } from "@/service/webdav/query/resolve-webdav-resource";
 import { buildPropfindXml } from "@/service/webdav/xml";
 import type { WebDavResource } from "@/service/webdav/shared/resource-types";
@@ -31,7 +30,7 @@ export async function resolveRequestResource(
 ): Promise<WebDavResource> {
 	const principal = c.get("webdavPrincipal");
 	const scopes = c.get("webdavScopes");
-	if (!principal || !scopes) {
+	if (!principal) {
 		throw new Error("Missing WebDAV principal");
 	}
 
@@ -69,59 +68,13 @@ export async function buildPropfindResponse(
 	});
 
 	if (depth !== "0" && resource.kind !== "file") {
-		if (resource.kind === "root") {
-			const scopes = c.get("webdavScopes") ?? [];
-			for (const scope of scopes) {
-				resources.push({
-					kind: "providerRoot",
-					requestPath: `/${scope.providerSegment}`,
-					hrefPath: `/${scope.providerSegment}/`,
-					scope,
-					provider: {
-						id: scope.providerId,
-						name: scope.providerName,
-						workspaceId: principal.workspaceId,
-					},
-					scopeFolder: null,
-				});
-			}
-		} else {
-			await warmWebDavCollection(db, principal, resource);
-			const children = await listDirectoryChildren(
-				db,
-				principal.workspaceId,
-				resource.provider.id,
-				resource.kind === "providerRoot"
-					? (resource.scopeFolder?.id ?? null)
-					: resource.node.id,
-			);
-			for (const folder of children.folders) {
-				resources.push({
-					kind: "directory",
-					requestPath: `${resource.requestPath}/${folder.name}`.replace(
-						/\/+/g,
-						"/",
-					),
-					hrefPath: `${resource.hrefPath}${folder.name}/`,
-					scope: resource.scope,
-					provider: resource.provider,
-					node: folder,
-				});
-			}
-			for (const file of children.files) {
-				resources.push({
-					kind: "file",
-					requestPath: `${resource.requestPath}/${file.name}`.replace(
-						/\/+/g,
-						"/",
-					),
-					hrefPath: `${resource.hrefPath}${file.name}`,
-					scope: resource.scope,
-					provider: resource.provider,
-					node: file,
-				});
-			}
-		}
+		const children = await listWebDavCollectionMembers(
+			db,
+			principal,
+			c.get("webdavScopes"),
+			resource,
+		);
+		resources.push(...children);
 	}
 
 	const url = new URL(c.req.url);

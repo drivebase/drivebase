@@ -13,8 +13,6 @@ function resourceDisplayName(resource: WebDavResource): string {
 	switch (resource.kind) {
 		case "root":
 			return "Drivebase";
-		case "providerRoot":
-			return resource.scope.providerSegment;
 		case "directory":
 		case "file":
 			return resource.node.name;

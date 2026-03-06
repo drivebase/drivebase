@@ -63,7 +63,7 @@ export async function webDavAuthMiddleware(
 			username: principal.username,
 			userId: principal.userId,
 			workspaceId: principal.workspaceId,
-			scopeCount: scopes.length,
+			scopeCount: scopes?.length ?? 0,
 		});
 		c.set("webdavPrincipal", principal);
 		c.set("webdavScopes", scopes);

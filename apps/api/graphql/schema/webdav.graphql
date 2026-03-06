@@ -9,7 +9,7 @@ type WebDavCredential {
 	userEmail: String!
 	name: String!
 	username: String!
-	providerScopes: [ApiKeyProviderScope!]!
+	providerScopes: [ApiKeyProviderScope!]
 	isActive: Boolean!
 	lastUsedAt: DateTime
 	createdAt: DateTime!
@@ -25,7 +25,7 @@ input CreateWebDavCredentialInput {
 	userId: ID!
 	name: String!
 	username: String!
-	providerScopes: [ApiKeyProviderScopeInput!]!
+	providerScopes: [ApiKeyProviderScopeInput!]
 }
 
 extend type Query {

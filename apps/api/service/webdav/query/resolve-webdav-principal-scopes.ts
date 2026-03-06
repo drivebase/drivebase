@@ -11,7 +11,11 @@ import type {
 export async function resolveWebDavPrincipalScopes(
 	db: Database,
 	principal: WebDavAuthResult,
-): Promise<WebDavResolvedProviderScope[]> {
+): Promise<WebDavResolvedProviderScope[] | null> {
+	if (!principal.providerScopes || principal.providerScopes.length === 0) {
+		return null;
+	}
+
 	const providerIds = principal.providerScopes.map((scope) => scope.providerId);
 	const providers =
 		providerIds.length > 0

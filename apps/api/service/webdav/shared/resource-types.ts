@@ -8,18 +8,10 @@ export type WebDavResource =
 			hrefPath: string;
 	  }
 	| {
-			kind: "providerRoot";
-			requestPath: string;
-			hrefPath: string;
-			scope: WebDavResolvedProviderScope;
-			provider: Pick<StorageProvider, "id" | "name" | "workspaceId">;
-			scopeFolder: Node | null;
-	  }
-	| {
 			kind: "directory";
 			requestPath: string;
 			hrefPath: string;
-			scope: WebDavResolvedProviderScope;
+			scope: WebDavResolvedProviderScope | null;
 			provider: Pick<StorageProvider, "id" | "name" | "workspaceId">;
 			node: Node;
 	  }
@@ -27,7 +19,7 @@ export type WebDavResource =
 			kind: "file";
 			requestPath: string;
 			hrefPath: string;
-			scope: WebDavResolvedProviderScope;
+			scope: WebDavResolvedProviderScope | null;
 			provider: Pick<StorageProvider, "id" | "name" | "workspaceId">;
 			node: Node;
 	  };

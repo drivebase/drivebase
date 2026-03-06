@@ -5,7 +5,7 @@ CREATE TABLE "webdav_credentials" (
 	"name" text NOT NULL,
 	"username" text NOT NULL,
 	"password_hash" text NOT NULL,
-	"provider_scopes" jsonb NOT NULL,
+	"provider_scopes" jsonb,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"last_used_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,

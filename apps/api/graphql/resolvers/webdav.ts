@@ -38,10 +38,12 @@ export const webDavMutations: MutationResolvers = {
 			userId: args.input.userId,
 			name: args.input.name,
 			username: args.input.username,
-			providerScopes: args.input.providerScopes.map((scope) => ({
-				providerId: scope.providerId,
-				basePath: scope.basePath ?? null,
-			})),
+			providerScopes: args.input.providerScopes
+				? args.input.providerScopes.map((scope) => ({
+						providerId: scope.providerId,
+						basePath: scope.basePath ?? null,
+					}))
+				: null,
 		});
 	},
 

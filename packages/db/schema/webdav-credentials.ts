@@ -26,9 +26,10 @@ export const webdavCredentials = pgTable(
 		name: text("name").notNull(),
 		username: text("username").notNull(),
 		passwordHash: text("password_hash").notNull(),
-		providerScopes: jsonb("provider_scopes")
-			.$type<{ providerId: string; basePath: string }[]>()
-			.notNull(),
+		providerScopes:
+			jsonb("provider_scopes").$type<
+				{ providerId: string; basePath: string }[]
+			>(),
 		isActive: boolean("is_active").notNull().default(true),
 		lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true })
