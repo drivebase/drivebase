@@ -1,104 +1,44 @@
 <img width="2167" height="1579" alt="drivebase-banner" src="https://github.com/user-attachments/assets/4ce62659-1f4e-42e0-8074-4f85fb14e53e" />
 
 <p align="center">
-  <a href="https://t.me/+fWEMYD3gp61lYWZl">
-    <img src="https://img.shields.io/badge/Telegram-Join%20Chat-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram">
-  </a> 
-  <a href="https://drivebase.io/docs">
-    <img src="https://img.shields.io/badge/Documentation-red?style=for-the-badge" alt="Documentation" />
-  </a> 
-  <a href="https://discord.gg/5hPZwTPp68">
-    <img src="https://img.shields.io/discord/1472108078592688149?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2" alt="Discord">
+  <a href="https://github.com/drivebase/drivebase/stargazers">
+    <img src="https://img.shields.io/github/stars/drivebase/drivebase" alt="GitHub stars">
   </a>
-</p>
-
-Drivebase is a cloud-agnostic file management platform for people and teams using multiple storage providers. It gives you one unified file and folder workspace across providers, with Vault for end-to-end encrypted uploads and Smart Uploads for rule-based file routing. The goal is to reduce provider lock-in while keeping storage ownership and control in your hands.
-
-<p>
-  <a href="https://deepwiki.com/drivebase/drivebase">
+  <a href="https://github.com/drivebase/drivebase/network/members">
+    <img src="https://img.shields.io/github/forks/drivebase/drivebase" alt="GitHub forks">
+  </a>
+  <a href="https://github.com/drivebase/drivebase/issues">
+    <img src="https://img.shields.io/github/issues/drivebase/drivebase" alt="GitHub issues">
+  </a>
+  <a href="https://github.com/drivebase/drivebase/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/drivebase/drivebase" alt="GitHub license">
+  </a>
+ <a href="https://discord.gg/5hPZwTPp68">
+    <img src="https://img.shields.io/discord/1472108078592688149" alt="Discord">
+  </a>
+   <a href="https://deepwiki.com/drivebase/drivebase">
     <img src="https://deepwiki.com/badge.svg" alt="Documentation" />
   </a> 
   <a href="https://www.youtube.com/watch?v=QuKxvCgBwPg">
     <img src="https://img.shields.io/badge/YouTube-%23FF0000.svg?logo=YouTube&logoColor=white" />
-  </a> 
+  </a>
 </p>
+ 
+Drivebase is a cloud-agnostic file management platform that unifies files and folders across providers while helping people and teams maintain storage ownership, control, and flexibility.
+
+Key features include:
+
+- **Unified workspace across providers**: Browse and manage files from multiple storage providers in one place.
+- **Smart Search**: Search across all your connected providers with a single query (including text inside files and OCR).
+- **Smart Uploads**: Route files automatically to the right provider using rule-based policies.
+- **Vault (end-to-end encryption)**: Encrypt uploads before they leave your environment for stronger privacy.
+- **Self-hosted and team-ready**: Run via Docker Compose for quick setup and invite other users to collaborate.
+- **Collaboration features**: Share files and folders with granular permissions across providers.
+- **WebDAV server**: Enable users to connect remotely to Drivebase using WebDAV for file access and management. (coming soon)
+
+and much more!
 
 ---
-
-## Table of Contents
-
-- [Table of Contents](#table-of-contents)
-- [Getting Started](#getting-started)
-- [Quickstart (Recommended)](#quickstart-recommended)
-- [Manual Installation](#manual-installation)
-  - [Prerequisites](#prerequisites)
-  - [Steps](#steps)
-- [Supported Providers](#supported-providers)
-- [Contributing](#contributing)
-- [License](#license)
-- [Star History](#star-history)
-
-## Getting Started
-
-You can get started with Drivebase in multiple ways:
-
-## Quickstart (Recommended)
-
-
-Run the following command to install Drivebase using our automated installer. It uses Docker Compose to set up your environment and generate secure keys automatically.
-
-```bash
-curl -fsSL https://drivebase.io/install | bash
-```
-
-<img width="600" alt="Group" src="https://github.com/user-attachments/assets/19e11300-83e1-4e8b-a31e-17be9e2f81c9" />
-
-After you start the containers, open [http://localhost:3000](http://localhost:3000) in your browser to access the Drivebase dashboard.
-
-Login with the default credentials:
-- Email: `admin@drivebase.local`
-- Password: `admin123`
-
-## Manual Installation
-
-If you prefer to run the application manually without Docker Compose, you can follow the steps below.
-
-### Prerequisites
-
-- Bun - https://bun.sh/
-- Postgres + Redis (if running app locally without full Docker app container)
-
-### Steps
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/drivebase/drivebase.git
-cd drivebase
-```
-
-2. Install dependencies:
-
-```bash
-bun install
-```
-
-3. Update `.env.local` with required values:
-
-```bash
-cp .env.example .env.local
-```
-
-4. Start the application:
-
-```bash
-bun run dev
-```
-
-5. Open:
-
-- App: `http://localhost:3000`
-- GraphQL: `http://localhost:4000/graphql`
 
 ## Supported Providers
 
@@ -118,12 +58,47 @@ Drivebase supports the following cloud providers:
 - [ ] OneDrive
 
 
+### Quickstart
+
+Run the following command to install Drivebase using our automated installer. It uses Docker Compose to set up your environment and generate secure keys automatically.
+
+```bash
+curl -fsSL https://drivebase.io/install | bash
+```
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/77574415-3c5b-4411-a0d7-94f0fe095307" />
+
+<br/>
+
+After you start the containers, open [http://localhost:3000](http://localhost:3000) in your browser to access the Drivebase dashboard.
+
+Login with the default credentials:
+- Email: `admin@drivebase.local`
+- Password: `admin123`
+
+Enjoy 🚀
+
+### Manual Installation
+
+For manual setup instructions, [check out](https://www.drivebase.io/docs/installation) our official documentation.
+
+## Deployment
+
+Drivebase can be deployed in various environments, including:
+
+- **Cloud Providers**: AWS, GCP, Azure, DigitalOcean, etc.
+- **VPS**: DigitalOcean, Linode, Vultr, etc.
+
+For database storage, we recommend using a managed PostgreSQL service such as [Neon](https://neon.tech/), AWS RDS, or Google Cloud SQL for better performance and reliability.
+
 ## Support
 
 Have questions or need help? Here's how you can reach us:
 
 - [Discord](https://discord.gg/5hPZwTPp68)
+- [Discussions](https://github.com/drivebase/drivebase/discussions)
 - [Telegram](https://t.me/+fWEMYD3gp61lYWZl)
+- [X](http://x.com/monawwarx)
 
 ## Contributing
 
