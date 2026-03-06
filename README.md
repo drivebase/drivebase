@@ -78,6 +78,8 @@ Login with the default credentials:
 
 Enjoy 🚀
 
+<a href="https://www.producthunt.com/products/drivebase/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-drivebase" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1164088&theme=dark" alt="Drivebase - Unified&#0032;file&#0032;manager&#0032;for&#0032;all&#0032;your&#0032;cloud&#0032;storage&#0032;with&#0032;E2EE | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
 ### Manual Installation
 
 For manual setup instructions, [check out](https://www.drivebase.io/docs/installation) our official documentation.
