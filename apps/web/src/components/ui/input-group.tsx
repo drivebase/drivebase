@@ -49,7 +49,6 @@ function InputGroupAddon({
 	...props
 }: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
 	return (
-		// biome-ignore lint/a11y/useKeyWithClickEvents: we want to allow click events
 		// biome-ignore lint/a11y/useSemanticElements: role="group" is necessary
 		<div
 			role="group"
