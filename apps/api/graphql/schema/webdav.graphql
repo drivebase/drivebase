@@ -1,0 +1,40 @@
+"""
+Hosted WebDAV credentials bound to existing users
+"""
+type WebDavCredential {
+	id: ID!
+	workspaceId: ID!
+	userId: ID!
+	userName: String!
+	userEmail: String!
+	name: String!
+	username: String!
+	providerScopes: [ApiKeyProviderScope!]!
+	isActive: Boolean!
+	lastUsedAt: DateTime
+	createdAt: DateTime!
+	updatedAt: DateTime!
+}
+
+type CreateWebDavCredentialResult {
+	credential: WebDavCredential!
+	password: String!
+}
+
+input CreateWebDavCredentialInput {
+	userId: ID!
+	name: String!
+	username: String!
+	providerScopes: [ApiKeyProviderScopeInput!]!
+}
+
+extend type Query {
+	webDavCredentials: [WebDavCredential!]!
+}
+
+extend type Mutation {
+	createWebDavCredential(
+		input: CreateWebDavCredentialInput!
+	): CreateWebDavCredentialResult!
+	revokeWebDavCredential(id: ID!): Boolean!
+}

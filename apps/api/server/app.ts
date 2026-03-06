@@ -1,5 +1,9 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import type {
+	WebDavAuthResult,
+	WebDavResolvedProviderScope,
+} from "@/service/webdav/shared/types";
 import { env } from "../config/env";
 import type { JWTPayload } from "../utils/auth/jwt";
 
@@ -11,6 +15,8 @@ export type AppEnv = {
 		user: JWTPayload;
 		apiKeyScopes: string[] | null;
 		apiKeyProviderScopes: { providerId: string; basePath: string }[] | null;
+		webdavPrincipal: WebDavAuthResult | null;
+		webdavScopes: WebDavResolvedProviderScope[] | null;
 	};
 };
 
