@@ -7,6 +7,7 @@ export default function BlogPage() {
       new Date(b.data.date ?? 0).getTime() -
       new Date(a.data.date ?? 0).getTime(),
   );
+  const [featuredPost, ...otherPosts] = posts;
 
   return (
     <main className="flex-1 w-full mx-auto bg-background">
@@ -31,8 +32,47 @@ export default function BlogPage() {
       {/* Blog Grid */}
       <div className="bg-background relative z-10 border-b border-border">
         <div className="max-w-7xl mx-auto border-x border-border">
+          {featuredPost ? (
+            <article className="border-b border-border p-8 md:p-12">
+              <div className="max-w-3xl">
+                <div className="mb-5 flex items-center gap-x-4 text-xs">
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary">
+                    Most Recent
+                  </span>
+                  <time
+                    dateTime={new Date(featuredPost.data.date).toISOString()}
+                    className="text-muted-foreground font-medium"
+                  >
+                    {new Date(featuredPost.data.date).toLocaleDateString(
+                      "en-US",
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      },
+                    )}
+                  </time>
+                </div>
+                <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                  <Link
+                    href={featuredPost.url}
+                    className="transition-colors hover:text-primary"
+                  >
+                    {featuredPost.data.title}
+                  </Link>
+                </h2>
+                <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
+                  {featuredPost.data.description}
+                </p>
+                <div className="mt-8 border-t border-border pt-6 text-sm font-medium text-foreground">
+                  {featuredPost.data.author}
+                </div>
+              </div>
+            </article>
+          ) : null}
+
           <div className="grid md:grid-cols-3">
-            {posts.map((post) => (
+            {otherPosts.map((post) => (
               <article
                 key={post.url}
                 className="flex flex-col items-start justify-between p-8 hover:bg-secondary/50 transition-colors group border-b border-border last:border-b-0 md:border-b md:[&:not(:nth-child(3n))]:border-r"
