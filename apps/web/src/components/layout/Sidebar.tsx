@@ -72,7 +72,7 @@ function SidebarItem({ icon: Icon, label, to }: SidebarItemProps) {
 
 export function Sidebar() {
 	const { i18n } = useLingui();
-	const { isUpdateAvailable, latestGithubVersion, githubRepo } = useAppUpdate();
+	const { isUpdateAvailable, latestGithubVersion } = useAppUpdate();
 
 	return (
 		<div className="h-full w-20 flex flex-col items-center py-5 gap-6 shrink-0 border-r">
@@ -94,24 +94,20 @@ export function Sidebar() {
 				{isUpdateAvailable && (
 					<Tooltip delayDuration={0}>
 						<TooltipTrigger asChild>
-							<a
-								href={`https://github.com/${githubRepo}/releases/latest`}
-								target="_blank"
-								rel="noreferrer noopener"
+							<Link
+								to={"/settings/advanced"}
 								className="w-12 h-12 flex items-center justify-center text-sm font-semibold"
 							>
 								<Info className="h-6 w-6" />
 								<span className="sr-only">
 									{i18n._(msg`Open latest release notes`)}
 								</span>
-							</a>
+							</Link>
 						</TooltipTrigger>
 						<TooltipContent side="right">
-							<p>
-								{i18n._(
-									msg`Update available: v${latestGithubVersion ?? "unknown"})`,
-								)}
-							</p>
+							{i18n._(
+								msg`Update available: v${latestGithubVersion ?? "unknown"})`,
+							)}
 						</TooltipContent>
 					</Tooltip>
 				)}
