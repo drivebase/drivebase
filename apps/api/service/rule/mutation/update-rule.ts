@@ -2,7 +2,7 @@ import { NotFoundError, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { fileRules } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/runtime/logger";
 import type { UpdateRuleInput } from "../shared/types";
 import { validateConditions, validateProvider } from "../shared/validation";
 

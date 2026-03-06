@@ -1,6 +1,6 @@
 import type { Database } from "@drivebase/db";
 import { enqueueSyncJob } from "@/queue/sync-queue";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/runtime/logger";
 import { syncProvider } from "./sync-provider";
 
 interface InitialSyncParams {

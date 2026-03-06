@@ -15,22 +15,21 @@ mock.module("../../redis/session", () => ({
 	deleteUserSessions: mock(),
 }));
 
-mock.module("../../utils/jwt", () => ({
+mock.module("../../utils/auth/jwt", () => ({
 	createToken: mock(),
 }));
 
-mock.module("../../utils/otp", () => ({
+mock.module("../../utils/auth/otp", () => ({
 	generateOTP: mock(),
 	sendOTP: mock(),
 }));
 
-mock.module("../../utils/password", () => ({
+mock.module("../../utils/auth/password", () => ({
 	hashPassword: mock(),
-	validatePassword: mock().mockReturnValue({ valid: true }),
 	verifyPassword: mock(),
 }));
 
-mock.module("../../utils/logger", () => ({
+mock.module("../../utils/runtime/logger", () => ({
 	logger: {
 		info: mock(),
 		debug: mock(),

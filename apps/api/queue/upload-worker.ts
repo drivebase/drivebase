@@ -14,7 +14,7 @@ import { UploadSessionManager } from "../service/file/upload";
 import { ProviderService } from "../service/provider";
 import { fileSizeBucket, telemetry } from "../telemetry";
 import { isExtractionSupported } from "../utils/extraction";
-import { logger } from "../utils/logger";
+import { logger } from "../utils/runtime/logger";
 import { getExtractionQueue } from "./extraction-queue";
 import type { UploadJobData } from "./upload-queue";
 

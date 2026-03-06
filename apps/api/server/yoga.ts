@@ -8,7 +8,7 @@ import { createYoga } from "graphql-yoga";
 import { env } from "../config/env";
 import { createContext } from "../graphql/context";
 import { resolvers } from "../graphql/resolvers";
-import { logger } from "../utils/logger";
+import { logger } from "../utils/runtime/logger";
 
 /**
  * Load GraphQL type definitions from .graphql files

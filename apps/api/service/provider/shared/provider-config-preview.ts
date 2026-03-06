@@ -1,6 +1,6 @@
 import type { storageProviders } from "@drivebase/db";
 import { getSensitiveFields } from "@/config/providers";
-import { decryptConfig } from "@/utils/encryption";
+import { decryptConfig } from "@/utils/crypto/encryption";
 
 export function maskSensitiveValue(value: unknown): string {
 	const raw = String(value ?? "");

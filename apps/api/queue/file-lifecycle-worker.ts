@@ -6,7 +6,7 @@ import { createBullMQConnection } from "../redis/client";
 import { ActivityService } from "../service/activity";
 import { mapProviderLifecycleState } from "../service/file/lifecycle/shared/mapping";
 import { ProviderService } from "../service/provider";
-import { logger } from "../utils/logger";
+import { logger } from "../utils/runtime/logger";
 import {
 	type FileLifecycleJobData,
 	getFileLifecycleQueue,

@@ -26,8 +26,8 @@ import { mountCoreRoutes } from "./server/routes/core";
 import { yoga } from "./server/yoga";
 import { reconcileWorkspaceAutoSyncSchedules } from "./service/workspace";
 import { isFirstRun, telemetry } from "./telemetry";
-import { initializeApp } from "./utils/init";
-import { logger } from "./utils/logger";
+import { initializeApp } from "./utils/runtime/init";
+import { logger } from "./utils/runtime/logger";
 
 /**
  * Get application version

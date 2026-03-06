@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
-mock.module("../../utils/api-key", () => ({
+mock.module("@drivebase/utils/server/api-key", () => ({
 	generateApiKey: mock().mockReturnValue({
 		fullKey: "drv_abc123def456abc123def456abc123def456abc1",
 		keyHash: "a".repeat(64),

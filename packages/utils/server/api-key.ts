@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 
 const PREFIX = "drv_";
-const KEY_BYTES = 20; // 40 hex chars
+const KEY_BYTES = 20;
 
 export function generateApiKey(): {
 	fullKey: string;
@@ -10,6 +10,7 @@ export function generateApiKey(): {
 } {
 	const raw = randomBytes(KEY_BYTES).toString("hex");
 	const fullKey = `${PREFIX}${raw}`;
+
 	return {
 		fullKey,
 		keyHash: hashApiKey(fullKey),

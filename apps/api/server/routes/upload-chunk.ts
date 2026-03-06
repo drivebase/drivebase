@@ -4,7 +4,7 @@ import { pubSub } from "../../graphql/pubsub";
 import { getUploadQueue } from "../../queue/upload-queue";
 import { logFileOperationDebugError } from "../../service/file/shared/file-error-log";
 import { UploadSessionManager } from "../../service/file/upload";
-import { logger } from "../../utils/logger";
+import { logger } from "../../utils/runtime/logger";
 import type { AppEnv } from "../app";
 
 /**

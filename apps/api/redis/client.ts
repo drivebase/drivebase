@@ -1,6 +1,6 @@
 import Redis from "ioredis";
 import { env } from "../config/env";
-import { logger } from "../utils/logger";
+import { logger } from "../utils/runtime/logger";
 
 /**
  * Redis client singleton

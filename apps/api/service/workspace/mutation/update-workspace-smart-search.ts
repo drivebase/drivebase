@@ -8,7 +8,7 @@ import {
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { getExtractionQueue } from "../../../queue/extraction-queue";
 import { ActivityService } from "../../../service/activity";
-import { logger } from "../../../utils/logger";
+import { logger } from "../../../utils/runtime/logger";
 
 /**
  * Toggle smart search for a workspace.

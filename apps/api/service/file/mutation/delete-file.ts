@@ -2,7 +2,7 @@ import type { Database } from "@drivebase/db";
 import { files } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 import { telemetry } from "../../../telemetry";
-import { logger } from "../../../utils/logger";
+import { logger } from "../../../utils/runtime/logger";
 import { ActivityService } from "../../activity";
 import { ProviderService } from "../../provider";
 import { getFile } from "../query/file-read";

@@ -5,7 +5,7 @@ import { FileService } from "../../service/file";
 import { logFileOperationDebugError } from "../../service/file/shared/file-error-log";
 import { ProviderService } from "../../service/provider";
 import { telemetry } from "../../telemetry";
-import { logger } from "../../utils/logger";
+import { logger } from "../../utils/runtime/logger";
 import type { AppEnv } from "../app";
 
 /** Maps Google Workspace MIME types to { exportMime, extension } */

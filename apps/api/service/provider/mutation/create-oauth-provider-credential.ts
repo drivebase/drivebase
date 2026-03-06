@@ -2,7 +2,7 @@ import { ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { oauthProviderCredentials } from "@drivebase/db";
 import { getSensitiveFields } from "@/config/providers";
-import { encryptConfig } from "@/utils/encryption";
+import { encryptConfig } from "@/utils/crypto/encryption";
 import {
 	getIdentifierField,
 	parseAndValidateConfig,

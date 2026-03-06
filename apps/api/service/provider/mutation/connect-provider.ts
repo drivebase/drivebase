@@ -6,8 +6,8 @@ import {
 	getSensitiveFields,
 } from "@/config/providers";
 import { telemetry } from "@/telemetry";
-import { encryptConfig } from "@/utils/encryption";
-import { logger } from "@/utils/logger";
+import { encryptConfig } from "@/utils/crypto/encryption";
+import { logger } from "@/utils/runtime/logger";
 import { getOAuthCredentialConfig } from "../query";
 
 // Connect a provider and persist encrypted configuration.

@@ -10,7 +10,7 @@ import { files, folders, vaults } from "@drivebase/db";
 import { and, eq, isNull } from "drizzle-orm";
 import { getPublicApiBaseUrl } from "../config/url";
 import { telemetry } from "../telemetry";
-import { logger } from "../utils/logger";
+import { logger } from "../utils/runtime/logger";
 import { ProviderService } from "./provider";
 
 /**

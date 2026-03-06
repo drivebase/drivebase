@@ -1,5 +1,5 @@
 import type { Database } from "@drivebase/db";
-import { logger } from "../../../utils/logger";
+import { logger } from "../../../utils/runtime/logger";
 import { ProviderService } from "../../provider";
 import { getFile } from "../query/file-read";
 

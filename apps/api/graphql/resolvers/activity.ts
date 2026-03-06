@@ -8,7 +8,7 @@ import {
 } from "../../queue/transfer-queue";
 import { ActivityService } from "../../service/activity";
 import { getAccessibleWorkspaceId } from "../../service/workspace";
-import { requestJobCancellation } from "../../utils/job-cancel";
+import { requestJobCancellation } from "../../utils/jobs/job-cancel";
 import {
 	type ActivityResolvers,
 	type Job,

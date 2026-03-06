@@ -26,7 +26,7 @@ import {
 	storeRegistrationChallenge,
 } from "../../redis/passkey-challenge";
 import { createSession } from "../../redis/session";
-import { createToken } from "../../utils/jwt";
+import { createToken } from "../../utils/auth/jwt";
 
 function getRpConfig() {
 	const url = new URL(env.CORS_ORIGIN);

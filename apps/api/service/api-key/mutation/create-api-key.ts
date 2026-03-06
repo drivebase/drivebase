@@ -1,7 +1,7 @@
 import { ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { apiKeys } from "@drivebase/db";
-import { generateApiKey } from "../../../utils/api-key";
+import { generateApiKey } from "@drivebase/utils/server/api-key";
 import type { CreateApiKeyInput } from "../shared/types";
 
 const VALID_SCOPES = ["read", "write", "admin"];

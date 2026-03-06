@@ -5,16 +5,13 @@ import {
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
+import { validatePassword } from "@drivebase/utils";
 import { eq } from "drizzle-orm";
 import { storeOTP, verifyOTP } from "../../redis/otp";
 import { checkRateLimit, RateLimits } from "../../redis/rate-limit";
 import { deleteUserSessions } from "../../redis/session";
-import { generateOTP, sendOTP } from "../../utils/otp";
-import {
-	hashPassword,
-	validatePassword,
-	verifyPassword,
-} from "../../utils/password";
+import { generateOTP, sendOTP } from "../../utils/auth/otp";
+import { hashPassword, verifyPassword } from "../../utils/auth/password";
 
 /**
  * Logout user (delete all sessions)

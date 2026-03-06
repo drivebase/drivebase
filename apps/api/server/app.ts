@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { env } from "../config/env";
-import type { JWTPayload } from "../utils/jwt";
+import type { JWTPayload } from "../utils/auth/jwt";
 
 /**
  * Hono app environment with typed context variables

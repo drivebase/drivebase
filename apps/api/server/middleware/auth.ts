@@ -1,8 +1,8 @@
 import { getDb } from "@drivebase/db";
+import { isApiKeyToken } from "@drivebase/utils/server/api-key";
 import type { Context, Next } from "hono";
 import { validateApiKey } from "../../service/api-key";
-import { isApiKeyToken } from "../../utils/api-key";
-import { verifyToken } from "../../utils/jwt";
+import { verifyToken } from "../../utils/auth/jwt";
 import type { AppEnv } from "../app";
 
 /**

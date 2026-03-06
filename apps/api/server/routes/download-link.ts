@@ -4,7 +4,7 @@ import type { Context } from "hono";
 import { FileService } from "../../service/file";
 import { getFileForProxy } from "../../service/file/query/file-read";
 import { getProvider, getProviderInstance } from "../../service/provider/query";
-import { logger } from "../../utils/logger";
+import { logger } from "../../utils/runtime/logger";
 import type { AppEnv } from "../app";
 
 /** Maps Google Workspace MIME types to { exportMime, extension } */

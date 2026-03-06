@@ -7,7 +7,7 @@ import {
 	storageProviders,
 } from "@drivebase/db";
 import { and, asc, eq } from "drizzle-orm";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/runtime/logger";
 
 export type { FileAttributes };
 

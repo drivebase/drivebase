@@ -1,6 +1,6 @@
 import { workspaceMemberships, workspaces } from "@drivebase/db";
 import { and, asc, eq } from "drizzle-orm";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/runtime/logger";
 import { createDefaultWorkspace } from "../mutation/create-default-workspace";
 import type { WorkspaceDbLike } from "../shared/types";
 

@@ -1,7 +1,7 @@
 import type { Database } from "@drivebase/db";
 import { apiKeys, users } from "@drivebase/db";
+import { hashApiKey } from "@drivebase/utils/server/api-key";
 import { eq } from "drizzle-orm";
-import { hashApiKey } from "../../../utils/api-key";
 import type { ApiKeyAuthResult } from "./types";
 
 export async function validateApiKey(
