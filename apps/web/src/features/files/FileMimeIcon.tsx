@@ -13,9 +13,14 @@ import { cn } from "@/shared/lib/utils";
 interface FileMimeIconProps {
 	mimeType?: string | null;
 	className?: string;
+	iconSize?: number;
 }
 
-export function FileMimeIcon({ mimeType, className }: FileMimeIconProps) {
+export function FileMimeIcon({
+	mimeType,
+	className,
+	iconSize = 16,
+}: FileMimeIconProps) {
 	const kind = getFileKind(mimeType);
 
 	const base = "w-8 h-8  flex items-center justify-center";
@@ -29,7 +34,7 @@ export function FileMimeIcon({ mimeType, className }: FileMimeIconProps) {
 					className,
 				)}
 			>
-				<ImageIcon size={16} />
+				<ImageIcon size={iconSize} />
 			</div>
 		);
 	}
@@ -43,7 +48,7 @@ export function FileMimeIcon({ mimeType, className }: FileMimeIconProps) {
 					className,
 				)}
 			>
-				<Video size={16} />
+				<Video size={iconSize} />
 			</div>
 		);
 	}
@@ -57,7 +62,7 @@ export function FileMimeIcon({ mimeType, className }: FileMimeIconProps) {
 					className,
 				)}
 			>
-				<Music2 size={16} />
+				<Music2 size={iconSize} />
 			</div>
 		);
 	}
@@ -71,7 +76,7 @@ export function FileMimeIcon({ mimeType, className }: FileMimeIconProps) {
 					className,
 				)}
 			>
-				<FileArchive size={16} />
+				<FileArchive size={iconSize} />
 			</div>
 		);
 	}
@@ -85,7 +90,7 @@ export function FileMimeIcon({ mimeType, className }: FileMimeIconProps) {
 					className,
 				)}
 			>
-				<FileCode2 size={16} />
+				<FileCode2 size={iconSize} />
 			</div>
 		);
 	}
@@ -99,14 +104,14 @@ export function FileMimeIcon({ mimeType, className }: FileMimeIconProps) {
 					className,
 				)}
 			>
-				<FileText size={16} />
+				<FileText size={iconSize} />
 			</div>
 		);
 	}
 
 	return (
 		<div className={cn(base, "bg-primary/10 text-primary", className)}>
-			<FileIcon size={16} />
+			<FileIcon size={iconSize} />
 		</div>
 	);
 }
