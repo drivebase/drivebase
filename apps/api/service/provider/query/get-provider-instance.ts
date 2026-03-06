@@ -3,7 +3,7 @@ import {
 	getProviderRegistration,
 	getSensitiveFields,
 } from "@/config/providers";
-import { decryptConfig } from "@/utils/encryption";
+import { decryptConfig } from "@/utils/crypto/encryption";
 
 // Build and initialize provider instance from stored config.
 export async function getProviderInstance(providerRecord: {

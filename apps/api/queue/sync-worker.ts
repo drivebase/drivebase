@@ -9,7 +9,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { ActivityService } from "@/service/activity";
 import { syncProvider } from "@/service/provider/mutation";
 import { createBullMQConnection } from "../redis/client";
-import { logger } from "../utils/logger";
+import { logger } from "../utils/runtime/logger";
 import type {
 	SyncJobData,
 	SyncQueueJobData,

@@ -1,12 +1,12 @@
 import type { Database } from "@drivebase/db";
 import { getDb } from "@drivebase/db";
+import { isApiKeyToken } from "@drivebase/utils/server/api-key";
 import type { YogaInitialContext } from "graphql-yoga";
 import { getSession } from "../redis/session";
 import { validateApiKey } from "../service/api-key";
-import { isApiKeyToken } from "../utils/api-key";
-import type { JWTPayload } from "../utils/jwt";
-import { extractToken, verifyToken } from "../utils/jwt";
-import { logger } from "../utils/logger";
+import type { JWTPayload } from "../utils/auth/jwt";
+import { extractToken, verifyToken } from "../utils/auth/jwt";
+import { logger } from "../utils/runtime/logger";
 
 export interface GraphQLContext {
 	/** Database client */

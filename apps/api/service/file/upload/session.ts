@@ -3,7 +3,7 @@ import type { Database } from "@drivebase/db";
 import { uploadChunks, uploadSessions } from "@drivebase/db";
 import { and, eq, lt, notInArray, sql } from "drizzle-orm";
 import { getRedis } from "../../../redis/client";
-import { logger } from "../../../utils/logger";
+import { logger } from "../../../utils/runtime/logger";
 
 const UPLOAD_TEMP_DIR = "/tmp/drivebase-uploads";
 const SESSION_TTL_SECONDS = 86400; // 24 hours

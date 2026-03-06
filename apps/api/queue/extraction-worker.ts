@@ -16,8 +16,11 @@ import {
 	isExtractionSupported,
 	isWithinSizeLimit,
 } from "../utils/extraction";
-import { assertNotCancelled, JobCancelledError } from "../utils/job-cancel";
-import { logger } from "../utils/logger";
+import {
+	assertNotCancelled,
+	JobCancelledError,
+} from "../utils/jobs/job-cancel";
+import { logger } from "../utils/runtime/logger";
 import type { ExtractionJobData } from "./extraction-queue";
 
 const MAX_CONCURRENT = 5;

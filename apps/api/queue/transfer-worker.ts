@@ -11,8 +11,8 @@ import {
 	assertNotCancelled as assertJobNotCancelled,
 	clearJobCancellation,
 	JobCancelledError,
-} from "../utils/job-cancel";
-import { logger } from "../utils/logger";
+} from "../utils/jobs/job-cancel";
+import { logger } from "../utils/runtime/logger";
 import type { ProviderTransferJobData } from "./transfer-queue";
 
 const DEFAULT_TRANSFER_CHUNK_SIZE = 8 * 1024 * 1024;

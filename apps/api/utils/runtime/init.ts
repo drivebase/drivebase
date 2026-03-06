@@ -1,24 +1,18 @@
 import { UserRole } from "@drivebase/core";
 import { getDb, users } from "@drivebase/db";
 import { sql } from "drizzle-orm";
-import { getAvailableProviders } from "../config/providers";
-import { getRedis } from "../redis/client";
-import { UserService } from "../service/user";
+import { getAvailableProviders } from "../../config/providers";
+import { getRedis } from "../../redis/client";
+import { UserService } from "../../service/user";
 import { logger } from "./logger";
 
-/**
- * Initialize the application on first startup
- * Creates default owner user if no users exist
- */
 export async function initializeApp() {
 	logger.info("Initializing application...");
 
-	// Initialize Redis
 	getRedis();
 
 	const db = getDb();
 
-	// Test database connection
 	try {
 		await db.execute(sql`SELECT 1`);
 		logger.debug("PostgreSQL connected");
@@ -27,7 +21,6 @@ export async function initializeApp() {
 		throw error;
 	}
 
-	// Log available providers
 	const providers = getAvailableProviders();
 	logger.info({
 		msg: "Available providers loaded",
@@ -35,7 +28,6 @@ export async function initializeApp() {
 		providers: providers.map((p) => p.id),
 	});
 
-	// Check if any users exist
 	let existingUsers: unknown[] = [];
 	try {
 		existingUsers = await db.select().from(users).limit(1);
@@ -51,7 +43,6 @@ export async function initializeApp() {
 	if (existingUsers.length === 0) {
 		logger.info("No users found. Creating default owner user...");
 
-		// Get default credentials from environment or use defaults
 		const defaultEmail =
 			process.env.DEFAULT_OWNER_EMAIL || "admin@drivebase.local";
 		const defaultPassword = process.env.DEFAULT_OWNER_PASSWORD || "admin123";

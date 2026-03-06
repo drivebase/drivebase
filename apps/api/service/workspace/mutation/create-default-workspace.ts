@@ -1,5 +1,5 @@
 import { workspaces } from "@drivebase/db";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/runtime/logger";
 import {
 	DEFAULT_WORKSPACE_COLOR,
 	DEFAULT_WORKSPACE_NAME,

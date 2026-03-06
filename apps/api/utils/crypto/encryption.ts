@@ -1,15 +1,12 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { EncryptionError } from "@drivebase/core";
-import { env } from "../config/env";
+import { env } from "../../config/env";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
 const _AUTH_TAG_LENGTH = 16;
 const KEY_LENGTH = 32;
 
-/**
- * Derive a 32-byte key from the encryption key
- */
 function getKey(): Buffer {
 	const key = env.ENCRYPTION_KEY;
 
@@ -17,13 +14,9 @@ function getKey(): Buffer {
 		throw new EncryptionError("ENCRYPTION_KEY must be at least 32 characters");
 	}
 
-	// Use first 32 bytes
 	return Buffer.from(key.slice(0, KEY_LENGTH), "utf-8");
 }
 
-/**
- * Encrypt a value using AES-256-GCM
- */
 export function encrypt(plaintext: string): string {
 	try {
 		const key = getKey();
@@ -34,8 +27,6 @@ export function encrypt(plaintext: string): string {
 		encrypted += cipher.final("hex");
 
 		const authTag = cipher.getAuthTag();
-
-		// Format: iv:authTag:encrypted
 		const ivHex = iv.toString("hex");
 		const authTagHex = authTag.toString("hex");
 		return `${ivHex}:${authTagHex}:${encrypted}`;
@@ -44,9 +35,6 @@ export function encrypt(plaintext: string): string {
 	}
 }
 
-/**
- * Decrypt a value using AES-256-GCM
- */
 export function decrypt(ciphertext: string): string {
 	try {
 		const key = getKey();
@@ -76,10 +64,6 @@ export function decrypt(ciphertext: string): string {
 	}
 }
 
-/**
- * Encrypt provider configuration
- * Encrypts sensitive fields while preserving non-sensitive ones
- */
 export function encryptConfig(
 	config: Record<string, unknown>,
 	sensitiveFields: readonly string[],
@@ -88,10 +72,8 @@ export function encryptConfig(
 
 	for (const [key, value] of Object.entries(config)) {
 		if (sensitiveFields.includes(key)) {
-			// Encrypt sensitive field
 			encryptedConfig[key] = encrypt(String(value));
 		} else {
-			// Keep non-sensitive field as-is
 			encryptedConfig[key] = value;
 		}
 	}
@@ -99,10 +81,6 @@ export function encryptConfig(
 	return JSON.stringify(encryptedConfig);
 }
 
-/**
- * Decrypt provider configuration
- * Decrypts sensitive fields while preserving non-sensitive ones
- */
 export function decryptConfig(
 	encryptedConfigJson: string,
 	sensitiveFields: readonly string[],
@@ -115,10 +93,8 @@ export function decryptConfig(
 
 	for (const [key, value] of Object.entries(encryptedConfig)) {
 		if (sensitiveFields.includes(key)) {
-			// Decrypt sensitive field
 			decryptedConfig[key] = decrypt(String(value));
 		} else {
-			// Keep non-sensitive field as-is
 			decryptedConfig[key] = value;
 		}
 	}

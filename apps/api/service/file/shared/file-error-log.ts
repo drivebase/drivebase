@@ -1,5 +1,5 @@
 import { DrivebaseError, ProviderError } from "@drivebase/core";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/runtime/logger";
 
 type FileOperation = "upload" | "download" | "file_list";
 

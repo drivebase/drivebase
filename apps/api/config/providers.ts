@@ -26,7 +26,7 @@ import {
 import { WebDAVSensitiveFields, webdavRegistration } from "@drivebase/webdav";
 import type { Hono } from "hono";
 import type { AppEnv } from "../server/app";
-import { logger } from "../utils/logger";
+import { logger } from "../utils/runtime/logger";
 
 /**
  * Storage provider registry

@@ -1,7 +1,7 @@
 import type { Database } from "@drivebase/db";
 import { files } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { logger } from "../../../utils/logger";
+import { logger } from "../../../utils/runtime/logger";
 import { getFile } from "../query";
 
 // Mark a file as starred after access validation.

@@ -2,7 +2,7 @@ import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
 import { buildExportPayload } from "../../service/export";
 import { getAccessibleWorkspaceId } from "../../service/workspace";
-import { encryptWithPassword } from "../../utils/export-crypto";
+import { encryptWithPassword } from "../../utils/crypto/export-crypto";
 import type { AppEnv } from "../app";
 
 export async function handleExport(c: Context<AppEnv>): Promise<Response> {

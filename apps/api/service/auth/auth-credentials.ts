@@ -5,17 +5,14 @@ import {
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
+import { validatePassword } from "@drivebase/utils";
 import { eq } from "drizzle-orm";
 import { checkRateLimit, RateLimits } from "../../redis/rate-limit";
 import { createSession } from "../../redis/session";
 import { telemetry } from "../../telemetry";
-import { createToken } from "../../utils/jwt";
-import { logger } from "../../utils/logger";
-import {
-	hashPassword,
-	validatePassword,
-	verifyPassword,
-} from "../../utils/password";
+import { createToken } from "../../utils/auth/jwt";
+import { hashPassword, verifyPassword } from "../../utils/auth/password";
+import { logger } from "../../utils/runtime/logger";
 import { createDefaultWorkspace } from "../workspace";
 
 /**

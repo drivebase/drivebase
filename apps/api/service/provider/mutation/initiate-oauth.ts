@@ -7,7 +7,7 @@ import {
 	getSensitiveFields,
 } from "@/config/providers";
 import { telemetry } from "@/telemetry";
-import { decryptConfig, encryptConfig } from "@/utils/encryption";
+import { decryptConfig, encryptConfig } from "@/utils/crypto/encryption";
 import { getProvider } from "../query";
 import {
 	buildOAuthCallbackUrl,

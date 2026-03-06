@@ -41,5 +41,8 @@ export function parseBytes(str: string): number {
 	return Math.round(value * multiplier);
 }
 
+export { validatePassword } from "./auth/password-policy";
+export { normalizeIds } from "./collections/ids";
+
 // Rule matching utilities
 export * from "./rule-matcher";

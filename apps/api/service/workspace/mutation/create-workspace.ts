@@ -1,6 +1,6 @@
 import { workspaces } from "@drivebase/db";
 import { telemetry } from "@/telemetry";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/runtime/logger";
 import { WORKSPACE_COLORS } from "../shared/constants";
 import type { WorkspaceDbLike } from "../shared/types";
 

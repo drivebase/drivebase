@@ -6,7 +6,7 @@ import {
 	getProviderRegistration,
 	getSensitiveFields,
 } from "@/config/providers";
-import { decryptConfig, encryptConfig } from "@/utils/encryption";
+import { decryptConfig, encryptConfig } from "@/utils/crypto/encryption";
 import { getProvider } from "../query";
 import { scheduleInitialProviderSync } from "./schedule-initial-provider-sync";
 

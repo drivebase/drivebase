@@ -9,12 +9,6 @@ const SCRYPT_COST = 16384;
 export const EXPORT_MAGIC = Buffer.from("DRBX");
 export const EXPORT_VERSION = 1;
 
-/**
- * Encrypt a JSON string with a user-provided password using AES-256-GCM.
- *
- * Binary format:
- *   DRBX (4B) + version (1B) + salt (16B) + IV (16B) + authTag (16B) + ciphertext
- */
 export function encryptWithPassword(
 	jsonString: string,
 	password: string,

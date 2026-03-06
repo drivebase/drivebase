@@ -25,6 +25,7 @@
 		"@drivebase/nextcloud": "workspace:*",
 		"@drivebase/s3": "workspace:*",
 		"@drivebase/telegram": "workspace:*",
+		"@drivebase/utils": "workspace:*",
 		"@drivebase/webdav": "workspace:*",
 		"@graphql-tools/graphql-file-loader": "^8.0.5",
 		"@graphql-tools/load": "^8.0.5",

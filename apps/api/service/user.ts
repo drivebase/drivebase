@@ -6,9 +6,10 @@ import {
 } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
+import { validatePassword } from "@drivebase/utils";
 import { eq } from "drizzle-orm";
-import { logger } from "../utils/logger";
-import { hashPassword, validatePassword } from "../utils/password";
+import { hashPassword } from "../utils/auth/password";
+import { logger } from "../utils/runtime/logger";
 import { createDefaultWorkspace } from "./workspace";
 
 export class UserService {

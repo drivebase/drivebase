@@ -6,7 +6,8 @@
 	"private": true,
 	"description": "Shared utility helpers for Drivebase",
 	"exports": {
-		".": "./index.ts"
+		".": "./index.ts",
+		"./server/api-key": "./server/api-key.ts"
 	},
 	"scripts": {
 		"check-types": "tsc --noEmit"

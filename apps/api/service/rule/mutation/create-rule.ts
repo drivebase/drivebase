@@ -3,7 +3,7 @@ import type { Database, NewFileRule } from "@drivebase/db";
 import { fileRules } from "@drivebase/db";
 import { and, eq, sql } from "drizzle-orm";
 import { telemetry } from "@/telemetry";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/runtime/logger";
 import type { CreateRuleInput } from "../shared/types";
 import { validateConditions, validateProvider } from "../shared/validation";
 

@@ -1,7 +1,7 @@
 import { getDb } from "@drivebase/db";
 import type { Context } from "hono";
 import { FileService } from "../../service/file";
-import { logger } from "../../utils/logger";
+import { logger } from "../../utils/runtime/logger";
 import type { AppEnv } from "../app";
 import { getPreviewCache, setPreviewCache } from "../preview-cache";
 

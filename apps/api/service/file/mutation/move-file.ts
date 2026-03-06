@@ -2,7 +2,7 @@ import { ConflictError, joinPath, ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
 import { files, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { logger } from "../../../utils/logger";
+import { logger } from "../../../utils/runtime/logger";
 import { ActivityService } from "../../activity";
 import { FolderService } from "../../folder";
 import { ProviderService } from "../../provider";

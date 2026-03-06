@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
-mock.module("../../utils/logger", () => ({
+mock.module("../../utils/runtime/logger", () => ({
 	logger: {
 		debug: mock(),
 		info: mock(),
