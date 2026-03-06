@@ -13,6 +13,7 @@ import { useJobsFeed } from "@/shared/hooks/useJobsFeed";
 import { ConfirmDialogHost } from "@/shared/lib/confirmDialog";
 import { DownloadLinkConfigDialogHost } from "@/shared/lib/downloadLinkConfigDialog";
 import { PromptDialogHost } from "@/shared/lib/promptDialog";
+import { useApplyAppearance } from "@/shared/store/personalizationStore";
 
 export const Route = createRootRoute({
 	component: RootComponent,
@@ -23,6 +24,7 @@ export const Route = createRootRoute({
 function RootComponent() {
 	useJobsFeed();
 	useActivityFeed();
+	useApplyAppearance();
 
 	const { theme } = useTheme();
 

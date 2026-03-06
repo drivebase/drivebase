@@ -1,13 +1,12 @@
+import { Link } from "@tanstack/react-router";
 import {
 	PiArrowSquareOut as ExternalLink,
 	PiPlus as Plus,
 } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
 import type { AvailableProvider } from "@/gql/graphql";
 import { ProviderIcon } from "./ProviderIcon";
-import { Link } from "@tanstack/react-router";
 
 interface AvailableProviderCardProps {
 	provider: AvailableProvider;

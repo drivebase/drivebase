@@ -81,6 +81,22 @@
 	--sidebar-accent-foreground: oklch(0.205 0 0);
 	--sidebar-border: oklch(0.922 0 0);
 	--sidebar-ring: oklch(0.708 0 0);
+	--app-background-image:
+		radial-gradient(
+			600px circle at 20% 20%,
+			rgba(168, 85, 247, 0.25),
+			transparent 60%
+		),
+		radial-gradient(
+			500px circle at 80% 30%,
+			rgba(192, 132, 252, 0.2),
+			transparent 60%
+		),
+		radial-gradient(
+			700px circle at 50% 90%,
+			rgba(147, 51, 234, 0.2),
+			transparent 70%
+		);
 }
 
 .dark {
