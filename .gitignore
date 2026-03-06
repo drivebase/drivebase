@@ -46,3 +46,6 @@ apps/web/src/locales/*/messages.ts
 
 # Tesseract OCR data
 *.traineddata
+
+# SQL
+*.sql
