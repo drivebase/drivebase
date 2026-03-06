@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.4.0](https://github.com/drivebase/drivebase/compare/v3.3.0...v3.4.0) (2026-03-06)
+
+### ✨ Features
+
+* add js/ts sdk support ([953524a](https://github.com/drivebase/drivebase/commit/953524a3324fbb1a5c8993b66e11cfbfd9952c73))
+* collapsible right panel ([2caae20](https://github.com/drivebase/drivebase/commit/2caae20ac352f03c9a69b19b8a43f25271bcdbf2))
+* implement auto-sync toggle with custom scheduling ([68fec33](https://github.com/drivebase/drivebase/commit/68fec3349058fdf92c73df43c34e812b3fa6e1b6))
+* implement forgot password ([89e5a76](https://github.com/drivebase/drivebase/commit/89e5a76fba81c4cd55aa3ca4671bfda05f96a71e))
+* implement webdav server ([#128](https://github.com/drivebase/drivebase/issues/128)) ([e68dae7](https://github.com/drivebase/drivebase/commit/e68dae72c1687d34e623d674c59fc968aa3eda26))
+* **web:** add files grid view ([fc99c81](https://github.com/drivebase/drivebase/commit/fc99c81fe6f56cf65dbe685ffc0d07b3b55cb4aa))
+* **web:** add personalization settings with persisted appearance presets ([9bd17ac](https://github.com/drivebase/drivebase/commit/9bd17ac68feeffeecba19f1aa0f7b10375aec664))
+
+### 🐛 Fixes
+
+* add validation for chunkSize in sliceIntoChunks function ([6cfb1f8](https://github.com/drivebase/drivebase/commit/6cfb1f877993d8f729532339acdcec6cf1ef8227))
+* remove index from key in status bar item mapping ([7f24bb6](https://github.com/drivebase/drivebase/commit/7f24bb685ec39dafaa3fb5bfc6348dab714dc698))
+* update siteUrl to include 'www' for correct domain resolution ([ea94395](https://github.com/drivebase/drivebase/commit/ea94395ea113035656b7afe8cb6d142a7204a455))
+
 ## [3.3.0](https://github.com/drivebase/drivebase/compare/v3.2.0...v3.3.0) (2026-03-02)
 
 ### ✨ Features
