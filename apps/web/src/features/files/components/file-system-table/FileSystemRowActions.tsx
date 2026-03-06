@@ -84,6 +84,13 @@ export function FileSystemRowActions({
 					{file ? (
 						<>
 							<DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+							{canShowDetails ? (
+								<DropdownMenuItem
+									onClick={() => file && onShowFileDetails?.(file)}
+								>
+									<Info size={14} className="mr-2" /> View
+								</DropdownMenuItem>
+							) : null}
 							<DropdownMenuItem onClick={() => onDownloadFile?.(file)}>
 								<Download size={14} className="mr-2" /> Download
 							</DropdownMenuItem>
@@ -156,11 +163,6 @@ export function FileSystemRowActions({
 						<DropdownMenuItem onClick={() => onToggleFolderFavorite?.(folder)}>
 							<Star size={14} className="mr-2" />
 							{folder.starred ? "Remove from Starred" : "Add to Starred"}
-						</DropdownMenuItem>
-					) : null}
-					{canShowDetails ? (
-						<DropdownMenuItem onClick={() => file && onShowFileDetails?.(file)}>
-							<Info size={14} className="mr-2" /> Details
 						</DropdownMenuItem>
 					) : null}
 					{canDelete ? <DropdownMenuSeparator /> : null}

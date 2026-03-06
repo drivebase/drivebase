@@ -11,6 +11,10 @@
 		"rules": {
 			"suspicious": {
 				"useBiomeIgnoreFolder": "error"
+			},
+			"a11y": {
+				"useKeyWithClickEvents": "off",
+				"noStaticElementInteractions": "off"
 			}
 		}
 	},
