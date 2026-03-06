@@ -2,6 +2,8 @@
 
 import { ArrowRight, Check, Copy, Terminal } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { HeroIllustration } from "./hero-illustration";
 
@@ -126,6 +128,20 @@ export function HeroSection() {
                 View Documentation
               </Button>
             </motion.div>
+
+            <Link
+              href="https://www.producthunt.com/products/drivebase/launches/drivebase?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-drivebase"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Image
+                className="mt-8"
+                alt="Drivebase - Unified file manager for all your cloud storage with E2EE | Product Hunt"
+                width="250"
+                height="54"
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1078989&amp;theme=dark&amp;t=1772768328262"
+              />
+            </Link>
           </div>
 
           <motion.div

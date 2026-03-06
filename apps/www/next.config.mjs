@@ -23,6 +23,10 @@ const config = {
         protocol: "https",
         hostname: "picsum.photos",
       },
+      {
+        protocol: "https",
+        hostname: "api.producthunt.com",
+      },
     ],
   },
 };
