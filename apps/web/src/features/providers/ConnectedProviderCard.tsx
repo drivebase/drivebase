@@ -83,7 +83,7 @@ export function ConnectedProviderCard({
 		: 0;
 
 	return (
-		<Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+		<Card className="overflow-hidden bg-background/20 backdrop-blur-lg">
 			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 				<div className="flex items-center gap-3">
 					<div className="p-2 bg-muted ">

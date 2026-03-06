@@ -29,7 +29,7 @@ export function FolderGridItem({
 			onClick={onSelect}
 			onDoubleClick={() => onNavigate?.(row.original.folder.id)}
 			className={cn(
-				"w-full group relative cursor-pointer select-none border border-border/60 bg-muted/40 p-3 transition-colors hover:bg-muted/60",
+				"w-full group relative cursor-pointer select-none border border-border/60 bg-background/40 backdrop-blur-lg p-3 transition-colors hover:bg-background/10",
 				row.getIsSelected() && "border-primary/50 bg-muted/70",
 			)}
 		>

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 
 import type { AvailableProvider } from "@/gql/graphql";
 import { ProviderIcon } from "./ProviderIcon";
+import { Link } from "@tanstack/react-router";
 
 interface AvailableProviderCardProps {
 	provider: AvailableProvider;
@@ -25,21 +26,21 @@ export function AvailableProviderCard({
 	canManageProviders,
 }: AvailableProviderCardProps) {
 	return (
-		<Card className="group relative overflow-hidden transition-all flex flex-col items-center text-center p-6 gap-4">
+		<Card className="bg-background/20 backdrop-blur-lg group relative overflow-hidden transition-all flex flex-col items-center text-center p-6 gap-4">
 			<Button
 				variant="ghost"
 				size="icon"
 				className="absolute right-3 top-3"
 				asChild
 			>
-				<a
-					href={getProviderDocsUrl(provider.id)}
+				<Link
+					to={getProviderDocsUrl(provider.id)}
 					target="_blank"
 					rel="noopener noreferrer"
 					aria-label={`Open ${provider.name} docs`}
 				>
 					<ExternalLink className="h-4 w-4" />
-				</a>
+				</Link>
 			</Button>
 
 			<div className=" bg-primary/10 p-4">

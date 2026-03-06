@@ -16,7 +16,7 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children, title, description }: AuthLayoutProps) {
 	return (
-		<div className="min-h-screen w-full flex items-center justify-center bg-background relative overflow-hidden">
+		<div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden">
 			{/* Abstract Background Shapes */}
 			<div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-primary/5  blur-3xl opacity-70" />
 			<div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-500/5  blur-3xl opacity-70" />
@@ -32,7 +32,7 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
 				</div>
 
 				{/* Main Card */}
-				<Card className="border-border/50 shadow-xl shadow-black/5 bg-card/80 backdrop-blur-sm">
+				<Card className="bg-background/20 backdrop-blur-lg">
 					<CardHeader className="space-y-1 text-center pb-8">
 						<CardTitle className="text-2xl font-semibold tracking-tight">
 							{title}
