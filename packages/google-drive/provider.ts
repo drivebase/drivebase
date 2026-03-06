@@ -55,6 +55,110 @@ function mapGoogleError(error: unknown): Record<string, unknown> {
 	};
 }
 
+function toWebReadableStream(
+	nodeStream: NodeJS.ReadableStream,
+	providerErrorFactory: (error: unknown) => ProviderError,
+): ReadableStream<Uint8Array> {
+	let closed = false;
+	let finalized = false;
+	let cleanup = () => {};
+	let destroyNodeStream = () => {};
+
+	return new ReadableStream<Uint8Array>({
+		start(controller) {
+			destroyNodeStream = () => {
+				if (
+					"destroy" in nodeStream &&
+					typeof nodeStream.destroy === "function"
+				) {
+					nodeStream.destroy();
+				}
+			};
+
+			cleanup = () => {
+				nodeStream.off("data", onData);
+				nodeStream.off("end", onEnd);
+				nodeStream.off("close", onClose);
+				nodeStream.off("error", onError);
+			};
+
+			const finalizeClose = () => {
+				if (finalized) return;
+				finalized = true;
+				closed = true;
+				cleanup();
+				try {
+					controller.close();
+				} catch (error) {
+					const code =
+						error instanceof Error && "code" in error
+							? String((error as { code?: unknown }).code)
+							: "";
+					if (code !== "ERR_INVALID_STATE") {
+						throw error;
+					}
+				}
+			};
+
+			const finalizeError = (error: unknown) => {
+				if (finalized) return;
+				finalized = true;
+				closed = true;
+				cleanup();
+				try {
+					controller.error(providerErrorFactory(error));
+				} catch (controllerError) {
+					const code =
+						controllerError instanceof Error && "code" in controllerError
+							? String((controllerError as { code?: unknown }).code)
+							: "";
+					if (code !== "ERR_INVALID_STATE") {
+						throw controllerError;
+					}
+				}
+			};
+
+			const onData = (chunk: string | Buffer) => {
+				if (closed) return;
+				try {
+					const buffer = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
+					controller.enqueue(buffer);
+				} catch {
+					closed = true;
+					cleanup();
+					destroyNodeStream();
+				}
+			};
+
+			const onEnd = () => {
+				if (closed) return;
+				finalizeClose();
+			};
+
+			const onClose = () => {
+				if (closed) return;
+				finalizeClose();
+			};
+
+			const onError = (error: unknown) => {
+				if (closed) return;
+				finalizeError(error);
+			};
+
+			nodeStream.on("data", onData);
+			nodeStream.on("end", onEnd);
+			nodeStream.on("close", onClose);
+			nodeStream.on("error", onError);
+		},
+		cancel() {
+			closed = true;
+			finalized = true;
+			cleanup();
+			destroyNodeStream();
+		},
+	});
+}
+
 /**
  * Google Drive storage provider
  */
@@ -339,25 +443,15 @@ export class GoogleDriveProvider implements IStorageProvider {
 					{ responseType: "stream" },
 				);
 				const nodeStream = response.data as NodeJS.ReadableStream;
-				return new ReadableStream({
-					start(controller) {
-						nodeStream.on("data", (chunk: Buffer) => {
-							controller.enqueue(chunk);
-						});
-						nodeStream.on("end", () => {
-							controller.close();
-						});
-						nodeStream.on("error", (error: Error) => {
-							controller.error(
-								new ProviderError("google_drive", "Download stream failed", {
-									op: "downloadFile",
-									remoteId,
-									error: mapGoogleError(error),
-								}),
-							);
-						});
-					},
-				});
+				return toWebReadableStream(
+					nodeStream,
+					(error) =>
+						new ProviderError("google_drive", "Download stream failed", {
+							op: "downloadFile",
+							remoteId,
+							error: mapGoogleError(error),
+						}),
+				);
 			}
 
 			// Regular binary file — stream via alt=media
@@ -367,25 +461,15 @@ export class GoogleDriveProvider implements IStorageProvider {
 			);
 
 			const nodeStream = response.data as NodeJS.ReadableStream;
-			return new ReadableStream({
-				start(controller) {
-					nodeStream.on("data", (chunk: Buffer) => {
-						controller.enqueue(chunk);
-					});
-					nodeStream.on("end", () => {
-						controller.close();
-					});
-					nodeStream.on("error", (error: Error) => {
-						controller.error(
-							new ProviderError("google_drive", "Download stream failed", {
-								op: "downloadFile",
-								remoteId,
-								error: mapGoogleError(error),
-							}),
-						);
-					});
-				},
-			});
+			return toWebReadableStream(
+				nodeStream,
+				(error) =>
+					new ProviderError("google_drive", "Download stream failed", {
+						op: "downloadFile",
+						remoteId,
+						error: mapGoogleError(error),
+					}),
+			);
 		} catch (error) {
 			throw new ProviderError("google_drive", "Failed to download file", {
 				op: "downloadFile",

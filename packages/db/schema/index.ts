@@ -17,6 +17,7 @@ export * from "./providers";
 export * from "./upload-sessions";
 export * from "./users";
 export * from "./vaults";
+export * from "./webdav-credentials";
 export * from "./workspace-auto-sync-providers";
 export * from "./workspace-memberships";
 export * from "./workspace-stats";

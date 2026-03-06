@@ -27,6 +27,7 @@ import { fileRuleResolvers, ruleMutations, ruleQueries } from "./rule";
 import { scalarResolvers } from "./scalars";
 import { userMutations, userQueries, userResolvers } from "./user";
 import { vaultMutations, vaultQueries } from "./vault";
+import { webDavMutations, webDavQueries } from "./webdav";
 import {
 	workspaceInviteResolvers,
 	workspaceMemberResolvers,
@@ -53,6 +54,7 @@ export const resolvers: Resolvers = {
 		...workspaceQueries,
 		...vaultQueries,
 		...activityQueries,
+		...webDavQueries,
 	},
 
 	Mutation: {
@@ -67,6 +69,7 @@ export const resolvers: Resolvers = {
 		...metadataMutations,
 		...vaultMutations,
 		...activityMutations,
+		...webDavMutations,
 
 		// Placeholder resolvers for permissions (TODO)
 		grantFolderAccess: async () => {

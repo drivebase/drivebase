@@ -88,7 +88,7 @@ async function loadFolderContents(
 async function warmRootCache(
 	db: Database,
 	workspaceId: string,
-	userId: string,
+	userId: string | null,
 	providerIds?: string[],
 ) {
 	const providerConditions = [
@@ -131,7 +131,7 @@ async function warmRootCache(
 async function warmFolderCache(
 	db: Database,
 	workspaceId: string,
-	userId: string,
+	userId: string | null,
 	folderId: string,
 	providerIds?: string[],
 ) {
@@ -189,7 +189,7 @@ async function warmFolderCache(
 export async function getContents(
 	db: Database,
 	workspaceId: string,
-	userId: string,
+	userId: string | null,
 	folderId?: string,
 	providerIds?: string[],
 ): Promise<ContentsResult> {

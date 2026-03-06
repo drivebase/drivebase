@@ -8,6 +8,7 @@ import { handleOAuthCallback } from "./oauth";
 import { handlePreviewProxy } from "./preview-proxy";
 import { handleUploadChunk } from "./upload-chunk";
 import { handleUploadProxy } from "./upload-proxy";
+import { mountWebDavRoutes } from "./webdav";
 
 /**
  * Mount core API routes to Hono app
@@ -29,4 +30,7 @@ export function mountCoreRoutes(app: Hono<AppEnv>): void {
 
 	// OAuth callback (no auth - external redirect)
 	app.get("/webhook/callback", handleOAuthCallback);
+
+	// Hosted WebDAV routes (own Basic Auth middleware)
+	mountWebDavRoutes(app);
 }
