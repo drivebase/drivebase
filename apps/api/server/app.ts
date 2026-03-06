@@ -25,23 +25,28 @@ export type AppEnv = {
  */
 export function createApp(): Hono<AppEnv> {
 	const app = new Hono<AppEnv>();
+	const corsMiddleware = cors({
+		origin: (origin) => {
+			if (env.NODE_ENV === "development" && origin?.includes("localhost")) {
+				return origin;
+			}
+			return env.CORS_ORIGIN;
+		},
+		credentials: true,
+		allowMethods: ["POST", "GET", "PUT", "OPTIONS"],
+		allowHeaders: ["Content-Type", "Authorization", "x-workspace-id"],
+		exposeHeaders: ["Content-Disposition"],
+	});
 
 	// Global CORS middleware
-	app.use(
-		"*",
-		cors({
-			origin: (origin) => {
-				if (env.NODE_ENV === "development" && origin?.includes("localhost")) {
-					return origin;
-				}
-				return env.CORS_ORIGIN;
-			},
-			credentials: true,
-			allowMethods: ["POST", "GET", "PUT", "OPTIONS"],
-			allowHeaders: ["Content-Type", "Authorization", "x-workspace-id"],
-			exposeHeaders: ["Content-Disposition"],
-		}),
-	);
+	app.use("*", async (c, next) => {
+		if (c.req.path === "/dav" || c.req.path.startsWith("/dav/")) {
+			await next();
+			return;
+		}
+
+		return corsMiddleware(c, next);
+	});
 
 	return app;
 }
