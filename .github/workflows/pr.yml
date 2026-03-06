@@ -5,15 +5,12 @@ on:
     paths:
       - '**/*.ts'
       - '**/*.tsx'
-      - '**/*.js'
-      - '**/*.jsx'
-      - '**/*.json'
       - 'bun.lock'
       - '.github/workflows/pr.yml'
 
 concurrency:
-  group: release
-  cancel-in-progress: false
+  group: pr
+  cancel-in-progress: true
 
 jobs:
   install:
