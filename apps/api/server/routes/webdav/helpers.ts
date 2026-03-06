@@ -6,8 +6,8 @@ import {
 	listWebDavCollectionMembers,
 	resolveWebDavResource,
 } from "@/service/webdav/query/resolve-webdav-resource";
-import { buildPropfindXml } from "@/service/webdav/xml";
 import type { WebDavResource } from "@/service/webdav/shared/resource-types";
+import { buildPropfindXml } from "@/service/webdav/xml";
 import { logger } from "@/utils/runtime/logger";
 import type { AppEnv } from "../../app";
 

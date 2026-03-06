@@ -1,4 +1,4 @@
-import { ValidationError, joinPath } from "@drivebase/core";
+import { joinPath, ValidationError } from "@drivebase/core";
 import type { WebDavProviderScope, WebDavProviderScopeInput } from "./types";
 
 function normalizeScopePath(basePath?: string | null): string {

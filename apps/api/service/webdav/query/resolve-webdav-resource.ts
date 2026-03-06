@@ -1,14 +1,14 @@
 import { NotFoundError } from "@drivebase/core";
+import type { Database, StorageProvider } from "@drivebase/db";
+import { storageProviders } from "@drivebase/db";
+import { and, eq, inArray } from "drizzle-orm";
+import { getContents } from "@/service/file/query/contents";
 import type {
 	ContentsResult,
 	FileRecord,
 	FolderRecord,
 } from "@/service/file/types";
-import { getContents } from "@/service/file/query/contents";
 import { logger } from "@/utils/runtime/logger";
-import type { Database, StorageProvider } from "@drivebase/db";
-import { storageProviders } from "@drivebase/db";
-import { and, eq, inArray } from "drizzle-orm";
 import {
 	ensureTrailingSlash,
 	normalizeWebDavRequestPath,

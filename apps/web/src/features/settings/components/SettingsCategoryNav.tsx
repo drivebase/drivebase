@@ -1,16 +1,16 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useMemo } from "react";
 import {
 	PiFunnel as Filter,
-	PiKey as Key,
 	PiGlobeHemisphereWest as Globe,
+	PiKey as Key,
 	PiSlidersHorizontal as SlidersHorizontal,
 	PiUser as User,
 	PiUsers as Users,
 	PiWrench as Wrench,
 } from "react-icons/pi";
-import { useMemo } from "react";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import {
 	can,
