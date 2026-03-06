@@ -1,0 +1,42 @@
+import { AuthenticationError } from "@drivebase/core";
+import type { Database } from "@drivebase/db";
+import { webdavCredentials } from "@drivebase/db";
+import { eq } from "drizzle-orm";
+import { verifyPassword } from "@/utils/auth/password";
+import { getWebDavCredentialByUsername } from "./query";
+import { normalizeWebDavProviderScopes } from "./shared/scope";
+import type { WebDavAuthResult } from "./shared/types";
+
+export async function authenticateWebDavCredential(
+	db: Database,
+	username: string,
+	password: string,
+): Promise<WebDavAuthResult> {
+	const record = await getWebDavCredentialByUsername(
+		db,
+		username.trim().toLowerCase(),
+	);
+	if (!record || !record.isActive) {
+		throw new AuthenticationError("Invalid WebDAV credentials");
+	}
+
+	const isValid = await verifyPassword(password, record.passwordHash);
+	if (!isValid) {
+		throw new AuthenticationError("Invalid WebDAV credentials");
+	}
+
+	db.update(webdavCredentials)
+		.set({ lastUsedAt: new Date(), updatedAt: new Date() })
+		.where(eq(webdavCredentials.id, record.credentialId))
+		.catch(() => undefined);
+
+	return {
+		credentialId: record.credentialId,
+		workspaceId: record.workspaceId,
+		name: record.name,
+		username: record.username,
+		providerScopes: normalizeWebDavProviderScopes(
+			record.providerScopes ?? null,
+		),
+	};
+}

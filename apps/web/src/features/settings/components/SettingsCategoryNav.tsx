@@ -1,16 +1,38 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
+import { useMemo } from "react";
 import {
 	PiFunnel as Filter,
+	PiGlobeHemisphereWest as Globe,
 	PiKey as Key,
 	PiSlidersHorizontal as SlidersHorizontal,
 	PiUser as User,
 	PiUsers as Users,
 	PiWrench as Wrench,
 } from "react-icons/pi";
-import { getActiveWorkspaceId } from "@/features/workspaces";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import {
+	can,
+	getActiveWorkspaceId,
+	useWorkspaceMembers,
+} from "@/features/workspaces";
 
-const categories = [
+type SettingsCategory = {
+	to:
+		| "/settings/general"
+		| "/settings/account"
+		| "/settings/users"
+		| "/settings/rules"
+		| "/settings/advanced"
+		| "/settings/api-keys"
+		| "/settings/webdav";
+	icon: typeof SlidersHorizontal;
+	label: ReactNode;
+	adminOnly?: boolean;
+};
+
+const categories: SettingsCategory[] = [
 	{
 		to: "/settings/general",
 		icon: SlidersHorizontal,
@@ -41,15 +63,35 @@ const categories = [
 		icon: Key,
 		label: <Trans>API Keys</Trans>,
 	},
+	{
+		to: "/settings/webdav",
+		icon: Globe,
+		label: <Trans>WebDAV</Trans>,
+		adminOnly: true,
+	},
 ] as const;
 
 export function SettingsCategoryNav() {
 	const workspaceId = getActiveWorkspaceId();
+	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
+	const [membersResult] = useWorkspaceMembers(workspaceId ?? "", !workspaceId);
+	const currentWorkspaceRole = useMemo(() => {
+		if (!currentUserId) return null;
+		return (
+			membersResult.data?.workspaceMembers.find(
+				(member) => member.userId === currentUserId,
+			)?.role ?? null
+		);
+	}, [currentUserId, membersResult.data?.workspaceMembers]);
+	const visibleCategories = categories.filter(
+		(category) =>
+			!category.adminOnly || can(currentWorkspaceRole, "providers.manage"),
+	);
 
 	return (
 		<nav className="w-72 border-r shrink-0 h-full flex flex-col">
 			<ul>
-				{categories.map((category) => (
+				{visibleCategories.map((category) => (
 					<li key={category.to}>
 						<Link
 							to={category.to}

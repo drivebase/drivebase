@@ -29,6 +29,13 @@
 			"when": 1772676610936,
 			"tag": "0003_workspace_auto_sync",
 			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1772776714243,
+			"tag": "0004_add_webdav_credentials",
+			"breakpoints": true
 		}
 	]
 }
