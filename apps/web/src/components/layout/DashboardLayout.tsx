@@ -7,6 +7,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 		<div
 			id="dashboard-layout"
 			className="flex h-screen bg-background overflow-hidden relative"
+			style={{
+				backgroundImage: "var(--app-background-image)",
+				backgroundAttachment: "fixed",
+			}}
 		>
 			<aside className="shrink-0 h-full">
 				<Sidebar />

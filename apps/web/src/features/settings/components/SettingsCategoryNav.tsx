@@ -6,6 +6,7 @@ import {
 	PiFunnel as Filter,
 	PiGlobeHemisphereWest as Globe,
 	PiKey as Key,
+	PiPalette as Palette,
 	PiSlidersHorizontal as SlidersHorizontal,
 	PiUser as User,
 	PiUsers as Users,
@@ -22,6 +23,7 @@ type SettingsCategory = {
 	to:
 		| "/settings/general"
 		| "/settings/account"
+		| "/settings/personalization"
 		| "/settings/users"
 		| "/settings/rules"
 		| "/settings/advanced"
@@ -42,6 +44,11 @@ const categories: SettingsCategory[] = [
 		to: "/settings/account",
 		icon: User,
 		label: <Trans>Account</Trans>,
+	},
+	{
+		to: "/settings/personalization",
+		icon: Palette,
+		label: <Trans>Personalization</Trans>,
 	},
 	{
 		to: "/settings/users",

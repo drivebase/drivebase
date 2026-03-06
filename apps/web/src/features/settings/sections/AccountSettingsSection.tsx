@@ -89,7 +89,6 @@ export function AccountSettingsSection() {
 						value={name}
 						onChange={(event) => setName(event.target.value)}
 						placeholder="Enter your name"
-						className="h-10 text-sm"
 					/>
 					<Button onClick={handleSaveProfile} disabled={isSaving}>
 						{isSaving ? <Trans>Saving...</Trans> : <Trans>Save</Trans>}
