@@ -6,11 +6,17 @@ import {
 	LOGOUT_MUTATION,
 	ME_QUERY,
 	REGISTER_MUTATION,
+	REQUEST_PASSWORD_RESET_MUTATION,
+	RESET_PASSWORD_MUTATION,
 	UPDATE_MY_PROFILE_MUTATION,
 } from "@/features/auth/api/auth";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useFragment as getFragmentData } from "@/gql/fragment-masking";
-import type { LoginInput, RegisterInput } from "@/gql/graphql";
+import type {
+	LoginInput,
+	RegisterInput,
+	ResetPasswordInput,
+} from "@/gql/graphql";
 import { UserFragment } from "@/shared/api/fragments";
 
 export function useMe() {
@@ -135,4 +141,26 @@ export function useChangePassword() {
 	);
 
 	return [result, changePassword] as const;
+}
+
+export function useRequestPasswordReset() {
+	const [result, mutate] = useMutation(REQUEST_PASSWORD_RESET_MUTATION);
+
+	const requestPasswordReset = useCallback(
+		async (variables: { email: string }) => mutate(variables),
+		[mutate],
+	);
+
+	return [result, requestPasswordReset] as const;
+}
+
+export function useResetPassword() {
+	const [result, mutate] = useMutation(RESET_PASSWORD_MUTATION);
+
+	const resetPassword = useCallback(
+		async (variables: { input: ResetPasswordInput }) => mutate(variables),
+		[mutate],
+	);
+
+	return [result, resetPassword] as const;
 }

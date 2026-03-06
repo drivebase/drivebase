@@ -117,7 +117,7 @@ export function LoginPage() {
 											<Trans>Password</Trans>
 										</FormLabel>
 										<Link
-											to="/login"
+											to="/forgot-password"
 											className="text-xs font-medium text-primary hover:underline underline-offset-4"
 											tabIndex={-1}
 										>
