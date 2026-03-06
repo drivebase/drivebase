@@ -27,8 +27,9 @@ export function FileGridItem({
 			data-state={row.getIsSelected() ? "selected" : undefined}
 			onClick={onSelect}
 			className={cn(
-				"group relative select-none border border-border/60 bg-muted/40 p-3 transition-colors hover:bg-muted/60",
-				row.getIsSelected() && "border-primary/50 bg-muted/70",
+				"group relative select-none border border-border/60 bg-background/40 backdrop-blur-lg p-3 transition-colors hover:bg-background/10",
+				row.getIsSelected() &&
+					"border-primary/50 bg-background/40 backdrop-blur-md",
 			)}
 		>
 			<div className="absolute right-3 top-3 z-10" data-grid-interactive>
@@ -56,7 +57,7 @@ export function FileGridItem({
 					</div>
 				</div>
 			</div>
-			<div className="mt-3 aspect-square w-full bg-background/90 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]">
+			<div className="mt-3 aspect-square w-full bg-background/20 backdrop-blur-md">
 				<div className="flex h-full items-center justify-center">
 					<FileMimeIcon
 						mimeType={row.original.file.mimeType}
