@@ -108,7 +108,7 @@ export function SettingsCategoryNav() {
 							}}
 							inactiveProps={{
 								className:
-									"text-muted-foreground hover:text-foreground hover:bg-muted/50",
+									"text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10",
 							}}
 						>
 							<category.icon className="h-6 w-6 min-w-6" />

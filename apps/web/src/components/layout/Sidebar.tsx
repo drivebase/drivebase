@@ -57,7 +57,7 @@ function SidebarItem({ icon: Icon, label, to }: SidebarItemProps) {
 					}}
 					inactiveProps={{
 						className:
-							"text-muted-foreground hover:text-foreground hover:bg-muted/50",
+							"text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10",
 					}}
 				>
 					<Icon className="h-6 w-6" />

@@ -21,15 +21,6 @@ export function PreferencesSettingsSection() {
 
 	return (
 		<div className="space-y-6">
-			<div>
-				<h3 className="text-lg font-medium">
-					<Trans>Preferences</Trans>
-				</h3>
-				<p className="text-sm text-muted-foreground">
-					<Trans>Manage account-level preferences for your workspace.</Trans>
-				</p>
-			</div>
-
 			<div className="flex items-center justify-between">
 				<div className="space-y-1">
 					<Label className="text-base">
