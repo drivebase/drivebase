@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type FieldValues, useForm } from "react-hook-form";
 import { PiSpinnerGap as Loader2 } from "react-icons/pi";
@@ -154,8 +156,8 @@ export function ProviderStep({
 		: undefined;
 	const oauthErrorMessage =
 		error === "oauth_failed"
-			? "Authorization failed. Please try connecting your provider again."
-			: "Authorization failed. Please try again.";
+			? t`Authorization failed. Please try connecting your provider again.`
+			: t`Authorization failed. Please try again.`;
 
 	const startPollingAuth = useCallback(
 		(pollingProviderId: string, authorizationUrl: string) => {
@@ -170,7 +172,7 @@ export function ProviderStep({
 			pollIntervalRef.current = setInterval(async () => {
 				if (popup?.closed) {
 					stopPolling();
-					toast.error("Authentication window was closed.");
+					toast.error(<Trans>Authentication window was closed.</Trans>);
 					return;
 				}
 
@@ -178,12 +180,12 @@ export function ProviderStep({
 					const result = await pollProviderAuth({ id: pollingProviderId });
 					if (result.data?.pollProviderAuth.status === "success") {
 						stopPolling();
-						toast.success("Storage connected successfully!");
+						toast.success(<Trans>Storage connected successfully!</Trans>);
 						onNext();
 					}
 				} catch {
 					stopPolling();
-					toast.error("Authentication failed.");
+					toast.error(<Trans>Authentication failed.</Trans>);
 				}
 			}, 2000);
 		},
@@ -233,11 +235,11 @@ export function ProviderStep({
 					}
 				}
 			} else {
-				toast.success("Storage connected successfully!");
+				toast.success(<Trans>Storage connected successfully!</Trans>);
 				onNext();
 			}
 		} catch (_error) {
-			toast.error("Failed to connect storage provider");
+			toast.error(<Trans>Failed to connect storage provider</Trans>);
 		}
 	};
 
@@ -245,7 +247,9 @@ export function ProviderStep({
 		return (
 			<div className="flex flex-col items-center justify-center py-12 gap-3">
 				<Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-				<p className="text-sm text-muted-foreground">Loading providers...</p>
+				<p className="text-sm text-muted-foreground">
+					<Trans>Loading providers...</Trans>
+				</p>
 			</div>
 		);
 	}
@@ -254,9 +258,13 @@ export function ProviderStep({
 		<div className="flex flex-col flex-1">
 			<div className="space-y-6 flex-1">
 				<div className="space-y-1.5">
-					<h2 className="text-2xl font-bold tracking-tight">Connect Storage</h2>
+					<h2 className="text-2xl font-bold tracking-tight">
+						<Trans>Connect Storage</Trans>
+					</h2>
 					<p className="text-muted-foreground text-sm leading-relaxed">
-						Select a provider to connect your first storage drive.
+						<Trans>
+							Select a provider to connect your first storage drive.
+						</Trans>
 					</p>
 				</div>
 
@@ -265,16 +273,20 @@ export function ProviderStep({
 						{fetchingConnected ? (
 							<div className="flex items-center gap-2">
 								<Loader2 className="h-4 w-4 animate-spin" />
-								<span>Verifying connected provider...</span>
+								<span>
+									<Trans>Verifying connected provider...</Trans>
+								</span>
 							</div>
 						) : connectedProvider ? (
 							<span>
-								Connected successfully:{" "}
+								<Trans>Connected successfully:</Trans>{" "}
 								<strong>{connectedProvider.name}</strong>
 							</span>
 						) : (
 							<span>
-								Authorization completed. Provider sync is still refreshing.
+								<Trans>
+									Authorization completed. Provider sync is still refreshing.
+								</Trans>
 							</span>
 						)}
 					</div>
@@ -288,7 +300,9 @@ export function ProviderStep({
 
 				<div className="space-y-5">
 					<div className="space-y-2">
-						<Label>Storage Provider</Label>
+						<Label>
+							<Trans>Storage Provider</Trans>
+						</Label>
 						<Select
 							value={selectedProviderId}
 							onValueChange={(val) => {
@@ -297,7 +311,7 @@ export function ProviderStep({
 							}}
 						>
 							<SelectTrigger>
-								<SelectValue placeholder="Select a provider..." />
+								<SelectValue placeholder={t`Select a provider...`} />
 							</SelectTrigger>
 							<SelectContent>
 								{data?.availableProviders.map((provider) => (
@@ -320,14 +334,18 @@ export function ProviderStep({
 							className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200"
 						>
 							<div className="space-y-2">
-								<Label htmlFor="_displayName">Display Name</Label>
+								<Label htmlFor="_displayName">
+									<Trans>Display Name</Trans>
+								</Label>
 								<Input
 									id="_displayName"
-									placeholder={`My ${selectedProvider.name}`}
+									placeholder={t`My ${selectedProvider.name}`}
 									{...register("_displayName", { required: true })}
 								/>
 								{errors._displayName && (
-									<span className="text-xs text-destructive">Required</span>
+									<span className="text-xs text-destructive">
+										<Trans>Required</Trans>
+									</span>
 								)}
 							</div>
 
@@ -346,7 +364,9 @@ export function ProviderStep({
 										{...register(field.name, { required: field.required })}
 									/>
 									{errors[field.name] && (
-										<span className="text-xs text-destructive">Required</span>
+										<span className="text-xs text-destructive">
+											<Trans>Required</Trans>
+										</span>
 									)}
 									{field.description && (
 										<p className="text-xs text-muted-foreground">
@@ -365,10 +385,10 @@ export function ProviderStep({
 									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
 								)}
 								{isPolling
-									? "Waiting for authorization..."
+									? t`Waiting for authorization...`
 									: selectedProvider.authType === "OAUTH"
-										? "Connect & Authorize"
-										: "Connect Storage"}
+										? t`Connect & Authorize`
+										: t`Connect Storage`}
 							</Button>
 						</form>
 					)}
@@ -382,7 +402,11 @@ export function ProviderStep({
 					onClick={onNext}
 					className="text-muted-foreground text-xs h-8"
 				>
-					{oauth === "success" ? "Continue" : "Skip for now"}
+					{oauth === "success" ? (
+						<Trans>Continue</Trans>
+					) : (
+						<Trans>Skip for now</Trans>
+					)}
 				</Button>
 			</div>
 		</div>

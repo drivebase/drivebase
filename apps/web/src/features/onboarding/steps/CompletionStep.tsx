@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useState } from "react";
 import {
 	PiArrowRight as ArrowRight,
@@ -64,7 +65,7 @@ export function CompletionStep({
 				onComplete();
 			}, 1000);
 		} catch (_error) {
-			toast.error("Failed to complete onboarding");
+			toast.error(<Trans>Failed to complete onboarding</Trans>);
 		}
 	};
 
@@ -84,18 +85,31 @@ export function CompletionStep({
 
 			<div className="space-y-1.5">
 				<h2 className="text-2xl font-bold tracking-tight">
-					{connectedProvider ? "Provider Connected" : "You're all set!"}
+					{connectedProvider ? (
+						<Trans>Provider Connected</Trans>
+					) : (
+						<Trans>You're all set!</Trans>
+					)}
 				</h2>
 				<p className="text-muted-foreground text-sm leading-relaxed">
-					{connectedProvider
-						? "Your storage account is now connected and your workspace is ready."
-						: "Your Drivebase workspace is ready. Start managing your files securely."}
+					{connectedProvider ? (
+						<Trans>
+							Your storage account is now connected and your workspace is ready.
+						</Trans>
+					) : (
+						<Trans>
+							Your Drivebase workspace is ready. Start managing your files
+							securely.
+						</Trans>
+					)}
 				</p>
 			</div>
 
 			{connectedProvider && (
 				<div className="w-full  border bg-muted/30 px-4 py-3 text-left">
-					<p className="text-xs text-muted-foreground">Provider</p>
+					<p className="text-xs text-muted-foreground">
+						<Trans>Provider</Trans>
+					</p>
 					<p className="text-sm font-medium">{connectedProvider.name}</p>
 					<p className="text-xs text-muted-foreground mt-1">
 						{formatProviderType(connectedProvider.type)}
@@ -112,16 +126,16 @@ export function CompletionStep({
 				{fetching ? (
 					<>
 						<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-						Finalizing...
+						<Trans>Finalizing...</Trans>
 					</>
 				) : isCompleted ? (
 					<>
 						<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-						Redirecting...
+						<Trans>Redirecting...</Trans>
 					</>
 				) : (
 					<>
-						Go to Dashboard
+						<Trans>Go to Dashboard</Trans>
 						<ArrowRight className="w-4 h-4 ml-2" />
 					</>
 				)}
