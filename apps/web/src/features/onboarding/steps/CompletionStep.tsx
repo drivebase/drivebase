@@ -117,29 +117,41 @@ export function CompletionStep({
 				</div>
 			)}
 
-			<Button
-				size="lg"
-				className="w-full"
-				onClick={handleComplete}
-				disabled={fetching || isCompleted}
-			>
-				{fetching ? (
-					<>
-						<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-						<Trans>Finalizing...</Trans>
-					</>
-				) : isCompleted ? (
-					<>
-						<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-						<Trans>Redirecting...</Trans>
-					</>
-				) : (
-					<>
-						<Trans>Go to Dashboard</Trans>
-						<ArrowRight className="w-4 h-4 ml-2" />
-					</>
-				)}
-			</Button>
+			<div className="w-full space-y-3">
+				<Button
+					size="lg"
+					className="w-full"
+					onClick={handleComplete}
+					disabled={fetching || isCompleted}
+				>
+					{fetching ? (
+						<>
+							<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+							<Trans>Finalizing...</Trans>
+						</>
+					) : isCompleted ? (
+						<>
+							<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+							<Trans>Redirecting...</Trans>
+						</>
+					) : (
+						<>
+							<Trans>Go to Dashboard</Trans>
+							<ArrowRight className="w-4 h-4 ml-2" />
+						</>
+					)}
+				</Button>
+
+				<a
+					href="https://discord.com/invite/5hPZwTPp68"
+					rel="noopener noreferrer"
+					target="_blank"
+				>
+					<Button className="w-full" variant={"outline"}>
+						<Trans>Need help?</Trans>
+					</Button>
+				</a>
+			</div>
 		</div>
 	);
 }
