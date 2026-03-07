@@ -11,7 +11,7 @@ import { GridView } from "./grid/GridView";
 export function FileExplorer() {
 	const { files, folders, isLoading, registry, actionContext } =
 		useFileExplorer();
-	const { selectAll, clear } = useSelection();
+	const { selectAll, selectOnly, clear } = useSelection();
 	const viewMode = useFilesStore((s) => s.viewMode);
 
 	const allItems: SelectionItem[] = [
@@ -22,7 +22,9 @@ export function FileExplorer() {
 	useKeyboardShortcuts({
 		registry,
 		actionContext,
+		allItems,
 		onSelectAll: () => selectAll(allItems),
+		onSelectOnly: selectOnly,
 		onClearSelection: clear,
 	});
 

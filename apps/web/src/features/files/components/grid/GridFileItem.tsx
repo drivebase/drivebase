@@ -33,6 +33,7 @@ export function GridFileItem({ file, registerRef }: GridFileItemProps) {
 			<div
 				ref={registerRef}
 				data-grid-item
+				data-item-id={itemId}
 				data-state={selected ? "selected" : undefined}
 				onClick={handleClick}
 				className={cn(
