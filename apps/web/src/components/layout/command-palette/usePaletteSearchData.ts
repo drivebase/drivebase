@@ -6,6 +6,8 @@ import {
 } from "@/features/files/hooks/useFiles";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import {
+	COMMUNITY_ITEMS,
+	type CommunityItem,
 	NAVIGATION_ITEMS,
 	type NavigationItem,
 	SEARCH_LIMIT,
@@ -152,6 +154,7 @@ export function usePaletteSearchData({
 				.map((item) => item.folder),
 		[mergedResults],
 	);
+
 	const matchedNavigationItems = useMemo(() => {
 		if (!hasQuery || isSmartMode) return [] as NavigationItem[];
 
@@ -164,11 +167,45 @@ export function usePaletteSearchData({
 		).sort((a, b) => score(a.label) - score(b.label));
 	}, [hasQuery, isSmartMode, debouncedQuery]);
 
+	const matchedCommunityItems = useMemo(() => {
+		if (!hasQuery || isSmartMode) return [] as CommunityItem[];
+
+		const normalizedQuery = debouncedQuery.toLowerCase();
+		const score = (value: string) =>
+			value.toLowerCase().startsWith(normalizedQuery) ? 0 : 1;
+		const getSearchText = (item: CommunityItem) => {
+			switch (item.id) {
+				case "github":
+					return ["github", "repo", "repository", "source code"];
+				case "discord":
+					return ["discord", "community", "chat", "support"];
+				case "report-bug":
+					return ["report bug", "bug", "issue", "feedback"];
+				case "give-star":
+					return ["give a star", "star", "github star", "support"];
+			}
+		};
+
+		return COMMUNITY_ITEMS.filter((item) =>
+			getSearchText(item).some((value) => value.includes(normalizedQuery)),
+		).sort((a, b) => {
+			const aText = getSearchText(a)[0];
+			const bText = getSearchText(b)[0];
+			return (
+				score(aText) - score(bText) || aText.localeCompare(bText, undefined)
+			);
+		});
+	}, [hasQuery, isSmartMode, debouncedQuery]);
+
 	return {
 		matchedNavigationItems,
+		matchedCommunityItems,
 		visibleFileResults,
 		visibleFolderResults,
-		mergedResultsCount: mergedResults.length,
+		totalResultsCount:
+			matchedNavigationItems.length +
+			matchedCommunityItems.length +
+			mergedResults.length,
 		smartSearchResults,
 		isSmartSearchFetching: smartSearchResult.fetching,
 	};

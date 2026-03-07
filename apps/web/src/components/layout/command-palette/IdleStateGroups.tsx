@@ -28,6 +28,19 @@ function renderCommunityLabel(item: CommunityItem) {
 	}
 }
 
+function getCommunityValue(item: CommunityItem) {
+	switch (item.id) {
+		case "github":
+			return "github repo repository";
+		case "discord":
+			return "join discord community chat support";
+		case "report-bug":
+			return "report bug issue feedback";
+		case "give-star":
+			return "give a star star on github";
+	}
+}
+
 export function IdleStateGroups({
 	onSelectNavigation,
 	onSelectCommunityItem,
@@ -38,6 +51,7 @@ export function IdleStateGroups({
 				{NAVIGATION_ITEMS.map((item) => (
 					<CommandItem
 						key={item.to}
+						value={item.label}
 						onSelect={() => onSelectNavigation(item.to)}
 					>
 						<item.icon className="h-4 w-4" />
@@ -50,6 +64,7 @@ export function IdleStateGroups({
 				{COMMUNITY_ITEMS.map((item) => (
 					<CommandItem
 						key={item.id}
+						value={getCommunityValue(item)}
 						onSelect={() => onSelectCommunityItem(item.href)}
 					>
 						<item.icon className="h-4 w-4" />

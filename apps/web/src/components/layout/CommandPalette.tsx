@@ -91,12 +91,14 @@ export function CommandPalette() {
 							) : controller.hasQuery ? (
 								<SearchResultsGroups
 									matchedNavigationItems={controller.matchedNavigationItems}
+									matchedCommunityItems={controller.matchedCommunityItems}
 									visibleFileResults={controller.visibleFileResults}
 									visibleFolderResults={controller.visibleFolderResults}
-									mergedResultsCount={controller.mergedResultsCount}
+									totalResultsCount={controller.totalResultsCount}
 									smartSearchResults={controller.smartSearchResults}
 									isSmartMode={isSmartMode}
 									onSelectNavigation={controller.navigateTo}
+									onSelectCommunityItem={controller.openExternalLink}
 									onSelectFile={controller.setSelectedFile}
 									onSelectFolder={controller.openFolder}
 								/>
