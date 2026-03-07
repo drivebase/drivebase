@@ -485,7 +485,7 @@ export function FileSystemTable({
 												header.column.id === "select"
 													? "w-11 min-w-11 max-w-11 px-2"
 													: header.column.id === "actions"
-														? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-20 bg-background"
+														? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-20"
 														: undefined
 											}
 										>
@@ -516,7 +516,7 @@ export function FileSystemTable({
 													cell.column.id === "select"
 														? "w-11 min-w-11 max-w-11 px-2"
 														: cell.column.id === "actions"
-															? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-10 bg-background group-hover:bg-muted/50 group-data-[state=selected]:bg-muted"
+															? "w-14 min-w-14 max-w-14 text-right pr-2 sticky right-0 z-10"
 															: undefined
 												}
 											>
