@@ -57,6 +57,10 @@ export { isFirstRun };
 type TelemetryEvent =
 	| { event: "server_started"; properties: { version: string } }
 	| { event: "server_shutdown"; properties?: Record<string, never> }
+	| {
+			event: "app_update_started";
+			properties: { current_version?: string; target_version?: string };
+	  }
 	| { event: "user_registered"; properties: { role: string } }
 	| { event: "user_login"; properties: { success: boolean } }
 	| { event: "onboarding_completed"; properties?: Record<string, never> }

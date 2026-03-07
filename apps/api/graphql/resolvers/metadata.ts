@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { telemetry } from "@/telemetry";
 import type { MutationResolvers, QueryResolvers } from "../generated/types";
 import { requireRole } from "./auth-helpers";
 
@@ -95,12 +96,21 @@ export const metadataMutations: MutationResolvers = {
 				};
 			}
 
-			return (await response.json()) as {
+			const result = (await response.json()) as {
 				status: string;
 				message: string | null;
 				currentVersion: string | null;
 				targetVersion: string | null;
 			};
+
+			if (result.status !== "error") {
+				telemetry.capture("app_update_started", {
+					current_version: result.currentVersion ?? undefined,
+					target_version: result.targetVersion ?? args.version ?? undefined,
+				});
+			}
+
+			return result;
 		} catch (_error) {
 			return {
 				status: "error",
