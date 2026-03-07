@@ -1,29 +1,40 @@
-import { PiClock as Clock3 } from "react-icons/pi";
+import { Trans } from "@lingui/react/macro";
 import {
 	CommandGroup,
 	CommandItem,
 	CommandSeparator,
-	CommandShortcut,
 } from "@/components/ui/command";
-import { formatSize } from "@/features/files/utils";
-import { ProviderIcon } from "@/features/providers/ProviderIcon";
-import type { FileItemFragment } from "@/gql/graphql";
-import { NAVIGATION_ITEMS } from "./constants";
+import {
+	COMMUNITY_ITEMS,
+	type CommunityItem,
+	NAVIGATION_ITEMS,
+} from "./constants";
 
 type Props = {
-	recentFiles: FileItemFragment[];
 	onSelectNavigation: (to: string) => void;
-	onSelectRecentFile: (file: FileItemFragment) => void;
+	onSelectCommunityItem: (href: string) => void;
 };
 
+function renderCommunityLabel(item: CommunityItem) {
+	switch (item.id) {
+		case "github":
+			return <Trans>GitHub</Trans>;
+		case "discord":
+			return <Trans>Join Discord</Trans>;
+		case "report-bug":
+			return <Trans>Report Bug</Trans>;
+		case "give-star":
+			return <Trans>Give a Star</Trans>;
+	}
+}
+
 export function IdleStateGroups({
-	recentFiles,
 	onSelectNavigation,
-	onSelectRecentFile,
+	onSelectCommunityItem,
 }: Props) {
 	return (
 		<>
-			<CommandGroup heading="Navigation">
+			<CommandGroup heading={<Trans>Navigation</Trans>}>
 				{NAVIGATION_ITEMS.map((item) => (
 					<CommandItem
 						key={item.to}
@@ -35,18 +46,16 @@ export function IdleStateGroups({
 				))}
 			</CommandGroup>
 			<CommandSeparator />
-			<CommandGroup heading="Recent files">
-				{recentFiles.map((file) => (
-					<CommandItem key={file.id} onSelect={() => onSelectRecentFile(file)}>
-						<Clock3 className="h-4 w-4 text-muted-foreground" />
-						<ProviderIcon type={file.provider.type} className="h-4 w-4" />
-						<span className="flex-1 truncate">{file.name}</span>
-						<CommandShortcut>{formatSize(file.size)}</CommandShortcut>
+			<CommandGroup heading={<Trans>Community</Trans>}>
+				{COMMUNITY_ITEMS.map((item) => (
+					<CommandItem
+						key={item.id}
+						onSelect={() => onSelectCommunityItem(item.href)}
+					>
+						<item.icon className="h-4 w-4" />
+						{renderCommunityLabel(item)}
 					</CommandItem>
 				))}
-				{recentFiles.length === 0 ? (
-					<CommandItem disabled>No recent files</CommandItem>
-				) : null}
 			</CommandGroup>
 		</>
 	);

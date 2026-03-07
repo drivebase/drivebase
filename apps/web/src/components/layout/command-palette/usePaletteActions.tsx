@@ -52,6 +52,11 @@ export function usePaletteActions({
 		setOpen(false);
 	};
 
+	const openExternalLink = (href: string) => {
+		window.open(href, "_blank", "noopener,noreferrer");
+		setOpen(false);
+	};
+
 	const handleDeleteFile = async (file: FileItemFragment) => {
 		const confirmed = await confirmDialog(
 			"Delete File",
@@ -91,6 +96,7 @@ export function usePaletteActions({
 
 	return {
 		navigateTo,
+		openExternalLink,
 		openFolder,
 		openFile,
 		handleDeleteFile,

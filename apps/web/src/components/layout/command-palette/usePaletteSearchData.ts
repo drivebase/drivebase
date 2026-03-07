@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import {
-	useRecentFiles,
 	useSearchFiles,
 	useSearchFolders,
 	useSmartSearch,
@@ -9,7 +8,6 @@ import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import {
 	NAVIGATION_ITEMS,
 	type NavigationItem,
-	RECENT_LIMIT,
 	SEARCH_LIMIT,
 } from "./constants";
 import type { SearchMode } from "./usePaletteUiState";
@@ -54,7 +52,6 @@ export function usePaletteSearchData({
 	const isFilenameMode = searchMode === "filename";
 	const isSmartMode = searchMode === "smart";
 
-	const { data: recentData } = useRecentFiles(RECENT_LIMIT);
 	const filesSearchResult = useSearchFiles(
 		hasQuery && isFilenameMode ? debouncedQuery : "",
 		SEARCH_LIMIT,
@@ -76,8 +73,6 @@ export function usePaletteSearchData({
 		(foldersSearchResult.data?.searchFolders as
 			| FolderItemFragment[]
 			| undefined) ?? [];
-	const recentFiles =
-		(recentData?.recentFiles as FileItemFragment[] | undefined) ?? [];
 
 	const smartSearchResults: SmartSearchResultItem[] = useMemo(() => {
 		if (!isSmartMode || !hasQuery) return [];
@@ -95,14 +90,6 @@ export function usePaletteSearchData({
 			rank: r.rank,
 		}));
 	}, [isSmartMode, hasQuery, smartSearchResult.data]);
-
-	const visibleRecentFiles = useMemo(
-		() =>
-			recentFiles
-				.filter((file) => !deletedFileIds.has(file.id))
-				.slice(0, RECENT_LIMIT),
-		[recentFiles, deletedFileIds],
-	);
 
 	const mergedResults = useMemo(() => {
 		if (!hasQuery || isSmartMode) return [] as MergedSearchResult[];
@@ -178,7 +165,6 @@ export function usePaletteSearchData({
 	}, [hasQuery, isSmartMode, debouncedQuery]);
 
 	return {
-		visibleRecentFiles,
 		matchedNavigationItems,
 		visibleFileResults,
 		visibleFolderResults,
