@@ -4,15 +4,6 @@
   <a href="https://github.com/drivebase/drivebase/stargazers">
     <img src="https://img.shields.io/github/stars/drivebase/drivebase" alt="GitHub stars">
   </a>
-  <a href="https://github.com/drivebase/drivebase/network/members">
-    <img src="https://img.shields.io/github/forks/drivebase/drivebase" alt="GitHub forks">
-  </a>
-  <a href="https://github.com/drivebase/drivebase/issues">
-    <img src="https://img.shields.io/github/issues/drivebase/drivebase" alt="GitHub issues">
-  </a>
-  <a href="https://github.com/drivebase/drivebase/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/drivebase/drivebase" alt="GitHub license">
-  </a>
  <a href="https://discord.gg/5hPZwTPp68">
     <img src="https://img.shields.io/discord/1472108078592688149" alt="Discord">
   </a>
