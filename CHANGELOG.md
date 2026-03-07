@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.4.3](https://github.com/drivebase/drivebase/compare/v3.4.2...v3.4.3) (2026-03-07)
+
+### Fixes
+
+* **files:** drag collision detection ([b091c29](https://github.com/drivebase/drivebase/commit/b091c29986d9100bac4be36db507fc76c564cc30))
+* **files:** incorrect selected file count ([5401021](https://github.com/drivebase/drivebase/commit/5401021b87c05eab85e63cebe58a66d0f8667668))
+
+### Styles
+
+* **www:** improve blog layout ([9dd8e47](https://github.com/drivebase/drivebase/commit/9dd8e473dc4b3bec6d463b18fb7ef2bfb1befefe))
+
 ## [3.4.2](https://github.com/drivebase/drivebase/compare/v3.4.1...v3.4.2) (2026-03-07)
 
 ### Features
