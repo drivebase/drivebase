@@ -1,36 +1,54 @@
 {
-	"git": {
-		"tagName": "v${version}",
-		"commitMessage": "chore: release v${version}"
-	},
-	"github": {
-		"release": false,
-		"tokenRef": "GITHUB_TOKEN",
-		"releaseName": "v${version}"
-	},
-	"plugins": {
-		"@release-it/conventional-changelog": {
-			"preset": {
-				"name": "conventionalcommits",
-				"types": [
-					{ "type": "feat", "section": "✨ Features", "hidden": false },
-					{ "type": "fix", "section": "🐛 Fixes", "hidden": false }
-				]
-			},
-			"infile": "CHANGELOG.md",
-			"strictSemVer": true
-		},
-		"@release-it/bumper": {
-			"out": [
-				{
-					"file": "docker/compose.prod.yaml",
-					"type": "text/plain"
-				},
-				{
-					"file": "render.yaml",
-					"type": "text/plain"
-				}
-			]
-		}
-	}
+  "git": {
+    "tagName": "v${version}",
+    "commitMessage": "chore: release v${version}"
+  },
+  "github": {
+    "release": false,
+    "tokenRef": "GITHUB_TOKEN",
+    "releaseName": "v${version}"
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          {
+            "type": "feat",
+            "section": "Features",
+            "hidden": false
+          },
+          {
+            "type": "fix",
+            "section": "Fixes",
+            "hidden": false
+          },
+          {
+            "type": "style",
+            "section": "Styles",
+            "hidden": false
+          },
+          {
+            "type": "chore",
+            "section": "Others",
+            "hidden": false
+          }
+        ]
+      },
+      "infile": "CHANGELOG.md",
+      "strictSemVer": true
+    },
+    "@release-it/bumper": {
+      "out": [
+        {
+          "file": "docker/compose.prod.yaml",
+          "type": "text/plain"
+        },
+        {
+          "file": "render.yaml",
+          "type": "text/plain"
+        }
+      ]
+    }
+  }
 }
