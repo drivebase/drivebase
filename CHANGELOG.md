@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.4.1](https://github.com/drivebase/drivebase/compare/v3.4.0...v3.4.1) (2026-03-07)
+
+### Styles
+
+* fix grid layout columns in FileSystemTable ([04e3fd6](https://github.com/drivebase/drivebase/commit/04e3fd632fb326bd3cb94a2efb1a176cdde2f380))
+
+### Others
+
+* **blog:** add featured post section ([fcc989f](https://github.com/drivebase/drivebase/commit/fcc989fa7ef7037d2966f6e8fc9d02212ee5f970))
+* extract i18n ([8c5d2e7](https://github.com/drivebase/drivebase/commit/8c5d2e7a666f213f7aadff9c2e6aca54da8c3df0))
+* remove unused import ([a2541a0](https://github.com/drivebase/drivebase/commit/a2541a061379fc2a976abdedb6ce06e290d824b6))
+* update changelog format ([8010c1c](https://github.com/drivebase/drivebase/commit/8010c1c928d9fc71a2afbc3a8f6becdde8ab2f7a))
+* **www:** update analytics ([e604c5a](https://github.com/drivebase/drivebase/commit/e604c5ae94d97de67ff6f822e7bab72330cbef35))
+
 ## [3.4.0](https://github.com/drivebase/drivebase/compare/v3.3.0...v3.4.0) (2026-03-06)
 
 ### ✨ Features
