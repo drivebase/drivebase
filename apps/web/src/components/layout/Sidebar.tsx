@@ -36,7 +36,7 @@ const topNavItems: NavItem[] = [
 
 const bottomNavItems: NavItem[] = [
 	{ icon: Lock, label: msg`Vault`, to: "/vault" },
-	{ icon: Settings, label: msg`Settings`, to: "/settings/general" },
+	{ icon: Settings, label: msg`Settings`, to: "/settings" },
 ];
 
 type SidebarItemProps = {
