@@ -424,7 +424,7 @@ export function FileSystemTable({
 						) : null}
 						{fileRows.length ? (
 							<div className="space-y-2">
-								<div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 2x:grid-cols-5">
+								<div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6">
 									{fileRows.map((row) => (
 										<FileGridItem
 											key={row.id}
