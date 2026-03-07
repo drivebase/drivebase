@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { Fragment, useEffect, useState } from "react";
 import { PiCheck as Check } from "react-icons/pi";
@@ -8,11 +9,7 @@ import { CompletionStep } from "./steps/CompletionStep";
 import { ProviderStep } from "./steps/ProviderStep";
 import { WelcomeStep } from "./steps/WelcomeStep";
 
-const STEPS = [
-	{ id: 1, label: "Welcome" },
-	{ id: 2, label: "Storage" },
-	{ id: 3, label: "Complete" },
-];
+const STEPS = [{ id: 1 }, { id: 2 }, { id: 3 }];
 
 const STORAGE_KEY = "onboarding_step";
 
@@ -112,7 +109,9 @@ export function OnboardingWizard() {
 									step >= s.id ? "text-primary" : "text-muted-foreground"
 								}`}
 							>
-								{s.label}
+								{s.id === 1 && <Trans>Welcome</Trans>}
+								{s.id === 2 && <Trans>Storage</Trans>}
+								{s.id === 3 && <Trans>Complete</Trans>}
 							</span>
 						</div>
 						{i < STEPS.length - 1 && (
