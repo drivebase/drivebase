@@ -23,7 +23,8 @@ interface ToolbarProps {
 }
 
 export function Toolbar({ table }: ToolbarProps) {
-	const { isLoading, registry, actionContext, canWrite } = useFileExplorer();
+	const { isLoading, registry, actionContext, canWrite, files, folders } =
+		useFileExplorer();
 	const { count, selectedItems } = useSelection();
 	const viewMode = useFilesStore((s) => s.viewMode);
 	const setViewMode = useFilesStore((s) => s.setViewMode);
@@ -41,12 +42,12 @@ export function Toolbar({ table }: ToolbarProps) {
 		);
 	}
 
-	const totalRows = table?.getFilteredRowModel().rows.length;
+	const total = files.length + folders.length;
 
 	return (
 		<div className="sticky top-0 z-30 flex items-center justify-between">
 			<div className="text-xs text-muted-foreground">
-				{count} of {totalRows ?? 0} selected
+				{count} of {total} selected
 			</div>
 			<div className="flex items-center gap-2">
 				<div className="flex items-center border bg-background p-0.5">
