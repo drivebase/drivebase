@@ -1,4 +1,9 @@
-import { DndContext, DragOverlay, type Modifier } from "@dnd-kit/core";
+import {
+	DndContext,
+	DragOverlay,
+	type Modifier,
+	pointerWithin,
+} from "@dnd-kit/core";
 import { Trans } from "@lingui/react/macro";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
@@ -196,6 +201,7 @@ function FilesPage() {
 	return (
 		<DndContext
 			sensors={dnd.sensors}
+			collisionDetection={pointerWithin}
 			onDragStart={dnd.handleDragStart}
 			onDragEnd={dnd.handleDragEnd}
 			onDragCancel={dnd.handleDragCancel}
