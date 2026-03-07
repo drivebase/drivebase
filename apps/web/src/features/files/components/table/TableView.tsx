@@ -8,6 +8,7 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
+
 import {
 	Table,
 	TableBody,
@@ -29,9 +30,8 @@ import { Toolbar } from "../Toolbar";
 
 export function TableView() {
 	const { files, folders, providers, actionContext } = useFileExplorer();
-	const { selectedItems } = useSelection();
+	const { selectedItems, setItems } = useSelection();
 	const openForFile = useFileDetailsDialogStore((s) => s.openForFile);
-	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
 		() => {
@@ -78,21 +78,40 @@ export function TableView() {
 		onShowFileDetails: openForFile,
 	});
 
-	// Sync selection context → table row selection
-	useEffect(() => {
+	// Derive rowSelection directly from SelectionContext — single source of truth
+	const rowSelection = useMemo<RowSelectionState>(() => {
 		const ids: RowSelectionState = {};
 		for (const item of selectedItems) {
 			ids[`${item.kind}:${item.data.id}`] = true;
 		}
-		setRowSelection(ids);
+		return ids;
 	}, [selectedItems]);
+
+	// Write checkbox changes directly into SelectionContext
+	const handleRowSelectionChange = (
+		updater:
+			| RowSelectionState
+			| ((prev: RowSelectionState) => RowSelectionState),
+	) => {
+		const next =
+			typeof updater === "function" ? updater(rowSelection) : updater;
+		const selected = data
+			.filter((row) => next[row.id])
+			.map((row) =>
+				row.kind === "file"
+					? { kind: "file" as const, data: row.file }
+					: { kind: "folder" as const, data: row.folder },
+			);
+		setItems(selected);
+	};
 
 	const table = useReactTable({
 		data,
 		columns,
+		getRowId: (row) => row.id,
 		getCoreRowModel: getCoreRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		onRowSelectionChange: setRowSelection,
+		onRowSelectionChange: handleRowSelectionChange,
 		onColumnVisibilityChange: setColumnVisibility,
 		onColumnFiltersChange: setColumnFilters,
 		state: { rowSelection, columnVisibility, columnFilters },
