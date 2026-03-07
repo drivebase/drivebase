@@ -59,6 +59,7 @@ export function DraggableContextRow({ row }: DraggableTableRowProps) {
 		<FileContextMenu item={selectionItem}>
 			<UITableRow
 				ref={setRef}
+				data-item-id={original.id}
 				data-state={row.getIsSelected() && "selected"}
 				className={cn(
 					"group relative",

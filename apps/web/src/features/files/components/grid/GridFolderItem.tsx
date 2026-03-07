@@ -32,6 +32,7 @@ export function GridFolderItem({ folder, registerRef }: GridFolderItemProps) {
 			<div
 				ref={registerRef}
 				data-grid-item
+				data-item-id={itemId}
 				data-state={selected ? "selected" : undefined}
 				onClick={handleClick}
 				onDoubleClick={() => actionContext.navigate(folder.id)}
