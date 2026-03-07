@@ -102,9 +102,8 @@ export function CommandPalette() {
 								/>
 							) : (
 								<IdleStateGroups
-									recentFiles={controller.visibleRecentFiles}
 									onSelectNavigation={controller.navigateTo}
-									onSelectRecentFile={controller.setSelectedFile}
+									onSelectCommunityItem={controller.openExternalLink}
 								/>
 							)}
 						</CommandList>
