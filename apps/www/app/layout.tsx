@@ -1,6 +1,5 @@
 import { RootProvider } from "fumadocs-ui/provider/next";
 import "./global.css";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
@@ -75,7 +74,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <RootProvider>{children}</RootProvider>
       </body>
       {process.env.NODE_ENV === "production" && (
-        <Script defer src="https://analytics.monawwar.io/script.js" data-website-id="432ec307-33fd-4912-85aa-53d28440e058" />
+        <Script
+          defer
+          src="https://analytics.monawwar.io/script.js"
+          data-website-id="432ec307-33fd-4912-85aa-53d28440e058"
+        />
       )}
     </html>
   );
