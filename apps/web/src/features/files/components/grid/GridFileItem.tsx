@@ -2,6 +2,8 @@ import { PiStarFill as StarIcon } from "react-icons/pi";
 import type { FileItemFragment } from "@/gql/graphql";
 import { cn } from "@/shared/lib/utils";
 import { FileMimeIcon } from "../../FileMimeIcon";
+import { formatSize } from "../../utils";
+import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import { FileContextMenu } from "../ContextMenu";
 import { useSelection } from "../../context/SelectionContext";
 
@@ -38,30 +40,34 @@ export function GridFileItem({ file, registerRef }: GridFileItemProps) {
 					selected && "border-primary/50 bg-background/40 backdrop-blur-md",
 				)}
 			>
-				<div className="flex items-center gap-3 pr-10">
-					<FileMimeIcon
-						mimeType={file.mimeType}
-						className="h-8 w-8 shrink-0 rounded-none"
-						iconSize={18}
-					/>
-					<div className="min-w-0 flex-1">
-						<div className="flex items-center gap-1">
-							<span className="truncate text-base font-medium">
-								{file.name}
-							</span>
-							{file.starred ? (
-								<StarIcon size={12} className="shrink-0 text-amber-500" />
-							) : null}
-						</div>
-					</div>
-				</div>
-				<div className="mt-3 aspect-square w-full bg-background/20 backdrop-blur-md">
+				<div className="aspect-square w-full bg-background/20 backdrop-blur-md">
 					<div className="flex h-full items-center justify-center">
 						<FileMimeIcon
 							mimeType={file.mimeType}
 							className="h-28 w-28 rounded-none"
 							iconSize={52}
 						/>
+					</div>
+				</div>
+				<div className="mt-3 min-w-0">
+					<div className="flex items-center gap-1">
+						<span className="text-sm truncate font-medium">{file.name}</span>
+						{file.starred ? (
+							<StarIcon size={12} className="shrink-0 text-amber-500" />
+						) : null}
+					</div>
+					<div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+						{file.provider ? (
+							<>
+								<ProviderIcon
+									type={file.provider.type}
+									className="h-3.5 w-3.5"
+								/>
+								<span>{file.provider.name}</span>
+								<span>·</span>
+							</>
+						) : null}
+						<span>{formatSize(file.size)}</span>
 					</div>
 				</div>
 			</div>
