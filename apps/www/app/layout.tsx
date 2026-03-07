@@ -3,6 +3,7 @@ import "./global.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -74,7 +75,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <RootProvider>{children}</RootProvider>
       </body>
       {process.env.NODE_ENV === "production" && (
-        <GoogleAnalytics gaId="G-60H49RJF0W" />
+        <Script defer src="https://analytics.monawwar.io/script.js" data-website-id="432ec307-33fd-4912-85aa-53d28440e058" />
       )}
     </html>
   );
