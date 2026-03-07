@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { PiFile as File, PiFolder as Folder } from "react-icons/pi";
 import {
 	CommandEmpty,
@@ -9,29 +10,59 @@ import {
 import { formatSize } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
-import type { NavigationItem } from "./constants";
+import type { CommunityItem, NavigationItem } from "./constants";
 import type { SmartSearchResultItem } from "./usePaletteSearchData";
 
 type Props = {
 	matchedNavigationItems: NavigationItem[];
+	matchedCommunityItems: CommunityItem[];
 	visibleFileResults: FileItemFragment[];
 	visibleFolderResults: FolderItemFragment[];
-	mergedResultsCount: number;
+	totalResultsCount: number;
 	smartSearchResults?: SmartSearchResultItem[];
 	isSmartMode?: boolean;
 	onSelectNavigation: (to: string) => void;
+	onSelectCommunityItem: (href: string) => void;
 	onSelectFile: (file: FileItemFragment) => void;
 	onSelectFolder: (folderId: string) => void;
 };
 
+function renderCommunityLabel(item: CommunityItem) {
+	switch (item.id) {
+		case "github":
+			return <Trans>GitHub</Trans>;
+		case "discord":
+			return <Trans>Join Discord</Trans>;
+		case "report-bug":
+			return <Trans>Report Bug</Trans>;
+		case "give-star":
+			return <Trans>Give a Star</Trans>;
+	}
+}
+
+function getCommunityValue(item: CommunityItem) {
+	switch (item.id) {
+		case "github":
+			return "github repo repository";
+		case "discord":
+			return "join discord community chat support";
+		case "report-bug":
+			return "report bug issue feedback";
+		case "give-star":
+			return "give a star star on github";
+	}
+}
+
 export function SearchResultsGroups({
 	matchedNavigationItems,
+	matchedCommunityItems,
 	visibleFileResults,
 	visibleFolderResults,
-	mergedResultsCount,
+	totalResultsCount,
 	smartSearchResults = [],
 	isSmartMode = false,
 	onSelectNavigation,
+	onSelectCommunityItem,
 	onSelectFile,
 	onSelectFolder,
 }: Props) {
@@ -39,10 +70,11 @@ export function SearchResultsGroups({
 		return (
 			<>
 				{smartSearchResults.length > 0 ? (
-					<CommandGroup heading="Content Matches">
+					<CommandGroup heading={<Trans>Content Matches</Trans>}>
 						{smartSearchResults.map((result) => (
 							<CommandItem
 								key={`smart:${result.file.id}`}
+								value={`${result.file.name} ${result.headline}`}
 								onSelect={() => onSelectFile(result.file)}
 								className="flex flex-col items-start gap-1 py-2"
 							>
@@ -65,7 +97,9 @@ export function SearchResultsGroups({
 						))}
 					</CommandGroup>
 				) : (
-					<CommandEmpty>No content matches found.</CommandEmpty>
+					<CommandEmpty>
+						<Trans>No content matches found.</Trans>
+					</CommandEmpty>
 				)}
 			</>
 		);
@@ -75,10 +109,11 @@ export function SearchResultsGroups({
 		<>
 			{matchedNavigationItems.length > 0 ? (
 				<>
-					<CommandGroup heading="Navigation">
+					<CommandGroup heading={<Trans>Navigation</Trans>}>
 						{matchedNavigationItems.map((item) => (
 							<CommandItem
 								key={`search-nav:${item.to}`}
+								value={item.label}
 								onSelect={() => onSelectNavigation(item.to)}
 							>
 								<item.icon className="h-4 w-4" />
@@ -89,11 +124,29 @@ export function SearchResultsGroups({
 					<CommandSeparator />
 				</>
 			) : null}
+			{matchedCommunityItems.length > 0 ? (
+				<>
+					<CommandGroup heading={<Trans>Community</Trans>}>
+						{matchedCommunityItems.map((item) => (
+							<CommandItem
+								key={`community:${item.id}`}
+								value={getCommunityValue(item)}
+								onSelect={() => onSelectCommunityItem(item.href)}
+							>
+								<item.icon className="h-4 w-4" />
+								{renderCommunityLabel(item)}
+							</CommandItem>
+						))}
+					</CommandGroup>
+					<CommandSeparator />
+				</>
+			) : null}
 			{visibleFileResults.length > 0 ? (
-				<CommandGroup heading="Files">
+				<CommandGroup heading={<Trans>Files</Trans>}>
 					{visibleFileResults.map((file) => (
 						<CommandItem
 							key={`file:${file.id}`}
+							value={file.name}
 							onSelect={() => onSelectFile(file)}
 						>
 							<ProviderIcon type={file.provider.type} className="h-4 w-4" />
@@ -104,10 +157,11 @@ export function SearchResultsGroups({
 				</CommandGroup>
 			) : null}
 			{visibleFolderResults.length > 0 ? (
-				<CommandGroup heading="Folders">
+				<CommandGroup heading={<Trans>Folders</Trans>}>
 					{visibleFolderResults.map((folder) => (
 						<CommandItem
 							key={`folder:${folder.id}`}
+							value={folder.name}
 							onSelect={() => onSelectFolder(folder.id)}
 						>
 							<ProviderIcon type={folder.provider.type} className="h-4 w-4" />
@@ -117,8 +171,10 @@ export function SearchResultsGroups({
 					))}
 				</CommandGroup>
 			) : null}
-			{mergedResultsCount === 0 ? (
-				<CommandEmpty>No results found.</CommandEmpty>
+			{totalResultsCount === 0 ? (
+				<CommandEmpty>
+					<Trans>No results found.</Trans>
+				</CommandEmpty>
 			) : null}
 		</>
 	);
