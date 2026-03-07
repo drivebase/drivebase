@@ -73,7 +73,7 @@ export default async function Page(props: {
     <main className="flex-1 w-full mx-auto bg-background">
       {/* Hero Section */}
       <div className="border-b border-border bg-background z-10 relative">
-        <div className="max-w-7xl mx-auto pt-16 pb-24 md:pt-24 md:pb-32 px-6 lg:px-8 border-x border-border">
+        <div className="max-w-7xl mx-auto pt-16 md:pt-24 md:pb-10 px-6 lg:px-8 border-x border-border">
           <div className="max-w-4xl mx-auto">
             <Link
               href="/blog"
@@ -91,7 +91,7 @@ export default async function Page(props: {
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl mb-6">
               {page.data.title}
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-xl text-muted-foreground">
               {page.data.description}
             </p>
 
@@ -108,7 +108,7 @@ export default async function Page(props: {
               </div>
             )}
 
-            <div className="flex items-center gap-4 text-sm text-muted-foreground pt-8 border-t border-border mt-8">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground pt-8 mt-8">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-foreground">
                   {page.data.author}
