@@ -60,7 +60,7 @@ export function DraggableTableRow({ row, children }: DraggableTableRowProps) {
 			data-state={row.getIsSelected() && "selected"}
 			className={cn(
 				"group relative",
-				isDragging && "opacity-40",
+				isDragging && "opacity-20",
 				isOver &&
 					original.kind === "folder" &&
 					"ring-2 ring-primary ring-inset bg-primary/5",

@@ -1,27 +1,28 @@
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { DndContext, DragOverlay, type Modifier } from "@dnd-kit/core";
 import { Trans } from "@lingui/react/macro";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { useActions } from "@/features/files/actions/useActions";
+import { FileExplorer } from "@/features/files/components/FileExplorer";
 import { CreateFolderDialog } from "@/features/files/CreateFolderDialog";
 import { FileDropZone } from "@/features/files/components/FileDropZone";
 import { FilesToolbar } from "@/features/files/components/FilesToolbar";
-import {
-	DragOverlayContent,
-	FileSystemTable,
-} from "@/features/files/FileSystemTable";
+import { DragOverlayContent } from "@/features/files/components/file-system-table/DragOverlayContent";
+import { FileExplorerProvider } from "@/features/files/context/FileExplorerProvider";
 import { useBreadcrumbs } from "@/features/files/hooks/useBreadcrumbs";
 import { useDragAndDrop } from "@/features/files/hooks/useDragAndDrop";
 import { useFileDrop } from "@/features/files/hooks/useFileDrop";
 import { useFileOperations } from "@/features/files/hooks/useFileOperations";
 import { useContents } from "@/features/files/hooks/useFiles";
+import { useDownload } from "@/features/files/hooks/useDownload";
 import { useUpload } from "@/features/files/hooks/useUpload";
 import { useUploadSessionRestore } from "@/features/files/hooks/useUploadSessionRestore";
+import { useFileActions } from "@/features/files/useFileActions";
 import { FilesSettingsDialog } from "@/features/files/settings/FilesSettingsDialog";
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
-import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
 import {
 	can,
@@ -31,6 +32,27 @@ import {
 } from "@/features/workspaces";
 import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
+
+/**
+ * Modifier that positions the drag overlay chip near the cursor
+ * with a small offset (like Google Drive).
+ */
+const snapToCursor: Modifier = ({
+	activatorEvent,
+	draggingNodeRect,
+	transform,
+}) => {
+	if (!activatorEvent || !draggingNodeRect) return transform;
+	const e = activatorEvent as PointerEvent;
+	// Offset so the overlay top-left is near the cursor with a small nudge
+	const offsetX = e.clientX - draggingNodeRect.left - 8;
+	const offsetY = e.clientY - draggingNodeRect.top - 8;
+	return {
+		...transform,
+		x: transform.x + offsetX,
+		y: transform.y + offsetY,
+	};
+};
 
 const searchSchema = z.object({
 	folderId: z.string().optional().catch(undefined),
@@ -47,7 +69,8 @@ function FilesPage() {
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const [isFilesSettingsOpen, setIsFilesSettingsOpen] = useState(false);
 	const [filterProviderIds, setFilterProviderIds] = useState<string[]>([]);
-	const { downloadFile, showDetails, createDownloadLink } = useFileActions();
+	const { showDetails, createDownloadLink } = useFileActions();
+	const { downloadFile } = useDownload();
 	const { data: providersData } = useProviders();
 	const [workspacesResult, reexecuteWorkspaces] = useWorkspaces(false);
 	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
@@ -57,16 +80,13 @@ function FilesPage() {
 		!activeWorkspaceId,
 	);
 	const currentWorkspaceRole =
-		membersResult.data?.workspaceMembers.find(
-			(member) => member.userId === currentUserId,
-		)?.role ?? null;
+		membersResult.data?.workspaceMembers.find((m) => m.userId === currentUserId)
+			?.role ?? null;
 	const canWriteFiles = can(currentWorkspaceRole, "files.write");
 	const canManageSettings =
 		currentWorkspaceRole === "OWNER" || currentWorkspaceRole === "ADMIN";
 	const [updateSyncResult, updateWorkspaceSyncOperations] =
 		useUpdateWorkspaceSyncOperations();
-
-	const isRoot = !folderId;
 
 	const [{ data: contentsData, fetching: contentsFetching }, refreshContents] =
 		useContents(
@@ -95,11 +115,9 @@ function FilesPage() {
 		onUploadComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 
-	// Restore active upload sessions on page load
 	useUploadSessionRestore();
 
 	const breadcrumbs = useBreadcrumbs(currentFolder);
-
 	const { isDragActive, dragHandlers } = useFileDrop({
 		onDrop: upload.handleFilesSelected,
 	});
@@ -118,13 +136,39 @@ function FilesPage() {
 		onMoveComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 
-	const handleNavigate = (targetFolderId: string) => {
-		navigate({ search: { folderId: targetFolderId } });
-	};
+	const handleNavigate = useCallback(
+		(targetFolderId: string) => {
+			navigate({ search: { folderId: targetFolderId } });
+		},
+		[navigate],
+	);
 
 	const handleBreadcrumbClick = (targetFolderId: string | null) => {
 		navigate({ search: { folderId: targetFolderId ?? undefined } });
 	};
+
+	const refresh = useCallback(
+		() => refreshContents({ requestPolicy: "network-only" }),
+		[refreshContents],
+	);
+
+	const providers = (providersData?.storageProviders ?? []).map((p) => ({
+		id: p.id,
+		name: p.name,
+		type: p.type,
+	}));
+
+	const registry = useActions({
+		canWrite: canWriteFiles,
+		downloadFile,
+		showDetails,
+		createDownloadLink,
+		renameFile: operations.handleRenameFile,
+		renameFolder: operations.handleRenameFolder,
+		toggleFileFavorite: operations.handleToggleFileFavorite,
+		toggleFolderFavorite: operations.handleToggleFolderFavorite,
+		deleteSelection: operations.handleDeleteSelection,
+	});
 
 	const activeWorkspace =
 		workspacesResult.data?.workspaces?.find(
@@ -134,24 +178,16 @@ function FilesPage() {
 		null;
 
 	const handleUpdateSync = async (enabled: boolean) => {
-		if (!activeWorkspace?.id || !canManageSettings) {
-			return;
-		}
-
+		if (!activeWorkspace?.id || !canManageSettings) return;
 		const result = await updateWorkspaceSyncOperations({
-			input: {
-				workspaceId: activeWorkspace.id,
-				enabled,
-			},
+			input: { workspaceId: activeWorkspace.id, enabled },
 		});
-
 		if (result.error || !result.data?.updateWorkspaceSyncOperations) {
 			toast.error(
 				result.error?.message ?? <Trans>Failed to update sync setting</Trans>,
 			);
 			return;
 		}
-
 		toast.success(
 			enabled ? <Trans>Sync enabled</Trans> : <Trans>Sync disabled</Trans>,
 		);
@@ -165,11 +201,11 @@ function FilesPage() {
 			onDragCancel={dnd.handleDragCancel}
 		>
 			<div
-				className="p-8 flex flex-col gap-6 h-full relative"
+				className="pt-8 px-8 flex flex-col gap-6 h-full relative"
 				{...dragHandlers}
 			>
 				<FilesToolbar
-					isRoot={isRoot}
+					isRoot={!folderId}
 					breadcrumbs={breadcrumbs}
 					canWriteFiles={canWriteFiles}
 					isUploading={upload.isUploading}
@@ -180,56 +216,29 @@ function FilesPage() {
 					filterProviderIds={filterProviderIds}
 					onFilterChange={setFilterProviderIds}
 					onBreadcrumbClick={handleBreadcrumbClick}
-					onUploadClick={() => {
-						if (!canWriteFiles) {
-							return;
-						}
-						upload.handleUploadClick();
-					}}
-					onNewFolder={() => {
-						if (!canWriteFiles) {
-							return;
-						}
-						setIsCreateDialogOpen(true);
-					}}
+					onUploadClick={() => canWriteFiles && upload.handleUploadClick()}
+					onNewFolder={() => canWriteFiles && setIsCreateDialogOpen(true)}
 					onOpenSettings={() => setIsFilesSettingsOpen(true)}
 					canManageSettings={canManageSettings}
 					fileInputRef={upload.fileInputRef}
 					onFileChange={upload.handleFileChange}
 				/>
 
-				<div className="flex-1 overflow-y-auto pb-8">
-					<FileSystemTable
+				<div className="relative flex-1 overflow-y-auto">
+					<FileExplorerProvider
+						registry={registry}
 						files={files}
 						folders={folders}
-						providers={providersData?.storageProviders}
-						onNavigate={handleNavigate}
-						onDownloadFile={downloadFile}
-						onCreateDownloadLink={
-							canWriteFiles ? createDownloadLink : undefined
-						}
-						onShowFileDetails={showDetails}
-						onToggleFileFavorite={
-							canWriteFiles ? operations.handleToggleFileFavorite : undefined
-						}
-						onToggleFolderFavorite={
-							canWriteFiles ? operations.handleToggleFolderFavorite : undefined
-						}
-						onRenameFile={
-							canWriteFiles ? operations.handleRenameFile : undefined
-						}
-						onRenameFolder={
-							canWriteFiles ? operations.handleRenameFolder : undefined
-						}
-						onMoveFileToProvider={
-							canWriteFiles ? operations.handleMoveFileToProvider : undefined
-						}
-						onDeleteSelection={
-							canWriteFiles ? operations.handleDeleteSelection : undefined
-						}
+						providers={providers}
+						currentFolderId={folderId}
 						isLoading={contentsFetching}
-						showSharedColumn
-					/>
+						canWrite={canWriteFiles}
+						navigate={handleNavigate}
+						refresh={refresh}
+					>
+						<FileExplorer />
+					</FileExplorerProvider>
+					<div className="pointer-events-none sticky bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
 				</div>
 
 				{canWriteFiles ? (
@@ -272,7 +281,7 @@ function FilesPage() {
 				<FileDropZone isDragActive={isDragActive} />
 			</div>
 
-			<DragOverlay dropAnimation={null}>
+			<DragOverlay dropAnimation={null} modifiers={[snapToCursor]}>
 				{dnd.activeDrag ? <DragOverlayContent item={dnd.activeDrag} /> : null}
 			</DragOverlay>
 		</DndContext>

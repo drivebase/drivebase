@@ -2,7 +2,7 @@ import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { DragItem } from "@/features/files/FileSystemTable";
+import type { DragItem } from "@/features/files/components/file-system-table/types";
 import { useMoveFile } from "@/features/files/hooks/useFiles";
 import { useMoveFolder } from "@/features/files/hooks/useFolders";
 
