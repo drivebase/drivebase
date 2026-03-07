@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useProviders } from "@/features/providers/hooks/useProviders";
-import { PreferencesSettingsSection } from "@/features/settings/sections/PreferencesSettingsSection";
 import { SmartSearchSection } from "@/features/settings/sections/SmartSearchSection";
 import { WorkspaceAutoSyncSection } from "@/features/settings/sections/WorkspaceAutoSyncSection";
 import { WorkspaceNameSection } from "@/features/settings/sections/WorkspaceNameSection";
@@ -250,9 +249,6 @@ export function GeneralSettingsView() {
 					<div className="border-t border-border" />
 				</>
 			) : null}
-			<div className="px-8">
-				<PreferencesSettingsSection />
-			</div>
 			<div className="border-t border-border p-8">
 				<Button variant="outline" onClick={handleSignOut}>
 					<PiSignOutLight className="mr-1 w-4 h-4" />
