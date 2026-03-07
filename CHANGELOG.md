@@ -1,5 +1,28 @@
 # Changelog
 
+## [3.4.2](https://github.com/drivebase/drivebase/compare/v3.4.1...v3.4.2) (2026-03-07)
+
+### Features
+
+* **files:** show provider icon and file size in grid file items ([24646ad](https://github.com/drivebase/drivebase/commit/24646ad807dee0037ae026b0cc759603963ea5bc))
+
+### Fixes
+
+* **web:** keep sidebar settings active on all settings routes ([1735fc8](https://github.com/drivebase/drivebase/commit/1735fc82939175e672536434584136375373ef15))
+
+### Styles
+
+* add scroll fade gradient to file explorer ([f5867c9](https://github.com/drivebase/drivebase/commit/f5867c9d8941af7c2ef3df4785514f1a9418f759))
+* remove background classes from actions column ([d0e75f0](https://github.com/drivebase/drivebase/commit/d0e75f0cebbcf239548c351d10ee02fb268506f5))
+* ui improvements ([674df21](https://github.com/drivebase/drivebase/commit/674df217af6bffd912f3a9f8298d7d8340c07168))
+
+### Others
+
+* format ([fd6e08e](https://github.com/drivebase/drivebase/commit/fd6e08ea02298ce621c5202299a61e9e95874a7b))
+* **onboarding:** add need help button ([9b66ac9](https://github.com/drivebase/drivebase/commit/9b66ac9a835050ec0224f911728a43a796265f5a))
+* **onboarding:** support i18n ([b74fb4b](https://github.com/drivebase/drivebase/commit/b74fb4b7e59f046d6dde780a8d1d6e245d657f96))
+* update claude settings ([8e1601c](https://github.com/drivebase/drivebase/commit/8e1601cdbf1fbf7eabc712c12b684b7cca3c908a))
+
 ## [3.4.1](https://github.com/drivebase/drivebase/compare/v3.4.0...v3.4.1) (2026-03-07)
 
 ### Styles
