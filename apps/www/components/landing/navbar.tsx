@@ -4,6 +4,7 @@ import { Github, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { BsDiscord } from "react-icons/bs";
 
 const NAV_LINKS = [
   { label: "Docs", href: "/docs" },
@@ -52,7 +53,7 @@ export function Navbar() {
           </div>
 
           <div className="flex-1 flex items-center justify-end">
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-2">
               <Link
                 href="https://github.com/drivebase/drivebase"
                 target="_blank"
@@ -61,6 +62,15 @@ export function Navbar() {
               >
                 <Github className="w-4 h-4 mr-2" />
                 Github
+              </Link>
+              <Link
+                href="https://discord.gg/5hPZwTPp68"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium hover:bg-secondary/90 text-primary-foreground border border-transparent transition-colors"
+              >
+                <BsDiscord className="w-4 h-4 mr-2" />
+                Discord
               </Link>
             </div>
 
