@@ -15,9 +15,6 @@ export function UserTypesSection() {
           transition={{ duration: 0.5 }}
           className="relative p-12 hover:bg-secondary/30 transition-colors"
         >
-          <span className="absolute top-4 right-4 inline-flex items-center border border-border bg-secondary px-2 py-1 text-xs font-medium text-muted-foreground">
-            Coming Soon
-          </span>
           <Code2 className="w-10 h-10 text-primary mb-6" />
           <h3 className="text-xl font-bold text-foreground mb-3">Developers</h3>
           <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -25,7 +22,7 @@ export function UserTypesSection() {
             powerful applications without managing credentials.
           </p>
           <Link
-            href="https://github.com/drivebase/drivebase/issues/86"
+            href="http://drivebase.io/docs/sdk"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm font-medium text-primary hover:underline"
