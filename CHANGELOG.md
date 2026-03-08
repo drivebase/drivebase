@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.5.0](https://github.com/drivebase/drivebase/compare/v3.4.3...v3.5.0) (2026-03-08)
+
+### Features
+
+* add samba provider support ([efbe715](https://github.com/drivebase/drivebase/commit/efbe7157916ac3fc3fe1ab4f2bbc3283b75caebc))
+
+### Others
+
+* add discord link ([eee50a2](https://github.com/drivebase/drivebase/commit/eee50a2b9bd46a7b4f885394a0eae72ae78ae900))
+* delete .tool-versions ([057d92e](https://github.com/drivebase/drivebase/commit/057d92eee28290c7cce71f31832e4def1cd25aba))
+* **telemetry:** track app update start with version metadata ([8ed56db](https://github.com/drivebase/drivebase/commit/8ed56dba6a42f94b4c418d71196af5f1582923c5))
+
 ## [3.4.3](https://github.com/drivebase/drivebase/compare/v3.4.2...v3.4.3) (2026-03-07)
 
 ### Fixes
