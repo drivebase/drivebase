@@ -48,4 +48,4 @@ apps/web/src/locales/*/messages.ts
 *.traineddata
 
 # SQL
-*.sql
+/*.sql
