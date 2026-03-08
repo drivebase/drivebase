@@ -24,6 +24,7 @@ export const providerTypeEnum = pgEnum("provider_type", [
 	"telegram",
 	"nextcloud",
 	"darkibox",
+	"samba",
 ]);
 
 /**

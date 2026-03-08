@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import { PiSpinnerGap as Loader2 } from "react-icons/pi";
+import { useForm, useWatch } from "react-hook-form";
+import { useProviderFormDraftStore } from "@/features/providers/store/providerFormDraftStore";
+import {
+	PiWarning as AlertTriangle,
+	PiSpinnerGap as Loader2,
+} from "react-icons/pi";
 import { useQuery } from "urql";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +41,8 @@ interface ConnectProviderDialogProps {
 		oauthCredentialId?: string;
 	}) => Promise<void>;
 	isConnecting: boolean;
+	error?: string | null;
+	onClearError?: () => void;
 }
 
 export function ConnectProviderDialog({
@@ -45,6 +51,8 @@ export function ConnectProviderDialog({
 	onClose,
 	onConnect,
 	isConnecting,
+	error,
+	onClearError,
 }: ConnectProviderDialogProps) {
 	const isOAuthProvider = provider.authType === AuthType.Oauth;
 	const [mode, setMode] = useState<"new" | "existing">("new");
@@ -73,12 +81,24 @@ export function ConnectProviderDialog({
 		return selected?.identifierValue ?? "";
 	}, [existingCredentials, selectedCredentialId]);
 
+	const { drafts, setDraft, clearDraft } = useProviderFormDraftStore();
+	const draft = drafts[provider.id] ?? {};
+
 	const {
 		register,
 		handleSubmit,
 		reset,
+		control,
 		formState: { errors },
-	} = useForm();
+	} = useForm({ defaultValues: draft });
+
+	const watchedValues = useWatch({ control });
+
+	// Persist form values to localStorage on every change
+	useEffect(() => {
+		if (!isOpen) return;
+		setDraft(provider.id, watchedValues as Record<string, unknown>);
+	}, [watchedValues, isOpen, provider.id, setDraft]);
 
 	useEffect(() => {
 		if (!isOpen) {
@@ -88,8 +108,8 @@ export function ConnectProviderDialog({
 		setMode("new");
 		setSelectedCredentialId("");
 		setSelectionError(null);
-		reset();
-	}, [isOpen, reset]);
+		reset(drafts[provider.id] ?? {});
+	}, [isOpen, reset, provider.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const submit = handleSubmit(async (formData) => {
 		const displayName = (formData._displayName as string) || provider.name;
@@ -105,6 +125,7 @@ export function ConnectProviderDialog({
 				displayName,
 				oauthCredentialId: selectedCredentialId,
 			});
+			clearDraft(provider.id);
 			return;
 		}
 
@@ -117,11 +138,24 @@ export function ConnectProviderDialog({
 			displayName,
 			config,
 		});
+
+		// Only clear the draft if connect succeeded (no error prop set)
+		if (!error) {
+			clearDraft(provider.id);
+		}
 	});
 
 	return (
-		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-			<DialogContent className="sm:max-w-[425px]">
+		<Dialog
+			open={isOpen}
+			onOpenChange={(open) => {
+				if (!open) {
+					onClearError?.();
+					onClose();
+				}
+			}}
+		>
+			<DialogContent className="sm:max-w-[425px] flex flex-col max-h-[70vh]">
 				<DialogHeader>
 					<DialogTitle>Connect {provider.name}</DialogTitle>
 					<DialogDescription>
@@ -130,125 +164,143 @@ export function ConnectProviderDialog({
 							: `Enter the configuration details for ${provider.name}.`}
 					</DialogDescription>
 				</DialogHeader>
-				<form onSubmit={submit} className="space-y-4">
-					{isOAuthProvider && (
-						<div className="grid grid-cols-2 gap-2  border p-1">
-							<Button
-								type="button"
-								variant={mode === "new" ? "default" : "ghost"}
-								onClick={() => {
-									setMode("new");
-									setSelectionError(null);
-								}}
-								disabled={isConnecting}
-							>
-								New
-							</Button>
-							<Button
-								type="button"
-								variant={mode === "existing" ? "default" : "ghost"}
-								onClick={() => {
-									setMode("existing");
-									setSelectionError(null);
-								}}
-								disabled={isConnecting}
-							>
-								Existing
-							</Button>
-						</div>
-					)}
-
-					<div className="space-y-2">
-						<Label htmlFor="_displayName">Display Name</Label>
-						<Input
-							id="_displayName"
-							placeholder={`My ${provider.name}`}
-							{...register("_displayName", { required: true })}
-						/>
-						{errors._displayName && (
-							<span className="text-xs text-red-500">
-								This field is required
-							</span>
-						)}
-					</div>
-
-					{isOAuthProvider && mode === "existing" ? (
-						<div className="space-y-2">
-							<Label>{identifierFieldLabel}</Label>
-							<Select
-								value={selectedCredentialId}
-								onValueChange={setSelectedCredentialId}
-								disabled={isConnecting || credentialsFetching}
-							>
-								<SelectTrigger className="w-full max-w-full min-w-0 overflow-hidden">
-									<SelectValue
-										placeholder={
-											credentialsFetching
-												? "Loading..."
-												: `Select ${identifierFieldLabel}`
-										}
+				<form onSubmit={submit} className="flex flex-col min-h-0 flex-1">
+					<div className="flex-1 overflow-y-auto space-y-4 pr-1">
+						{error && (
+							<div className="bg-destructive/15 text-destructive p-3 flex items-start gap-2 text-sm">
+								<AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+								<span className="flex-1">{error}</span>
+								{onClearError && (
+									<button
+										type="button"
+										onClick={onClearError}
+										className="shrink-0 opacity-70 hover:opacity-100"
+										aria-label="Dismiss"
 									>
-										{selectedCredentialLabel ? (
-											<span
-												className="block max-w-[300px] truncate"
-												title={selectedCredentialLabel}
-											>
-												{selectedCredentialLabel}
-											</span>
-										) : undefined}
-									</SelectValue>
-								</SelectTrigger>
-								<SelectContent>
-									{existingCredentials.map((credential) => (
-										<SelectItem key={credential.id} value={credential.id}>
-											<span
-												className="block max-w-full truncate pr-5"
-												title={credential.identifierValue}
-											>
-												{credential.identifierValue}
-											</span>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							{!credentialsFetching && existingCredentials.length === 0 && (
-								<p className="text-xs text-muted-foreground">
-									No existing credentials found. Use the New tab to add one.
-								</p>
-							)}
-							{selectionError && (
-								<span className="text-xs text-red-500">{selectionError}</span>
-							)}
-						</div>
-					) : (
-						provider.configFields.map((field) => (
-							<div key={field.name} className="space-y-2">
-								<Label htmlFor={field.name}>
-									{field.label}
-									{field.required && (
-										<span className="text-red-500 ml-1">*</span>
-									)}
-								</Label>
-								<Input
-									id={field.name}
-									type={field.type === "password" ? "password" : "text"}
-									placeholder={field.placeholder || ""}
-									{...register(field.name, { required: field.required })}
-								/>
-								{errors[field.name] && (
-									<span className="text-xs text-red-500">
-										This field is required
-									</span>
-								)}
-								{field.description && (
-									<p className="text-xs text-muted-foreground">
-										{field.description}
-									</p>
+										✕
+									</button>
 								)}
 							</div>
-						))
-					)}
-					<DialogFooter>
+						)}
+						{isOAuthProvider && (
+							<div className="grid grid-cols-2 gap-2  border p-1">
+								<Button
+									type="button"
+									variant={mode === "new" ? "default" : "ghost"}
+									onClick={() => {
+										setMode("new");
+										setSelectionError(null);
+									}}
+									disabled={isConnecting}
+								>
+									New
+								</Button>
+								<Button
+									type="button"
+									variant={mode === "existing" ? "default" : "ghost"}
+									onClick={() => {
+										setMode("existing");
+										setSelectionError(null);
+									}}
+									disabled={isConnecting}
+								>
+									Existing
+								</Button>
+							</div>
+						)}
+
+						<div className="space-y-2">
+							<Label htmlFor="_displayName">Display Name</Label>
+							<Input
+								id="_displayName"
+								placeholder={`My ${provider.name}`}
+								{...register("_displayName", { required: true })}
+							/>
+							{errors._displayName && (
+								<span className="text-xs text-red-500">
+									This field is required
+								</span>
+							)}
+						</div>
+
+						{isOAuthProvider && mode === "existing" ? (
+							<div className="space-y-2">
+								<Label>{identifierFieldLabel}</Label>
+								<Select
+									value={selectedCredentialId}
+									onValueChange={setSelectedCredentialId}
+									disabled={isConnecting || credentialsFetching}
+								>
+									<SelectTrigger className="w-full max-w-full min-w-0 overflow-hidden">
+										<SelectValue
+											placeholder={
+												credentialsFetching
+													? "Loading..."
+													: `Select ${identifierFieldLabel}`
+											}
+										>
+											{selectedCredentialLabel ? (
+												<span
+													className="block max-w-[300px] truncate"
+													title={selectedCredentialLabel}
+												>
+													{selectedCredentialLabel}
+												</span>
+											) : undefined}
+										</SelectValue>
+									</SelectTrigger>
+									<SelectContent>
+										{existingCredentials.map((credential) => (
+											<SelectItem key={credential.id} value={credential.id}>
+												<span
+													className="block max-w-full truncate pr-5"
+													title={credential.identifierValue}
+												>
+													{credential.identifierValue}
+												</span>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{!credentialsFetching && existingCredentials.length === 0 && (
+									<p className="text-xs text-muted-foreground">
+										No existing credentials found. Use the New tab to add one.
+									</p>
+								)}
+								{selectionError && (
+									<span className="text-xs text-red-500">{selectionError}</span>
+								)}
+							</div>
+						) : (
+							provider.configFields.map((field) => (
+								<div key={field.name} className="space-y-2">
+									<Label htmlFor={field.name}>
+										{field.label}
+										{field.required && (
+											<span className="text-red-500 ml-1">*</span>
+										)}
+									</Label>
+									<Input
+										id={field.name}
+										type={field.type === "password" ? "password" : "text"}
+										placeholder={field.placeholder || ""}
+										{...register(field.name, { required: field.required })}
+									/>
+									{errors[field.name] && (
+										<span className="text-xs text-red-500">
+											This field is required
+										</span>
+									)}
+									{field.description && (
+										<p className="text-xs text-muted-foreground">
+											{field.description}
+										</p>
+									)}
+								</div>
+							))
+						)}
+					</div>
+					<DialogFooter className="pt-4">
 						<Button
 							type="button"
 							variant="outline"

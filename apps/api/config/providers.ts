@@ -23,6 +23,7 @@ import {
 	TelegramSensitiveFields,
 	telegramRegistration,
 } from "@drivebase/telegram";
+import { SambaSensitiveFields, sambaRegistration } from "@drivebase/samba";
 import { WebDAVSensitiveFields, webdavRegistration } from "@drivebase/webdav";
 import type { Hono } from "hono";
 import type { AppEnv } from "../server/app";
@@ -42,6 +43,7 @@ export const providerRegistry: Record<string, ProviderRegistration> = {
 	[ProviderType.TELEGRAM]: telegramRegistration,
 	[ProviderType.NEXTCLOUD]: nextcloudRegistration,
 	[ProviderType.DARKIBOX]: darkiboxRegistration,
+	[ProviderType.SAMBA]: sambaRegistration,
 };
 
 /**
@@ -57,6 +59,7 @@ export const providerSensitiveFields: Record<string, readonly string[]> = {
 	[ProviderType.TELEGRAM]: TelegramSensitiveFields,
 	[ProviderType.NEXTCLOUD]: NextcloudSensitiveFields,
 	[ProviderType.DARKIBOX]: DarkiboxSensitiveFields,
+	[ProviderType.SAMBA]: SambaSensitiveFields,
 };
 
 /**
@@ -111,6 +114,8 @@ function getProviderName(type: string): string {
 			return "Nextcloud";
 		case ProviderType.DARKIBOX:
 			return "Darkibox";
+		case ProviderType.SAMBA:
+			return "Samba";
 		default:
 			return type;
 	}
