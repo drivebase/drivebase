@@ -24,6 +24,7 @@
 		"@drivebase/local": "workspace:*",
 		"@drivebase/nextcloud": "workspace:*",
 		"@drivebase/s3": "workspace:*",
+		"@drivebase/samba": "workspace:*",
 		"@drivebase/telegram": "workspace:*",
 		"@drivebase/utils": "workspace:*",
 		"@drivebase/webdav": "workspace:*",

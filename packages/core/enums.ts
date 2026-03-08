@@ -48,6 +48,8 @@ export enum ProviderType {
 	NEXTCLOUD = "nextcloud",
 	/** Darkibox cloud file hosting */
 	DARKIBOX = "darkibox",
+	/** Samba (SMB2) network file share */
+	SAMBA = "samba",
 }
 
 /**

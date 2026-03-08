@@ -87,12 +87,8 @@ function ProvidersPage() {
 	const sync = useProviderSync({ onSuccess: refresh, onError });
 	const quota = useProviderQuota({ onSuccess: refresh, onError });
 
-	// Merge errors from connect hook
-	const displayError = error || connect.error;
-	const clearError = () => {
-		setError(null);
-		connect.setError(null);
-	};
+	const displayError = error;
+	const clearError = () => setError(null);
 
 	useEffect(() => {
 		if (connected) {
@@ -274,6 +270,8 @@ function ProvidersPage() {
 					onClose={() => connect.setSelectedProvider(null)}
 					onConnect={connect.handleConnect}
 					isConnecting={connect.isConnecting}
+					error={connect.error}
+					onClearError={() => connect.setError(null)}
 				/>
 			)}
 
