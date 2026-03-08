@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.5.1](https://github.com/drivebase/drivebase/compare/v3.5.0...v3.5.1) (2026-03-08)
+
+### Fixes
+
+* uncomment sql from gitignore ([83a2ed4](https://github.com/drivebase/drivebase/commit/83a2ed4464a68bfe2c4a337a6181a1d154359059))
+
 ## [3.5.0](https://github.com/drivebase/drivebase/compare/v3.4.3...v3.5.0) (2026-03-08)
 
 ### Features
