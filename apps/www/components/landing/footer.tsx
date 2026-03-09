@@ -80,22 +80,24 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Drivebase. All rights reserved.
-          </div>
-          <div className="flex space-x-6 text-sm text-muted-foreground">
-            {socialLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
+        <div className="pt-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 text-sm text-muted-foreground">
+            <span>
+              © {new Date().getFullYear()} Drivebase. All rights reserved.
+            </span>
+            <div className="flex space-x-6">
+              {socialLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
