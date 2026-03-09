@@ -1,44 +1,51 @@
 "use client";
 
-import { Activity, Bot, FileText, Layout, Lock, Shield } from "lucide-react";
+import {
+  ArrowRightLeft,
+  Lock,
+  Route,
+  Search,
+  Server,
+  Users,
+} from "lucide-react";
 import { motion } from "motion/react";
 
 const capabilities = [
   {
-    label: "AI",
-    title: "AI Powered Search",
-    desc: "Leverage AI to find files faster and smarter",
-    icon: Bot,
+    label: "Search",
+    title: "Global Search",
+    desc: "Search across images with OCR, PDFs, documents, and more from one place.",
+    icon: Search,
   },
   {
-    label: "Monitor",
-    title: "Real-time Monitoring",
-    desc: "Track file access and storage usage in real-time",
-    icon: Activity,
-  },
-  {
-    label: "Interface",
-    title: "Unified Interface",
-    desc: "One dashboard to manage all your cloud storage",
-    icon: Layout,
-  },
-  {
-    label: "Security",
-    title: "Role-based Access",
-    desc: "Fine-grained permissions for collaborations",
-    icon: Shield,
-  },
-  {
-    label: "Logging",
-    title: "Activity Logs",
-    desc: "Complete audit trail of all file operations",
-    icon: FileText,
-  },
-  {
-    label: "Encryption",
-    title: "Secure Vault",
-    desc: "Encrypted storage with automatic key rotation",
+    label: "Vault",
+    title: "Vault",
+    desc: "End-to-end encrypted uploads for sensitive files and controlled access.",
     icon: Lock,
+  },
+  {
+    label: "WebDAV",
+    title: "WebDAV Server",
+    desc: "Enable remote access across multiple storage providers with credential-based controls.",
+    icon: Server,
+  },
+  {
+    label: "Uploads",
+    title: "Smart Uploads",
+    desc: "Route files automatically with rules so every upload lands in the right provider.",
+    icon: Route,
+  },
+  {
+    label: "Transfers",
+    title: "Cloud Transfers",
+    desc: "Move files between storage providers from one workflow without manual re-uploads.",
+    icon: ArrowRightLeft,
+  },
+  {
+    label: "Teams",
+    title: "Team Collaboration",
+    desc: "Shared workspaces and granular permissions for teams managing files together.",
+    icon: Users,
   },
 ];
 
