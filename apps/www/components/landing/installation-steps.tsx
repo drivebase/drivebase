@@ -6,20 +6,20 @@ import { motion } from "motion/react";
 const steps = [
   {
     step: "01",
-    title: "Connect",
-    desc: "Link your cloud storage providers with secure credentials.",
+    title: "Run Command",
+    desc: "Run the install command to get Drivebase onto your machine.",
     icon: Globe,
   },
   {
     step: "02",
-    title: "Configure",
-    desc: "Define how files should be handled and where they should be stored.",
+    title: "Compose Up",
+    desc: "Start the full stack with Docker Compose and bring the services online.",
     icon: Layout,
   },
   {
     step: "03",
     title: "Start Using",
-    desc: "Drivebase routes, tracks, and organizes files automatically.",
+    desc: "Open Drivebase and start managing files across your storage providers.",
     icon: Zap,
   },
 ];
