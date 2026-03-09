@@ -38,7 +38,7 @@ type Workspace {
 
 type MemberAccessGrant {
 	providerId: ID!
-	folderId: ID
+	folderPath: String
 }
 
 type WorkspaceMember {
@@ -108,7 +108,7 @@ input CreateWorkspaceInput {
 
 input AccessGrantInput {
 	providerId: ID!
-	folderId: ID
+	folderPath: String
 }
 
 input CreateWorkspaceInviteInput {
@@ -210,5 +210,15 @@ extend type Mutation {
 		workspaceId: ID!
 		userId: ID!
 		grants: [AccessGrantInput!]!
+	): Boolean!
+
+	"""
+	Add a user to a workspace directly by their email address.
+	"""
+	addWorkspaceMemberByEmail(
+		workspaceId: ID!
+		email: String!
+		role: WorkspaceMemberRole!
+		accessGrants: [AccessGrantInput!]
 	): Boolean!
 }

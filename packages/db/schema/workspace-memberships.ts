@@ -12,7 +12,7 @@ import { workspaces } from "./workspaces";
 
 export type AccessGrant = {
 	providerId: string;
-	folderId?: string | null;
+	folderPath?: string | null;
 };
 
 export const workspaceRoleEnum = pgEnum("workspace_role", [

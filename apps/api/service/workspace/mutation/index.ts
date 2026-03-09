@@ -14,6 +14,7 @@ export {
 	revokeWorkspaceInvite,
 } from "./workspace-invites";
 export {
+	addWorkspaceMemberByEmail,
 	removeWorkspaceMember,
 	setMemberAccessGrants,
 	updateWorkspaceMemberRole,

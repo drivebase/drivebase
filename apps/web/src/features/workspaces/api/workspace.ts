@@ -45,7 +45,7 @@ export const WORKSPACE_MEMBERS_QUERY = graphql(`
       isOwner
       accessGrants {
         providerId
-        folderId
+        folderPath
       }
     }
   }
@@ -59,7 +59,7 @@ export const WORKSPACE_INVITES_QUERY = graphql(`
       role
       accessGrants {
         providerId
-        folderId
+        folderPath
       }
       expiresAt
       createdAt
@@ -75,11 +75,27 @@ export const CREATE_WORKSPACE_INVITE_MUTATION = graphql(`
       role
       accessGrants {
         providerId
-        folderId
+        folderPath
       }
       expiresAt
       createdAt
     }
+  }
+`);
+
+export const SEARCH_USERS_QUERY = graphql(`
+  query SearchUsers($query: String!, $limit: Int) {
+    searchUsers(query: $query, limit: $limit) {
+      id
+      name
+      email
+    }
+  }
+`);
+
+export const ADD_WORKSPACE_MEMBER_BY_EMAIL_MUTATION = graphql(`
+  mutation AddWorkspaceMemberByEmail($workspaceId: ID!, $email: String!, $role: WorkspaceMemberRole!, $accessGrants: [AccessGrantInput!]) {
+    addWorkspaceMemberByEmail(workspaceId: $workspaceId, email: $email, role: $role, accessGrants: $accessGrants)
   }
 `);
 

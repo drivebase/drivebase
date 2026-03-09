@@ -1,10 +1,12 @@
 import { useMutation, useQuery } from "urql";
 import {
 	ACCEPT_WORKSPACE_INVITE_MUTATION,
+	ADD_WORKSPACE_MEMBER_BY_EMAIL_MUTATION,
 	CREATE_WORKSPACE_INVITE_MUTATION,
 	CREATE_WORKSPACE_MUTATION,
 	REMOVE_WORKSPACE_MEMBER_MUTATION,
 	REVOKE_WORKSPACE_INVITE_MUTATION,
+	SEARCH_USERS_QUERY,
 	SET_MEMBER_ACCESS_GRANTS_MUTATION,
 	UPDATE_WORKSPACE_AUTO_SYNC_MUTATION,
 	UPDATE_WORKSPACE_MEMBER_ROLE_MUTATION,
@@ -100,4 +102,18 @@ export function useUpdateWorkspaceAutoSync() {
 export function useSetMemberAccessGrants() {
 	const [result, execute] = useMutation(SET_MEMBER_ACCESS_GRANTS_MUTATION);
 	return [result, execute] as const;
+}
+
+export function useAddWorkspaceMemberByEmail() {
+	const [result, execute] = useMutation(ADD_WORKSPACE_MEMBER_BY_EMAIL_MUTATION);
+	return [result, execute] as const;
+}
+
+export function useSearchUsers(query: string) {
+	const [result] = useQuery({
+		query: SEARCH_USERS_QUERY,
+		variables: { query, limit: 8 },
+		pause: query.trim().length < 2,
+	});
+	return result;
 }

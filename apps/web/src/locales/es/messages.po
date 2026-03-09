@@ -48,13 +48,13 @@ msgstr ""
 msgid "Accent Color"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:219
+#: src/features/settings/UsersSettingsView.tsx:252
 msgid "Access updated"
 msgstr ""
 
 #. placeholder {0}: member.accessGrants.length
 #. placeholder {1}: member.accessGrants.length !== 1 ? "s" : ""
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:191
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:469
 msgid "Access: {0} provider{1}"
 msgstr ""
 
@@ -70,9 +70,23 @@ msgstr "Acciones"
 msgid "Activity"
 msgstr "Actividad"
 
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:151
+#~ msgid "Add"
+#~ msgstr ""
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:172
+msgid "Add an existing user to this workspace by their email address."
+msgstr ""
+
 #: src/features/rules/components/ConditionGroupEditor.tsx:123
 msgid "Add condition"
 msgstr "Añadir condición"
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:169
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:310
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:451
+msgid "Add member"
+msgstr ""
 
 #: src/features/rules/components/ConditionGroupEditor.tsx:131
 msgid "Add OR group"
@@ -92,6 +106,10 @@ msgstr "Añadir Regla"
 #: src/routes/_authenticated/starred.tsx:97
 #: src/routes/_authenticated/starred.tsx:136
 msgid "Added {0} to starred"
+msgstr ""
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:310
+msgid "Adding…"
 msgstr ""
 
 #: src/features/settings/components/SettingsCategoryNav.tsx:66
@@ -195,7 +213,8 @@ msgstr ""
 #: src/features/rules/components/RuleForm.tsx:209
 #: src/features/settings/sections/ApiKeysSection.tsx:498
 #: src/features/settings/sections/WebDavSection.tsx:441
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:144
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:307
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:404
 #: src/routes/_authenticated/providers.tsx:301
 #: src/routes/_authenticated/vault.tsx:290
 #: src/routes/_workspace/workspaces.create.tsx:166
@@ -238,7 +257,7 @@ msgid "Choose light, dark, or system theme."
 msgstr ""
 
 #. placeholder {0}: member.name
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:104
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:364
 msgid "Choose which providers {0} can access. Leave all unchecked to grant full workspace access."
 msgstr ""
 
@@ -352,7 +371,7 @@ msgstr ""
 msgid "Copy password"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:132
+#: src/features/settings/UsersSettingsView.tsx:137
 msgid "Could not copy invite link"
 msgstr ""
 
@@ -524,7 +543,7 @@ msgstr ""
 msgid "Drivebase. Secure file storage."
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:101
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:361
 msgid "Edit access"
 msgstr ""
 
@@ -536,6 +555,7 @@ msgstr "Editar Regla"
 #: src/features/auth/LoginPage.tsx:96
 #: src/features/auth/RegisterPage.tsx:77
 #: src/features/settings/sections/AccountSettingsSection.tsx:103
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:182
 msgid "Email"
 msgstr "Correo electrónico"
 
@@ -615,6 +635,10 @@ msgstr ""
 msgid "Extract text from documents and images for deep content search."
 msgstr ""
 
+#: src/features/settings/UsersSettingsView.tsx:221
+msgid "Failed to add member"
+msgstr ""
+
 #: src/shared/components/JobPanel.tsx:154
 #: src/shared/components/JobPanel.tsx:158
 msgid "Failed to cancel job"
@@ -656,23 +680,23 @@ msgstr ""
 msgid "Failed to create folder"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:116
+#: src/features/settings/UsersSettingsView.tsx:121
 msgid "Failed to create invite link"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:171
+#: src/features/settings/UsersSettingsView.tsx:176
 msgid "Failed to remove member"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:188
+#: src/features/settings/UsersSettingsView.tsx:193
 msgid "Failed to revoke invite"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:214
+#: src/features/settings/UsersSettingsView.tsx:247
 msgid "Failed to update access grants"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:154
+#: src/features/settings/UsersSettingsView.tsx:159
 msgid "Failed to update member role"
 msgstr ""
 
@@ -778,15 +802,15 @@ msgstr "Incluir configuraciones de proveedores"
 msgid "Include sensitive credentials (requires password)"
 msgstr "Incluir credenciales sensibles (requiere contraseña)"
 
-#: src/features/settings/UsersSettingsView.tsx:130
+#: src/features/settings/UsersSettingsView.tsx:135
 msgid "Invite link copied"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:123
+#: src/features/settings/UsersSettingsView.tsx:128
 msgid "Invite link created"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:193
+#: src/features/settings/UsersSettingsView.tsx:198
 msgid "Invite revoked"
 msgstr ""
 
@@ -841,10 +865,11 @@ msgid "Lightning Fast"
 msgstr ""
 
 #: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:131
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:260
 msgid "Limit to specific providers"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:247
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:525
 msgid "Loading members…"
 msgstr ""
 
@@ -887,19 +912,23 @@ msgstr ""
 msgid "Max downloads must be 0 or a positive integer."
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:176
+#: src/features/settings/UsersSettingsView.tsx:226
+msgid "Member added"
+msgstr ""
+
+#: src/features/settings/UsersSettingsView.tsx:181
 msgid "Member removed"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:159
+#: src/features/settings/UsersSettingsView.tsx:164
 msgid "Member role updated"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:173
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:439
 msgid "Members"
 msgstr "Miembros"
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:176
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:442
 msgid "Members in this workspace."
 msgstr "Miembros en este espacio de trabajo."
 
@@ -981,7 +1010,7 @@ msgstr ""
 msgid "No providers connected"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:113
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:373
 msgid "No providers connected to this workspace."
 msgstr ""
 
@@ -993,7 +1022,7 @@ msgstr ""
 msgid "No recent activity"
 msgstr "Sin actividad reciente"
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:138
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:398
 msgid "No restrictions — full workspace access."
 msgstr ""
 
@@ -1021,7 +1050,7 @@ msgstr ""
 msgid "No WebDAV credentials yet."
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:230
+#: src/features/settings/UsersSettingsView.tsx:263
 msgid "No workspace selected."
 msgstr ""
 
@@ -1213,6 +1242,7 @@ msgstr ""
 
 #: src/features/settings/sections/AccountSettingsSection.tsx:110
 #: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:79
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:225
 msgid "Role"
 msgstr "Rol"
 
@@ -1236,7 +1266,7 @@ msgstr ""
 #: src/features/rules/components/RuleForm.tsx:206
 #: src/features/settings/sections/AccountSettingsSection.tsx:94
 #: src/features/settings/sections/WorkspaceAutoSyncSection.tsx:206
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:147
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:407
 #: src/features/settings/sections/WorkspaceNameSection.tsx:38
 msgid "Save"
 msgstr "Guardar"
@@ -1255,7 +1285,7 @@ msgstr ""
 msgid "Saving..."
 msgstr "Guardando..."
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:147
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:407
 msgid "Saving…"
 msgstr ""
 
@@ -1541,7 +1571,7 @@ msgid "Username"
 msgstr ""
 
 #: src/features/settings/components/SettingsCategoryNav.tsx:56
-#: src/features/settings/UsersSettingsView.tsx:227
+#: src/features/settings/UsersSettingsView.tsx:260
 msgid "Users"
 msgstr "Usuarios"
 

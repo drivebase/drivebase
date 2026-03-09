@@ -4,6 +4,7 @@
 			"Bash(ls:*)",
 			"Bash(wc:*)",
 			"Bash(rg:*)",
+			"Bash(grep:*)",
 			"Bash(bun run:*)",
 			"Bash(bun add:*)",
 			"Bash(bun install:*)",
