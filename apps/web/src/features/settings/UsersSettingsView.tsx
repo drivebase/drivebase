@@ -9,6 +9,7 @@ import { WorkspaceInviteCreateSection } from "@/features/settings/sections/Works
 import { WorkspaceMembersSection } from "@/features/settings/sections/WorkspaceMembersSection";
 import {
 	getActiveWorkspaceId,
+	useAddWorkspaceMemberByEmail,
 	useCreateWorkspaceInvite,
 	useRemoveWorkspaceMember,
 	useRevokeWorkspaceInvite,
@@ -77,6 +78,7 @@ export function UsersSettingsView() {
 	const [, removeMember] = useRemoveWorkspaceMember();
 	const [, revokeInvite] = useRevokeWorkspaceInvite();
 	const [, setAccessGrants] = useSetMemberAccessGrants();
+	const [, addByEmail] = useAddWorkspaceMemberByEmail();
 
 	const [inviteRole, setInviteRole] = useState<WorkspaceMemberRole>(
 		WorkspaceMemberRole.Viewer,
@@ -101,7 +103,7 @@ export function UsersSettingsView() {
 			restrictAccess && selectedProviderIds.length > 0
 				? selectedProviderIds.map((providerId) => ({
 						providerId,
-						folderId: null,
+						folderPath: null,
 					}))
 				: [];
 
@@ -197,9 +199,35 @@ export function UsersSettingsView() {
 		reexecuteInvites({ requestPolicy: "network-only" });
 	};
 
+	const handleAddByEmail = async (
+		email: string,
+		role: WorkspaceMemberRole,
+		grants: Array<{ providerId: string; folderPath?: string | null }>,
+	) => {
+		if (!workspaceId || !canManageWorkspace) return;
+
+		const result = await addByEmail({
+			workspaceId,
+			email,
+			role,
+			accessGrants: grants.map((g) => ({
+				providerId: g.providerId,
+				folderPath: g.folderPath ?? null,
+			})),
+		});
+
+		if (result.error || !result.data?.addWorkspaceMemberByEmail) {
+			toast.error(result.error?.message ?? <Trans>Failed to add member</Trans>);
+			return;
+		}
+
+		toast.success(<Trans>Member added</Trans>);
+		reexecuteMembers({ requestPolicy: "network-only" });
+	};
+
 	const handleSetAccessGrants = async (
 		userId: string,
-		grants: Array<{ providerId: string; folderId?: string | null }>,
+		grants: Array<{ providerId: string; folderPath?: string | null }>,
 	) => {
 		if (!workspaceId) return;
 
@@ -208,7 +236,7 @@ export function UsersSettingsView() {
 			userId,
 			grants: grants.map((g) => ({
 				providerId: g.providerId,
-				folderId: g.folderId ?? null,
+				folderPath: g.folderPath ?? null,
 			})),
 		});
 
@@ -238,9 +266,37 @@ export function UsersSettingsView() {
 
 	return (
 		<div className="space-y-8">
+			<div className="px-8 pt-8">
+				<WorkspaceMembersSection
+					members={membersResult.data?.workspaceMembers ?? []}
+					isLoading={membersResult.fetching}
+					canManageWorkspace={canManageWorkspace}
+					providers={providers}
+					onUpdateRole={handleUpdateRole}
+					onRemoveMember={handleRemoveMember}
+					onSetAccessGrants={handleSetAccessGrants}
+					onAddByEmail={handleAddByEmail}
+				/>
+			</div>
+
+			{shouldShowActiveInvitesSection ? (
+				<>
+					<Separator />
+					<div className="px-8">
+						<WorkspaceActiveInvitesSection
+							invites={workspaceInvites}
+							isLoading={invitesResult.fetching}
+							onCopyInviteLink={copyInviteLink}
+							onRevokeInvite={handleRevokeInvite}
+						/>
+					</div>
+				</>
+			) : null}
+
 			{canManageWorkspace ? (
 				<>
-					<div className="px-8 pt-8">
+					<Separator />
+					<div className="px-8 pb-8">
 						<WorkspaceInviteCreateSection
 							inviteRole={inviteRole}
 							expiresInDays={expiresInDays}
@@ -259,35 +315,8 @@ export function UsersSettingsView() {
 							onCopyInviteLink={copyInviteLink}
 						/>
 					</div>
-					<Separator />
 				</>
 			) : null}
-
-			{shouldShowActiveInvitesSection ? (
-				<>
-					<div className="px-8">
-						<WorkspaceActiveInvitesSection
-							invites={workspaceInvites}
-							isLoading={invitesResult.fetching}
-							onCopyInviteLink={copyInviteLink}
-							onRevokeInvite={handleRevokeInvite}
-						/>
-					</div>
-					<Separator />
-				</>
-			) : null}
-
-			<div className="px-8">
-				<WorkspaceMembersSection
-					members={membersResult.data?.workspaceMembers ?? []}
-					isLoading={membersResult.fetching}
-					canManageWorkspace={canManageWorkspace}
-					providers={providers}
-					onUpdateRole={handleUpdateRole}
-					onRemoveMember={handleRemoveMember}
-					onSetAccessGrants={handleSetAccessGrants}
-				/>
-			</div>
 		</div>
 	);
 }

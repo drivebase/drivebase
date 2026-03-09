@@ -6,7 +6,7 @@ import type {
 	QueryResolvers,
 	UserResolvers,
 } from "../generated/types";
-import { requireRole } from "./auth-helpers";
+import { requireAuth, requireRole } from "./auth-helpers";
 
 export const userQueries: QueryResolvers = {
 	users: async (_parent, args, context) => {
@@ -22,6 +22,13 @@ export const userQueries: QueryResolvers = {
 		requireRole(context, ["admin", "owner"]);
 		const userService = new UserService(context.db);
 		return userService.findById(args.id);
+	},
+
+	searchUsers: async (_parent, args, context) => {
+		requireAuth(context);
+		if (!args.query || args.query.trim().length < 2) return [];
+		const userService = new UserService(context.db);
+		return userService.search(args.query, args.limit ?? 8);
 	},
 };
 

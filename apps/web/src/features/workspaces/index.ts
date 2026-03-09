@@ -1,6 +1,8 @@
 export {
 	ACCEPT_WORKSPACE_INVITE_MUTATION,
 	ACTIVE_WORKSPACE_STORAGE_KEY,
+	ADD_WORKSPACE_MEMBER_BY_EMAIL_MUTATION,
+	SEARCH_USERS_QUERY,
 	CREATE_WORKSPACE_INVITE_MUTATION,
 	CREATE_WORKSPACE_MUTATION,
 	REMOVE_WORKSPACE_MEMBER_MUTATION,
@@ -18,6 +20,8 @@ export {
 export { useWorkspaceBootstrap } from "./hooks/useWorkspaceBootstrap";
 export {
 	useAcceptWorkspaceInvite,
+	useAddWorkspaceMemberByEmail,
+	useSearchUsers,
 	useCreateWorkspace,
 	useCreateWorkspaceInvite,
 	useRemoveWorkspaceMember,

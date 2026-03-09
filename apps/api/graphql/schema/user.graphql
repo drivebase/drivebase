@@ -20,6 +20,12 @@ type User {
 	updatedAt: DateTime!
 }
 
+type UserSearchResult {
+	id: ID!
+	name: String!
+	email: String!
+}
+
 extend type Query {
 	"""
 	Get all users (admin/owner only)
@@ -30,6 +36,11 @@ extend type Query {
 	Get user by ID (admin/owner only)
 	"""
 	user(id: ID!): User
+
+	"""
+	Search users by name or email prefix (for adding workspace members)
+	"""
+	searchUsers(query: String!, limit: Int): [UserSearchResult!]!
 }
 
 extend type Mutation {

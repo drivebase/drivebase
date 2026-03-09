@@ -7,7 +7,7 @@ import {
 import type { Database } from "@drivebase/db";
 import { users } from "@drivebase/db";
 import { validatePassword } from "@drivebase/utils";
-import { eq } from "drizzle-orm";
+import { eq, ilike, or } from "drizzle-orm";
 import { hashPassword } from "../utils/auth/password";
 import { logger } from "../utils/runtime/logger";
 import { createDefaultWorkspace } from "./workspace";
@@ -47,6 +47,19 @@ export class UserService {
 		}
 
 		return user;
+	}
+
+	/**
+	 * Search users by name or email prefix (for member autocomplete)
+	 */
+	async search(query: string, limit: number = 8) {
+		const term = `${query.trim()}%`;
+		return this.db
+			.select({ id: users.id, name: users.name, email: users.email })
+			.from(users)
+			.where(or(ilike(users.email, term), ilike(users.name, term)))
+			.limit(limit)
+			.orderBy(users.name);
 	}
 
 	/**

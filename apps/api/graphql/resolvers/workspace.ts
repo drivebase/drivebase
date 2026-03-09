@@ -1,5 +1,6 @@
 import {
 	acceptWorkspaceInvite,
+	addWorkspaceMemberByEmail,
 	createWorkspace,
 	createWorkspaceInvite,
 	getWorkspaceStats,
@@ -61,14 +62,14 @@ function toWorkspaceMemberType(member: {
 	role: string;
 	joinedAt: Date;
 	isOwner: boolean;
-	accessGrants: Array<{ providerId: string; folderId?: string | null }>;
+	accessGrants: Array<{ providerId: string; folderPath?: string | null }>;
 }): WorkspaceMember {
 	return {
 		...member,
 		role: member.role.toUpperCase() as WorkspaceMemberRole,
 		accessGrants: member.accessGrants.map((g) => ({
 			providerId: g.providerId,
-			folderId: g.folderId ?? null,
+			folderPath: g.folderPath ?? null,
 		})),
 	};
 }
@@ -77,7 +78,7 @@ function toWorkspaceInviteType(invite: {
 	id: string;
 	token: string;
 	role: string;
-	accessGrants: Array<{ providerId: string; folderId?: string | null }>;
+	accessGrants: Array<{ providerId: string; folderPath?: string | null }>;
 	expiresAt: Date;
 	createdAt: Date;
 }): WorkspaceInvite {
@@ -86,7 +87,7 @@ function toWorkspaceInviteType(invite: {
 		role: invite.role.toUpperCase() as WorkspaceMemberRole,
 		accessGrants: invite.accessGrants.map((g) => ({
 			providerId: g.providerId,
-			folderId: g.folderId ?? null,
+			folderPath: g.folderPath ?? null,
 		})),
 	};
 }
@@ -164,7 +165,7 @@ export const workspaceMutations: MutationResolvers = {
 			args.input.expiresInDays ?? 7,
 			(args.input.accessGrants ?? []).map((g) => ({
 				providerId: g.providerId,
-				folderId: g.folderId ?? null,
+				folderPath: g.folderPath ?? null,
 			})),
 		);
 		return toWorkspaceInviteType(invite);
@@ -269,6 +270,25 @@ export const workspaceMutations: MutationResolvers = {
 		return toWorkspaceType(workspace);
 	},
 
+	addWorkspaceMemberByEmail: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+		]);
+		return addWorkspaceMemberByEmail(
+			context.db,
+			args.workspaceId,
+			args.email,
+			args.role.toLowerCase() as "admin" | "editor" | "viewer",
+			user.userId,
+			(args.accessGrants ?? []).map((g) => ({
+				providerId: g.providerId,
+				folderPath: g.folderPath ?? null,
+			})),
+		);
+	},
+
 	setMemberAccessGrants: async (_parent, args, context) => {
 		const user = requireAuth(context);
 		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
@@ -281,7 +301,7 @@ export const workspaceMutations: MutationResolvers = {
 			args.userId,
 			args.grants.map((g) => ({
 				providerId: g.providerId,
-				folderId: g.folderId ?? null,
+				folderPath: g.folderPath ?? null,
 			})),
 		);
 	},

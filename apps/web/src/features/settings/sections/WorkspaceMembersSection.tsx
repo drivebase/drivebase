@@ -1,9 +1,19 @@
 import { Trans } from "@lingui/react/macro";
-import { useState } from "react";
-import { PiShieldCheck, PiTrash as Trash2 } from "react-icons/pi";
+import { useRef, useState } from "react";
+import { PiShieldCheck, PiTrash as Trash2, PiUserPlus } from "react-icons/pi";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -19,6 +29,8 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
+import { useSearchUsers } from "@/features/workspaces";
 import { WorkspaceMemberRole } from "@/gql/graphql";
 
 const ASSIGNABLE_ROLES = [
@@ -29,7 +41,7 @@ const ASSIGNABLE_ROLES = [
 
 interface AccessGrant {
 	providerId: string;
-	folderId?: string | null;
+	folderPath?: string | null;
 }
 
 interface Provider {
@@ -55,7 +67,252 @@ interface WorkspaceMembersSectionProps {
 	onUpdateRole: (userId: string, role: WorkspaceMemberRole) => void;
 	onRemoveMember: (userId: string) => void;
 	onSetAccessGrants: (userId: string, grants: AccessGrant[]) => Promise<void>;
+	onAddByEmail: (
+		email: string,
+		role: WorkspaceMemberRole,
+		grants: AccessGrant[],
+	) => Promise<void>;
 }
+
+// --- Add member dialog ---
+
+interface AddMemberDialogProps {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	providers: Provider[];
+	onAdd: (
+		email: string,
+		role: WorkspaceMemberRole,
+		grants: AccessGrant[],
+	) => Promise<void>;
+}
+
+function AddMemberDialog({
+	open,
+	onOpenChange,
+	providers,
+	onAdd,
+}: AddMemberDialogProps) {
+	const [email, setEmail] = useState("");
+	const [role, setRole] = useState<WorkspaceMemberRole>(
+		WorkspaceMemberRole.Viewer,
+	);
+	const [restrictAccess, setRestrictAccess] = useState(false);
+	// map of providerId → optional folder path
+	const [providerPaths, setProviderPaths] = useState<Record<string, string>>(
+		{},
+	);
+	const [loading, setLoading] = useState(false);
+	const [showSuggestions, setShowSuggestions] = useState(false);
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	const searchResult = useSearchUsers(email);
+	const suggestions = searchResult.data?.searchUsers ?? [];
+
+	const selectedProviderIds = Object.keys(providerPaths);
+
+	const reset = () => {
+		setEmail("");
+		setRole(WorkspaceMemberRole.Viewer);
+		setRestrictAccess(false);
+		setProviderPaths({});
+		setLoading(false);
+		setShowSuggestions(false);
+	};
+
+	const handleOpenChange = (v: boolean) => {
+		if (!v) reset();
+		onOpenChange(v);
+	};
+
+	const handleSelect = (suggestion: { email: string }) => {
+		setEmail(suggestion.email);
+		setShowSuggestions(false);
+		inputRef.current?.focus();
+	};
+
+	const toggleProvider = (id: string, checked: boolean) => {
+		setProviderPaths((prev) => {
+			if (!checked) {
+				const next = { ...prev };
+				delete next[id];
+				return next;
+			}
+			return { ...prev, [id]: "" };
+		});
+	};
+
+	const setPath = (providerId: string, path: string) => {
+		setProviderPaths((prev) => ({ ...prev, [providerId]: path }));
+	};
+
+	const handleAdd = async () => {
+		if (!email.trim()) return;
+		setLoading(true);
+		const grants: AccessGrant[] =
+			restrictAccess && selectedProviderIds.length > 0
+				? selectedProviderIds.map((id) => ({
+						providerId: id,
+						folderPath: providerPaths[id]?.trim() || null,
+					}))
+				: [];
+		await onAdd(email.trim(), role, grants);
+		reset();
+		onOpenChange(false);
+	};
+
+	return (
+		<Dialog open={open} onOpenChange={handleOpenChange}>
+			<DialogContent className="sm:max-w-md">
+				<DialogHeader>
+					<DialogTitle>
+						<Trans>Add member</Trans>
+					</DialogTitle>
+					<DialogDescription>
+						<Trans>
+							Add an existing user to this workspace by their email address.
+						</Trans>
+					</DialogDescription>
+				</DialogHeader>
+
+				<div className="space-y-4 py-2">
+					{/* Email with suggestions */}
+					<div className="space-y-2">
+						<Label>
+							<Trans>Email</Trans>
+						</Label>
+						<div className="relative">
+							<Input
+								ref={inputRef}
+								type="email"
+								placeholder="user@example.com"
+								value={email}
+								onChange={(e) => {
+									setEmail(e.target.value);
+									setShowSuggestions(true);
+								}}
+								onFocus={() => setShowSuggestions(true)}
+								onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") handleAdd();
+								}}
+							/>
+							{showSuggestions && suggestions.length > 0 ? (
+								<div className="absolute z-50 top-full mt-1 left-0 right-0 bg-popover border shadow-md">
+									{suggestions.map((s) => (
+										<button
+											key={s.id}
+											type="button"
+											className="w-full text-left px-3 py-2 hover:bg-accent flex flex-col"
+											onMouseDown={() => handleSelect(s)}
+										>
+											<span className="text-sm font-medium">{s.name}</span>
+											<span className="text-xs text-muted-foreground">
+												{s.email}
+											</span>
+										</button>
+									))}
+								</div>
+							) : null}
+						</div>
+					</div>
+
+					{/* Role */}
+					<div className="space-y-2">
+						<Label>
+							<Trans>Role</Trans>
+						</Label>
+						<Select
+							value={role}
+							onValueChange={(v) => setRole(v as WorkspaceMemberRole)}
+						>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{ASSIGNABLE_ROLES.map((r) => (
+									<SelectItem key={r} value={r}>
+										{r}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					{/* Provider access restriction */}
+					{providers.length > 0 ? (
+						<div className="space-y-3">
+							<div className="flex items-center gap-3">
+								<Switch
+									id="add-restrict-access"
+									checked={restrictAccess}
+									onCheckedChange={(v) => {
+										setRestrictAccess(v);
+										if (!v) setProviderPaths({});
+									}}
+								/>
+								<Label htmlFor="add-restrict-access" className="cursor-pointer">
+									<Trans>Limit to specific providers</Trans>
+								</Label>
+							</div>
+							{restrictAccess ? (
+								<div className="border divide-y">
+									{providers.map((provider) => {
+										const checked = selectedProviderIds.includes(provider.id);
+										return (
+											<div key={provider.id} className="p-3 space-y-2">
+												<label className="flex items-center gap-3 cursor-pointer">
+													<Checkbox
+														checked={checked}
+														onCheckedChange={(v) =>
+															toggleProvider(provider.id, !!v)
+														}
+													/>
+													<span className="text-sm font-medium flex-1">
+														{provider.name}
+													</span>
+													<Badge
+														variant="secondary"
+														className="text-xs capitalize"
+													>
+														{provider.type.replace("_", " ")}
+													</Badge>
+												</label>
+												{checked ? (
+													<div className="pl-7">
+														<Input
+															className="h-7 text-xs"
+															placeholder="/folder/path (optional)"
+															value={providerPaths[provider.id] ?? ""}
+															onChange={(e) =>
+																setPath(provider.id, e.target.value)
+															}
+														/>
+													</div>
+												) : null}
+											</div>
+										);
+									})}
+								</div>
+							) : null}
+						</div>
+					) : null}
+				</div>
+
+				<DialogFooter>
+					<Button variant="outline" onClick={() => handleOpenChange(false)}>
+						<Trans>Cancel</Trans>
+					</Button>
+					<Button onClick={handleAdd} disabled={loading || !email.trim()}>
+						{loading ? <Trans>Adding…</Trans> : <Trans>Add member</Trans>}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+// --- Edit access sheet ---
 
 interface EditAccessSheetProps {
 	member: WorkspaceMemberItem;
@@ -86,7 +343,7 @@ function EditAccessSheet({
 		setSaving(true);
 		const grants: AccessGrant[] = selectedIds.map((id) => ({
 			providerId: id,
-			folderId: null,
+			folderPath: null,
 		}));
 		await onSave(member.userId, grants);
 		setSaving(false);
@@ -152,6 +409,8 @@ function EditAccessSheet({
 	);
 }
 
+// --- Main section ---
+
 export function WorkspaceMembersSection(props: WorkspaceMembersSectionProps) {
 	const {
 		members,
@@ -161,20 +420,33 @@ export function WorkspaceMembersSection(props: WorkspaceMembersSectionProps) {
 		onUpdateRole,
 		onRemoveMember,
 		onSetAccessGrants,
+		onAddByEmail,
 	} = props;
 
+	const [addDialogOpen, setAddDialogOpen] = useState(false);
 	const [editingMember, setEditingMember] =
 		useState<WorkspaceMemberItem | null>(null);
 
 	return (
 		<>
 			<div className="space-y-3">
-				<h4 className="font-medium">
-					<Trans>Members</Trans>
-				</h4>
-				<p className="text-sm text-muted-foreground">
-					<Trans>Members in this workspace.</Trans>
-				</p>
+				<div className="flex items-center justify-between">
+					<div>
+						<h4 className="font-medium">
+							<Trans>Members</Trans>
+						</h4>
+						<p className="text-sm text-muted-foreground">
+							<Trans>Members in this workspace.</Trans>
+						</p>
+					</div>
+					{canManageWorkspace ? (
+						<Button size="sm" onClick={() => setAddDialogOpen(true)}>
+							<PiUserPlus className="h-4 w-4 mr-2" />
+							<Trans>Add member</Trans>
+						</Button>
+					) : null}
+				</div>
+
 				<div className="border divide-y">
 					{members.map((member) => (
 						<div
@@ -249,6 +521,13 @@ export function WorkspaceMembersSection(props: WorkspaceMembersSectionProps) {
 					) : null}
 				</div>
 			</div>
+
+			<AddMemberDialog
+				open={addDialogOpen}
+				onOpenChange={setAddDialogOpen}
+				providers={providers}
+				onAdd={onAddByEmail}
+			/>
 
 			{editingMember ? (
 				<EditAccessSheet
