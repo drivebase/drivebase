@@ -25,7 +25,7 @@ Key features include:
 - **Vault (end-to-end encryption)**: Encrypt uploads before they leave your environment for stronger privacy.
 - **Self-hosted and team-ready**: Run via Docker Compose for quick setup and invite other users to collaborate.
 - **Collaboration features**: Share files and folders with granular permissions across providers.
-- **WebDAV server**: Enable users to connect remotely to Drivebase using WebDAV for file access and management. (coming soon)
+- **WebDAV server**: Enable users to connect remotely to Drivebase using WebDAV for file access and management.
 
 and much more!
 
