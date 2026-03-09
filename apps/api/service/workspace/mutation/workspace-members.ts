@@ -1,5 +1,5 @@
 import { NotFoundError, ValidationError } from "@drivebase/core";
-import type { Database } from "@drivebase/db";
+import type { AccessGrant, Database } from "@drivebase/db";
 import { workspaceMemberships, workspaces } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 import type { WorkspaceRole } from "../rbac";
@@ -29,6 +29,40 @@ export async function updateWorkspaceMemberRole(
 	const [member] = await db
 		.update(workspaceMemberships)
 		.set({ role, updatedAt: new Date() })
+		.where(
+			and(
+				eq(workspaceMemberships.workspaceId, workspaceId),
+				eq(workspaceMemberships.userId, targetUserId),
+			),
+		)
+		.returning({ id: workspaceMemberships.id });
+
+	if (!member) throw new NotFoundError("Workspace member");
+	return true;
+}
+
+// Set (replace) access grants for a workspace member.
+// Pass an empty array to grant full workspace access.
+export async function setMemberAccessGrants(
+	db: Database,
+	workspaceId: string,
+	targetUserId: string,
+	grants: AccessGrant[],
+) {
+	const [workspace] = await db
+		.select({ ownerId: workspaces.ownerId })
+		.from(workspaces)
+		.where(eq(workspaces.id, workspaceId))
+		.limit(1);
+
+	if (!workspace) throw new NotFoundError("Workspace");
+	if (workspace.ownerId === targetUserId) {
+		throw new ValidationError("Cannot restrict access for workspace owner");
+	}
+
+	const [member] = await db
+		.update(workspaceMemberships)
+		.set({ accessGrants: grants, updatedAt: new Date() })
 		.where(
 			and(
 				eq(workspaceMemberships.workspaceId, workspaceId),

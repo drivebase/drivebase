@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { useProviders } from "@/features/providers/hooks/useProviders";
 import { WorkspaceActiveInvitesSection } from "@/features/settings/sections/WorkspaceActiveInvitesSection";
 import { WorkspaceInviteCreateSection } from "@/features/settings/sections/WorkspaceInviteCreateSection";
 import { WorkspaceMembersSection } from "@/features/settings/sections/WorkspaceMembersSection";
@@ -11,6 +12,7 @@ import {
 	useCreateWorkspaceInvite,
 	useRemoveWorkspaceMember,
 	useRevokeWorkspaceInvite,
+	useSetMemberAccessGrants,
 	useUpdateWorkspaceMemberRole,
 	useWorkspaceInvites,
 	useWorkspaceMembers,
@@ -66,27 +68,49 @@ export function UsersSettingsView() {
 	const shouldShowActiveInvitesSection =
 		canManageWorkspace &&
 		(invitesResult.fetching || workspaceInvites.length > 0);
+
+	const providersResult = useProviders();
+	const providers = providersResult.data?.storageProviders ?? [];
+
 	const [, createInvite] = useCreateWorkspaceInvite();
 	const [, updateRole] = useUpdateWorkspaceMemberRole();
 	const [, removeMember] = useRemoveWorkspaceMember();
 	const [, revokeInvite] = useRevokeWorkspaceInvite();
+	const [, setAccessGrants] = useSetMemberAccessGrants();
 
 	const [inviteRole, setInviteRole] = useState<WorkspaceMemberRole>(
 		WorkspaceMemberRole.Viewer,
 	);
 	const [expiresInDays, setExpiresInDays] = useState(7);
 	const [generatedInviteLink, setGeneratedInviteLink] = useState("");
+	const [restrictAccess, setRestrictAccess] = useState(false);
+	const [selectedProviderIds, setSelectedProviderIds] = useState<string[]>([]);
+
+	const handleProviderToggle = (providerId: string, checked: boolean) => {
+		setSelectedProviderIds((prev) =>
+			checked ? [...prev, providerId] : prev.filter((id) => id !== providerId),
+		);
+	};
 
 	const handleCreateInvite = async () => {
 		if (!workspaceId || !canManageWorkspace) {
 			return;
 		}
 
+		const accessGrants =
+			restrictAccess && selectedProviderIds.length > 0
+				? selectedProviderIds.map((providerId) => ({
+						providerId,
+						folderId: null,
+					}))
+				: [];
+
 		const result = await createInvite({
 			input: {
 				workspaceId,
 				role: inviteRole,
 				expiresInDays,
+				accessGrants,
 			},
 		});
 
@@ -173,6 +197,32 @@ export function UsersSettingsView() {
 		reexecuteInvites({ requestPolicy: "network-only" });
 	};
 
+	const handleSetAccessGrants = async (
+		userId: string,
+		grants: Array<{ providerId: string; folderId?: string | null }>,
+	) => {
+		if (!workspaceId) return;
+
+		const result = await setAccessGrants({
+			workspaceId,
+			userId,
+			grants: grants.map((g) => ({
+				providerId: g.providerId,
+				folderId: g.folderId ?? null,
+			})),
+		});
+
+		if (result.error || !result.data?.setMemberAccessGrants) {
+			toast.error(
+				result.error?.message ?? <Trans>Failed to update access grants</Trans>,
+			);
+			return;
+		}
+
+		toast.success(<Trans>Access updated</Trans>);
+		reexecuteMembers({ requestPolicy: "network-only" });
+	};
+
 	if (!activeWorkspace) {
 		return (
 			<div className="space-y-2">
@@ -195,8 +245,16 @@ export function UsersSettingsView() {
 							inviteRole={inviteRole}
 							expiresInDays={expiresInDays}
 							generatedInviteLink={generatedInviteLink}
+							restrictAccess={restrictAccess}
+							selectedProviderIds={selectedProviderIds}
+							providers={providers}
 							onInviteRoleChange={setInviteRole}
 							onExpiresInDaysChange={setExpiresInDays}
+							onRestrictAccessChange={(v) => {
+								setRestrictAccess(v);
+								if (!v) setSelectedProviderIds([]);
+							}}
+							onProviderToggle={handleProviderToggle}
 							onCreateInvite={handleCreateInvite}
 							onCopyInviteLink={copyInviteLink}
 						/>
@@ -224,8 +282,10 @@ export function UsersSettingsView() {
 					members={membersResult.data?.workspaceMembers ?? []}
 					isLoading={membersResult.fetching}
 					canManageWorkspace={canManageWorkspace}
+					providers={providers}
 					onUpdateRole={handleUpdateRole}
 					onRemoveMember={handleRemoveMember}
+					onSetAccessGrants={handleSetAccessGrants}
 				/>
 			</div>
 		</div>

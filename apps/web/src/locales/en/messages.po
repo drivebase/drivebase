@@ -32,9 +32,31 @@ msgstr "{0} provider(s) selected"
 msgid "0 for unlimited"
 msgstr "0 for unlimited"
 
+#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:109
+msgid "1 Day"
+msgstr "1 Day"
+
+#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:115
+msgid "14 Days"
+msgstr "14 Days"
+
+#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:112
+msgid "7 Days"
+msgstr "7 Days"
+
 #: src/routes/_workspace/workspaces.create.tsx:118
 msgid "Accent Color"
 msgstr "Accent Color"
+
+#: src/features/settings/UsersSettingsView.tsx:219
+msgid "Access updated"
+msgstr "Access updated"
+
+#. placeholder {0}: member.accessGrants.length
+#. placeholder {1}: member.accessGrants.length !== 1 ? "s" : ""
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:191
+msgid "Access: {0} provider{1}"
+msgstr "Access: {0} provider{1}"
 
 #: src/features/settings/components/SettingsCategoryNav.tsx:46
 msgid "Account"
@@ -118,13 +140,33 @@ msgstr "API Keys"
 msgid "Appearance"
 msgstr "Appearance"
 
-#: src/routes/_authenticated/providers.tsx:290
+#: src/routes/_authenticated/providers.tsx:288
 msgid "Are you sure you want to disconnect this storage provider? Your files will strictly remain in the remote storage, but you won't be able to access them here until you reconnect."
 msgstr "Are you sure you want to disconnect this storage provider? Your files will strictly remain in the remote storage, but you won't be able to access them here until you reconnect."
 
 #: src/components/layout/Header.tsx:135
 #~ msgid "Audio"
 #~ msgstr "Audio"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:188
+msgid "Authentication failed."
+msgstr "Authentication failed."
+
+#: src/features/onboarding/steps/ProviderStep.tsx:175
+msgid "Authentication window was closed."
+msgstr "Authentication window was closed."
+
+#: src/features/onboarding/steps/ProviderStep.tsx:287
+msgid "Authorization completed. Provider sync is still refreshing."
+msgstr "Authorization completed. Provider sync is still refreshing."
+
+#: src/features/onboarding/steps/ProviderStep.tsx:160
+msgid "Authorization failed. Please try again."
+msgstr "Authorization failed. Please try again."
+
+#: src/features/onboarding/steps/ProviderStep.tsx:159
+msgid "Authorization failed. Please try connecting your provider again."
+msgstr "Authorization failed. Please try connecting your provider again."
 
 #: src/features/settings/sections/WorkspaceAutoSyncSection.tsx:69
 msgid "Auto sync"
@@ -138,7 +180,7 @@ msgstr "Auto sync"
 msgid "Automatically route uploaded files to specific providers and folders based on file attributes."
 msgstr "Automatically route uploaded files to specific providers and folders based on file attributes."
 
-#: src/routes/_authenticated/providers.tsx:220
+#: src/routes/_authenticated/providers.tsx:216
 msgid "Available Providers"
 msgstr "Available Providers"
 
@@ -153,7 +195,8 @@ msgstr "Base path"
 #: src/features/rules/components/RuleForm.tsx:209
 #: src/features/settings/sections/ApiKeysSection.tsx:498
 #: src/features/settings/sections/WebDavSection.tsx:441
-#: src/routes/_authenticated/providers.tsx:303
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:144
+#: src/routes/_authenticated/providers.tsx:301
 #: src/routes/_authenticated/vault.tsx:290
 #: src/routes/_workspace/workspaces.create.tsx:166
 #: src/shared/components/JobPanel.tsx:217
@@ -194,7 +237,12 @@ msgstr "Change Password"
 msgid "Choose light, dark, or system theme."
 msgstr "Choose light, dark, or system theme."
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:39
+#. placeholder {0}: member.name
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:104
+msgid "Choose which providers {0} can access. Leave all unchecked to grant full workspace access."
+msgstr "Choose which providers {0} can access. Leave all unchecked to grant full workspace access."
+
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:30
 msgid "Choose your preferred language"
 msgstr "Choose your preferred language"
 
@@ -219,6 +267,15 @@ msgstr "Close panel"
 msgid "Collapse panel"
 msgstr "Collapse panel"
 
+#: src/components/layout/command-palette/IdleStateGroups.tsx:63
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:129
+msgid "Community"
+msgstr "Community"
+
+#: src/features/onboarding/OnboardingWizard.tsx:114
+msgid "Complete"
+msgstr "Complete"
+
 #: src/features/rules/components/RuleForm.tsx:189
 #: src/features/rules/components/RuleList.tsx:143
 msgid "Conditions"
@@ -228,17 +285,34 @@ msgstr "Conditions"
 msgid "Confirm new password"
 msgstr "Confirm new password"
 
-#: src/routes/_authenticated/providers.tsx:186
+#: src/features/onboarding/steps/ProviderStep.tsx:390
+msgid "Connect & Authorize"
+msgstr "Connect & Authorize"
+
+#: src/routes/_authenticated/providers.tsx:182
 msgid "Connect a storage provider below to start managing your files."
 msgstr "Connect a storage provider below to start managing your files."
+
+#: src/features/onboarding/steps/WelcomeStep.tsx:67
+msgid "Connect Google Drive, S3, and local storage in one place."
+msgstr "Connect Google Drive, S3, and local storage in one place."
+
+#: src/features/onboarding/steps/ProviderStep.tsx:262
+#: src/features/onboarding/steps/ProviderStep.tsx:391
+msgid "Connect Storage"
+msgstr "Connect Storage"
 
 #: src/routes/connect/telegram.tsx:110
 msgid "Connect Telegram"
 msgstr "Connect Telegram"
 
-#: src/routes/_authenticated/providers.tsx:161
+#: src/routes/_authenticated/providers.tsx:157
 msgid "Connected Storage"
 msgstr "Connected Storage"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:282
+msgid "Connected successfully:"
+msgstr "Connected successfully:"
 
 #: src/features/settings/sections/WebDavSection.tsx:199
 msgid "Connection endpoint"
@@ -247,6 +321,14 @@ msgstr "Connection endpoint"
 #: src/routes/_authenticated.tsx:75
 msgid "Connection failed"
 msgstr "Connection failed"
+
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:73
+msgid "Content Matches"
+msgstr "Content Matches"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:406
+msgid "Continue"
+msgstr "Continue"
 
 #: src/features/settings/sections/ThemeSettingsSection.tsx:27
 msgid "Control how Drivebase looks and feels for your account."
@@ -270,7 +352,7 @@ msgstr "Copy download link"
 msgid "Copy password"
 msgstr "Copy password"
 
-#: src/features/settings/UsersSettingsView.tsx:111
+#: src/features/settings/UsersSettingsView.tsx:132
 msgid "Could not copy invite link"
 msgstr "Could not copy invite link"
 
@@ -278,7 +360,7 @@ msgstr "Could not copy invite link"
 msgid "Could not join workspace"
 msgstr "Could not join workspace"
 
-#: src/routes/_authenticated/providers.tsx:246
+#: src/routes/_authenticated/providers.tsx:242
 msgid "Couldn't find what you were looking for?"
 msgstr "Couldn't find what you were looking for?"
 
@@ -306,6 +388,10 @@ msgstr "Create download link"
 #: src/routes/_authenticated/vault.tsx:299
 msgid "Create Folder"
 msgstr "Create Folder"
+
+#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:68
+msgid "Create invite link"
+msgstr "Create invite link"
 
 #: src/features/rules/components/RuleFormPage.tsx:69
 #: src/features/rules/components/RuleFormPage.tsx:79
@@ -337,6 +423,10 @@ msgstr "Creating..."
 #: src/features/settings/sections/ApiKeysSection.tsx:501
 msgid "Creating…"
 msgstr "Creating…"
+
+#: src/features/onboarding/steps/WelcomeStep.tsx:72
+msgid "Credentials are encrypted with AES-256-GCM."
+msgstr "Credentials are encrypted with AES-256-GCM."
 
 #: src/features/settings/sections/WorkspaceAutoSyncSection.tsx:93
 msgid "Cron schedule (UTC)"
@@ -389,17 +479,21 @@ msgstr "Destination Provider"
 msgid "Disabled"
 msgstr "Disabled"
 
-#: src/routes/_authenticated/providers.tsx:313
+#: src/routes/_authenticated/providers.tsx:311
 msgid "Disconnect"
 msgstr "Disconnect"
 
-#: src/routes/_authenticated/providers.tsx:287
+#: src/routes/_authenticated/providers.tsx:285
 msgid "Disconnect Provider?"
 msgstr "Disconnect Provider?"
 
-#: src/routes/_authenticated/providers.tsx:152
+#: src/routes/_authenticated/providers.tsx:148
 msgid "Dismiss"
 msgstr "Dismiss"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:338
+msgid "Display Name"
+msgstr "Display Name"
 
 #: src/features/settings/sections/ApiKeysSection.tsx:274
 msgid "documentation"
@@ -429,6 +523,10 @@ msgstr "Download link copied"
 #: src/features/auth/AuthLayout.tsx:51
 msgid "Drivebase. Secure file storage."
 msgstr "Drivebase. Secure file storage."
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:101
+msgid "Edit access"
+msgstr "Edit access"
 
 #: src/features/rules/components/RuleFormPage.tsx:69
 msgid "Edit Rule"
@@ -479,6 +577,10 @@ msgstr "Every day"
 msgid "Expires"
 msgstr "Expires"
 
+#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:101
+msgid "Expires in"
+msgstr "Expires in"
+
 #: src/shared/lib/downloadLinkConfigDialog.tsx:230
 msgid "Expires in days"
 msgstr "Expires in days"
@@ -527,6 +629,14 @@ msgstr "Failed to cancel job"
 msgid "Failed to complete connection"
 msgstr "Failed to complete connection"
 
+#: src/features/onboarding/steps/CompletionStep.tsx:68
+msgid "Failed to complete onboarding"
+msgstr "Failed to complete onboarding"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:242
+msgid "Failed to connect storage provider"
+msgstr "Failed to connect storage provider"
+
 #: src/shared/lib/downloadLinkConfigDialog.tsx:197
 msgid "Failed to copy download link"
 msgstr "Failed to copy download link"
@@ -546,19 +656,23 @@ msgstr "Failed to create download link."
 msgid "Failed to create folder"
 msgstr "Failed to create folder"
 
-#: src/features/settings/UsersSettingsView.tsx:95
+#: src/features/settings/UsersSettingsView.tsx:116
 msgid "Failed to create invite link"
 msgstr "Failed to create invite link"
 
-#: src/features/settings/UsersSettingsView.tsx:150
+#: src/features/settings/UsersSettingsView.tsx:171
 msgid "Failed to remove member"
 msgstr "Failed to remove member"
 
-#: src/features/settings/UsersSettingsView.tsx:167
+#: src/features/settings/UsersSettingsView.tsx:188
 msgid "Failed to revoke invite"
 msgstr "Failed to revoke invite"
 
-#: src/features/settings/UsersSettingsView.tsx:133
+#: src/features/settings/UsersSettingsView.tsx:214
+msgid "Failed to update access grants"
+msgstr "Failed to update access grants"
+
+#: src/features/settings/UsersSettingsView.tsx:154
 msgid "Failed to update member role"
 msgstr "Failed to update member role"
 
@@ -572,7 +686,7 @@ msgstr "Failed to update profile"
 msgid "Failed to update starred status."
 msgstr "Failed to update starred status."
 
-#: src/routes/_authenticated/files.tsx:150
+#: src/routes/_authenticated/files.tsx:192
 msgid "Failed to update sync setting"
 msgstr "Failed to update sync setting"
 
@@ -581,6 +695,7 @@ msgstr "Failed to update sync setting"
 #~ msgid "Favorites"
 #~ msgstr "Favorites"
 
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:145
 #: src/components/layout/Sidebar.tsx:32
 msgid "Files"
 msgstr "Files"
@@ -589,6 +704,10 @@ msgstr "Files"
 msgid "Files matching these conditions will be routed to the destination. Groups are combined with OR; conditions within a group are combined with AND."
 msgstr "Files matching these conditions will be routed to the destination. Groups are combined with OR; conditions within a group are combined with AND."
 
+#: src/features/onboarding/steps/CompletionStep.tsx:130
+msgid "Finalizing..."
+msgstr "Finalizing..."
+
 #: src/routes/_authenticated/vault.tsx:182
 msgid "Folder deletion is not yet supported in vault"
 msgstr "Folder deletion is not yet supported in vault"
@@ -596,6 +715,10 @@ msgstr "Folder deletion is not yet supported in vault"
 #: src/routes/_authenticated/vault.tsx:269
 msgid "Folder Name"
 msgstr "Folder Name"
+
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:160
+msgid "Folders"
+msgstr "Folders"
 
 #: src/features/auth/LoginPage.tsx:124
 msgid "Forgot password?"
@@ -609,9 +732,31 @@ msgstr "Fresh greens with a calm layered background."
 msgid "General"
 msgstr "General"
 
+#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:165
+msgid "Generate invite link"
+msgstr "Generate invite link"
+
 #: src/shared/lib/downloadLinkConfigDialog.tsx:290
 msgid "Generate new link"
 msgstr "Generate new link"
+
+#: src/features/onboarding/steps/WelcomeStep.tsx:86
+msgid "Get Started"
+msgstr "Get Started"
+
+#: src/components/layout/command-palette/IdleStateGroups.tsx:21
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:33
+msgid "GitHub"
+msgstr "GitHub"
+
+#: src/components/layout/command-palette/IdleStateGroups.tsx:27
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:39
+msgid "Give a Star"
+msgstr "Give a Star"
+
+#: src/features/onboarding/steps/CompletionStep.tsx:139
+msgid "Go to Dashboard"
+msgstr "Go to Dashboard"
 
 #: src/components/layout/RecentActivityView.tsx:200
 msgid "Hide JSON"
@@ -633,15 +778,15 @@ msgstr "Include provider configurations"
 msgid "Include sensitive credentials (requires password)"
 msgstr "Include sensitive credentials (requires password)"
 
-#: src/features/settings/UsersSettingsView.tsx:109
+#: src/features/settings/UsersSettingsView.tsx:130
 msgid "Invite link copied"
 msgstr "Invite link copied"
 
-#: src/features/settings/UsersSettingsView.tsx:102
+#: src/features/settings/UsersSettingsView.tsx:123
 msgid "Invite link created"
 msgstr "Invite link created"
 
-#: src/features/settings/UsersSettingsView.tsx:172
+#: src/features/settings/UsersSettingsView.tsx:193
 msgid "Invite revoked"
 msgstr "Invite revoked"
 
@@ -653,11 +798,16 @@ msgstr "Job ID"
 msgid "Jobs"
 msgstr "Jobs"
 
+#: src/components/layout/command-palette/IdleStateGroups.tsx:23
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:35
+msgid "Join Discord"
+msgstr "Join Discord"
+
 #: src/routes/join-workspace.tsx:91
 msgid "Joining workspace…"
 msgstr "Joining workspace…"
 
-#: src/features/settings/sections/PreferencesSettingsSection.tsx:36
+#: src/features/settings/sections/PreferencesSettingsSection.tsx:27
 msgid "Language"
 msgstr "Language"
 
@@ -678,13 +828,33 @@ msgstr "Learn how to use API keys in the"
 msgid "Leave provider restrictions off to serve the merged Drivebase root. Enable restrictions only when this credential should see specific providers or base paths."
 msgstr "Leave provider restrictions off to serve the merged Drivebase root. Enable restrictions only when this credential should see specific providers or base paths."
 
+#: src/features/onboarding/steps/WelcomeStep.tsx:44
+msgid "Let's set up your workspace in a couple of steps."
+msgstr "Let's set up your workspace in a couple of steps."
+
 #: src/features/settings/sections/ThemeSettingsSection.tsx:53
 msgid "Light"
 msgstr "Light"
 
+#: src/features/onboarding/steps/WelcomeStep.tsx:63
+msgid "Lightning Fast"
+msgstr "Lightning Fast"
+
+#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:131
+msgid "Limit to specific providers"
+msgstr "Limit to specific providers"
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:247
+msgid "Loading members…"
+msgstr "Loading members…"
+
 #: src/features/settings/sections/PasskeysSection.tsx:81
 msgid "Loading passkeys…"
 msgstr "Loading passkeys…"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:251
+msgid "Loading providers..."
+msgstr "Loading providers..."
 
 #: src/routes/_authenticated/settings/rules_.$ruleId.tsx:24
 msgid "Loading rule..."
@@ -702,8 +872,8 @@ msgid "Loading..."
 msgstr "Loading..."
 
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:29
-msgid "Manage account-level preferences for your workspace."
-msgstr "Manage account-level preferences for your workspace."
+#~ msgid "Manage account-level preferences for your workspace."
+#~ msgstr "Manage account-level preferences for your workspace."
 
 #: src/features/settings/sections/UpdateSection.tsx:46
 msgid "Manage application updates."
@@ -717,21 +887,26 @@ msgstr "Max downloads"
 msgid "Max downloads must be 0 or a positive integer."
 msgstr "Max downloads must be 0 or a positive integer."
 
-#: src/features/settings/UsersSettingsView.tsx:155
+#: src/features/settings/UsersSettingsView.tsx:176
 msgid "Member removed"
 msgstr "Member removed"
 
-#: src/features/settings/UsersSettingsView.tsx:138
+#: src/features/settings/UsersSettingsView.tsx:159
 msgid "Member role updated"
 msgstr "Member role updated"
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:48
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:173
 msgid "Members"
 msgstr "Members"
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:51
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:176
 msgid "Members in this workspace."
 msgstr "Members in this workspace."
+
+#. placeholder {0}: selectedProvider.name
+#: src/features/onboarding/steps/ProviderStep.tsx:342
+msgid "My {0}"
+msgstr "My {0}"
 
 #: src/components/layout/RightPanel.tsx:45
 #: src/config/pageTitles.ts:12
@@ -756,9 +931,18 @@ msgstr "Name (optional)"
 msgid "Name is required"
 msgstr "Name is required"
 
+#: src/components/layout/command-palette/IdleStateGroups.tsx:50
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:112
+msgid "Navigation"
+msgstr "Navigation"
+
 #: src/features/settings/sections/WorkspaceAutoSyncSection.tsx:131
 msgid "Need help building a cron expression?"
 msgstr "Need help building a cron expression?"
+
+#: src/features/onboarding/steps/CompletionStep.tsx:151
+msgid "Need help?"
+msgstr "Need help?"
 
 #: src/features/settings/sections/ApiKeysSection.tsx:490
 msgid "Never expires"
@@ -785,13 +969,21 @@ msgstr "No active providers found."
 msgid "No API keys yet."
 msgstr "No API keys yet."
 
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:101
+msgid "No content matches found."
+msgstr "No content matches found."
+
 #: src/features/settings/sections/PasskeysSection.tsx:85
 msgid "No passkeys registered yet."
 msgstr "No passkeys registered yet."
 
-#: src/routes/_authenticated/providers.tsx:183
+#: src/routes/_authenticated/providers.tsx:179
 msgid "No providers connected"
 msgstr "No providers connected"
+
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:113
+msgid "No providers connected to this workspace."
+msgstr "No providers connected to this workspace."
 
 #: src/features/settings/sections/ApiKeysSection.tsx:447
 msgid "No providers connected."
@@ -801,9 +993,13 @@ msgstr "No providers connected."
 msgid "No recent activity"
 msgstr "No recent activity"
 
-#: src/components/layout/Header.tsx:148
-#~ msgid "No results found."
-#~ msgstr "No results found."
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:138
+msgid "No restrictions — full workspace access."
+msgstr "No restrictions — full workspace access."
+
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:176
+msgid "No results found."
+msgstr "No results found."
 
 #: src/features/rules/components/RuleList.tsx:127
 msgid "No rules yet. Create a rule to automatically route files on upload."
@@ -825,7 +1021,7 @@ msgstr "No storage providers connected"
 msgid "No WebDAV credentials yet."
 msgstr "No WebDAV credentials yet."
 
-#: src/features/settings/UsersSettingsView.tsx:183
+#: src/features/settings/UsersSettingsView.tsx:230
 msgid "No workspace selected."
 msgstr "No workspace selected."
 
@@ -856,6 +1052,10 @@ msgstr "Open latest release notes"
 #: src/components/layout/RightPanel.tsx:71
 msgid "Open panel"
 msgstr "Open panel"
+
+#: src/features/onboarding/steps/WelcomeStep.tsx:75
+msgid "Optimized with built-in caching and CDN support."
+msgstr "Optimized with built-in caching and CDN support."
 
 #: src/features/auth/LoginPage.tsx:157
 msgid "Or"
@@ -889,8 +1089,8 @@ msgid "Pick a visual style for the dashboard background."
 msgstr "Pick a visual style for the dashboard background."
 
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:26
-msgid "Preferences"
-msgstr "Preferences"
+#~ msgid "Preferences"
+#~ msgstr "Preferences"
 
 #: src/features/settings/sections/SmartSearchSection.tsx:40
 msgid "Press Tab in the search palette (Cmd+K) to switch to Smart Search mode."
@@ -904,10 +1104,18 @@ msgstr "Profile updated"
 msgid "Programmatic access credentials for scripts and integrations."
 msgstr "Programmatic access credentials for scripts and integrations."
 
+#: src/features/onboarding/steps/CompletionStep.tsx:111
+msgid "Provider"
+msgstr "Provider"
+
 #: src/features/settings/sections/ApiKeysSection.tsx:351
 #: src/features/settings/sections/WebDavSection.tsx:326
 msgid "Provider access"
 msgstr "Provider access"
+
+#: src/features/onboarding/steps/CompletionStep.tsx:89
+msgid "Provider Connected"
+msgstr "Provider Connected"
 
 #: src/features/settings/sections/WorkspaceAutoSyncSection.tsx:145
 msgid "Provider scope"
@@ -939,6 +1147,10 @@ msgstr "Redirecting to dashboard..."
 msgid "Redirecting to login..."
 msgstr "Redirecting to login..."
 
+#: src/features/onboarding/steps/CompletionStep.tsx:135
+msgid "Redirecting..."
+msgstr "Redirecting..."
+
 #: src/features/auth/ForgotPasswordPage.tsx:318
 msgid "Remembered your password?"
 msgstr "Remembered your password?"
@@ -963,9 +1175,19 @@ msgstr "Remove group"
 msgid "Removed {0} from starred"
 msgstr "Removed {0} from starred"
 
-#: src/routes/_authenticated/providers.tsx:263
+#: src/components/layout/command-palette/IdleStateGroups.tsx:25
+#: src/components/layout/command-palette/SearchResultsGroups.tsx:37
+msgid "Report Bug"
+msgstr "Report Bug"
+
+#: src/routes/_authenticated/providers.tsx:259
 msgid "Request a Provider"
 msgstr "Request a Provider"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:347
+#: src/features/onboarding/steps/ProviderStep.tsx:368
+msgid "Required"
+msgstr "Required"
 
 #: src/features/auth/ForgotPasswordPage.tsx:300
 msgid "Resend Code"
@@ -990,6 +1212,7 @@ msgid "Revoked"
 msgstr "Revoked"
 
 #: src/features/settings/sections/AccountSettingsSection.tsx:110
+#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:79
 msgid "Role"
 msgstr "Role"
 
@@ -1013,6 +1236,7 @@ msgstr "Run provider sync automatically using a cron schedule."
 #: src/features/rules/components/RuleForm.tsx:206
 #: src/features/settings/sections/AccountSettingsSection.tsx:94
 #: src/features/settings/sections/WorkspaceAutoSyncSection.tsx:206
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:147
 #: src/features/settings/sections/WorkspaceNameSection.tsx:38
 msgid "Save"
 msgstr "Save"
@@ -1031,6 +1255,10 @@ msgstr "Save your API key"
 msgid "Saving..."
 msgstr "Saving..."
 
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:147
+msgid "Saving…"
+msgstr "Saving…"
+
 #: src/features/settings/sections/ApiKeysSection.tsx:320
 msgid "Scopes"
 msgstr "Scopes"
@@ -1042,6 +1270,18 @@ msgstr "Scopes"
 #: src/components/layout/Header.tsx:146
 #~ msgid "Searching..."
 #~ msgstr "Searching..."
+
+#: src/features/onboarding/steps/WelcomeStep.tsx:62
+msgid "Secure & Private"
+msgstr "Secure & Private"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:265
+msgid "Select a provider to connect your first storage drive."
+msgstr "Select a provider to connect your first storage drive."
+
+#: src/features/onboarding/steps/ProviderStep.tsx:314
+msgid "Select a provider..."
+msgstr "Select a provider..."
 
 #: src/features/settings/sections/AppearanceSettingsSection.tsx:127
 msgid "Selected"
@@ -1084,6 +1324,10 @@ msgstr "Set up a new workspace and switch to it."
 msgid "Settings"
 msgstr "Settings"
 
+#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:71
+msgid "Share this link so others can join the workspace with a preset role."
+msgstr "Share this link so others can join the workspace with a preset role."
+
 #: src/components/layout/RecentActivityView.tsx:202
 msgid "Show JSON"
 msgstr "Show JSON"
@@ -1100,17 +1344,21 @@ msgstr "Sign In"
 msgid "Sign in with Passkey"
 msgstr "Sign in with Passkey"
 
-#: src/features/settings/GeneralSettingsView.tsx:259
+#: src/features/settings/GeneralSettingsView.tsx:255
 msgid "Sign out"
 msgstr "Sign out"
 
-#: src/features/settings/GeneralSettingsView.tsx:192
+#: src/features/settings/GeneralSettingsView.tsx:191
 msgid "Sign out?"
 msgstr "Sign out?"
 
 #: src/features/auth/LoginPage.tsx:183
 msgid "Sign up"
 msgstr "Sign up"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:408
+msgid "Skip for now"
+msgstr "Skip for now"
 
 #: src/features/settings/sections/SmartSearchSection.tsx:19
 msgid "Smart Search"
@@ -1134,7 +1382,20 @@ msgstr "Starred"
 msgid "Starred Folders"
 msgstr "Starred Folders"
 
-#: src/routes/_authenticated/providers.tsx:249
+#: src/features/onboarding/OnboardingWizard.tsx:113
+msgid "Storage"
+msgstr "Storage"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:183
+#: src/features/onboarding/steps/ProviderStep.tsx:238
+msgid "Storage connected successfully!"
+msgstr "Storage connected successfully!"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:304
+msgid "Storage Provider"
+msgstr "Storage Provider"
+
+#: src/routes/_authenticated/providers.tsx:245
 msgid "Suggest a new storage provider or report an issue on our GitHub repository."
 msgstr "Suggest a new storage provider or report an issue on our GitHub repository."
 
@@ -1142,11 +1403,11 @@ msgstr "Suggest a new storage provider or report an issue on our GitHub reposito
 msgid "Sunset Blend"
 msgstr "Sunset Blend"
 
-#: src/routes/_authenticated/files.tsx:156
+#: src/routes/_authenticated/files.tsx:197
 msgid "Sync disabled"
 msgstr "Sync disabled"
 
-#: src/routes/_authenticated/files.tsx:156
+#: src/routes/_authenticated/files.tsx:197
 msgid "Sync enabled"
 msgstr "Sync enabled"
 
@@ -1220,9 +1481,13 @@ msgstr "Unable to connect to the API right now. Check the server and try again."
 msgid "Unable to load Drivebase"
 msgstr "Unable to load Drivebase"
 
-#: src/features/settings/GeneralSettingsView.tsx:201
+#: src/features/settings/GeneralSettingsView.tsx:200
 msgid "Unable to sign out from server. Signing out locally."
 msgstr "Unable to sign out from server. Signing out locally."
+
+#: src/features/onboarding/steps/WelcomeStep.tsx:61
+msgid "Unified Storage"
+msgstr "Unified Storage"
 
 #: src/features/settings/sections/UpdateSection.tsx:70
 msgid "Update available"
@@ -1276,7 +1541,7 @@ msgid "Username"
 msgstr "Username"
 
 #: src/features/settings/components/SettingsCategoryNav.tsx:56
-#: src/features/settings/UsersSettingsView.tsx:180
+#: src/features/settings/UsersSettingsView.tsx:227
 msgid "Users"
 msgstr "Users"
 
@@ -1293,6 +1558,10 @@ msgstr "Verification code"
 msgid "Verification code sent to your Telegram app"
 msgstr "Verification code sent to your Telegram app"
 
+#: src/features/onboarding/steps/ProviderStep.tsx:277
+msgid "Verifying connected provider..."
+msgstr "Verifying connected provider..."
+
 #: src/components/layout/Header.tsx:129
 #~ msgid "Videos"
 #~ msgstr "Videos"
@@ -1300,6 +1569,10 @@ msgstr "Verification code sent to your Telegram app"
 #: src/features/settings/sections/UpdateSection.tsx:121
 msgid "View releases"
 msgstr "View releases"
+
+#: src/features/onboarding/steps/ProviderStep.tsx:388
+msgid "Waiting for authorization..."
+msgstr "Waiting for authorization..."
 
 #: src/features/settings/sections/AppearanceSettingsSection.tsx:49
 msgid "Warm orange and rose accents with extra energy."
@@ -1315,9 +1588,17 @@ msgstr "WebDAV"
 msgid "WebDAV Password"
 msgstr "WebDAV Password"
 
+#: src/features/onboarding/OnboardingWizard.tsx:112
+msgid "Welcome"
+msgstr "Welcome"
+
 #: src/features/auth/LoginPage.tsx:78
 msgid "Welcome Back"
 msgstr "Welcome Back"
+
+#: src/features/onboarding/steps/WelcomeStep.tsx:41
+msgid "Welcome, {userName}!"
+msgstr "Welcome, {userName}!"
 
 #: src/features/settings/sections/WebDavSection.tsx:357
 msgid "When enabled, WebDAV root matches the merged Drivebase file view across the whole workspace."
@@ -1339,10 +1620,22 @@ msgstr "Workspaces"
 msgid "You haven't starred any folders yet."
 msgstr "You haven't starred any folders yet."
 
-#: src/features/settings/GeneralSettingsView.tsx:193
+#: src/features/settings/GeneralSettingsView.tsx:192
 msgid "You will be returned to the login page."
 msgstr "You will be returned to the login page."
+
+#: src/features/onboarding/steps/CompletionStep.tsx:91
+msgid "You're all set!"
+msgstr "You're all set!"
 
 #: src/routes/_authenticated/trash.tsx:13
 msgid "Your deleted files will appear here."
 msgstr "Your deleted files will appear here."
+
+#: src/features/onboarding/steps/CompletionStep.tsx:100
+msgid "Your Drivebase workspace is ready. Start managing your files securely."
+msgstr "Your Drivebase workspace is ready. Start managing your files securely."
+
+#: src/features/onboarding/steps/CompletionStep.tsx:96
+msgid "Your storage account is now connected and your workspace is ready."
+msgstr "Your storage account is now connected and your workspace is ready."

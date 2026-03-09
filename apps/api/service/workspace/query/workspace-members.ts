@@ -6,6 +6,7 @@ import {
 import type { Database } from "@drivebase/db";
 import { users, workspaceMemberships, workspaces } from "@drivebase/db";
 import { and, asc, eq } from "drizzle-orm";
+import { canManageProviders } from "../rbac";
 import type { WorkspaceRole } from "../rbac";
 import type { WorkspaceMemberRow } from "../shared/types";
 
@@ -78,6 +79,7 @@ export async function listWorkspaceMembers(
 			email: users.email,
 			role: workspaceMemberships.role,
 			joinedAt: workspaceMemberships.createdAt,
+			accessGrants: workspaceMemberships.accessGrants,
 		})
 		.from(workspaceMemberships)
 		.innerJoin(users, eq(users.id, workspaceMemberships.userId))
@@ -91,6 +93,7 @@ export async function listWorkspaceMembers(
 		role: "owner",
 		joinedAt: workspaceOwner.workspaceCreatedAt,
 		isOwner: true,
+		accessGrants: [],
 	};
 
 	const members = membershipRows
@@ -98,6 +101,33 @@ export async function listWorkspaceMembers(
 		.map((member) => ({ ...member, isOwner: false }));
 
 	return [owner, ...members];
+}
+
+// Returns null if the user has full provider access, or a list of allowed provider IDs.
+// Owners and admins always get null (full access).
+export async function getAccessibleProviderIds(
+	db: Database,
+	workspaceId: string,
+	userId: string,
+): Promise<string[] | null> {
+	const role = await getWorkspaceAccessRole(db, workspaceId, userId);
+	if (!role) return null;
+	// Owners and admins are never restricted
+	if (canManageProviders(role)) return null;
+
+	const [membership] = await db
+		.select({ accessGrants: workspaceMemberships.accessGrants })
+		.from(workspaceMemberships)
+		.where(
+			and(
+				eq(workspaceMemberships.workspaceId, workspaceId),
+				eq(workspaceMemberships.userId, userId),
+			),
+		)
+		.limit(1);
+
+	if (!membership || membership.accessGrants.length === 0) return null;
+	return [...new Set(membership.accessGrants.map((g) => g.providerId))];
 }
 
 // Validate target user is not workspace owner.

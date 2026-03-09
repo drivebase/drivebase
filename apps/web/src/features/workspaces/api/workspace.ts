@@ -43,6 +43,10 @@ export const WORKSPACE_MEMBERS_QUERY = graphql(`
       role
       joinedAt
       isOwner
+      accessGrants {
+        providerId
+        folderId
+      }
     }
   }
 `);
@@ -53,6 +57,10 @@ export const WORKSPACE_INVITES_QUERY = graphql(`
       id
       token
       role
+      accessGrants {
+        providerId
+        folderId
+      }
       expiresAt
       createdAt
     }
@@ -65,9 +73,19 @@ export const CREATE_WORKSPACE_INVITE_MUTATION = graphql(`
       id
       token
       role
+      accessGrants {
+        providerId
+        folderId
+      }
       expiresAt
       createdAt
     }
+  }
+`);
+
+export const SET_MEMBER_ACCESS_GRANTS_MUTATION = graphql(`
+  mutation SetMemberAccessGrants($workspaceId: ID!, $userId: ID!, $grants: [AccessGrantInput!]!) {
+    setMemberAccessGrants(workspaceId: $workspaceId, userId: $userId, grants: $grants)
   }
 `);
 

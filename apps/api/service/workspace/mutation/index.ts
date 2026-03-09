@@ -15,5 +15,6 @@ export {
 } from "./workspace-invites";
 export {
 	removeWorkspaceMember,
+	setMemberAccessGrants,
 	updateWorkspaceMemberRole,
 } from "./workspace-members";

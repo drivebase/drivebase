@@ -1,7 +1,19 @@
-import { pgEnum, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
+import {
+	jsonb,
+	pgEnum,
+	pgTable,
+	text,
+	timestamp,
+	unique,
+} from "drizzle-orm/pg-core";
 import { createId } from "../utils";
 import { users } from "./users";
 import { workspaces } from "./workspaces";
+
+export type AccessGrant = {
+	providerId: string;
+	folderId?: string | null;
+};
 
 export const workspaceRoleEnum = pgEnum("workspace_role", [
 	"owner",
@@ -26,6 +38,10 @@ export const workspaceMemberships = pgTable(
 		invitedBy: text("invited_by").references(() => users.id, {
 			onDelete: "set null",
 		}),
+		accessGrants: jsonb("access_grants")
+			.$type<AccessGrant[]>()
+			.notNull()
+			.default([]),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -56,6 +72,10 @@ export const workspaceInvites = pgTable("workspace_invites", {
 	}),
 	acceptedAt: timestamp("accepted_at", { withTimezone: true }),
 	revokedAt: timestamp("revoked_at", { withTimezone: true }),
+	accessGrants: jsonb("access_grants")
+		.$type<AccessGrant[]>()
+		.notNull()
+		.default([]),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.notNull()
 		.defaultNow(),

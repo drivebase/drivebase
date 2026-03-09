@@ -10,6 +10,7 @@ import {
 	removeWorkspaceMember,
 	requireWorkspaceRole,
 	revokeWorkspaceInvite,
+	setMemberAccessGrants,
 	updateWorkspaceAutoSync,
 	updateWorkspaceMemberRole,
 	updateWorkspaceName,
@@ -60,10 +61,15 @@ function toWorkspaceMemberType(member: {
 	role: string;
 	joinedAt: Date;
 	isOwner: boolean;
+	accessGrants: Array<{ providerId: string; folderId?: string | null }>;
 }): WorkspaceMember {
 	return {
 		...member,
 		role: member.role.toUpperCase() as WorkspaceMemberRole,
+		accessGrants: member.accessGrants.map((g) => ({
+			providerId: g.providerId,
+			folderId: g.folderId ?? null,
+		})),
 	};
 }
 
@@ -71,12 +77,17 @@ function toWorkspaceInviteType(invite: {
 	id: string;
 	token: string;
 	role: string;
+	accessGrants: Array<{ providerId: string; folderId?: string | null }>;
 	expiresAt: Date;
 	createdAt: Date;
 }): WorkspaceInvite {
 	return {
 		...invite,
 		role: invite.role.toUpperCase() as WorkspaceMemberRole,
+		accessGrants: invite.accessGrants.map((g) => ({
+			providerId: g.providerId,
+			folderId: g.folderId ?? null,
+		})),
 	};
 }
 
@@ -151,6 +162,10 @@ export const workspaceMutations: MutationResolvers = {
 			user.userId,
 			args.input.role.toLowerCase() as "admin" | "editor" | "viewer",
 			args.input.expiresInDays ?? 7,
+			(args.input.accessGrants ?? []).map((g) => ({
+				providerId: g.providerId,
+				folderId: g.folderId ?? null,
+			})),
 		);
 		return toWorkspaceInviteType(invite);
 	},
@@ -252,6 +267,23 @@ export const workspaceMutations: MutationResolvers = {
 		);
 
 		return toWorkspaceType(workspace);
+	},
+
+	setMemberAccessGrants: async (_parent, args, context) => {
+		const user = requireAuth(context);
+		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
+			"owner",
+			"admin",
+		]);
+		return setMemberAccessGrants(
+			context.db,
+			args.workspaceId,
+			args.userId,
+			args.grants.map((g) => ({
+				providerId: g.providerId,
+				folderId: g.folderId ?? null,
+			})),
+		);
 	},
 
 	updateWorkspaceAutoSync: async (_parent, args, context) => {
