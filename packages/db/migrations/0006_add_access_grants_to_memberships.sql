@@ -1,0 +1,2 @@
+ALTER TABLE "workspace_invites" ADD COLUMN "access_grants" jsonb DEFAULT '[]'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "workspace_memberships" ADD COLUMN "access_grants" jsonb DEFAULT '[]'::jsonb NOT NULL;

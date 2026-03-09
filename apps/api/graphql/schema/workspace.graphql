@@ -36,6 +36,11 @@ type Workspace {
 	updatedAt: DateTime!
 }
 
+type MemberAccessGrant {
+	providerId: ID!
+	folderId: ID
+}
+
 type WorkspaceMember {
 	userId: ID!
 	name: String!
@@ -43,12 +48,14 @@ type WorkspaceMember {
 	role: WorkspaceMemberRole!
 	joinedAt: DateTime!
 	isOwner: Boolean!
+	accessGrants: [MemberAccessGrant!]!
 }
 
 type WorkspaceInvite {
 	id: ID!
 	token: String!
 	role: WorkspaceMemberRole!
+	accessGrants: [MemberAccessGrant!]!
 	expiresAt: DateTime!
 	createdAt: DateTime!
 }
@@ -99,10 +106,16 @@ input CreateWorkspaceInput {
 	color: WorkspaceColor!
 }
 
+input AccessGrantInput {
+	providerId: ID!
+	folderId: ID
+}
+
 input CreateWorkspaceInviteInput {
 	workspaceId: ID!
 	role: WorkspaceMemberRole!
 	expiresInDays: Int = 7
+	accessGrants: [AccessGrantInput!]
 }
 
 input UpdateWorkspaceMemberRoleInput {
@@ -188,4 +201,14 @@ extend type Mutation {
 	Update scheduled auto-sync for workspace providers
 	"""
 	updateWorkspaceAutoSync(input: UpdateWorkspaceAutoSyncInput!): Workspace!
+
+	"""
+	Set (replace) access grants for a workspace member.
+	Pass an empty array to restore full workspace access.
+	"""
+	setMemberAccessGrants(
+		workspaceId: ID!
+		userId: ID!
+		grants: [AccessGrantInput!]!
+	): Boolean!
 }

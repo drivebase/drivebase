@@ -1,5 +1,5 @@
 import { NotFoundError, ValidationError } from "@drivebase/core";
-import type { Database } from "@drivebase/db";
+import type { AccessGrant, Database } from "@drivebase/db";
 import {
 	workspaceInvites,
 	workspaceMemberships,
@@ -17,6 +17,7 @@ export async function createWorkspaceInvite(
 	invitedBy: string,
 	role: WorkspaceRole,
 	expiresInDays: number,
+	accessGrants: AccessGrant[] = [],
 ): Promise<WorkspaceInviteRow> {
 	if (role === "owner") {
 		throw new ValidationError("Owner role cannot be assigned through invites");
@@ -32,11 +33,12 @@ export async function createWorkspaceInvite(
 
 	const [invite] = await db
 		.insert(workspaceInvites)
-		.values({ workspaceId, token, role, invitedBy, expiresAt })
+		.values({ workspaceId, token, role, invitedBy, expiresAt, accessGrants })
 		.returning({
 			id: workspaceInvites.id,
 			token: workspaceInvites.token,
 			role: workspaceInvites.role,
+			accessGrants: workspaceInvites.accessGrants,
 			expiresAt: workspaceInvites.expiresAt,
 			createdAt: workspaceInvites.createdAt,
 		});
@@ -55,6 +57,7 @@ export async function listActiveWorkspaceInvites(
 			id: workspaceInvites.id,
 			token: workspaceInvites.token,
 			role: workspaceInvites.role,
+			accessGrants: workspaceInvites.accessGrants,
 			expiresAt: workspaceInvites.expiresAt,
 			createdAt: workspaceInvites.createdAt,
 		})
@@ -103,6 +106,7 @@ export async function acceptWorkspaceInvite(
 			id: workspaceInvites.id,
 			workspaceId: workspaceInvites.workspaceId,
 			role: workspaceInvites.role,
+			accessGrants: workspaceInvites.accessGrants,
 			invitedBy: workspaceInvites.invitedBy,
 			expiresAt: workspaceInvites.expiresAt,
 			revokedAt: workspaceInvites.revokedAt,
@@ -138,12 +142,14 @@ export async function acceptWorkspaceInvite(
 				userId,
 				role: invite.role,
 				invitedBy: invite.invitedBy,
+				accessGrants: invite.accessGrants,
 			})
 			.onConflictDoUpdate({
 				target: [workspaceMemberships.workspaceId, workspaceMemberships.userId],
 				set: {
 					role: invite.role,
 					invitedBy: invite.invitedBy,
+					accessGrants: invite.accessGrants,
 					updatedAt: new Date(),
 				},
 			});

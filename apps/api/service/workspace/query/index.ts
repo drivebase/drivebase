@@ -9,6 +9,7 @@ export {
 	listOwnedWorkspaces,
 } from "./list-workspaces";
 export {
+	getAccessibleProviderIds,
 	getWorkspaceAccessRole,
 	listWorkspaceMembers,
 	requireWorkspaceRole,

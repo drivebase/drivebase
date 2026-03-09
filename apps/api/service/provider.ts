@@ -24,7 +24,10 @@ import {
 	listOAuthProviderCredentials,
 } from "@/service/provider/query";
 import { ActivityService } from "./activity";
-import { getAccessibleWorkspaceId } from "./workspace";
+import {
+	getAccessibleWorkspaceId,
+	getAccessibleProviderIds,
+} from "./workspace";
 
 export class ProviderService {
 	constructor(private db: Database) {}
@@ -253,7 +256,14 @@ export class ProviderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		return getProviders(this.db, workspaceId);
+		const allowedProviderIds = await getAccessibleProviderIds(
+			this.db,
+			workspaceId,
+			userId,
+		);
+		const providers = await getProviders(this.db, workspaceId);
+		if (allowedProviderIds === null) return providers;
+		return providers.filter((p) => allowedProviderIds.includes(p.id));
 	}
 
 	async getProvider(
