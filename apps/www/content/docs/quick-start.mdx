@@ -59,11 +59,13 @@ Alternatively, you can follow the manual steps below:
 
 ## First Login
 
-When you first access Drivebase, you will need to create an owner account.
+When you first access Drivebase, you can sign in with the default owner account created on first boot:
 
-1. Navigate to `http://localhost:3000/register`.
-2. Enter your email and a strong password.
-3. Once registered, you will be logged in as the system owner.
+1. Navigate to `http://localhost:3000/login`.
+2. Sign in with:
+   - **Email**: `admin@drivebase.local`
+   - **Password**: `admin123`
+3. Change these credentials after your first login.
 
 ## Connect Your First Provider
 
@@ -72,7 +74,7 @@ To start managing files, you need to connect a storage provider.
 1. Go to the **Providers** section in the sidebar.
 2. Click **Connect Provider**.
 3. Choose **Local Storage** for a quick test.
-4. Give it a name (e.g., "My Local Disk") and specify a path inside the container (e.g., `/data/storage`).
+4. Give it a name (e.g., "My Local Disk") and specify a [path inside the container](/docs/using-drivebase/local-storage-docker) (e.g., `/app/data/storage`).
 5. Click **Connect**.
 
 Now you can go to the **Files** section and start uploading!
