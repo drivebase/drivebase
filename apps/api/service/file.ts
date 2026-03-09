@@ -28,7 +28,10 @@ import {
 	starFile,
 	unstarFile,
 } from "./file/index";
-import { getAccessibleWorkspaceId } from "./workspace";
+import {
+	getAccessibleProviderIds,
+	getAccessibleWorkspaceId,
+} from "./workspace";
 
 export class FileService {
 	constructor(private db: Database) {}
@@ -44,6 +47,27 @@ export class FileService {
 			preferredWorkspaceId,
 		);
 		return run(workspaceId);
+	}
+
+	private async withWorkspaceAndAccess<T>(
+		userId: string,
+		preferredWorkspaceId: string | undefined,
+		run: (
+			workspaceId: string,
+			allowedProviderIds: string[] | null,
+		) => Promise<T>,
+	): Promise<T> {
+		const workspaceId = await getAccessibleWorkspaceId(
+			this.db,
+			userId,
+			preferredWorkspaceId,
+		);
+		const allowedProviderIds = await getAccessibleProviderIds(
+			this.db,
+			workspaceId,
+			userId,
+		);
+		return run(workspaceId, allowedProviderIds);
 	}
 
 	requestUpload(
@@ -92,8 +116,19 @@ export class FileService {
 		limit?: number,
 		offset?: number,
 	) {
-		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
-			listFiles(this.db, userId, workspaceId, folderId, limit, offset),
+		return this.withWorkspaceAndAccess(
+			userId,
+			preferredWorkspaceId,
+			(workspaceId, allowedProviderIds) =>
+				listFiles(
+					this.db,
+					userId,
+					workspaceId,
+					folderId,
+					limit,
+					offset,
+					allowedProviderIds,
+				),
 		);
 	}
 
@@ -103,8 +138,18 @@ export class FileService {
 		limit?: number,
 		preferredWorkspaceId?: string,
 	) {
-		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
-			searchFiles(this.db, userId, workspaceId, query, limit),
+		return this.withWorkspaceAndAccess(
+			userId,
+			preferredWorkspaceId,
+			(workspaceId, allowedProviderIds) =>
+				searchFiles(
+					this.db,
+					userId,
+					workspaceId,
+					query,
+					limit,
+					allowedProviderIds,
+				),
 		);
 	}
 
@@ -114,8 +159,18 @@ export class FileService {
 		limit?: number,
 		preferredWorkspaceId?: string,
 	) {
-		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
-			searchFolders(this.db, userId, workspaceId, query, limit),
+		return this.withWorkspaceAndAccess(
+			userId,
+			preferredWorkspaceId,
+			(workspaceId, allowedProviderIds) =>
+				searchFolders(
+					this.db,
+					userId,
+					workspaceId,
+					query,
+					limit,
+					allowedProviderIds,
+				),
 		);
 	}
 
@@ -124,8 +179,11 @@ export class FileService {
 		limit?: number,
 		preferredWorkspaceId?: string,
 	) {
-		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
-			getRecentFiles(this.db, userId, workspaceId, limit),
+		return this.withWorkspaceAndAccess(
+			userId,
+			preferredWorkspaceId,
+			(workspaceId, allowedProviderIds) =>
+				getRecentFiles(this.db, userId, workspaceId, limit, allowedProviderIds),
 		);
 	}
 
@@ -254,14 +312,35 @@ export class FileService {
 		folderId?: string,
 		providerIds?: string[],
 	) {
-		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
-			getContents(this.db, workspaceId, userId, folderId, providerIds),
+		return this.withWorkspaceAndAccess(
+			userId,
+			preferredWorkspaceId,
+			(workspaceId, allowedProviderIds) => {
+				// Intersect client-requested providerIds with access grants.
+				// If user has restrictions, only show providers they're allowed to see.
+				let effectiveProviderIds = providerIds;
+				if (allowedProviderIds) {
+					effectiveProviderIds = providerIds
+						? providerIds.filter((id) => allowedProviderIds.includes(id))
+						: allowedProviderIds;
+				}
+				return getContents(
+					this.db,
+					workspaceId,
+					userId,
+					folderId,
+					effectiveProviderIds,
+				);
+			},
 		);
 	}
 
 	getStarredFiles(userId: string, preferredWorkspaceId?: string) {
-		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
-			getStarredFiles(this.db, userId, workspaceId),
+		return this.withWorkspaceAndAccess(
+			userId,
+			preferredWorkspaceId,
+			(workspaceId, allowedProviderIds) =>
+				getStarredFiles(this.db, userId, workspaceId, allowedProviderIds),
 		);
 	}
 
@@ -314,8 +393,11 @@ export class FileService {
 		limit?: number,
 		preferredWorkspaceId?: string,
 	) {
-		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
-			smartSearch(this.db, workspaceId, query, limit),
+		return this.withWorkspaceAndAccess(
+			userId,
+			preferredWorkspaceId,
+			(workspaceId, allowedProviderIds) =>
+				smartSearch(this.db, workspaceId, query, limit, allowedProviderIds),
 		);
 	}
 }

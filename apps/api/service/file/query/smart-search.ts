@@ -1,6 +1,6 @@
 import type { Database } from "@drivebase/db";
 import { fileContents, files } from "@drivebase/db";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 
 export type SmartSearchResult = {
 	file: typeof files.$inferSelect;
@@ -16,6 +16,7 @@ export async function smartSearch(
 	workspaceId: string,
 	query: string,
 	limit = 20,
+	allowedProviderIds?: string[] | null,
 ): Promise<SmartSearchResult[]> {
 	const tsQuery = query
 		.trim()
@@ -26,6 +27,16 @@ export async function smartSearch(
 
 	if (!tsQuery) return [];
 
+	const conditions = [
+		eq(fileContents.workspaceId, workspaceId),
+		eq(fileContents.extractionStatus, "completed"),
+		eq(files.isDeleted, false),
+		sql`${fileContents.searchVector} @@ to_tsquery('english', ${tsQuery})`,
+	];
+	if (allowedProviderIds) {
+		conditions.push(inArray(files.providerId, allowedProviderIds));
+	}
+
 	const results = await db
 		.select({
 			file: files,
@@ -34,14 +45,7 @@ export async function smartSearch(
 		})
 		.from(fileContents)
 		.innerJoin(files, eq(fileContents.nodeId, files.id))
-		.where(
-			and(
-				eq(fileContents.workspaceId, workspaceId),
-				eq(fileContents.extractionStatus, "completed"),
-				eq(files.isDeleted, false),
-				sql`${fileContents.searchVector} @@ to_tsquery('english', ${tsQuery})`,
-			),
-		)
+		.where(and(...conditions))
 		.orderBy(
 			sql`ts_rank(${fileContents.searchVector}, to_tsquery('english', ${tsQuery})) desc`,
 		)

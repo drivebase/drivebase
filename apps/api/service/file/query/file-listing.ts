@@ -1,6 +1,6 @@
 import type { Database } from "@drivebase/db";
 import { files, folders, storageProviders } from "@drivebase/db";
-import { and, desc, eq, ilike, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNull, sql } from "drizzle-orm";
 import { logFileOperationDebugError } from "../shared/file-error-log";
 
 export async function listFiles(
@@ -10,6 +10,7 @@ export async function listFiles(
 	folderId?: string,
 	limit: number = 50,
 	offset: number = 0,
+	allowedProviderIds?: string[] | null,
 ) {
 	try {
 		const conditions = [
@@ -19,6 +20,10 @@ export async function listFiles(
 			isNull(files.vaultId),
 			eq(storageProviders.workspaceId, workspaceId),
 		];
+
+		if (allowedProviderIds) {
+			conditions.push(inArray(files.providerId, allowedProviderIds));
+		}
 
 		const fileList = await db
 			.select({ file: files })
@@ -52,21 +57,24 @@ export async function searchFiles(
 	workspaceId: string,
 	query: string,
 	limit: number = 50,
+	allowedProviderIds?: string[] | null,
 ) {
 	try {
+		const conditions = [
+			eq(files.nodeType, "file"),
+			ilike(files.name, `%${query}%`),
+			eq(files.isDeleted, false),
+			isNull(files.vaultId),
+			eq(storageProviders.workspaceId, workspaceId),
+		];
+		if (allowedProviderIds) {
+			conditions.push(inArray(files.providerId, allowedProviderIds));
+		}
 		return await db
 			.select({ file: files })
 			.from(files)
 			.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
-			.where(
-				and(
-					eq(files.nodeType, "file"),
-					ilike(files.name, `%${query}%`),
-					eq(files.isDeleted, false),
-					isNull(files.vaultId),
-					eq(storageProviders.workspaceId, workspaceId),
-				),
-			)
+			.where(and(...conditions))
 			.limit(limit)
 			.orderBy(files.name)
 			.then((rows) => rows.map((row) => row.file));
@@ -87,21 +95,24 @@ export async function searchFolders(
 	workspaceId: string,
 	query: string,
 	limit: number = 50,
+	allowedProviderIds?: string[] | null,
 ) {
 	try {
+		const conditions = [
+			eq(folders.nodeType, "folder"),
+			ilike(folders.name, `%${query}%`),
+			eq(folders.isDeleted, false),
+			isNull(folders.vaultId),
+			eq(storageProviders.workspaceId, workspaceId),
+		];
+		if (allowedProviderIds) {
+			conditions.push(inArray(folders.providerId, allowedProviderIds));
+		}
 		return await db
 			.select({ folder: folders })
 			.from(folders)
 			.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
-			.where(
-				and(
-					eq(folders.nodeType, "folder"),
-					ilike(folders.name, `%${query}%`),
-					eq(folders.isDeleted, false),
-					isNull(folders.vaultId),
-					eq(storageProviders.workspaceId, workspaceId),
-				),
-			)
+			.where(and(...conditions))
 			.limit(limit)
 			.orderBy(folders.name)
 			.then((rows) => rows.map((row) => row.folder));
@@ -121,20 +132,23 @@ export async function getRecentFiles(
 	userId: string,
 	workspaceId: string,
 	limit: number = 3,
+	allowedProviderIds?: string[] | null,
 ) {
 	try {
+		const conditions = [
+			eq(files.nodeType, "file"),
+			eq(files.isDeleted, false),
+			isNull(files.vaultId),
+			eq(storageProviders.workspaceId, workspaceId),
+		];
+		if (allowedProviderIds) {
+			conditions.push(inArray(files.providerId, allowedProviderIds));
+		}
 		return await db
 			.select({ file: files })
 			.from(files)
 			.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
-			.where(
-				and(
-					eq(files.nodeType, "file"),
-					eq(files.isDeleted, false),
-					isNull(files.vaultId),
-					eq(storageProviders.workspaceId, workspaceId),
-				),
-			)
+			.where(and(...conditions))
 			.limit(limit)
 			.orderBy(
 				desc(sql`GREATEST(${files.updatedAt}, ${files.createdAt})`),
@@ -157,20 +171,23 @@ export async function getStarredFiles(
 	db: Database,
 	_userId: string,
 	workspaceId: string,
+	allowedProviderIds?: string[] | null,
 ) {
+	const conditions = [
+		eq(files.nodeType, "file"),
+		eq(files.starred, true),
+		eq(files.isDeleted, false),
+		isNull(files.vaultId),
+		eq(storageProviders.workspaceId, workspaceId),
+	];
+	if (allowedProviderIds) {
+		conditions.push(inArray(files.providerId, allowedProviderIds));
+	}
 	return db
 		.select({ file: files })
 		.from(files)
 		.innerJoin(storageProviders, eq(storageProviders.id, files.providerId))
-		.where(
-			and(
-				eq(files.nodeType, "file"),
-				eq(files.starred, true),
-				eq(files.isDeleted, false),
-				isNull(files.vaultId),
-				eq(storageProviders.workspaceId, workspaceId),
-			),
-		)
+		.where(and(...conditions))
 		.orderBy(desc(files.updatedAt))
 		.then((rows) => rows.map((row) => row.file));
 }

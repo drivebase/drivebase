@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useRegister } from "@/features/auth/hooks/useAuth";
 import { UserRole } from "@/gql/graphql";
+import { PENDING_INVITE_KEY } from "@/routes/join-workspace";
 import { AuthLayout } from "./AuthLayout";
 
 const registerSchema = z.object({
@@ -29,6 +30,7 @@ const registerSchema = z.object({
 export function RegisterPage() {
 	const [{ fetching }, register] = useRegister();
 	const navigate = useNavigate();
+	const hasPendingInvite = !!localStorage.getItem(PENDING_INVITE_KEY);
 	const [formError, setFormError] = useState<string | null>(null);
 
 	const form = useForm<z.infer<typeof registerSchema>>({
@@ -59,6 +61,14 @@ export function RegisterPage() {
 			title={<Trans>Create Account</Trans>}
 			description={<Trans>Enter your email below to create your account</Trans>}
 		>
+			{hasPendingInvite && (
+				<div className="mb-4 p-3 text-sm bg-primary/10 border border-primary/20 text-center">
+					<Trans>
+						You've been invited to join a workspace. Create an account to
+						continue.
+					</Trans>
+				</div>
+			)}
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 					{formError && (

@@ -15,4 +15,17 @@ describe("file query listing/search", () => {
 		expect(typeof getRecentFiles).toBe("function");
 		expect(typeof getStarredFiles).toBe("function");
 	});
+
+	it("listFiles, searchFiles, searchFolders, getRecentFiles, getStarredFiles are all functions", () => {
+		// Verify all exports are callable (allowedProviderIds param is optional, so no arity check needed)
+		for (const fn of [
+			listFiles,
+			searchFiles,
+			searchFolders,
+			getRecentFiles,
+			getStarredFiles,
+		]) {
+			expect(typeof fn).toBe("function");
+		}
+	});
 });

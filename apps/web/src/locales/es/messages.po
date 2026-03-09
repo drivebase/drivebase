@@ -48,13 +48,13 @@ msgstr ""
 msgid "Accent Color"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:252
+#: src/features/settings/UsersSettingsView.tsx:250
 msgid "Access updated"
 msgstr ""
 
 #. placeholder {0}: member.accessGrants.length
 #. placeholder {1}: member.accessGrants.length !== 1 ? "s" : ""
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:469
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:463
 msgid "Access: {0} provider{1}"
 msgstr ""
 
@@ -83,8 +83,8 @@ msgid "Add condition"
 msgstr "Añadir condición"
 
 #: src/features/settings/sections/WorkspaceMembersSection.tsx:169
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:310
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:451
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:307
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:445
 msgid "Add member"
 msgstr ""
 
@@ -108,7 +108,7 @@ msgstr "Añadir Regla"
 msgid "Added {0} to starred"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:310
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:307
 msgid "Adding…"
 msgstr ""
 
@@ -137,7 +137,7 @@ msgstr ""
 msgid "Allow all providers"
 msgstr ""
 
-#: src/features/auth/RegisterPage.tsx:124
+#: src/features/auth/RegisterPage.tsx:134
 msgid "Already have an account?"
 msgstr ""
 
@@ -213,8 +213,8 @@ msgstr ""
 #: src/features/rules/components/RuleForm.tsx:209
 #: src/features/settings/sections/ApiKeysSection.tsx:498
 #: src/features/settings/sections/WebDavSection.tsx:441
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:307
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:404
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:304
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:401
 #: src/routes/_authenticated/providers.tsx:301
 #: src/routes/_authenticated/vault.tsx:290
 #: src/routes/_workspace/workspaces.create.tsx:166
@@ -257,7 +257,7 @@ msgid "Choose light, dark, or system theme."
 msgstr ""
 
 #. placeholder {0}: member.name
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:364
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:361
 msgid "Choose which providers {0} can access. Leave all unchecked to grant full workspace access."
 msgstr ""
 
@@ -291,7 +291,7 @@ msgstr ""
 msgid "Community"
 msgstr ""
 
-#: src/features/onboarding/OnboardingWizard.tsx:114
+#: src/features/onboarding/OnboardingWizard.tsx:132
 msgid "Complete"
 msgstr ""
 
@@ -375,7 +375,7 @@ msgstr ""
 msgid "Could not copy invite link"
 msgstr ""
 
-#: src/routes/join-workspace.tsx:76
+#: src/routes/join-workspace.tsx:80
 msgid "Could not join workspace"
 msgstr ""
 
@@ -388,8 +388,8 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
-#: src/features/auth/RegisterPage.tsx:59
-#: src/features/auth/RegisterPage.tsx:120
+#: src/features/auth/RegisterPage.tsx:61
+#: src/features/auth/RegisterPage.tsx:130
 msgid "Create Account"
 msgstr ""
 
@@ -522,7 +522,7 @@ msgstr ""
 #~ msgid "Documents"
 #~ msgstr "Documentos"
 
-#: src/features/auth/LoginPage.tsx:178
+#: src/features/auth/LoginPage.tsx:197
 msgid "Don't have an account?"
 msgstr ""
 
@@ -543,7 +543,7 @@ msgstr ""
 msgid "Drivebase. Secure file storage."
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:361
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:358
 msgid "Edit access"
 msgstr ""
 
@@ -552,8 +552,8 @@ msgid "Edit Rule"
 msgstr "Editar Regla"
 
 #: src/features/auth/ForgotPasswordPage.tsx:150
-#: src/features/auth/LoginPage.tsx:96
-#: src/features/auth/RegisterPage.tsx:77
+#: src/features/auth/LoginPage.tsx:115
+#: src/features/auth/RegisterPage.tsx:87
 #: src/features/settings/sections/AccountSettingsSection.tsx:103
 #: src/features/settings/sections/WorkspaceMembersSection.tsx:182
 msgid "Email"
@@ -581,11 +581,11 @@ msgstr ""
 msgid "Enter your email and we'll help you reset your password"
 msgstr ""
 
-#: src/features/auth/RegisterPage.tsx:60
+#: src/features/auth/RegisterPage.tsx:62
 msgid "Enter your email below to create your account"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:79
+#: src/features/auth/LoginPage.tsx:91
 msgid "Enter your email to sign in to your account"
 msgstr ""
 
@@ -635,7 +635,7 @@ msgstr ""
 msgid "Extract text from documents and images for deep content search."
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:221
+#: src/features/settings/UsersSettingsView.tsx:220
 msgid "Failed to add member"
 msgstr ""
 
@@ -692,7 +692,7 @@ msgstr ""
 msgid "Failed to revoke invite"
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:247
+#: src/features/settings/UsersSettingsView.tsx:245
 msgid "Failed to update access grants"
 msgstr ""
 
@@ -744,7 +744,7 @@ msgstr ""
 msgid "Folders"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:124
+#: src/features/auth/LoginPage.tsx:143
 msgid "Forgot password?"
 msgstr ""
 
@@ -827,7 +827,7 @@ msgstr ""
 msgid "Join Discord"
 msgstr ""
 
-#: src/routes/join-workspace.tsx:91
+#: src/routes/join-workspace.tsx:95
 msgid "Joining workspace…"
 msgstr ""
 
@@ -865,11 +865,11 @@ msgid "Lightning Fast"
 msgstr ""
 
 #: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:131
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:260
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:255
 msgid "Limit to specific providers"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:525
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:519
 msgid "Loading members…"
 msgstr ""
 
@@ -912,7 +912,7 @@ msgstr ""
 msgid "Max downloads must be 0 or a positive integer."
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:226
+#: src/features/settings/UsersSettingsView.tsx:224
 msgid "Member added"
 msgstr ""
 
@@ -924,11 +924,11 @@ msgstr ""
 msgid "Member role updated"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:439
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:436
 msgid "Members"
 msgstr "Miembros"
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:442
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:439
 msgid "Members in this workspace."
 msgstr "Miembros en este espacio de trabajo."
 
@@ -1010,7 +1010,7 @@ msgstr ""
 msgid "No providers connected"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:373
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:370
 msgid "No providers connected to this workspace."
 msgstr ""
 
@@ -1022,7 +1022,7 @@ msgstr ""
 msgid "No recent activity"
 msgstr "Sin actividad reciente"
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:398
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:395
 msgid "No restrictions — full workspace access."
 msgstr ""
 
@@ -1050,7 +1050,7 @@ msgstr ""
 msgid "No WebDAV credentials yet."
 msgstr ""
 
-#: src/features/settings/UsersSettingsView.tsx:263
+#: src/features/settings/UsersSettingsView.tsx:261
 msgid "No workspace selected."
 msgstr ""
 
@@ -1086,7 +1086,7 @@ msgstr ""
 msgid "Optimized with built-in caching and CDN support."
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:157
+#: src/features/auth/LoginPage.tsx:176
 msgid "Or"
 msgstr ""
 
@@ -1102,8 +1102,8 @@ msgstr "Orden"
 msgid "Passkeys"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:117
-#: src/features/auth/RegisterPage.tsx:97
+#: src/features/auth/LoginPage.tsx:136
+#: src/features/auth/RegisterPage.tsx:107
 #: src/features/settings/sections/WebDavSection.tsx:475
 msgid "Password"
 msgstr ""
@@ -1242,7 +1242,7 @@ msgstr ""
 
 #: src/features/settings/sections/AccountSettingsSection.tsx:110
 #: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:79
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:225
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:223
 msgid "Role"
 msgstr "Rol"
 
@@ -1266,7 +1266,7 @@ msgstr ""
 #: src/features/rules/components/RuleForm.tsx:206
 #: src/features/settings/sections/AccountSettingsSection.tsx:94
 #: src/features/settings/sections/WorkspaceAutoSyncSection.tsx:206
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:407
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:404
 #: src/features/settings/sections/WorkspaceNameSection.tsx:38
 msgid "Save"
 msgstr "Guardar"
@@ -1285,7 +1285,7 @@ msgstr ""
 msgid "Saving..."
 msgstr "Guardando..."
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:407
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:404
 msgid "Saving…"
 msgstr ""
 
@@ -1362,15 +1362,15 @@ msgstr ""
 msgid "Show JSON"
 msgstr ""
 
-#: src/features/auth/RegisterPage.tsx:129
+#: src/features/auth/RegisterPage.tsx:139
 msgid "Sign in"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:148
+#: src/features/auth/LoginPage.tsx:167
 msgid "Sign In"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:174
+#: src/features/auth/LoginPage.tsx:193
 msgid "Sign in with Passkey"
 msgstr ""
 
@@ -1382,7 +1382,7 @@ msgstr "Cerrar sesión"
 msgid "Sign out?"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:183
+#: src/features/auth/LoginPage.tsx:202
 msgid "Sign up"
 msgstr ""
 
@@ -1412,7 +1412,7 @@ msgstr "Destacados"
 msgid "Starred Folders"
 msgstr ""
 
-#: src/features/onboarding/OnboardingWizard.tsx:113
+#: src/features/onboarding/OnboardingWizard.tsx:131
 msgid "Storage"
 msgstr ""
 
@@ -1491,7 +1491,7 @@ msgid "Trash"
 msgstr "Papelera"
 
 #: src/routes/__root.tsx:80
-#: src/routes/join-workspace.tsx:80
+#: src/routes/join-workspace.tsx:84
 msgid "Try again"
 msgstr "Intentar de nuevo"
 
@@ -1571,7 +1571,7 @@ msgid "Username"
 msgstr ""
 
 #: src/features/settings/components/SettingsCategoryNav.tsx:56
-#: src/features/settings/UsersSettingsView.tsx:260
+#: src/features/settings/UsersSettingsView.tsx:258
 msgid "Users"
 msgstr "Usuarios"
 
@@ -1618,11 +1618,11 @@ msgstr ""
 msgid "WebDAV Password"
 msgstr ""
 
-#: src/features/onboarding/OnboardingWizard.tsx:112
+#: src/features/onboarding/OnboardingWizard.tsx:130
 msgid "Welcome"
 msgstr ""
 
-#: src/features/auth/LoginPage.tsx:78
+#: src/features/auth/LoginPage.tsx:90
 msgid "Welcome Back"
 msgstr ""
 
@@ -1656,6 +1656,14 @@ msgstr ""
 
 #: src/features/onboarding/steps/CompletionStep.tsx:91
 msgid "You're all set!"
+msgstr ""
+
+#: src/features/auth/RegisterPage.tsx:66
+msgid "You've been invited to join a workspace. Create an account to continue."
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx:95
+msgid "You've been invited to join a workspace. Sign in to continue."
 msgstr ""
 
 #: src/routes/_authenticated/trash.tsx:13
