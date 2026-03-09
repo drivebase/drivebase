@@ -10,6 +10,8 @@ import {
 	useAcceptWorkspaceInvite,
 } from "@/features/workspaces";
 
+export const PENDING_INVITE_KEY = "pending_workspace_invite";
+
 type JoinWorkspaceSearch = {
 	token: string;
 };
@@ -35,6 +37,7 @@ function JoinWorkspacePage() {
 
 	useEffect(() => {
 		if (!isAuthenticated) {
+			localStorage.setItem(PENDING_INVITE_KEY, token);
 			navigate({
 				to: "/login",
 				search: {
@@ -59,6 +62,7 @@ function JoinWorkspacePage() {
 			}
 
 			setActiveWorkspaceId(result.data.acceptWorkspaceInvite.id);
+			localStorage.removeItem(PENDING_INVITE_KEY);
 			toast.success(
 				`Joined workspace: ${result.data.acceptWorkspaceInvite.name}`,
 			);

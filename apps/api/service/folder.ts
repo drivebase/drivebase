@@ -8,7 +8,10 @@ import {
 	unstarFolder,
 } from "./folder/mutation";
 import { getFolder, getStarredFolders, listFolders } from "./folder/query";
-import { getAccessibleWorkspaceId } from "./workspace";
+import {
+	getAccessibleProviderIds,
+	getAccessibleWorkspaceId,
+} from "./workspace";
 
 export class FolderService {
 	constructor(private db: Database) {}
@@ -59,7 +62,25 @@ export class FolderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		return listFolders(this.db, userId, workspaceId, parentId, providerIds);
+		const allowedProviderIds = await getAccessibleProviderIds(
+			this.db,
+			workspaceId,
+			userId,
+		);
+		// Intersect client-requested providerIds with access grants.
+		let effectiveProviderIds = providerIds;
+		if (allowedProviderIds) {
+			effectiveProviderIds = providerIds
+				? providerIds.filter((id) => allowedProviderIds.includes(id))
+				: allowedProviderIds;
+		}
+		return listFolders(
+			this.db,
+			userId,
+			workspaceId,
+			parentId,
+			effectiveProviderIds,
+		);
 	}
 
 	async renameFolder(
@@ -135,6 +156,11 @@ export class FolderService {
 			userId,
 			preferredWorkspaceId,
 		);
-		return getStarredFolders(this.db, userId, workspaceId);
+		const allowedProviderIds = await getAccessibleProviderIds(
+			this.db,
+			workspaceId,
+			userId,
+		);
+		return getStarredFolders(this.db, userId, workspaceId, allowedProviderIds);
 	}
 }

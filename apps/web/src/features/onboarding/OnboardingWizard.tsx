@@ -2,12 +2,21 @@ import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { Fragment, useEffect, useState } from "react";
 import { PiCheck as Check } from "react-icons/pi";
+import { useMutation } from "urql";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { graphql } from "@/gql";
 import { Route } from "@/routes/onboarding/index";
+import { PENDING_INVITE_KEY } from "@/routes/join-workspace";
 import { CompletionStep } from "./steps/CompletionStep";
 import { ProviderStep } from "./steps/ProviderStep";
 import { WelcomeStep } from "./steps/WelcomeStep";
+
+const COMPLETE_ONBOARDING_MUTATION = graphql(`
+	mutation CompleteOnboardingFromWizard {
+		completeOnboarding
+	}
+`);
 
 const STEPS = [{ id: 1 }, { id: 2 }, { id: 3 }];
 
@@ -23,6 +32,7 @@ export function OnboardingWizard() {
 	} = Route.useSearch();
 	const navigate = useNavigate();
 	const { user } = useAuthStore();
+	const [, completeOnboarding] = useMutation(COMPLETE_ONBOARDING_MUTATION);
 
 	const [step, setStep] = useState<number>(() => {
 		if (stepFromSearch === 3) {
@@ -68,12 +78,20 @@ export function OnboardingWizard() {
 		}
 	}, [step, connected, navigate]);
 
-	const handleNext = () =>
+	const handleNext = async () => {
+		const inviteToken = localStorage.getItem(PENDING_INVITE_KEY);
+		if (step === 1 && inviteToken) {
+			localStorage.removeItem(STORAGE_KEY);
+			await completeOnboarding({});
+			navigate({ to: "/join-workspace", search: { token: inviteToken } });
+			return;
+		}
 		setStep((prev) => {
 			const next = prev + 1;
 			if (next < 3) localStorage.setItem(STORAGE_KEY, String(next));
 			return next;
 		});
+	};
 
 	const handleComplete = () => {
 		localStorage.removeItem(STORAGE_KEY);

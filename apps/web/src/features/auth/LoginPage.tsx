@@ -21,6 +21,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { useLogin } from "@/features/auth/hooks/useAuth";
 import { usePasskeyLogin } from "@/features/auth/hooks/usePasskeys";
+import { Route } from "@/routes/login";
+import { PENDING_INVITE_KEY } from "@/routes/join-workspace";
 import { AuthLayout } from "./AuthLayout";
 
 const loginSchema = z.object({
@@ -32,6 +34,8 @@ export function LoginPage() {
 	const [{ fetching }, login] = useLogin();
 	const [{ fetching: passkeyFetching }, passkeyLogin] = usePasskeyLogin();
 	const navigate = useNavigate();
+	const { redirect } = Route.useSearch();
+	const hasPendingInvite = !!localStorage.getItem(PENDING_INVITE_KEY);
 	const [formError, setFormError] = useState<string | null>(null);
 
 	const form = useForm<z.infer<typeof loginSchema>>({
@@ -46,7 +50,11 @@ export function LoginPage() {
 		setFormError(null);
 		const result = await login({ input: values });
 		if (result.data?.login) {
-			navigate({ to: "/" });
+			if (redirect) {
+				window.location.replace(redirect);
+			} else {
+				navigate({ to: "/" });
+			}
 		} else if (result.error) {
 			setFormError(result.error.message.replace(/^\[GraphQL\]\s*/, ""));
 		}
@@ -57,7 +65,11 @@ export function LoginPage() {
 		try {
 			const result = await passkeyLogin();
 			if (result?.data?.verifyPasskeyLogin) {
-				navigate({ to: "/" });
+				if (redirect) {
+					window.location.replace(redirect);
+				} else {
+					navigate({ to: "/" });
+				}
 			} else if (result?.error) {
 				setFormError(result.error.message.replace(/^\[GraphQL\]\s*/, ""));
 			}
@@ -78,6 +90,13 @@ export function LoginPage() {
 			title={<Trans>Welcome Back</Trans>}
 			description={<Trans>Enter your email to sign in to your account</Trans>}
 		>
+			{hasPendingInvite && (
+				<div className="mb-4 p-3 text-sm bg-primary/10 border border-primary/20 text-center">
+					<Trans>
+						You've been invited to join a workspace. Sign in to continue.
+					</Trans>
+				</div>
+			)}
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 					{formError && (
