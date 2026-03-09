@@ -16,31 +16,46 @@ export const metadata: Metadata = {
   applicationName: "Drivebase",
   title: {
     template: "%s | Drivebase",
-    default: "Drivebase - Self-Hosted Cloud File Manager",
+    default: "Drivebase | Open Source Self-Hosted Cloud File Manager",
   },
   description:
-    "The unified file storage API for modern applications. Seamlessly integrate secure, scalable file storage with support for S3, Google Drive, and local storage.",
+    "Drivebase is an open source, self-hosted cloud file manager for teams using multiple storage providers. Manage files across S3, Google Drive, local storage, WebDAV, and more from one interface.",
   keywords: [
-    "file storage",
+    "drivebase",
+    "open source file manager",
+    "self-hosted file manager",
+    "cloud file manager",
+    "multi cloud file manager",
+    "webdav server",
+    "s3 file manager",
+    "google drive manager",
+    "document management",
+    "file browser",
     "s3",
     "google drive",
     "local storage",
-    "open source",
-    "self-hosted",
-    "file manager",
-    "drivebase",
+    "self-hosted storage",
   ],
   metadataBase: new URL("https://drivebase.io"),
   alternates: {
     canonical: "/",
   },
+  category: "technology",
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
   openGraph: {
-    title: "Drivebase - Self-Hosted Cloud File Manager",
-    description: "The unified file storage API for modern applications.",
+    title: "Drivebase | Open Source Self-Hosted Cloud File Manager",
+    description:
+      "Manage files across S3, Google Drive, local storage, WebDAV, and more from one modern self-hosted interface.",
     url: "https://drivebase.io",
     siteName: "Drivebase",
     images: [
@@ -56,8 +71,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Drivebase - Self-Hosted Cloud File Manager",
-    description: "The unified file storage API for modern applications.",
+    title: "Drivebase | Open Source Self-Hosted Cloud File Manager",
+    description:
+      "Open source multi-cloud file management with Vault, WebDAV, search, transfers, and smart uploads.",
     images: ["/drivebase-banner.png"],
   },
   icons: {

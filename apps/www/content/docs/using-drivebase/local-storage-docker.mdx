@@ -1,0 +1,96 @@
+---
+title: Local Storage in Docker
+description: Mount host storage into the Drivebase container and connect it as a Local Storage provider
+---
+
+Use this guide when Drivebase is running in Docker and you want files to be stored on your host machine through the Local Storage provider.
+
+## Why This Matters
+
+When Drivebase runs in Docker, the Local Storage provider does **not** see paths from your host directly. It only sees paths that exist **inside the container**.
+
+That means you need to:
+
+1. Mount a host directory into the Drivebase container with Docker Compose.
+2. Use the mounted container path when connecting the Local Storage provider in Drivebase.
+
+## Example Compose Mount
+
+If you want to store files on your host at:
+
+```text
+./data/storage
+```
+
+mount that directory into the app container like this:
+
+```yaml
+services:
+  app:
+    volumes:
+      - ./data:/app/data
+```
+
+With that mount in place:
+
+- `./data/storage` exists on your host
+- `/app/data/storage` exists inside the Drivebase container
+
+## Which Path To Use In Drivebase
+
+In the Drivebase UI, when you connect the **Local Storage** provider, use the path that exists **inside the container**:
+
+```text
+/app/data/storage
+```
+
+Do **not** use the host path such as `./data/storage` in the provider form. Drivebase cannot access that path directly from inside Docker.
+
+## Full Example Flow
+
+1. Open your `compose.yaml`.
+2. Ensure the `app` service has a volume mount like:
+
+```yaml
+volumes:
+  - ./data:/app/data
+```
+
+3. Start or restart Drivebase:
+
+```bash
+docker compose up -d
+```
+
+4. In Drivebase, go to **Providers**.
+5. Click **Connect Provider**.
+6. Choose **Local Storage**.
+7. Set the root path to:
+
+```text
+/app/data/storage
+```
+
+8. Save the provider.
+
+Files written through this provider will now persist on your host under `./data/storage`.
+
+## Common Mistakes
+
+### Using the host path in the provider form
+
+This is incorrect:
+
+```text
+./data/storage
+```
+
+Drivebase needs the container path instead.
+
+### Forgetting to mount the folder
+
+If the folder is not mounted in Docker Compose, Drivebase may write into the container filesystem instead of persistent host storage.
+
+### Permission issues
+
+Make sure the mounted directory is writable by the containerized app process. If uploads fail, check the directory permissions on the host.

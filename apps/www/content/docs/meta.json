@@ -9,6 +9,7 @@
     "using-drivebase/index",
     "using-drivebase/webdav",
     "using-drivebase/collaboration",
+    "using-drivebase/local-storage-docker",
     "troubleshooting/index",
     "vault",
     "updating",
