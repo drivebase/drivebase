@@ -138,9 +138,11 @@ export function WorkspaceInviteCreateSection(
 								return (
 									<label
 										key={provider.id}
+										htmlFor={`invite-provider-${provider.id}`}
 										className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50"
 									>
 										<Checkbox
+											id={`invite-provider-${provider.id}`}
 											checked={checked}
 											onCheckedChange={(value) =>
 												onProviderToggle(provider.id, !!value)

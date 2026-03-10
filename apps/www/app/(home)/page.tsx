@@ -111,6 +111,7 @@ export default function HomePage() {
       <Script
         id="home-structured-data"
         type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: safe JSON-LD structured data
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <HeroSection />

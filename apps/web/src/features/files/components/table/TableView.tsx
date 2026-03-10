@@ -29,7 +29,7 @@ import { useTableColumns } from "./TableColumns";
 import { DraggableContextRow } from "./TableRow";
 
 export function TableView() {
-	const { files, folders, providers, actionContext } = useFileExplorer();
+	const { files, folders, actionContext } = useFileExplorer();
 	const { selectedItems, setItems } = useSelection();
 	const openForFile = useFileDetailsDialogStore((s) => s.openForFile);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -73,7 +73,6 @@ export function TableView() {
 	);
 
 	const columns = useTableColumns({
-		providers,
 		onNavigate: actionContext.navigate,
 		onShowFileDetails: openForFile,
 	});

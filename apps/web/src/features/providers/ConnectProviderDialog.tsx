@@ -109,7 +109,7 @@ export function ConnectProviderDialog({
 		setSelectedCredentialId("");
 		setSelectionError(null);
 		reset(drafts[provider.id] ?? {});
-	}, [isOpen, reset, provider.id]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [isOpen, reset, provider.id, drafts]);
 
 	const submit = handleSubmit(async (formData) => {
 		const displayName = (formData._displayName as string) || provider.name;

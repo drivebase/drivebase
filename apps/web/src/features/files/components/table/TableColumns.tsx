@@ -6,17 +6,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FileMimeIcon } from "@/features/files/FileMimeIcon";
 import { formatFileTypeLabel, formatSize } from "@/features/files/utils";
 import { ProviderIcon } from "@/features/providers/ProviderIcon";
-import type { ProviderInfo } from "../../actions/types";
 import type { RowItem } from "../../components/file-system-table/types";
 
 interface UseTableColumnsOptions {
-	providers: ProviderInfo[];
 	onNavigate?: (folderId: string) => void;
 	onShowFileDetails?: (fileId: string) => void;
 }
 
 export function useTableColumns({
-	providers,
 	onNavigate,
 	onShowFileDetails,
 }: UseTableColumnsOptions): ColumnDef<RowItem>[] {
@@ -189,6 +186,6 @@ export function useTableColumns({
 				},
 			},
 		],
-		[providers, onNavigate, onShowFileDetails],
+		[onNavigate, onShowFileDetails],
 	);
 }
