@@ -24,12 +24,12 @@ extend type Query {
 	"""
 	Current status of the app updater
 	"""
-	updateStatus: UpdateStatus!
+	updateStatus: UpdateStatus! @auth(role: [ADMIN, OWNER])
 }
 
 extend type Mutation {
 	"""
 	Trigger an app update to the specified version (admin/owner only)
 	"""
-	triggerAppUpdate(version: String): UpdateStatus!
+	triggerAppUpdate(version: String): UpdateStatus! @auth(role: [ADMIN, OWNER])
 }

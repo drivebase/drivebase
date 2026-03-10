@@ -7,6 +7,7 @@ import { GraphQLError } from "graphql";
 import { createYoga } from "graphql-yoga";
 import { env } from "../config/env";
 import { createContext } from "../graphql/context";
+import { applyAuthDirectives } from "../graphql/rbac";
 import { resolvers } from "../graphql/resolvers";
 import { logger } from "../utils/runtime/logger";
 
@@ -21,12 +22,14 @@ const typeDefs = loadSchemaSync(
 );
 
 /**
- * Create executable schema with resolvers
+ * Create executable schema with resolvers, then apply @auth directive enforcement
  */
-const schema = makeExecutableSchema({
-	typeDefs,
-	resolvers,
-});
+const schema = applyAuthDirectives(
+	makeExecutableSchema({
+		typeDefs,
+		resolvers,
+	}),
+);
 
 function isExpectedAppErrorFromGraphQLLog(payload: unknown): boolean {
 	const record =
@@ -122,5 +125,4 @@ export const yoga = createYoga({
 			});
 		},
 	},
-	plugins: [],
 });

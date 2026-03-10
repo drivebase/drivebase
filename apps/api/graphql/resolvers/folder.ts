@@ -8,7 +8,6 @@ import type {
 	MutationResolvers,
 	QueryResolvers,
 } from "../generated/types";
-import { requireAuth } from "./auth-helpers";
 
 export const folderResolvers: FolderResolvers = {
 	provider: async (parent, _args, context) => {
@@ -73,7 +72,7 @@ export const folderResolvers: FolderResolvers = {
 
 export const folderQueries: QueryResolvers = {
 	folder: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const folderService = context.container.resolve<FolderService>(
 			Tokens.FolderService,
 		);
@@ -82,7 +81,7 @@ export const folderQueries: QueryResolvers = {
 	},
 
 	folders: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const folderService = context.container.resolve<FolderService>(
 			Tokens.FolderService,
 		);
@@ -96,7 +95,7 @@ export const folderQueries: QueryResolvers = {
 	},
 
 	starredFolders: async (_parent, _args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const folderService = context.container.resolve<FolderService>(
 			Tokens.FolderService,
 		);
@@ -107,7 +106,7 @@ export const folderQueries: QueryResolvers = {
 
 export const folderMutations: MutationResolvers = {
 	createFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const folderService = context.container.resolve<FolderService>(
 			Tokens.FolderService,
 		);
@@ -123,7 +122,7 @@ export const folderMutations: MutationResolvers = {
 	},
 
 	renameFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const folderService = context.container.resolve<FolderService>(
 			Tokens.FolderService,
 		);
@@ -138,7 +137,7 @@ export const folderMutations: MutationResolvers = {
 	},
 
 	moveFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const folderService = context.container.resolve<FolderService>(
 			Tokens.FolderService,
 		);
@@ -153,7 +152,7 @@ export const folderMutations: MutationResolvers = {
 	},
 
 	deleteFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const folderService = context.container.resolve<FolderService>(
 			Tokens.FolderService,
 		);
@@ -164,7 +163,7 @@ export const folderMutations: MutationResolvers = {
 	},
 
 	starFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const folderService = context.container.resolve<FolderService>(
 			Tokens.FolderService,
 		);
@@ -174,7 +173,7 @@ export const folderMutations: MutationResolvers = {
 	},
 
 	unstarFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const folderService = context.container.resolve<FolderService>(
 			Tokens.FolderService,
 		);

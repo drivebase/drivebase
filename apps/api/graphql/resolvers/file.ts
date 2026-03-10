@@ -18,7 +18,6 @@ import type {
 import { FileLifecycleState, RestoreTier } from "../generated/types";
 import { type PubSubChannels, pubSub } from "../pubsub";
 import { toGraphqlJob } from "./activity";
-import { requireAuth } from "./auth-helpers";
 
 function toFileDownloadLinkType(downloadLink: {
 	id: string;
@@ -114,7 +113,7 @@ export const fileResolvers: FileResolvers = {
 
 export const fileQueries: QueryResolvers = {
 	file: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -123,7 +122,7 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	files: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -139,7 +138,7 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	contents: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -153,7 +152,7 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	searchFiles: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -168,7 +167,7 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	searchFolders: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -183,7 +182,7 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	smartSearch: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -204,7 +203,7 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	recentFiles: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -218,7 +217,7 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	starredFiles: async (_parent, _args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -227,7 +226,7 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	fileDownloadLinks: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -241,7 +240,7 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	activeUploadSessions: async (_parent, _args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const sessionManager = context.container.resolve<UploadSessionManager>(
 			Tokens.UploadSessionManager,
 		);
@@ -251,7 +250,7 @@ export const fileQueries: QueryResolvers = {
 
 export const fileMutations: MutationResolvers = {
 	requestUpload: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -276,7 +275,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	requestDownload: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -295,7 +294,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	createFileDownloadLink: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -312,7 +311,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	renameFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -322,7 +321,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	moveFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -337,7 +336,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	moveFileToProvider: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -352,7 +351,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	archiveFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -366,7 +365,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	requestFileRestore: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -382,7 +381,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	refreshFileLifecycle: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -402,7 +401,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	deleteFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -413,7 +412,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	starFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -423,7 +422,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	unstarFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -433,7 +432,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	revokeFileDownloadLink: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -446,7 +445,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	initiateChunkedUpload: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const fileService = context.container.resolve<FileService>(
 			Tokens.FileService,
 		);
@@ -540,7 +539,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	cancelUploadSession: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const sessionManager = context.container.resolve<UploadSessionManager>(
 			Tokens.UploadSessionManager,
 		);
@@ -550,7 +549,7 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	retryUploadSession: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const sessionManager = context.container.resolve<UploadSessionManager>(
 			Tokens.UploadSessionManager,
 		);
@@ -588,7 +587,7 @@ export const fileMutations: MutationResolvers = {
 		return true;
 	},
 	completeS3MultipartUpload: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const sessionManager = context.container.resolve<UploadSessionManager>(
 			Tokens.UploadSessionManager,
 		);

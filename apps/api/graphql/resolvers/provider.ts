@@ -11,29 +11,29 @@ import type {
 	QueryResolvers,
 	StorageProviderResolvers,
 } from "../generated/types";
-import { requireAuth } from "./auth-helpers";
 
 export const providerQueries: QueryResolvers = {
 	storageProviders: async (_parent, _args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
-		return providerService.getProviders(user.userId, workspaceId);
+		return providerService.getProviders(context.user!.userId, workspaceId);
 	},
 
 	storageProvider: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
-		return providerService.getProvider(args.id, user.userId, workspaceId);
+		return providerService.getProvider(
+			args.id,
+			context.user!.userId,
+			workspaceId,
+		);
 	},
 
-	availableProviders: async (_parent, _args, context) => {
-		requireAuth(context);
+	availableProviders: async (_parent, _args, _context) => {
 		const providers = getAvailableProviders();
 		// Cast needed: getAvailableProviders returns core AuthType strings ('oauth')
 		// while the GQL schema uses enum values ('OAUTH').
@@ -42,18 +42,19 @@ export const providerQueries: QueryResolvers = {
 	},
 
 	oauthProviderCredentials: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
 		const type = args.type.toLowerCase();
-		return providerService.listOAuthProviderCredentials(user.userId, type);
+		return providerService.listOAuthProviderCredentials(
+			context.user!.userId,
+			type,
+		);
 	},
 };
 
 export const providerMutations: MutationResolvers = {
 	connectStorage: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
@@ -63,7 +64,7 @@ export const providerMutations: MutationResolvers = {
 		const type = args.input.type.toLowerCase();
 
 		return providerService.connectProvider(
-			user.userId,
+			context.user!.userId,
 			args.input.name,
 			type,
 			(args.input.config as Record<string, unknown> | null) ?? undefined,
@@ -73,45 +74,50 @@ export const providerMutations: MutationResolvers = {
 	},
 
 	createOAuthProviderCredential: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
 		const type = args.input.type.toLowerCase();
 
 		return providerService.createOAuthProviderCredential(
-			user.userId,
+			context.user!.userId,
 			type,
 			args.input.config as Record<string, unknown>,
 		);
 	},
 
 	disconnectProvider: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		await providerService.disconnectProvider(args.id, user.userId, workspaceId);
+		await providerService.disconnectProvider(
+			args.id,
+			context.user!.userId,
+			workspaceId,
+		);
 		return true;
 	},
 
 	syncProvider: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		return providerService.syncProvider(args.id, user.userId, workspaceId, {
-			recursive: args.options?.recursive ?? undefined,
-			pruneDeleted: args.options?.pruneDeleted ?? undefined,
-		});
+		return providerService.syncProvider(
+			args.id,
+			context.user!.userId,
+			workspaceId,
+			{
+				recursive: args.options?.recursive ?? undefined,
+				pruneDeleted: args.options?.pruneDeleted ?? undefined,
+			},
+		);
 	},
 
 	updateProviderQuota: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
@@ -119,7 +125,7 @@ export const providerMutations: MutationResolvers = {
 
 		return providerService.updateProviderQuota(
 			args.input.id,
-			user.userId,
+			context.user!.userId,
 			args.input.quotaTotal ?? null,
 			args.input.quotaUsed,
 			workspaceId,
@@ -127,7 +133,6 @@ export const providerMutations: MutationResolvers = {
 	},
 
 	renameProvider: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
@@ -135,14 +140,13 @@ export const providerMutations: MutationResolvers = {
 
 		return providerService.renameProvider(
 			args.id,
-			user.userId,
+			context.user!.userId,
 			args.name,
 			workspaceId,
 		);
 	},
 
 	initiateProviderOAuth: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
@@ -150,20 +154,23 @@ export const providerMutations: MutationResolvers = {
 
 		return providerService.initiateOAuth(
 			args.id,
-			user.userId,
+			context.user!.userId,
 			args.source?.toLowerCase(),
 			workspaceId,
 		);
 	},
 
 	pollProviderAuth: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const providerService = context.container.resolve<ProviderService>(
 			Tokens.ProviderService,
 		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		return providerService.pollProviderAuth(args.id, user.userId, workspaceId);
+		return providerService.pollProviderAuth(
+			args.id,
+			context.user!.userId,
+			workspaceId,
+		);
 	},
 };
 

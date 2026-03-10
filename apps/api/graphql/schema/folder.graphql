@@ -45,49 +45,49 @@ extend type Query {
 	"""
 	Get folder by ID
 	"""
-	folder(id: ID!): Folder
+	folder(id: ID!): Folder @auth
 
 	"""
 	Get folders by parent
 	"""
-	folders(parentId: ID, providerIds: [ID!]): [Folder!]!
+	folders(parentId: ID, providerIds: [ID!]): [Folder!]! @auth
 
 	"""
 	Get starred folders
 	"""
-	starredFolders: [Folder!]!
+	starredFolders: [Folder!]! @auth
 }
 
 extend type Mutation {
 	"""
 	Create a new folder on a storage provider
 	"""
-	createFolder(input: CreateFolderInput!): Folder!
+	createFolder(input: CreateFolderInput!): Folder! @auth
 
 	"""
 	Rename a folder
 	"""
-	renameFolder(id: ID!, name: String!): Folder!
+	renameFolder(id: ID!, name: String!): Folder! @auth
 
 	"""
 	Move folder to different parent
 	"""
-	moveFolder(id: ID!, parentId: ID): Folder!
+	moveFolder(id: ID!, parentId: ID): Folder! @auth
 
 	"""
 	Delete folder (soft delete)
 	"""
-	deleteFolder(id: ID!): Boolean!
+	deleteFolder(id: ID!): Boolean! @auth
 
 	"""
 	Star a folder
 	"""
-	starFolder(id: ID!): Folder!
+	starFolder(id: ID!): Folder! @auth
 
 	"""
 	Unstar a folder
 	"""
-	unstarFolder(id: ID!): Folder!
+	unstarFolder(id: ID!): Folder! @auth
 }
 
 input CreateFolderInput {

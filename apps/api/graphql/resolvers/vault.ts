@@ -6,11 +6,10 @@ import type { ProviderService } from "../../service/provider";
 import type { VaultService } from "../../service/vault";
 import { getAccessibleWorkspaceId } from "../../service/workspace";
 import type { MutationResolvers, QueryResolvers } from "../generated/types";
-import { requireAuth } from "./auth-helpers";
 
 export const vaultQueries: QueryResolvers = {
 	myVault: async (_parent, _args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -18,7 +17,7 @@ export const vaultQueries: QueryResolvers = {
 	},
 
 	vaultContents: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -31,7 +30,7 @@ export const vaultQueries: QueryResolvers = {
 
 export const vaultMutations: MutationResolvers = {
 	setupVault: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -44,7 +43,7 @@ export const vaultMutations: MutationResolvers = {
 	},
 
 	changeVaultPassphrase: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -56,7 +55,7 @@ export const vaultMutations: MutationResolvers = {
 	},
 
 	requestVaultUpload: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -78,7 +77,7 @@ export const vaultMutations: MutationResolvers = {
 	},
 
 	requestVaultDownload: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -102,7 +101,7 @@ export const vaultMutations: MutationResolvers = {
 	},
 
 	createVaultFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -121,7 +120,7 @@ export const vaultMutations: MutationResolvers = {
 	},
 
 	deleteVaultFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -130,7 +129,7 @@ export const vaultMutations: MutationResolvers = {
 	},
 
 	renameVaultFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -138,7 +137,7 @@ export const vaultMutations: MutationResolvers = {
 	},
 
 	starVaultFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -146,7 +145,7 @@ export const vaultMutations: MutationResolvers = {
 	},
 
 	unstarVaultFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);
@@ -154,7 +153,7 @@ export const vaultMutations: MutationResolvers = {
 	},
 
 	initiateVaultChunkedUpload: async (_parent, args, context) => {
-		const user = requireAuth(context);
+		const user = context.user!;
 		const vaultService = context.container.resolve<VaultService>(
 			Tokens.VaultService,
 		);

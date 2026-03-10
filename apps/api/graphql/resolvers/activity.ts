@@ -19,7 +19,6 @@ import {
 	type SubscriptionResolvers,
 } from "../generated/types";
 import { type PubSubChannels, pubSub } from "../pubsub";
-import { requireAuth } from "./auth-helpers";
 
 function toJobStatus(status: DbJob["status"]): JobStatus {
 	if (status === "pending") return JobStatus.Pending;
@@ -44,21 +43,19 @@ export function toGraphqlJob(job: DbJob): Job {
 
 export const activityQueries: QueryResolvers = {
 	activities: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const activityService = context.container.resolve<ActivityService>(
 			Tokens.ActivityService,
 		);
 		return activityService.getRecentForUser(
-			user.userId,
+			context.user!.userId,
 			args.page ?? undefined,
 			args.limit ?? undefined,
 		);
 	},
 	activeJobs: async (_parent, _args, context) => {
-		const user = requireAuth(context);
 		const workspaceId = await getAccessibleWorkspaceId(
 			context.db,
-			user.userId,
+			context.user!.userId,
 			context.headers?.get("x-workspace-id") ?? undefined,
 		);
 		const activityService = context.container.resolve<ActivityService>(
@@ -68,10 +65,9 @@ export const activityQueries: QueryResolvers = {
 		return jobs.map(toGraphqlJob);
 	},
 	recentJobs: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const workspaceId = await getAccessibleWorkspaceId(
 			context.db,
-			user.userId,
+			context.user!.userId,
 			context.headers?.get("x-workspace-id") ?? undefined,
 		);
 		const activityService = context.container.resolve<ActivityService>(
@@ -108,17 +104,15 @@ const CANCELLABLE_JOB_TYPES = new Set([
 
 export const activityMutations: MutationResolvers = {
 	clearActivities: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const activityService = context.container.resolve<ActivityService>(
 			Tokens.ActivityService,
 		);
-		return activityService.deleteForUser(user.userId, args.ids);
+		return activityService.deleteForUser(context.user!.userId, args.ids);
 	},
 	cancelJob: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const workspaceId = await getAccessibleWorkspaceId(
 			context.db,
-			user.userId,
+			context.user!.userId,
 			context.headers?.get("x-workspace-id") ?? undefined,
 		);
 		const activityService = context.container.resolve<ActivityService>(
@@ -203,10 +197,9 @@ async function removePendingQueueJobs(job: DbJob): Promise<void> {
 export const activitySubscriptions: SubscriptionResolvers = {
 	jobUpdated: {
 		subscribe: async (_parent, _args, context) => {
-			const user = requireAuth(context);
 			const workspaceId = await getAccessibleWorkspaceId(
 				context.db,
-				user.userId,
+				context.user!.userId,
 				context.headers?.get("x-workspace-id") ?? undefined,
 			);
 			return pubSub.subscribe("activityUpdated", workspaceId);
@@ -216,8 +209,7 @@ export const activitySubscriptions: SubscriptionResolvers = {
 	},
 	activityCreated: {
 		subscribe: async (_parent, _args, context) => {
-			const user = requireAuth(context);
-			return pubSub.subscribe("activityCreated", user.userId);
+			return pubSub.subscribe("activityCreated", context.user!.userId);
 		},
 		resolve: (payload: PubSubChannels["activityCreated"][1]) => payload,
 	},

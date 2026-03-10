@@ -7,11 +7,9 @@ import type {
 	QueryResolvers,
 	UserResolvers,
 } from "../generated/types";
-import { requireAuth, requireRole } from "./auth-helpers";
 
 export const userQueries: QueryResolvers = {
 	users: async (_parent, args, context) => {
-		requireRole(context, ["admin", "owner"]);
 		const userService = context.container.resolve<UserService>(
 			Tokens.UserService,
 		);
@@ -22,7 +20,6 @@ export const userQueries: QueryResolvers = {
 	},
 
 	user: async (_parent, args, context) => {
-		requireRole(context, ["admin", "owner"]);
 		const userService = context.container.resolve<UserService>(
 			Tokens.UserService,
 		);
@@ -30,7 +27,6 @@ export const userQueries: QueryResolvers = {
 	},
 
 	searchUsers: async (_parent, args, context) => {
-		requireAuth(context);
 		if (!args.query || args.query.trim().length < 2) return [];
 		const userService = context.container.resolve<UserService>(
 			Tokens.UserService,
@@ -41,7 +37,6 @@ export const userQueries: QueryResolvers = {
 
 export const userMutations: MutationResolvers = {
 	createUser: async (_parent, args, context) => {
-		requireRole(context, ["admin", "owner"]);
 		const userService = context.container.resolve<UserService>(
 			Tokens.UserService,
 		);
@@ -54,7 +49,6 @@ export const userMutations: MutationResolvers = {
 	},
 
 	updateUser: async (_parent, args, context) => {
-		requireRole(context, ["admin", "owner"]);
 		const userService = context.container.resolve<UserService>(
 			Tokens.UserService,
 		);
@@ -71,7 +65,6 @@ export const userMutations: MutationResolvers = {
 	},
 
 	deleteUser: async (_parent, args, context) => {
-		requireRole(context, ["owner"]);
 		const userService = context.container.resolve<UserService>(
 			Tokens.UserService,
 		);

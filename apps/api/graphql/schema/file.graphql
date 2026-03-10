@@ -76,131 +76,131 @@ extend type Query {
 	"""
 	Get file by ID
 	"""
-	file(id: ID!): File!
+	file(id: ID!): File! @auth
 
 	"""
 	Get files in a folder (by folderId)
 	"""
-	files(folderId: ID, limit: Int, offset: Int): FileConnection!
+	files(folderId: ID, limit: Int, offset: Int): FileConnection! @auth
 
 	"""
 	Get files and folders at a location.
 	Pass folderId to browse a folder, or omit for root.
 	Pass providerIds to filter by specific providers.
 	"""
-	contents(folderId: ID, providerIds: [ID!]): PathContents!
+	contents(folderId: ID, providerIds: [ID!]): PathContents! @auth
 
 	"""
 	Search files by name
 	"""
-	searchFiles(query: String!, limit: Int): [File!]!
+	searchFiles(query: String!, limit: Int): [File!]! @auth
 
 	"""
 	Search folders by name
 	"""
-	searchFolders(query: String!, limit: Int): [Folder!]!
+	searchFolders(query: String!, limit: Int): [Folder!]! @auth
 
 	"""
 	Smart search: full-text search on extracted file contents
 	"""
-	smartSearch(query: String!, limit: Int): [SmartSearchResult!]!
+	smartSearch(query: String!, limit: Int): [SmartSearchResult!]! @auth
 
 	"""
 	Get recent files sorted by latest created/updated timestamp
 	"""
-	recentFiles(limit: Int): [File!]!
+	recentFiles(limit: Int): [File!]! @auth
 
 	"""
 	Get starred files
 	"""
-	starredFiles: [File!]!
+	starredFiles: [File!]! @auth
 
 	"""
 	List active download links for a file
 	"""
-	fileDownloadLinks(fileId: ID!): [FileDownloadLink!]!
+	fileDownloadLinks(fileId: ID!): [FileDownloadLink!]! @auth
 
 	"""
 	Get active upload sessions for the current user
 	"""
-	activeUploadSessions: [UploadSessionInfo!]!
+	activeUploadSessions: [UploadSessionInfo!]! @auth
 }
 
 extend type Mutation {
 	"""
 	Request file upload (returns upload URL)
 	"""
-	requestUpload(input: RequestUploadInput!): UploadResponse!
+	requestUpload(input: RequestUploadInput!): UploadResponse! @auth
 
 	"""
 	Request file download (returns direct URL or API proxy URL)
 	"""
-	requestDownload(id: ID!): DownloadResponse!
+	requestDownload(id: ID!): DownloadResponse! @auth
 
 	"""
 	Create a download link for a file
 	"""
-	createFileDownloadLink(input: CreateFileDownloadLinkInput!): FileDownloadLink!
+	createFileDownloadLink(input: CreateFileDownloadLinkInput!): FileDownloadLink! @auth
 
 	"""
 	Rename a file
 	"""
-	renameFile(id: ID!, name: String!): File!
+	renameFile(id: ID!, name: String!): File! @auth
 
 	"""
 	Move file to different folder
 	"""
-	moveFile(id: ID!, folderId: ID): File!
+	moveFile(id: ID!, folderId: ID): File! @auth
 
 	"""
 	Move file to a different storage provider (queued background transfer)
 	"""
-	moveFileToProvider(id: ID!, providerId: ID!): File!
-	archiveFile(id: ID!): Job!
-	requestFileRestore(id: ID!, input: RequestFileRestoreInput!): Job!
-	refreshFileLifecycle(id: ID!): FileLifecycle!
+	moveFileToProvider(id: ID!, providerId: ID!): File! @auth
+	archiveFile(id: ID!): Job! @auth
+	requestFileRestore(id: ID!, input: RequestFileRestoreInput!): Job! @auth
+	refreshFileLifecycle(id: ID!): FileLifecycle! @auth
 
 	"""
 	Delete file (soft delete)
 	"""
-	deleteFile(id: ID!): Boolean!
+	deleteFile(id: ID!): Boolean! @auth
 
 	"""
 	Star a file
 	"""
-	starFile(id: ID!): File!
+	starFile(id: ID!): File! @auth
 
 	"""
 	Unstar a file
 	"""
-	unstarFile(id: ID!): File!
+	unstarFile(id: ID!): File! @auth
 
 	"""
 	Revoke a file download link
 	"""
-	revokeFileDownloadLink(id: ID!): Boolean!
+	revokeFileDownloadLink(id: ID!): Boolean! @auth
 
 	"""
 	Initiate a chunked upload session for large files
 	"""
 	initiateChunkedUpload(
 		input: InitiateChunkedUploadInput!
-	): ChunkedUploadSession!
+	): ChunkedUploadSession! @auth
 
 	"""
 	Cancel an active upload session
 	"""
-	cancelUploadSession(sessionId: ID!): Boolean!
+	cancelUploadSession(sessionId: ID!): Boolean! @auth
 
 	"""
 	Retry a failed upload session
 	"""
-	retryUploadSession(sessionId: ID!): Boolean!
+	retryUploadSession(sessionId: ID!): Boolean! @auth
 
 	"""
 	Complete an S3 multipart upload by providing part ETags
 	"""
-	completeS3MultipartUpload(sessionId: ID!, parts: [S3PartInput!]!): Boolean!
+	completeS3MultipartUpload(sessionId: ID!, parts: [S3PartInput!]!): Boolean! @auth
 }
 
 extend type Subscription {
