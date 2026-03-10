@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { useRef, useState } from "react";
-import { PiShieldCheck, PiTrash as Trash2, PiUserPlus } from "react-icons/pi";
+import { PiShieldCheck, PiUserPlus, PiTrash as Trash2 } from "react-icons/pi";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

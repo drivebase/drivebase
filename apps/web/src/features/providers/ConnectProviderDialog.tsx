@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { useProviderFormDraftStore } from "@/features/providers/store/providerFormDraftStore";
 import {
 	PiWarning as AlertTriangle,
 	PiSpinnerGap as Loader2,
@@ -25,6 +24,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { OAUTH_PROVIDER_CREDENTIALS_QUERY } from "@/features/providers/api/provider";
+import { useProviderFormDraftStore } from "@/features/providers/store/providerFormDraftStore";
 import {
 	AuthType,
 	type AvailableProvider,

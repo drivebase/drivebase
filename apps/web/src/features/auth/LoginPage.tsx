@@ -21,8 +21,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { useLogin } from "@/features/auth/hooks/useAuth";
 import { usePasskeyLogin } from "@/features/auth/hooks/usePasskeys";
-import { Route } from "@/routes/login";
 import { PENDING_INVITE_KEY } from "@/routes/join-workspace";
+import { Route } from "@/routes/login";
 import { AuthLayout } from "./AuthLayout";
 
 const loginSchema = z.object({

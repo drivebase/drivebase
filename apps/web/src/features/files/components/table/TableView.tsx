@@ -24,9 +24,9 @@ import {
 	COLUMN_VISIBILITY_STORAGE_KEY,
 	type RowItem,
 } from "../file-system-table/types";
+import { Toolbar } from "../Toolbar";
 import { useTableColumns } from "./TableColumns";
 import { DraggableContextRow } from "./TableRow";
-import { Toolbar } from "../Toolbar";
 
 export function TableView() {
 	const { files, folders, providers, actionContext } = useFileExplorer();

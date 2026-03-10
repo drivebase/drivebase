@@ -37,7 +37,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
-import { PAGE_SIZE, type ActivityItem } from "../hooks/useActivities";
+import { type ActivityItem, PAGE_SIZE } from "../hooks/useActivities";
 
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 

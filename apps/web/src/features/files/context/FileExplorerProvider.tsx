@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo } from "react";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
-import type { ActionContext, ProviderInfo } from "../actions/types";
 import type { ActionRegistry } from "../actions/registry";
+import type { ActionContext, ProviderInfo } from "../actions/types";
 import { SelectionProvider, useSelection } from "./SelectionContext";
 
 interface FileExplorerContextValue {

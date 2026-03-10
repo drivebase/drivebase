@@ -1,9 +1,9 @@
 import { PiFolder as FolderIcon, PiStarFill as StarIcon } from "react-icons/pi";
 import type { FolderItemFragment } from "@/gql/graphql";
 import { cn } from "@/shared/lib/utils";
-import { FileContextMenu } from "../ContextMenu";
-import { useSelection } from "../../context/SelectionContext";
 import { useFileExplorer } from "../../context/FileExplorerProvider";
+import { useSelection } from "../../context/SelectionContext";
+import { FileContextMenu } from "../ContextMenu";
 
 interface GridFolderItemProps {
 	folder: FolderItemFragment;

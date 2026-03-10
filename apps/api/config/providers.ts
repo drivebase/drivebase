@@ -19,11 +19,11 @@ import {
 	nextcloudRegistration,
 } from "@drivebase/nextcloud";
 import { S3SensitiveFields, s3Registration } from "@drivebase/s3";
+import { SambaSensitiveFields, sambaRegistration } from "@drivebase/samba";
 import {
 	TelegramSensitiveFields,
 	telegramRegistration,
 } from "@drivebase/telegram";
-import { SambaSensitiveFields, sambaRegistration } from "@drivebase/samba";
 import { WebDAVSensitiveFields, webdavRegistration } from "@drivebase/webdav";
 import type { Hono } from "hono";
 import type { AppEnv } from "../server/app";

@@ -1,13 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { ContextMenu as ContextMenuPrimitive } from "radix-ui";
-
-import { cn } from "@/lib/utils";
+import type * as React from "react";
 import {
-	PiCaretRight as ChevronRightIcon,
 	PiCheck as CheckIcon,
+	PiCaretRight as ChevronRightIcon,
 } from "react-icons/pi";
+import { cn } from "@/lib/utils";
 
 function ContextMenu({
 	...props

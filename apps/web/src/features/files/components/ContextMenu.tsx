@@ -8,9 +8,9 @@ import {
 	ContextMenuShortcut,
 	ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import type { SelectionItem } from "../actions/types";
 import { useFileExplorer } from "../context/FileExplorerProvider";
 import { useSelection } from "../context/SelectionContext";
-import type { SelectionItem } from "../actions/types";
 
 interface FileContextMenuProps {
 	children: React.ReactNode;
