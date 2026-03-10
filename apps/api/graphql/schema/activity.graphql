@@ -20,11 +20,19 @@ type Activity {
 	user: User!
 }
 
+"""
+Paginated list of activity log entries.
+"""
+type ActivityConnection {
+	nodes: [Activity!]!
+	meta: PaginationMeta!
+}
+
 extend type Query {
 	"""
 	Get activity log (recent activities)
 	"""
-	activities(limit: Int, offset: Int): [Activity!]!
+	activities(page: Int, limit: Int): ActivityConnection!
 
 	"""
 	Get active jobs (pending or running) for the current workspace

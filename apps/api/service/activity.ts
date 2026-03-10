@@ -1,6 +1,6 @@
 import type { Database } from "@drivebase/db";
 import { activities, jobs } from "@drivebase/db";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, inArray } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
 
 interface CreateJobInput {
@@ -144,16 +144,39 @@ export class ActivityService {
 		return activity;
 	}
 
-	async getRecentForUser(userId: string, limit = 5, offset = 0) {
-		const safeLimit = Math.max(1, Math.min(50, limit));
-		const safeOffset = Math.max(0, offset);
-		return this.db
-			.select()
-			.from(activities)
-			.where(eq(activities.userId, userId))
-			.orderBy(desc(activities.occurredAt), desc(activities.createdAt))
-			.limit(safeLimit)
-			.offset(safeOffset);
+	async getRecentForUser(userId: string, page = 1, limit = 25) {
+		const safeLimit = Math.max(1, Math.min(100, limit));
+		const safePage = Math.max(1, page);
+		const offset = (safePage - 1) * safeLimit;
+
+		const [nodes, [countRow]] = await Promise.all([
+			this.db
+				.select()
+				.from(activities)
+				.where(eq(activities.userId, userId))
+				.orderBy(desc(activities.occurredAt), desc(activities.createdAt))
+				.limit(safeLimit)
+				.offset(offset),
+			this.db
+				.select({ total: count() })
+				.from(activities)
+				.where(eq(activities.userId, userId)),
+		]);
+
+		const total = countRow?.total ?? 0;
+		const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+
+		return {
+			nodes,
+			meta: {
+				total,
+				page: safePage,
+				limit: safeLimit,
+				totalPages,
+				hasNextPage: safePage < totalPages,
+				hasPreviousPage: safePage > 1,
+			},
+		};
 	}
 
 	async deleteForUser(userId: string, ids: string[]) {

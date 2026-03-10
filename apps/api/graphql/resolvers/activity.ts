@@ -47,8 +47,8 @@ export const activityQueries: QueryResolvers = {
 		const activityService = new ActivityService(context.db);
 		return activityService.getRecentForUser(
 			user.userId,
+			args.page ?? undefined,
 			args.limit ?? undefined,
-			args.offset ?? undefined,
 		);
 	},
 	activeJobs: async (_parent, _args, context) => {
