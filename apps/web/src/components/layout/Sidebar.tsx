@@ -11,6 +11,7 @@ import {
 	PiLock as Lock,
 	PiGear as Settings,
 	PiStar as Star,
+	PiPulse as Activity,
 } from "react-icons/pi";
 import { WorkspaceSwitcher } from "@/components/layout/sidebar/WorkspaceSwitcher";
 import {
@@ -31,6 +32,7 @@ const topNavItems: NavItem[] = [
 	{ icon: Home, label: msg`Dashboard`, to: "/" },
 	{ icon: Folder, label: msg`Files`, to: "/files" },
 	{ icon: Star, label: msg`Starred`, to: "/starred" },
+	{ icon: Activity, label: msg`Activity`, to: "/activity" },
 	{ icon: Cloud, label: msg`Providers`, to: "/providers" },
 ];
 
