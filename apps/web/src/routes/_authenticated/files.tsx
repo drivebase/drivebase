@@ -6,7 +6,7 @@ import {
 } from "@dnd-kit/core";
 import { Trans } from "@lingui/react/macro";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useAuthStore } from "@/features/auth/store/authStore";
@@ -71,6 +71,21 @@ export const Route = createFileRoute("/_authenticated/files")({
 function FilesPage() {
 	const { folderId } = Route.useSearch();
 	const navigate = Route.useNavigate();
+	const scrollRef = useRef<HTMLDivElement>(null);
+	const [isOverflowing, setIsOverflowing] = useState(false);
+
+	useEffect(() => {
+		const el = scrollRef.current;
+		if (!el) return;
+
+		const check = () => setIsOverflowing(el.scrollHeight > el.clientHeight);
+		check();
+
+		const observer = new ResizeObserver(check);
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, []);
+
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const [isFilesSettingsOpen, setIsFilesSettingsOpen] = useState(false);
 	const [filterProviderIds, setFilterProviderIds] = useState<string[]>([]);
@@ -230,7 +245,7 @@ function FilesPage() {
 					onFileChange={upload.handleFileChange}
 				/>
 
-				<div className="relative flex-1 overflow-y-auto">
+				<div ref={scrollRef} className="relative flex-1 overflow-y-auto">
 					<FileExplorerProvider
 						registry={registry}
 						files={files}
@@ -244,7 +259,9 @@ function FilesPage() {
 					>
 						<FileExplorer />
 					</FileExplorerProvider>
-					<div className="pointer-events-none sticky bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
+					{isOverflowing && (
+						<div className="pointer-events-none sticky bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
+					)}
 				</div>
 
 				{canWriteFiles ? (
