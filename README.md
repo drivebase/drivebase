@@ -37,7 +37,8 @@ Drivebase is sponsored by:
   <a href="https://www.digitalocean.com/?refcode=beb117e771e7&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg" alt="DigitalOcean Referral Badge" /></a>
 </p>
 
-> [Sign up](https://m.do.co/c/beb117e771e7) now on DigitalOcean to get $200 free credits.
+> Interested in [sponsoring](https://github.com/sponsors/mxvsh) this project? Your logo could appear here.
+
 
 ## Supported Providers
 
@@ -83,14 +84,17 @@ Enjoy 🚀
 
 For manual setup instructions, [check out](https://www.drivebase.io/docs/installation) our official documentation.
 
+
 ## Deployment
 
 Drivebase can be deployed in various environments, including:
 
-- **Cloud Providers**: AWS, GCP, Azure, DigitalOcean, etc.
+- **Cloud Providers**: DigitalOcean, AWS, GCP, Azure, etc.
 - **VPS**: DigitalOcean, Linode, Vultr, etc.
 
-For database storage, we recommend using a managed PostgreSQL service such as [Neon](https://neon.tech/), AWS RDS, or Google Cloud SQL for better performance and reliability.
+For database storage, we recommend using a managed PostgreSQL service such as [DigitalOcean](https://www.digitalocean.com/?refcode=beb117e771e7), Neon, AWS RDS, or Google Cloud SQL for better performance and reliability.
+
+> [Sign up](https://m.do.co/c/beb117e771e7) now on DigitalOcean to get $200 free credits.
 
 ## Support
 
