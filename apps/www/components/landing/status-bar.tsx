@@ -29,9 +29,15 @@ export function StatusBar() {
           }}
           className="flex whitespace-nowrap w-max"
         >
-          {[...statusItems, ...statusItems].map((item, index) => (
+          {[
+            ...statusItems.map((item) => ({ ...item, _key: item.label })),
+            ...statusItems.map((item) => ({
+              ...item,
+              _key: `clone-${item.label}`,
+            })),
+          ].map((item) => (
             <div
-              key={`${item.label}-${index}`}
+              key={item._key}
               className="p-4 flex items-center space-x-3 group hover:bg-secondary transition-colors cursor-default border-r border-border w-64 shrink-0"
             >
               {item.image ? (

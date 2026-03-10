@@ -24,7 +24,7 @@ export function createActionRegistry(actions: FileAction[]) {
 			const order = ["quick", "organize", "library", "danger"];
 			return order
 				.filter((g) => groups.has(g))
-				.map((g) => ({ group: g, actions: groups.get(g)! }));
+				.map((g) => ({ group: g, actions: groups.get(g) ?? [] }));
 		},
 
 		execute: async (id: string, ctx: ActionContext) => {

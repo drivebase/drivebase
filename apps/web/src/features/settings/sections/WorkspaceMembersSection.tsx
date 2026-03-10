@@ -261,8 +261,12 @@ function AddMemberDialog({
 										const checked = selectedProviderIds.includes(provider.id);
 										return (
 											<div key={provider.id} className="p-3 space-y-2">
-												<label className="flex items-center gap-3 cursor-pointer">
+												<label
+													htmlFor={`member-provider-${provider.id}`}
+													className="flex items-center gap-3 cursor-pointer"
+												>
 													<Checkbox
+														id={`member-provider-${provider.id}`}
 														checked={checked}
 														onCheckedChange={(v) =>
 															toggleProvider(provider.id, !!v)
@@ -374,9 +378,11 @@ function EditAccessSheet({
 							{providers.map((provider) => (
 								<label
 									key={provider.id}
+									htmlFor={`access-provider-${provider.id}`}
 									className="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50"
 								>
 									<Checkbox
+										id={`access-provider-${provider.id}`}
 										checked={selectedIds.includes(provider.id)}
 										onCheckedChange={(value) => toggle(provider.id, !!value)}
 									/>
