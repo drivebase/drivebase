@@ -7,7 +7,7 @@ import { loadSchemaSync } from "@graphql-tools/load";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { GraphQLError } from "graphql";
 import { createYoga } from "graphql-yoga";
-import { requireAuth } from "../../graphql/resolvers/auth-helpers";
+import { applyAuthDirectives } from "../../graphql/rbac";
 
 const thisDir = dirname(fileURLToPath(import.meta.url));
 
@@ -19,22 +19,23 @@ function createTestYoga(user: { userId: string; role: string } | null = null) {
 		},
 	);
 
-	const schema = makeExecutableSchema({
-		typeDefs,
-		resolvers: {
-			Query: {
-				availableProviders: () => [{ id: "local" }],
-				me: (
-					_parent: unknown,
-					_args: unknown,
-					context: { user: { userId: string; role: string } | null },
-				) => {
-					const user = requireAuth(context);
-					return { id: user.userId };
+	const schema = applyAuthDirectives(
+		makeExecutableSchema({
+			typeDefs,
+			resolvers: {
+				Query: {
+					availableProviders: () => [{ id: "local" }],
+					me: (
+						_parent: unknown,
+						_args: unknown,
+						context: { user: { userId: string; role: string } | null },
+					) => {
+						return { id: context.user!.userId };
+					},
 				},
 			},
-		},
-	});
+		}),
+	);
 
 	return createYoga({
 		schema,

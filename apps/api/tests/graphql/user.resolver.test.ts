@@ -12,6 +12,16 @@ mock.module("../../service/user", () => ({
 	UserService: mock(() => userServiceMock),
 }));
 
+function makeContext(user: { userId: string; role: string } | null = null) {
+	return {
+		db: {},
+		user,
+		container: {
+			resolve: () => userServiceMock,
+		},
+	} as any;
+}
+
 import { UserRole } from "../../graphql/generated/types";
 
 let userMutations: typeof import("../../graphql/resolvers/user")["userMutations"];
@@ -30,27 +40,18 @@ describe("user resolvers", () => {
 		mock.restore();
 	});
 
-	it("users query calls service for admin", async () => {
+	it("users query calls service", async () => {
 		userServiceMock.findAll.mockResolvedValue([{ id: "u1" }]);
-		const context = { db: {}, user: { userId: "u1", role: "admin" } } as any;
 
 		const result = await userQueries.users?.(
 			{},
 			{ limit: 10, offset: 0 },
-			context,
+			makeContext({ userId: "u1", role: "admin" }),
 			{} as any,
 		);
 
 		expect(userServiceMock.findAll).toHaveBeenCalledWith(10, 0);
 		expect(result).toEqual([{ id: "u1" } as any]);
-	});
-
-	it("users query throws when unauthorized", async () => {
-		const context = { db: {}, user: { userId: "u1", role: "viewer" } } as any;
-
-		await expect(
-			userQueries.users?.({}, { limit: 10, offset: 0 }, context, {} as any),
-		).rejects.toThrow("Insufficient permissions");
 	});
 
 	it("updateUser mutation maps role to lowercase", async () => {
@@ -59,7 +60,7 @@ describe("user resolvers", () => {
 			role: "admin",
 			isActive: true,
 		});
-		const context = { db: {}, user: { userId: "u1", role: "owner" } } as any;
+		const context = makeContext({ userId: "u1", role: "owner" });
 
 		await userMutations.updateUser?.(
 			{},
