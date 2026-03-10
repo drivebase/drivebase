@@ -1,5 +1,6 @@
+import { Tokens } from "../../container";
 import { getAvailableProviders } from "../../config/providers";
-import { ProviderService } from "../../service/provider";
+import type { ProviderService } from "../../service/provider";
 import type {
 	AvailableProvider,
 	AuthType as GQLAuthType,
@@ -12,21 +13,21 @@ import type {
 } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
 
-/**
- * Require authentication
- */
-
 export const providerQueries: QueryResolvers = {
 	storageProviders: async (_parent, _args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return providerService.getProviders(user.userId, workspaceId);
 	},
 
 	storageProvider: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return providerService.getProvider(args.id, user.userId, workspaceId);
 	},
@@ -42,7 +43,9 @@ export const providerQueries: QueryResolvers = {
 
 	oauthProviderCredentials: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const type = args.type.toLowerCase();
 		return providerService.listOAuthProviderCredentials(user.userId, type);
 	},
@@ -51,7 +54,9 @@ export const providerQueries: QueryResolvers = {
 export const providerMutations: MutationResolvers = {
 	connectStorage: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		// Map GraphQL enum (GOOGLE_DRIVE) to core ProviderType (google_drive)
@@ -69,7 +74,9 @@ export const providerMutations: MutationResolvers = {
 
 	createOAuthProviderCredential: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const type = args.input.type.toLowerCase();
 
 		return providerService.createOAuthProviderCredential(
@@ -81,7 +88,9 @@ export const providerMutations: MutationResolvers = {
 
 	disconnectProvider: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		await providerService.disconnectProvider(args.id, user.userId, workspaceId);
@@ -90,7 +99,9 @@ export const providerMutations: MutationResolvers = {
 
 	syncProvider: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return providerService.syncProvider(args.id, user.userId, workspaceId, {
@@ -101,7 +112,9 @@ export const providerMutations: MutationResolvers = {
 
 	updateProviderQuota: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return providerService.updateProviderQuota(
@@ -115,7 +128,9 @@ export const providerMutations: MutationResolvers = {
 
 	renameProvider: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return providerService.renameProvider(
@@ -128,7 +143,9 @@ export const providerMutations: MutationResolvers = {
 
 	initiateProviderOAuth: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return providerService.initiateOAuth(
@@ -141,7 +158,9 @@ export const providerMutations: MutationResolvers = {
 
 	pollProviderAuth: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return providerService.pollProviderAuth(args.id, user.userId, workspaceId);
@@ -160,7 +179,9 @@ export const storageProviderResolvers: StorageProviderResolvers = {
 	authType: (parent) =>
 		(parent.authType as string).toUpperCase() as GQLAuthType,
 	configPreview: (parent, _args, context) => {
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		return providerService.getProviderConfigPreview(parent);
 	},
 };

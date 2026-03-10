@@ -1,5 +1,6 @@
 import type { UserRole } from "@drivebase/core";
-import { AuthService } from "../../service/auth";
+import { Tokens } from "../../container";
+import type { AuthService } from "../../service/auth";
 import type {
 	AuthResponseResolvers,
 	MutationResolvers,
@@ -10,13 +11,17 @@ import { requireAuth } from "./auth-helpers";
 export const authQueries: QueryResolvers = {
 	me: async (_parent, _args, context) => {
 		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		return authService.getCurrentUser(user.userId);
 	},
 
 	myPasskeys: async (_parent, _args, context) => {
 		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		const list = await authService.getPasskeys(user.userId);
 		return list.map((pk) => ({
 			...pk,
@@ -28,7 +33,9 @@ export const authQueries: QueryResolvers = {
 
 export const authMutations: MutationResolvers = {
 	register: async (_parent, args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		const role = args.input.role.toLowerCase() as UserRole;
 		const result = await authService.register(
 			args.input.email,
@@ -40,7 +47,9 @@ export const authMutations: MutationResolvers = {
 	},
 
 	login: async (_parent, args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		const result = await authService.login(
 			args.input.email,
 			args.input.password,
@@ -51,14 +60,18 @@ export const authMutations: MutationResolvers = {
 
 	logout: async (_parent, _args, context) => {
 		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		await authService.logout(user.userId);
 		return true;
 	},
 
 	changePassword: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		await authService.changePassword(
 			user.userId,
 			args.input.currentPassword,
@@ -68,13 +81,17 @@ export const authMutations: MutationResolvers = {
 	},
 
 	requestPasswordReset: async (_parent, args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		await authService.requestPasswordReset(args.email, context.ip);
 		return true;
 	},
 
 	resetPassword: async (_parent, args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		await authService.resetPassword(
 			args.input.email,
 			args.input.otp,
@@ -85,25 +102,33 @@ export const authMutations: MutationResolvers = {
 
 	updateMyProfile: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		return authService.updateMyProfile(user.userId, args.input.name);
 	},
 
 	completeOnboarding: async (_parent, _args, context) => {
 		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		return authService.completeOnboarding(user.userId);
 	},
 
 	startPasskeyRegistration: async (_parent, _args, context) => {
 		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		return authService.startPasskeyRegistration(user.userId);
 	},
 
 	verifyPasskeyRegistration: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		const pk = await authService.verifyPasskeyRegistration(
 			user.userId,
 			args.name,
@@ -117,18 +142,24 @@ export const authMutations: MutationResolvers = {
 	},
 
 	startPasskeyLogin: async (_parent, _args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		return authService.startPasskeyLogin();
 	},
 
 	verifyPasskeyLogin: async (_parent, args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		return authService.verifyPasskeyLogin(args.challengeId, args.response);
 	},
 
 	deletePasskey: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		await authService.deletePasskey(user.userId, args.id);
 		return true;
 	},

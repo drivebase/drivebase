@@ -1,21 +1,27 @@
 import { S3Provider } from "@drivebase/s3";
+import { Tokens } from "../../container";
 import { getRedis } from "../../redis/client";
-import { UploadSessionManager } from "../../service/file/upload";
-import { ProviderService } from "../../service/provider";
-import { VaultService } from "../../service/vault";
+import type { UploadSessionManager } from "../../service/file/upload";
+import type { ProviderService } from "../../service/provider";
+import type { VaultService } from "../../service/vault";
+import { getAccessibleWorkspaceId } from "../../service/workspace";
 import type { MutationResolvers, QueryResolvers } from "../generated/types";
 import { requireAuth } from "./auth-helpers";
 
 export const vaultQueries: QueryResolvers = {
 	myVault: async (_parent, _args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		return vaultService.getVault(user.userId);
 	},
 
 	vaultContents: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		return vaultService.getVaultContents(
 			user.userId,
 			args.folderId ?? undefined,
@@ -26,7 +32,9 @@ export const vaultQueries: QueryResolvers = {
 export const vaultMutations: MutationResolvers = {
 	setupVault: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		return vaultService.setupVault(
 			user.userId,
 			args.input.publicKey,
@@ -37,7 +45,9 @@ export const vaultMutations: MutationResolvers = {
 
 	changeVaultPassphrase: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		return vaultService.changePassphrase(
 			user.userId,
 			args.input.encryptedPrivateKey,
@@ -47,18 +57,13 @@ export const vaultMutations: MutationResolvers = {
 
 	requestVaultUpload: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		const _providerService = new ProviderService(context.db);
-		const resolvedWorkspaceId = workspaceId
-			? workspaceId
-			: await (async () => {
-					const { getAccessibleWorkspaceId } = await import(
-						"../../service/workspace"
-					);
-					return getAccessibleWorkspaceId(context.db, user.userId);
-				})();
+		const resolvedWorkspaceId =
+			workspaceId ?? (await getAccessibleWorkspaceId(context.db, user.userId));
 
 		return vaultService.requestVaultUpload(
 			user.userId,
@@ -74,17 +79,13 @@ export const vaultMutations: MutationResolvers = {
 
 	requestVaultDownload: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		const resolvedWorkspaceId = workspaceId
-			? workspaceId
-			: await (async () => {
-					const { getAccessibleWorkspaceId } = await import(
-						"../../service/workspace"
-					);
-					return getAccessibleWorkspaceId(context.db, user.userId);
-				})();
+		const resolvedWorkspaceId =
+			workspaceId ?? (await getAccessibleWorkspaceId(context.db, user.userId));
 
 		const result = await vaultService.requestVaultDownload(
 			user.userId,
@@ -102,17 +103,13 @@ export const vaultMutations: MutationResolvers = {
 
 	createVaultFolder: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		const resolvedWorkspaceId = workspaceId
-			? workspaceId
-			: await (async () => {
-					const { getAccessibleWorkspaceId } = await import(
-						"../../service/workspace"
-					);
-					return getAccessibleWorkspaceId(context.db, user.userId);
-				})();
+		const resolvedWorkspaceId =
+			workspaceId ?? (await getAccessibleWorkspaceId(context.db, user.userId));
 
 		return vaultService.createVaultFolder(
 			user.userId,
@@ -125,42 +122,46 @@ export const vaultMutations: MutationResolvers = {
 
 	deleteVaultFile: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		await vaultService.deleteVaultFile(user.userId, args.id);
 		return true;
 	},
 
 	renameVaultFile: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		return vaultService.renameVaultFile(user.userId, args.id, args.name);
 	},
 
 	starVaultFile: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		return vaultService.starVaultFile(user.userId, args.id);
 	},
 
 	unstarVaultFile: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		return vaultService.unstarVaultFile(user.userId, args.id);
 	},
 
 	initiateVaultChunkedUpload: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const vaultService = new VaultService(context.db);
+		const vaultService = context.container.resolve<VaultService>(
+			Tokens.VaultService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
-		const resolvedWorkspaceId = workspaceId
-			? workspaceId
-			: await (async () => {
-					const { getAccessibleWorkspaceId } = await import(
-						"../../service/workspace"
-					);
-					return getAccessibleWorkspaceId(context.db, user.userId);
-				})();
+		const resolvedWorkspaceId =
+			workspaceId ?? (await getAccessibleWorkspaceId(context.db, user.userId));
 
 		const { input } = args;
 
@@ -177,7 +178,9 @@ export const vaultMutations: MutationResolvers = {
 				input.encryptedChunkSize ?? undefined,
 			);
 
-		const sessionManager = new UploadSessionManager(context.db);
+		const sessionManager = context.container.resolve<UploadSessionManager>(
+			Tokens.UploadSessionManager,
+		);
 		const session = await sessionManager.createSession({
 			fileName: input.name,
 			mimeType: input.mimeType,
@@ -190,7 +193,9 @@ export const vaultMutations: MutationResolvers = {
 		});
 
 		// Check if provider supports direct S3 multipart
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const provider = await providerService.getProviderInstance(providerRecord);
 
 		let presignedPartUrls: Array<{ partNumber: number; url: string }> | null =

@@ -1,12 +1,13 @@
 import { ValidationError } from "@drivebase/core";
 import { type Job as DbJob, jobs, users } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
+import { Tokens } from "../../container";
 import { getExtractionQueue } from "../../queue/extraction-queue";
 import {
 	buildTransferQueueJobId,
 	getTransferQueue,
 } from "../../queue/transfer-queue";
-import { ActivityService } from "../../service/activity";
+import type { ActivityService } from "../../service/activity";
 import { getAccessibleWorkspaceId } from "../../service/workspace";
 import { requestJobCancellation } from "../../utils/jobs/job-cancel";
 import {
@@ -44,7 +45,9 @@ export function toGraphqlJob(job: DbJob): Job {
 export const activityQueries: QueryResolvers = {
 	activities: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const activityService = new ActivityService(context.db);
+		const activityService = context.container.resolve<ActivityService>(
+			Tokens.ActivityService,
+		);
 		return activityService.getRecentForUser(
 			user.userId,
 			args.page ?? undefined,
@@ -58,7 +61,9 @@ export const activityQueries: QueryResolvers = {
 			user.userId,
 			context.headers?.get("x-workspace-id") ?? undefined,
 		);
-		const activityService = new ActivityService(context.db);
+		const activityService = context.container.resolve<ActivityService>(
+			Tokens.ActivityService,
+		);
 		const jobs = await activityService.getActive(workspaceId);
 		return jobs.map(toGraphqlJob);
 	},
@@ -69,7 +74,9 @@ export const activityQueries: QueryResolvers = {
 			user.userId,
 			context.headers?.get("x-workspace-id") ?? undefined,
 		);
-		const activityService = new ActivityService(context.db);
+		const activityService = context.container.resolve<ActivityService>(
+			Tokens.ActivityService,
+		);
 		const jobs = await activityService.getRecentJobs(
 			workspaceId,
 			args.limit ?? undefined,
@@ -102,7 +109,9 @@ const CANCELLABLE_JOB_TYPES = new Set([
 export const activityMutations: MutationResolvers = {
 	clearActivities: async (_parent, args, context) => {
 		const user = requireAuth(context);
-		const activityService = new ActivityService(context.db);
+		const activityService = context.container.resolve<ActivityService>(
+			Tokens.ActivityService,
+		);
 		return activityService.deleteForUser(user.userId, args.ids);
 	},
 	cancelJob: async (_parent, args, context) => {
@@ -112,7 +121,9 @@ export const activityMutations: MutationResolvers = {
 			user.userId,
 			context.headers?.get("x-workspace-id") ?? undefined,
 		);
-		const activityService = new ActivityService(context.db);
+		const activityService = context.container.resolve<ActivityService>(
+			Tokens.ActivityService,
+		);
 
 		const [job] = await context.db
 			.select()
