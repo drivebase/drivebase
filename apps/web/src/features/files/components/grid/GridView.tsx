@@ -1,11 +1,11 @@
 import { useMemo, useRef } from "react";
+import type { SelectionItem } from "../../actions/types";
 import { useFileExplorer } from "../../context/FileExplorerProvider";
 import { useSelection } from "../../context/SelectionContext";
-import type { SelectionItem } from "../../actions/types";
 import { useMarquee } from "../../hooks/useMarquee";
+import { Toolbar } from "../Toolbar";
 import { GridFileItem } from "./GridFileItem";
 import { GridFolderItem } from "./GridFolderItem";
-import { Toolbar } from "../Toolbar";
 
 export function GridView() {
 	const { files, folders } = useFileExplorer();

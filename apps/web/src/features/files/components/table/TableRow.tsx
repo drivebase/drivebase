@@ -4,8 +4,8 @@ import { flexRender } from "@tanstack/react-table";
 import { TableCell, TableRow as UITableRow } from "@/components/ui/table";
 import { cn } from "@/shared/lib/utils";
 import type { SelectionItem } from "../../actions/types";
-import type { DragItem, RowItem } from "../file-system-table/types";
 import { FileContextMenu } from "../ContextMenu";
+import type { DragItem, RowItem } from "../file-system-table/types";
 
 interface DraggableTableRowProps {
 	row: Row<RowItem>;

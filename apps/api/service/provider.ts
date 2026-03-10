@@ -25,8 +25,8 @@ import {
 } from "@/service/provider/query";
 import { ActivityService } from "./activity";
 import {
-	getAccessibleWorkspaceId,
 	getAccessibleProviderIds,
+	getAccessibleWorkspaceId,
 } from "./workspace";
 
 export class ProviderService {

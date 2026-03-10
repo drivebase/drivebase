@@ -4,6 +4,7 @@ import { useLingui } from "@lingui/react";
 import { Link } from "@tanstack/react-router";
 import type { IconType as LucideIcon } from "react-icons";
 import {
+	PiPulse as Activity,
 	PiCloud as Cloud,
 	PiFolder as Folder,
 	PiHouse as Home,
@@ -11,7 +12,6 @@ import {
 	PiLock as Lock,
 	PiGear as Settings,
 	PiStar as Star,
-	PiPulse as Activity,
 } from "react-icons/pi";
 import { WorkspaceSwitcher } from "@/components/layout/sidebar/WorkspaceSwitcher";
 import {

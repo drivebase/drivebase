@@ -1,12 +1,12 @@
 import { useFilesStore } from "@/shared/store/filesStore";
+import type { SelectionItem } from "../actions/types";
 import { useFileExplorer } from "../context/FileExplorerProvider";
 import { useSelection } from "../context/SelectionContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import type { SelectionItem } from "../actions/types";
 import { FileSystemTableEmpty } from "./file-system-table/FileSystemTableEmpty";
 import { FileSystemTableLoading } from "./file-system-table/FileSystemTableLoading";
-import { TableView } from "./table/TableView";
 import { GridView } from "./grid/GridView";
+import { TableView } from "./table/TableView";
 
 export function FileExplorer() {
 	const { files, folders, isLoading, registry, actionContext } =

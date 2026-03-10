@@ -11,23 +11,23 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useActions } from "@/features/files/actions/useActions";
-import { FileExplorer } from "@/features/files/components/FileExplorer";
 import { CreateFolderDialog } from "@/features/files/CreateFolderDialog";
 import { FileDropZone } from "@/features/files/components/FileDropZone";
+import { FileExplorer } from "@/features/files/components/FileExplorer";
 import { FilesToolbar } from "@/features/files/components/FilesToolbar";
 import { DragOverlayContent } from "@/features/files/components/file-system-table/DragOverlayContent";
 import { FileExplorerProvider } from "@/features/files/context/FileExplorerProvider";
 import { useBreadcrumbs } from "@/features/files/hooks/useBreadcrumbs";
+import { useDownload } from "@/features/files/hooks/useDownload";
 import { useDragAndDrop } from "@/features/files/hooks/useDragAndDrop";
 import { useFileDrop } from "@/features/files/hooks/useFileDrop";
 import { useFileOperations } from "@/features/files/hooks/useFileOperations";
 import { useContents } from "@/features/files/hooks/useFiles";
-import { useDownload } from "@/features/files/hooks/useDownload";
 import { useUpload } from "@/features/files/hooks/useUpload";
 import { useUploadSessionRestore } from "@/features/files/hooks/useUploadSessionRestore";
-import { useFileActions } from "@/features/files/useFileActions";
 import { FilesSettingsDialog } from "@/features/files/settings/FilesSettingsDialog";
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
+import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
 import {
 	can,

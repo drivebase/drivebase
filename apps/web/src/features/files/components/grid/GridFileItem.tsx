@@ -1,11 +1,11 @@
 import { PiStarFill as StarIcon } from "react-icons/pi";
+import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import type { FileItemFragment } from "@/gql/graphql";
 import { cn } from "@/shared/lib/utils";
+import { useSelection } from "../../context/SelectionContext";
 import { FileMimeIcon } from "../../FileMimeIcon";
 import { formatSize } from "../../utils";
-import { ProviderIcon } from "@/features/providers/ProviderIcon";
 import { FileContextMenu } from "../ContextMenu";
-import { useSelection } from "../../context/SelectionContext";
 
 interface GridFileItemProps {
 	file: FileItemFragment;

@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
-import { createActionRegistry } from "./registry";
 import { createBulkActions } from "./bulk-actions";
 import { createFileActions } from "./file-actions";
 import { createFolderActions } from "./folder-actions";
+import { createActionRegistry } from "./registry";
 
 interface UseActionsOptions {
 	canWrite: boolean;

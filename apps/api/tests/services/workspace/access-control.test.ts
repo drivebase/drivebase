@@ -10,9 +10,9 @@ import {
 	searchFiles,
 	searchFolders,
 } from "../../../service/file/query/file-listing";
+import { smartSearch } from "../../../service/file/query/smart-search";
 import { getStarredFolders } from "../../../service/folder/query/get-starred-folders";
 import { listFolders } from "../../../service/folder/query/list-folders";
-import { smartSearch } from "../../../service/file/query/smart-search";
 
 // --- Export presence tests ---
 

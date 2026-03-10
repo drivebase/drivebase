@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import type { ActionContext, SelectionItem } from "../actions/types";
 import type { ActionRegistry } from "../actions/registry";
+import type { ActionContext, SelectionItem } from "../actions/types";
 import { useShortcutsStore } from "../store/shortcutsStore";
 
 function eventToKey(e: KeyboardEvent): string {

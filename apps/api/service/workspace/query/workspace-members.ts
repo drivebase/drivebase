@@ -6,8 +6,8 @@ import {
 import type { Database } from "@drivebase/db";
 import { users, workspaceMemberships, workspaces } from "@drivebase/db";
 import { and, asc, eq } from "drizzle-orm";
-import { canManageProviders } from "../rbac";
 import type { WorkspaceRole } from "../rbac";
+import { canManageProviders } from "../rbac";
 import type { WorkspaceMemberRow } from "../shared/types";
 
 // Get user role for a workspace (owner or member role).
