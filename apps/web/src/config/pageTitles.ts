@@ -6,6 +6,7 @@ export const pageTitles: Record<string, MessageDescriptor> = {
 	"/files": msg`All Files`,
 	"/starred": msg`Starred`,
 	"/providers": msg`Providers`,
+	"/activity": msg`Activity`,
 	"/trash": msg`Trash`,
 	"/settings": msg`Settings`,
 	"/vault": msg`Vault`,

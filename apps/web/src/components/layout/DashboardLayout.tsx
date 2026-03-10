@@ -1,5 +1,4 @@
 import { Header } from "./Header";
-import { RightPanel } from "./RightPanel";
 import { Sidebar } from "./Sidebar";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -22,10 +21,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 					{children}
 				</main>
 			</div>
-
-			<aside className="shrink-0 h-full border-l hidden xl:block bg-background/50 backdrop-blur-2xl">
-				<RightPanel />
-			</aside>
 		</div>
 	);
 }

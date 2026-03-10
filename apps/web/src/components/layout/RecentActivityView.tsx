@@ -28,17 +28,16 @@ function hasDetailsValue(details: unknown): boolean {
 export function RecentActivityView() {
 	const RECENT_ACTIVITY_LIMIT = 10;
 	const [localActivities, setLocalActivities] = useState<
-		NonNullable<RecentActivitiesQuery["activities"]>
+		RecentActivitiesQuery["activities"]["nodes"]
 	>([]);
 	const [selectedActivity, setSelectedActivity] = useState<
-		NonNullable<RecentActivitiesQuery["activities"]>[number] | null
+		RecentActivitiesQuery["activities"]["nodes"][number] | null
 	>(null);
 	const [showJsonDetails, setShowJsonDetails] = useState(false);
-	const [offset, setOffset] = useState(0);
 	const [, clearActivitiesMutation] = useMutation(CLEAR_ACTIVITIES_MUTATION);
 	const [{ data, fetching }] = useQuery({
 		query: RECENT_ACTIVITIES_QUERY,
-		variables: { limit: RECENT_ACTIVITY_LIMIT, offset },
+		variables: { limit: RECENT_ACTIVITY_LIMIT },
 		requestPolicy: "cache-and-network",
 	});
 
@@ -59,7 +58,7 @@ export function RecentActivityView() {
 		},
 	);
 
-	const serverActivities = data?.activities ?? [];
+	const serverActivities = data?.activities?.nodes ?? [];
 	const seenIds = new Set(localActivities.map((activity) => activity.id));
 	const recentActivities = [
 		...localActivities,
@@ -70,12 +69,11 @@ export function RecentActivityView() {
 		if (recentActivities.length === 0) return;
 		const ids = recentActivities.map((a) => a.id);
 		setLocalActivities([]);
-		setOffset((prev) => prev + recentActivities.length);
 		await clearActivitiesMutation({ ids });
 	};
 
 	const handleOpenActivity = (
-		activity: NonNullable<RecentActivitiesQuery["activities"]>[number],
+		activity: RecentActivitiesQuery["activities"]["nodes"][number],
 	) => {
 		setSelectedActivity(activity);
 		setShowJsonDetails(false);

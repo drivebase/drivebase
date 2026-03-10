@@ -11,7 +11,7 @@ export function useActivityFeed() {
 
 	const [{ data: recentActivitiesData }] = useQuery({
 		query: RECENT_ACTIVITIES_QUERY,
-		variables: { limit: 20, offset: 0 },
+		variables: { limit: 20 },
 		requestPolicy: "cache-and-network",
 	});
 	const [{ data: activityCreatedData }] = useSubscription({
@@ -19,7 +19,7 @@ export function useActivityFeed() {
 	});
 
 	useEffect(() => {
-		for (const activity of recentActivitiesData?.activities ?? []) {
+		for (const activity of recentActivitiesData?.activities?.nodes ?? []) {
 			setActivity(activity);
 		}
 	}, [recentActivitiesData, setActivity]);
