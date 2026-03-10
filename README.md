@@ -34,10 +34,10 @@ and much more!
 ## Sponsors
 Drivebase is sponsored by:
 <p>
-  <a href="https://digitalocean.com/">
-    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="201px">
-  </a>
+  <a href="https://www.digitalocean.com/?refcode=beb117e771e7&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg" alt="DigitalOcean Referral Badge" /></a>
 </p>
+
+> [Sign up](https://m.do.co/c/beb117e771e7) now on DigitalOcean to get $200 free credits.
 
 ## Supported Providers
 
