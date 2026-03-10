@@ -2,11 +2,11 @@ import { ValidationError } from "@drivebase/core";
 import { type Job as DbJob, jobs, users } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 import { Tokens } from "../../container";
-import { getExtractionQueue } from "../../queue/extraction-queue";
+import { getExtractionQueue } from "@/queue/extraction/queue";
 import {
 	buildTransferQueueJobId,
 	getTransferQueue,
-} from "../../queue/transfer-queue";
+} from "@/queue/transfer/queue";
 import type { ActivityService } from "../../service/activity";
 import { getAccessibleWorkspaceId } from "../../service/workspace";
 import { requestJobCancellation } from "../../utils/jobs/job-cancel";

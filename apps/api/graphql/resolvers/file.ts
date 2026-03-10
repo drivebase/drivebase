@@ -4,7 +4,7 @@ import { S3Provider } from "@drivebase/s3";
 import { and, eq } from "drizzle-orm";
 import { Tokens } from "../../container";
 import { getPublicApiBaseUrl } from "../../config/url";
-import { getUploadQueue } from "../../queue/upload-queue";
+import { getUploadQueue } from "@/queue/uploads/queue";
 import { getRedis } from "../../redis/client";
 import type { FileService } from "../../service/file";
 import type { UploadSessionManager } from "../../service/file/upload";
