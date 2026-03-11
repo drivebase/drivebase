@@ -1,5 +1,30 @@
 # Changelog
 
+## [3.5.2](https://github.com/drivebase/drivebase/compare/v3.5.1...v3.5.2) (2026-03-11)
+
+### Features
+
+* add provider-level access grants for workspace members and invites ([8e3f77f](https://github.com/drivebase/drivebase/commit/8e3f77fe8edc836065160a3e21459680ca8e689c))
+* add provider/folder level access grants for workspace members ([9f50fcf](https://github.com/drivebase/drivebase/commit/9f50fcf01be0417c0cedf82e8af02b9a4d19a403))
+* **api:** add PaginationMeta type and ActivityConnection with server-side page/limit support ([dfaecd5](https://github.com/drivebase/drivebase/commit/dfaecd57995c0785ed4d12eeb5b07b220f948e1e))
+* **web:** separate page for activity list ([4df281b](https://github.com/drivebase/drivebase/commit/4df281bf1e3f4ef6681cf973456e1e6af13e0a51))
+
+### Fixes
+
+* **docker:** build web dist in Dockerfile so docker compose build ([cb9beb5](https://github.com/drivebase/drivebase/commit/cb9beb5aa917d3f712c418ea1967f63c837b31af))
+* enforce provider access grants on all file and folder listing queries ([803be50](https://github.com/drivebase/drivebase/commit/803be509d62cb14ce7eac1dffc02181afabab00b))
+* only show bottom shadow on files page when content overflows ([30828f8](https://github.com/drivebase/drivebase/commit/30828f8f81bac899bfc40f1f435cd676fe29a17b))
+
+### Others
+
+* add discord link ([e4af8ee](https://github.com/drivebase/drivebase/commit/e4af8ee176ef2fdb61a50e04bf801d22da163631))
+* biome fixes ([ededee4](https://github.com/drivebase/drivebase/commit/ededee429b67e0e63378b55c7b3ae6f847fb2c92))
+* biome format ([80d86d6](https://github.com/drivebase/drivebase/commit/80d86d628ef5c9002fb85d715779f50e7b2b9dde))
+* i18n extract ([7d0299e](https://github.com/drivebase/drivebase/commit/7d0299ea9b139006f71dd1839df8015c9816e422))
+* improve landing page seo ([e475234](https://github.com/drivebase/drivebase/commit/e4752346c0269c7f3da45cb430f41e0bbeefcb69))
+* improve landing page text ([d9d2196](https://github.com/drivebase/drivebase/commit/d9d2196cce39279b2a1f3edf19226118230703af))
+* update zed settings ([3b3cbaf](https://github.com/drivebase/drivebase/commit/3b3cbaf68da4a3533304425ed611af060cd1f378))
+
 ## [3.5.1](https://github.com/drivebase/drivebase/compare/v3.5.0...v3.5.1) (2026-03-08)
 
 ### Fixes
