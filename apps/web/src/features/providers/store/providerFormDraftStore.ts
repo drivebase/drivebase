@@ -9,14 +9,43 @@ type ProviderFormDraftState = {
 	clearDraft: (providerId: string) => void;
 };
 
+function areDraftValuesEqual(
+	current: Record<string, unknown> | undefined,
+	next: Record<string, unknown>,
+) {
+	if (!current) {
+		return Object.keys(next).length === 0;
+	}
+
+	const currentKeys = Object.keys(current);
+	const nextKeys = Object.keys(next);
+	if (currentKeys.length !== nextKeys.length) {
+		return false;
+	}
+
+	for (const key of nextKeys) {
+		if (current[key] !== next[key]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 export const useProviderFormDraftStore = create<ProviderFormDraftState>()(
 	persist(
 		(set) => ({
 			drafts: {},
 			setDraft: (providerId, values) =>
-				set((state) => ({
-					drafts: { ...state.drafts, [providerId]: values },
-				})),
+				set((state) => {
+					if (areDraftValuesEqual(state.drafts[providerId], values)) {
+						return state;
+					}
+
+					return {
+						drafts: { ...state.drafts, [providerId]: values },
+					};
+				}),
 			clearDraft: (providerId) =>
 				set((state) => {
 					const next = { ...state.drafts };

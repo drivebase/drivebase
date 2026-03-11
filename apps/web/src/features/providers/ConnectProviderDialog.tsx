@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import {
 	PiWarning as AlertTriangle,
@@ -83,6 +83,7 @@ export function ConnectProviderDialog({
 
 	const { drafts, setDraft, clearDraft } = useProviderFormDraftStore();
 	const draft = drafts[provider.id] ?? {};
+	const initializedProviderRef = useRef<string | null>(null);
 
 	const {
 		register,
@@ -102,14 +103,19 @@ export function ConnectProviderDialog({
 
 	useEffect(() => {
 		if (!isOpen) {
+			initializedProviderRef.current = null;
+			return;
+		}
+		if (initializedProviderRef.current === provider.id) {
 			return;
 		}
 
 		setMode("new");
 		setSelectedCredentialId("");
 		setSelectionError(null);
-		reset(drafts[provider.id] ?? {});
-	}, [isOpen, reset, provider.id, drafts]);
+		reset(draft);
+		initializedProviderRef.current = provider.id;
+	}, [isOpen, reset, provider.id, draft]);
 
 	const submit = handleSubmit(async (formData) => {
 		const displayName = (formData._displayName as string) || provider.name;
