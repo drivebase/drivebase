@@ -17,6 +17,11 @@ msgstr ""
 msgid "(optional)"
 msgstr ""
 
+#. placeholder {0}: page + 1
+#: src/features/activity/components/ActivityTable.tsx:464
+msgid "{0} / {totalPages}"
+msgstr ""
+
 #. placeholder {0}: key.providerScopes.length
 #: src/features/settings/sections/ApiKeysSection.tsx:225
 msgid "{0} provider(s)"
@@ -25,6 +30,14 @@ msgstr ""
 #. placeholder {0}: providerScopes.length
 #: src/features/settings/sections/ApiKeysSection.tsx:357
 msgid "{0} provider(s) selected"
+msgstr ""
+
+#: src/features/activity/components/ActivityTable.tsx:450
+msgid "{total} events"
+msgstr ""
+
+#: src/features/activity/components/ActivityTable.tsx:448
+msgid "0 events"
 msgstr ""
 
 #: src/shared/lib/downloadLinkConfigDialog.tsx:222
@@ -54,7 +67,7 @@ msgstr ""
 
 #. placeholder {0}: member.accessGrants.length
 #. placeholder {1}: member.accessGrants.length !== 1 ? "s" : ""
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:463
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:469
 msgid "Access: {0} provider{1}"
 msgstr ""
 
@@ -66,7 +79,9 @@ msgstr "Cuenta"
 msgid "Actions"
 msgstr "Acciones"
 
-#: src/components/layout/RecentActivityView.tsx:157
+#: src/components/layout/RecentActivityView.tsx:155
+#: src/components/layout/Sidebar.tsx:35
+#: src/config/pageTitles.ts:9
 msgid "Activity"
 msgstr "Actividad"
 
@@ -83,8 +98,8 @@ msgid "Add condition"
 msgstr "Añadir condición"
 
 #: src/features/settings/sections/WorkspaceMembersSection.tsx:169
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:307
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:445
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:311
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:451
 msgid "Add member"
 msgstr ""
 
@@ -108,7 +123,7 @@ msgstr "Añadir Regla"
 msgid "Added {0} to starred"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:307
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:311
 msgid "Adding…"
 msgstr ""
 
@@ -213,8 +228,8 @@ msgstr ""
 #: src/features/rules/components/RuleForm.tsx:209
 #: src/features/settings/sections/ApiKeysSection.tsx:498
 #: src/features/settings/sections/WebDavSection.tsx:441
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:304
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:401
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:308
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:407
 #: src/routes/_authenticated/providers.tsx:301
 #: src/routes/_authenticated/vault.tsx:290
 #: src/routes/_workspace/workspaces.create.tsx:166
@@ -257,7 +272,7 @@ msgid "Choose light, dark, or system theme."
 msgstr ""
 
 #. placeholder {0}: member.name
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:361
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:365
 msgid "Choose which providers {0} can access. Leave all unchecked to grant full workspace access."
 msgstr ""
 
@@ -265,9 +280,22 @@ msgstr ""
 msgid "Choose your preferred language"
 msgstr "Elige tu idioma preferido"
 
-#: src/components/layout/RecentActivityView.tsx:98
+#: src/components/layout/RecentActivityView.tsx:96
+#: src/features/activity/components/ActivityTable.tsx:153
 #: src/shared/components/JobPanel.tsx:177
 msgid "Clear"
+msgstr ""
+
+#: src/features/activity/components/ActivityTable.tsx:370
+msgid "Clear all"
+msgstr ""
+
+#: src/features/activity/components/ActivityTable.tsx:351
+msgid "Clear filters"
+msgstr ""
+
+#: src/features/activity/components/ActivityTable.tsx:360
+msgid "Clear selected"
 msgstr ""
 
 #: src/features/settings/sections/AppearanceSettingsSection.tsx:129
@@ -471,9 +499,9 @@ msgstr ""
 msgid "Dark"
 msgstr "Oscuro"
 
-#: src/components/layout/Sidebar.tsx:31
+#: src/components/layout/Sidebar.tsx:32
 #: src/config/pageTitles.ts:5
-#: src/config/pageTitles.ts:31
+#: src/config/pageTitles.ts:32
 msgid "Dashboard"
 msgstr "Panel de control"
 
@@ -543,7 +571,7 @@ msgstr ""
 msgid "Drivebase. Secure file storage."
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:358
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:362
 msgid "Edit access"
 msgstr ""
 
@@ -587,6 +615,10 @@ msgstr ""
 
 #: src/features/auth/LoginPage.tsx:91
 msgid "Enter your email to sign in to your account"
+msgstr ""
+
+#: src/features/activity/components/ActivityTable.tsx:95
+msgid "Event"
 msgstr ""
 
 #: src/features/settings/sections/WorkspaceAutoSyncSection.tsx:122
@@ -710,7 +742,7 @@ msgstr "Error al actualizar el perfil"
 msgid "Failed to update starred status."
 msgstr ""
 
-#: src/routes/_authenticated/files.tsx:192
+#: src/routes/_authenticated/files.tsx:207
 msgid "Failed to update sync setting"
 msgstr ""
 
@@ -720,13 +752,21 @@ msgstr ""
 #~ msgstr "Favoritos"
 
 #: src/components/layout/command-palette/SearchResultsGroups.tsx:145
-#: src/components/layout/Sidebar.tsx:32
+#: src/components/layout/Sidebar.tsx:33
 msgid "Files"
 msgstr "Archivos"
 
 #: src/features/rules/components/RuleForm.tsx:192
 msgid "Files matching these conditions will be routed to the destination. Groups are combined with OR; conditions within a group are combined with AND."
 msgstr "Los archivos que cumplan estas condiciones se enrutarán al destino. Los grupos se combinan con O; las condiciones dentro de un grupo se combinan con Y."
+
+#: src/features/activity/components/ActivityTable.tsx:293
+msgid "Filter by kind"
+msgstr ""
+
+#: src/features/activity/components/ActivityTable.tsx:327
+msgid "Filter by status"
+msgstr ""
 
 #: src/features/onboarding/steps/CompletionStep.tsx:130
 msgid "Finalizing..."
@@ -756,7 +796,7 @@ msgstr ""
 msgid "General"
 msgstr "General"
 
-#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:165
+#: src/features/settings/sections/WorkspaceInviteCreateSection.tsx:167
 msgid "Generate invite link"
 msgstr ""
 
@@ -782,7 +822,7 @@ msgstr ""
 msgid "Go to Dashboard"
 msgstr ""
 
-#: src/components/layout/RecentActivityView.tsx:200
+#: src/components/layout/RecentActivityView.tsx:198
 msgid "Hide JSON"
 msgstr ""
 
@@ -814,7 +854,7 @@ msgstr ""
 msgid "Invite revoked"
 msgstr ""
 
-#: src/components/layout/RecentActivityView.tsx:176
+#: src/components/layout/RecentActivityView.tsx:174
 msgid "Job ID"
 msgstr ""
 
@@ -829,6 +869,11 @@ msgstr ""
 
 #: src/routes/join-workspace.tsx:95
 msgid "Joining workspace…"
+msgstr ""
+
+#: src/features/activity/components/ActivityTable.tsx:85
+#: src/features/activity/components/ActivityTable.tsx:283
+msgid "Kind"
 msgstr ""
 
 #: src/features/settings/sections/PreferencesSettingsSection.tsx:27
@@ -869,7 +914,7 @@ msgstr ""
 msgid "Limit to specific providers"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:519
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:525
 msgid "Loading members…"
 msgstr ""
 
@@ -924,11 +969,11 @@ msgstr ""
 msgid "Member role updated"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:436
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:442
 msgid "Members"
 msgstr "Miembros"
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:439
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:445
 msgid "Members in this workspace."
 msgstr "Miembros en este espacio de trabajo."
 
@@ -938,7 +983,7 @@ msgid "My {0}"
 msgstr ""
 
 #: src/components/layout/RightPanel.tsx:45
-#: src/config/pageTitles.ts:12
+#: src/config/pageTitles.ts:13
 msgid "My Account"
 msgstr "Mi cuenta"
 
@@ -994,6 +1039,10 @@ msgstr "Nueva contraseña"
 msgid "No active providers found."
 msgstr ""
 
+#: src/features/activity/components/ActivityTable.tsx:422
+msgid "No activity yet."
+msgstr ""
+
 #: src/features/settings/sections/ApiKeysSection.tsx:188
 msgid "No API keys yet."
 msgstr ""
@@ -1010,7 +1059,7 @@ msgstr ""
 msgid "No providers connected"
 msgstr ""
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:370
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:374
 msgid "No providers connected to this workspace."
 msgstr ""
 
@@ -1018,17 +1067,21 @@ msgstr ""
 msgid "No providers connected."
 msgstr ""
 
-#: src/components/layout/RecentActivityView.tsx:114
+#: src/components/layout/RecentActivityView.tsx:112
 msgid "No recent activity"
 msgstr "Sin actividad reciente"
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:395
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:401
 msgid "No restrictions — full workspace access."
 msgstr ""
 
 #: src/components/layout/command-palette/SearchResultsGroups.tsx:176
 msgid "No results found."
 msgstr "No se encontraron resultados."
+
+#: src/features/activity/components/ActivityTable.tsx:420
+msgid "No results match the current filters."
+msgstr ""
 
 #: src/features/rules/components/RuleList.tsx:127
 msgid "No rules yet. Create a rule to automatically route files on upload."
@@ -1058,6 +1111,10 @@ msgstr ""
 msgid "None"
 msgstr ""
 
+#: src/features/activity/components/ActivityTable.tsx:126
+msgid "Occurred"
+msgstr ""
+
 #: src/features/settings/sections/AppearanceSettingsSection.tsx:40
 msgid "Ocean Mist"
 msgstr ""
@@ -1074,7 +1131,7 @@ msgstr ""
 msgid "Open Cron Guru"
 msgstr ""
 
-#: src/components/layout/Sidebar.tsx:103
+#: src/components/layout/Sidebar.tsx:105
 msgid "Open latest release notes"
 msgstr ""
 
@@ -1150,13 +1207,13 @@ msgstr ""
 msgid "Provider scope"
 msgstr ""
 
-#: src/components/layout/Sidebar.tsx:34
+#: src/components/layout/Sidebar.tsx:36
 #: src/config/pageTitles.ts:8
 #: src/features/settings/sections/WorkspaceAutoSyncSection.tsx:171
 msgid "Providers"
 msgstr "Proveedores"
 
-#: src/components/layout/RecentActivityView.tsx:88
+#: src/components/layout/RecentActivityView.tsx:86
 msgid "Recent Activity"
 msgstr ""
 
@@ -1266,7 +1323,7 @@ msgstr ""
 #: src/features/rules/components/RuleForm.tsx:206
 #: src/features/settings/sections/AccountSettingsSection.tsx:94
 #: src/features/settings/sections/WorkspaceAutoSyncSection.tsx:206
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:404
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:410
 #: src/features/settings/sections/WorkspaceNameSection.tsx:38
 msgid "Save"
 msgstr "Guardar"
@@ -1285,7 +1342,7 @@ msgstr ""
 msgid "Saving..."
 msgstr "Guardando..."
 
-#: src/features/settings/sections/WorkspaceMembersSection.tsx:404
+#: src/features/settings/sections/WorkspaceMembersSection.tsx:410
 msgid "Saving…"
 msgstr ""
 
@@ -1349,8 +1406,8 @@ msgstr ""
 msgid "Set up a new workspace and switch to it."
 msgstr ""
 
-#: src/components/layout/Sidebar.tsx:39
-#: src/config/pageTitles.ts:10
+#: src/components/layout/Sidebar.tsx:41
+#: src/config/pageTitles.ts:11
 msgid "Settings"
 msgstr "Configuración"
 
@@ -1358,7 +1415,7 @@ msgstr "Configuración"
 msgid "Share this link so others can join the workspace with a preset role."
 msgstr ""
 
-#: src/components/layout/RecentActivityView.tsx:202
+#: src/components/layout/RecentActivityView.tsx:200
 msgid "Show JSON"
 msgstr ""
 
@@ -1402,7 +1459,7 @@ msgstr ""
 msgid "Something went wrong while loading the app."
 msgstr "Algo salió mal al cargar la aplicación."
 
-#: src/components/layout/Sidebar.tsx:33
+#: src/components/layout/Sidebar.tsx:34
 #: src/config/pageTitles.ts:7
 #: src/routes/_authenticated/starred.tsx:163
 msgid "Starred"
@@ -1410,6 +1467,11 @@ msgstr "Destacados"
 
 #: src/features/dashboard/components/StarredFoldersSection.tsx:21
 msgid "Starred Folders"
+msgstr ""
+
+#: src/features/activity/components/ActivityTable.tsx:111
+#: src/features/activity/components/ActivityTable.tsx:317
+msgid "Status"
 msgstr ""
 
 #: src/features/onboarding/OnboardingWizard.tsx:131
@@ -1433,11 +1495,11 @@ msgstr ""
 msgid "Sunset Blend"
 msgstr ""
 
-#: src/routes/_authenticated/files.tsx:197
+#: src/routes/_authenticated/files.tsx:212
 msgid "Sync disabled"
 msgstr ""
 
-#: src/routes/_authenticated/files.tsx:197
+#: src/routes/_authenticated/files.tsx:212
 msgid "Sync enabled"
 msgstr ""
 
@@ -1485,7 +1547,7 @@ msgstr ""
 msgid "Total Size"
 msgstr ""
 
-#: src/config/pageTitles.ts:9
+#: src/config/pageTitles.ts:10
 #: src/routes/_authenticated/trash.tsx:10
 msgid "Trash"
 msgstr "Papelera"
@@ -1524,7 +1586,7 @@ msgid "Update available"
 msgstr "Actualización disponible"
 
 #. placeholder {0}: latestGithubVersion ?? "unknown"
-#: src/components/layout/Sidebar.tsx:109
+#: src/components/layout/Sidebar.tsx:111
 msgid "Update available: v{0})"
 msgstr ""
 
@@ -1575,8 +1637,8 @@ msgstr ""
 msgid "Users"
 msgstr "Usuarios"
 
-#: src/components/layout/Sidebar.tsx:38
-#: src/config/pageTitles.ts:11
+#: src/components/layout/Sidebar.tsx:40
+#: src/config/pageTitles.ts:12
 msgid "Vault"
 msgstr "Bóveda"
 
