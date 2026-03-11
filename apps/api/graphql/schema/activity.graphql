@@ -32,17 +32,17 @@ extend type Query {
 	"""
 	Get activity log (recent activities)
 	"""
-	activities(page: Int, limit: Int): ActivityConnection!
+	activities(page: Int, limit: Int): ActivityConnection! @auth
 
 	"""
 	Get active jobs (pending or running) for the current workspace
 	"""
-	activeJobs: [Job!]!
+	activeJobs: [Job!]! @auth
 
 	"""
 	Get recent jobs (active and completed) for the current workspace
 	"""
-	recentJobs(limit: Int, offset: Int): [Job!]!
+	recentJobs(limit: Int, offset: Int): [Job!]! @auth
 }
 
 extend type Mutation {
@@ -50,12 +50,12 @@ extend type Mutation {
 	Cancel a queued or running job. Supports any cancellable job type
 	(e.g. provider_transfer, smart-search-indexing).
 	"""
-	cancelJob(jobId: ID!): Boolean!
+	cancelJob(jobId: ID!): Boolean! @auth
 
 	"""
 	Delete activities by ID for the current user
 	"""
-	clearActivities(ids: [ID!]!): Int!
+	clearActivities(ids: [ID!]!): Int! @auth
 }
 
 """
@@ -87,10 +87,10 @@ type Subscription {
 	"""
 	Subscribe to job updates for the current workspace
 	"""
-	jobUpdated: Job!
+	jobUpdated: Job! @auth
 
 	"""
 	Subscribe to newly created activities for the current user
 	"""
-	activityCreated: Activity!
+	activityCreated: Activity! @auth
 }

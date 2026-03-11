@@ -3,7 +3,7 @@ import type { Database } from "@drivebase/db";
 import {
 	buildTransferQueueJobId,
 	getTransferQueue,
-} from "../../../queue/transfer-queue";
+} from "@/queue/transfer/queue";
 import { logger } from "../../../utils/runtime/logger";
 import { ActivityService } from "../../activity";
 import { ProviderService } from "../../provider";

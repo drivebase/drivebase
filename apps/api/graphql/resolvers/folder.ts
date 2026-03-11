@@ -1,13 +1,13 @@
 import { NotFoundError } from "@drivebase/core";
 import { files, folders, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { FolderService } from "../../service/folder";
+import { Tokens } from "../../container";
+import type { FolderService } from "../../service/folder";
 import type {
 	FolderResolvers,
 	MutationResolvers,
 	QueryResolvers,
 } from "../generated/types";
-import { requireAuth } from "./auth-helpers";
 
 export const folderResolvers: FolderResolvers = {
 	provider: async (parent, _args, context) => {
@@ -72,15 +72,19 @@ export const folderResolvers: FolderResolvers = {
 
 export const folderQueries: QueryResolvers = {
 	folder: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const folderService = new FolderService(context.db);
+		const user = context.user!;
+		const folderService = context.container.resolve<FolderService>(
+			Tokens.FolderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return folderService.getFolder(args.id, user.userId, workspaceId);
 	},
 
 	folders: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const folderService = new FolderService(context.db);
+		const user = context.user!;
+		const folderService = context.container.resolve<FolderService>(
+			Tokens.FolderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return folderService.listFolders(
 			user.userId,
@@ -91,8 +95,10 @@ export const folderQueries: QueryResolvers = {
 	},
 
 	starredFolders: async (_parent, _args, context) => {
-		const user = requireAuth(context);
-		const folderService = new FolderService(context.db);
+		const user = context.user!;
+		const folderService = context.container.resolve<FolderService>(
+			Tokens.FolderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return folderService.getStarredFolders(user.userId, workspaceId);
 	},
@@ -100,8 +106,10 @@ export const folderQueries: QueryResolvers = {
 
 export const folderMutations: MutationResolvers = {
 	createFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const folderService = new FolderService(context.db);
+		const user = context.user!;
+		const folderService = context.container.resolve<FolderService>(
+			Tokens.FolderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return folderService.createFolder(
@@ -114,8 +122,10 @@ export const folderMutations: MutationResolvers = {
 	},
 
 	renameFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const folderService = new FolderService(context.db);
+		const user = context.user!;
+		const folderService = context.container.resolve<FolderService>(
+			Tokens.FolderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return folderService.renameFolder(
@@ -127,8 +137,10 @@ export const folderMutations: MutationResolvers = {
 	},
 
 	moveFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const folderService = new FolderService(context.db);
+		const user = context.user!;
+		const folderService = context.container.resolve<FolderService>(
+			Tokens.FolderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return folderService.moveFolder(
@@ -140,8 +152,10 @@ export const folderMutations: MutationResolvers = {
 	},
 
 	deleteFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const folderService = new FolderService(context.db);
+		const user = context.user!;
+		const folderService = context.container.resolve<FolderService>(
+			Tokens.FolderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		await folderService.deleteFolder(args.id, user.userId, workspaceId);
@@ -149,16 +163,20 @@ export const folderMutations: MutationResolvers = {
 	},
 
 	starFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const folderService = new FolderService(context.db);
+		const user = context.user!;
+		const folderService = context.container.resolve<FolderService>(
+			Tokens.FolderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return folderService.starFolder(args.id, user.userId, workspaceId);
 	},
 
 	unstarFolder: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const folderService = new FolderService(context.db);
+		const user = context.user!;
+		const folderService = context.container.resolve<FolderService>(
+			Tokens.FolderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return folderService.unstarFolder(args.id, user.userId, workspaceId);

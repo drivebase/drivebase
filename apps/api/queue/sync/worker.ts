@@ -8,15 +8,13 @@ import { Worker } from "bullmq";
 import { and, eq, inArray } from "drizzle-orm";
 import { ActivityService } from "@/service/activity";
 import { syncProvider } from "@/service/provider/mutation";
-import { createBullMQConnection } from "../redis/client";
-import { logger } from "../utils/runtime/logger";
+import { createBullMQConnection } from "@/redis/client";
+import { logger } from "@/utils/runtime/logger";
 import type {
 	SyncJobData,
 	SyncQueueJobData,
 	WorkspaceAutoSyncJobData,
-} from "./sync-queue";
-
-let syncWorker: Worker<SyncQueueJobData> | null = null;
+} from "@/queue/sync/queue";
 
 async function processWorkspaceAutoSyncJob(
 	data: WorkspaceAutoSyncJobData,
@@ -161,15 +159,8 @@ async function processWorkspaceAutoSyncJob(
 	}
 }
 
-/**
- * Start the sync worker
- */
-export function startSyncWorker(): Worker<SyncQueueJobData> {
-	if (syncWorker) {
-		return syncWorker;
-	}
-
-	syncWorker = new Worker<SyncQueueJobData>(
+export function createSyncWorker(): Worker<SyncQueueJobData> {
+	const worker = new Worker<SyncQueueJobData>(
 		"sync",
 		async (job) => {
 			if (job.name === "sync-workspace-auto") {
@@ -208,7 +199,7 @@ export function startSyncWorker(): Worker<SyncQueueJobData> {
 		},
 	);
 
-	syncWorker.on("failed", (job, err) => {
+	worker.on("failed", (job, err) => {
 		logger.error({
 			msg: "Sync job failed",
 			jobId: job?.id,
@@ -223,17 +214,5 @@ export function startSyncWorker(): Worker<SyncQueueJobData> {
 		});
 	});
 
-	logger.info("Sync worker started");
-
-	return syncWorker;
-}
-
-/**
- * Stop the sync worker
- */
-export async function stopSyncWorker(): Promise<void> {
-	if (syncWorker) {
-		await syncWorker.close();
-		syncWorker = null;
-	}
+	return worker;
 }

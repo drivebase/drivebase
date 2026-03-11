@@ -25,12 +25,13 @@ input CreateWebDavCredentialInput {
 }
 
 extend type Query {
-	webDavCredentials: [WebDavCredential!]!
+	webDavCredentials: [WebDavCredential!]! @auth(workspaceRole: [OWNER, ADMIN])
 }
 
 extend type Mutation {
 	createWebDavCredential(
 		input: CreateWebDavCredentialInput!
-	): CreateWebDavCredentialResult!
+	): CreateWebDavCredentialResult! @auth(workspaceRole: [OWNER, ADMIN])
 	revokeWebDavCredential(id: ID!): Boolean!
+		@auth(workspaceRole: [OWNER, ADMIN])
 }

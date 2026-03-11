@@ -2,11 +2,13 @@ import { NotFoundError, ValidationError } from "@drivebase/core";
 import { files, folders, storageProviders, users } from "@drivebase/db";
 import { S3Provider } from "@drivebase/s3";
 import { and, eq } from "drizzle-orm";
+import { Tokens } from "../../container";
 import { getPublicApiBaseUrl } from "../../config/url";
-import { getUploadQueue } from "../../queue/upload-queue";
-import { FileService } from "../../service/file";
-import { UploadSessionManager } from "../../service/file/upload";
-import { ProviderService } from "../../service/provider";
+import { getUploadQueue } from "@/queue/uploads/queue";
+import { getRedis } from "../../redis/client";
+import type { FileService } from "../../service/file";
+import type { UploadSessionManager } from "../../service/file/upload";
+import type { ProviderService } from "../../service/provider";
 import type {
 	FileResolvers,
 	MutationResolvers,
@@ -16,7 +18,6 @@ import type {
 import { FileLifecycleState, RestoreTier } from "../generated/types";
 import { type PubSubChannels, pubSub } from "../pubsub";
 import { toGraphqlJob } from "./activity";
-import { requireAuth } from "./auth-helpers";
 
 function toFileDownloadLinkType(downloadLink: {
 	id: string;
@@ -55,10 +56,6 @@ function fromRestoreTier(tier: RestoreTier): "fast" | "standard" | "bulk" {
 	if (tier === RestoreTier.Bulk) return "bulk";
 	return "standard";
 }
-
-/**
- * Require authentication
- */
 
 export const fileResolvers: FileResolvers = {
 	lifecycle: (parent) => ({
@@ -116,15 +113,19 @@ export const fileResolvers: FileResolvers = {
 
 export const fileQueries: QueryResolvers = {
 	file: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return fileService.getFile(args.id, user.userId, workspaceId);
 	},
 
 	files: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.listFiles(
@@ -137,8 +138,10 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	contents: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return fileService.getContents(
 			user.userId,
@@ -149,8 +152,10 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	searchFiles: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.searchFiles(
@@ -162,8 +167,10 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	searchFolders: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.searchFolders(
@@ -175,8 +182,10 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	smartSearch: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		const results = await fileService.smartSearch(
@@ -194,8 +203,10 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	recentFiles: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.getRecentFiles(
@@ -206,15 +217,19 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	starredFiles: async (_parent, _args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return fileService.getStarredFiles(user.userId, workspaceId);
 	},
 
 	fileDownloadLinks: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		const downloadLinks = await fileService.listActiveFileDownloadLinks(
 			args.fileId,
@@ -225,16 +240,20 @@ export const fileQueries: QueryResolvers = {
 	},
 
 	activeUploadSessions: async (_parent, _args, context) => {
-		const user = requireAuth(context);
-		const sessionManager = new UploadSessionManager(context.db);
+		const user = context.user!;
+		const sessionManager = context.container.resolve<UploadSessionManager>(
+			Tokens.UploadSessionManager,
+		);
 		return sessionManager.getActiveSessionsForUser(user.userId);
 	},
 };
 
 export const fileMutations: MutationResolvers = {
 	requestUpload: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		const result = await fileService.requestUpload(
@@ -256,8 +275,10 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	requestDownload: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		const result = await fileService.requestDownload(
 			args.id,
@@ -273,8 +294,10 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	createFileDownloadLink: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		const downloadLink = await fileService.createFileDownloadLink(
 			args.input.fileId,
@@ -288,16 +311,20 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	renameFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.renameFile(args.id, user.userId, args.name, workspaceId);
 	},
 
 	moveFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.moveFile(
@@ -309,8 +336,10 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	moveFileToProvider: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.moveFileToProvider(
@@ -322,8 +351,10 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	archiveFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		const job = await fileService.archiveFile(
 			args.id,
@@ -334,8 +365,10 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	requestFileRestore: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		const job = await fileService.requestFileRestore(
 			args.id,
@@ -348,8 +381,10 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	refreshFileLifecycle: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		const lifecycle = await fileService.refreshFileLifecycle(
 			args.id,
@@ -366,8 +401,10 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	deleteFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		await fileService.deleteFile(args.id, user.userId, workspaceId);
@@ -375,24 +412,30 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	starFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.starFile(args.id, user.userId, workspaceId);
 	},
 
 	unstarFile: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		return fileService.unstarFile(args.id, user.userId, workspaceId);
 	},
 
 	revokeFileDownloadLink: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		return fileService.revokeFileDownloadLink(
 			args.id,
@@ -402,9 +445,13 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	initiateChunkedUpload: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const fileService = new FileService(context.db);
-		const sessionManager = new UploadSessionManager(context.db);
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
+		const sessionManager = context.container.resolve<UploadSessionManager>(
+			Tokens.UploadSessionManager,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 
 		const { input } = args;
@@ -433,7 +480,9 @@ export const fileMutations: MutationResolvers = {
 		});
 
 		// Check if provider supports direct multipart (S3)
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const providerRecord = await providerService.getProvider(
 			input.providerId,
 			user.userId,
@@ -462,7 +511,6 @@ export const fileMutations: MutationResolvers = {
 			);
 
 			// Store the S3 uploadId and remoteId in Redis for later completion
-			const { getRedis } = await import("../../redis/client");
 			const redis = getRedis();
 			await redis.set(
 				`upload:s3multipart:${session.sessionId}`,
@@ -491,16 +539,20 @@ export const fileMutations: MutationResolvers = {
 	},
 
 	cancelUploadSession: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const sessionManager = new UploadSessionManager(context.db);
+		const user = context.user!;
+		const sessionManager = context.container.resolve<UploadSessionManager>(
+			Tokens.UploadSessionManager,
+		);
 
 		await sessionManager.cancelSession(args.sessionId, user.userId);
 		return true;
 	},
 
 	retryUploadSession: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const sessionManager = new UploadSessionManager(context.db);
+		const user = context.user!;
+		const sessionManager = context.container.resolve<UploadSessionManager>(
+			Tokens.UploadSessionManager,
+		);
 
 		const session = await sessionManager.getSession(args.sessionId);
 		if (!session) {
@@ -535,8 +587,10 @@ export const fileMutations: MutationResolvers = {
 		return true;
 	},
 	completeS3MultipartUpload: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const sessionManager = new UploadSessionManager(context.db);
+		const user = context.user!;
+		const sessionManager = context.container.resolve<UploadSessionManager>(
+			Tokens.UploadSessionManager,
+		);
 
 		const session = await sessionManager.getSession(args.sessionId);
 		if (!session) {
@@ -547,7 +601,6 @@ export const fileMutations: MutationResolvers = {
 		}
 
 		// Get S3 multipart info from Redis
-		const { getRedis } = await import("../../redis/client");
 		const redis = getRedis();
 		const multipartJson = await redis.get(
 			`upload:s3multipart:${args.sessionId}`,
@@ -565,7 +618,9 @@ export const fileMutations: MutationResolvers = {
 		};
 
 		// Get the S3 provider instance
-		const providerService = new ProviderService(context.db);
+		const providerService = context.container.resolve<ProviderService>(
+			Tokens.ProviderService,
+		);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		const providerRecord = await providerService.getProvider(
 			session.providerId,

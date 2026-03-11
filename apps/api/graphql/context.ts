@@ -2,15 +2,20 @@ import type { Database } from "@drivebase/db";
 import { getDb } from "@drivebase/db";
 import { isApiKeyToken } from "@drivebase/utils/server/api-key";
 import type { YogaInitialContext } from "graphql-yoga";
+import type { ServiceContainer } from "../container/container";
+import { createContainer } from "../container/setup";
 import { getSession } from "../redis/session";
 import { validateApiKey } from "../service/api-key";
 import type { JWTPayload } from "../utils/auth/jwt";
 import { extractToken, verifyToken } from "../utils/auth/jwt";
 import { logger } from "../utils/runtime/logger";
+import { pubSub } from "./pubsub";
 
 export interface GraphQLContext {
 	/** Database client */
 	db: Database;
+	/** Service container for resolving services */
+	container: ServiceContainer;
 	/** Authenticated user (null if not authenticated) */
 	user: JWTPayload | null;
 	/** Request headers */
@@ -75,8 +80,11 @@ export async function createContext(
 		headers.get("x-real-ip") ||
 		"unknown";
 
+	const container = createContainer(db, pubSub);
+
 	return {
 		db,
+		container,
 		user,
 		headers,
 		ip,

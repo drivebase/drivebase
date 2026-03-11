@@ -97,22 +97,22 @@ extend type Query {
 	"""
 	Get all storage providers for current user
 	"""
-	storageProviders: [StorageProvider!]!
+	storageProviders: [StorageProvider!]! @auth
 
 	"""
 	Get storage provider by ID
 	"""
-	storageProvider(id: ID!): StorageProvider
+	storageProvider(id: ID!): StorageProvider @auth
 
 	"""
 	Get list of available storage provider types
 	"""
-	availableProviders: [AvailableProvider!]!
+	availableProviders: [AvailableProvider!]! @auth
 
 	"""
 	Get reusable OAuth app credentials for the current user and provider type
 	"""
-	oauthProviderCredentials(type: ProviderType!): [OAuthProviderCredential!]!
+	oauthProviderCredentials(type: ProviderType!): [OAuthProviderCredential!]! @auth
 }
 
 input SyncOptionsInput {
@@ -124,48 +124,48 @@ extend type Mutation {
 	"""
 	Connect a new storage provider
 	"""
-	connectStorage(input: ConnectStorageInput!): StorageProvider!
+	connectStorage(input: ConnectStorageInput!): StorageProvider! @auth
 
 	"""
 	Disconnect and remove storage provider
 	"""
-	disconnectProvider(id: ID!): Boolean!
+	disconnectProvider(id: ID!): Boolean! @auth
 
 	"""
 	Sync provider quota and metadata
 	"""
-	syncProvider(id: ID!, options: SyncOptionsInput): StorageProvider!
+	syncProvider(id: ID!, options: SyncOptionsInput): StorageProvider! @auth
 
 	"""
 	Update provider quota settings manually
 	"""
-	updateProviderQuota(input: UpdateProviderQuotaInput!): StorageProvider!
+	updateProviderQuota(input: UpdateProviderQuotaInput!): StorageProvider! @auth
 
 	"""
 	Rename a connected provider display name
 	"""
-	renameProvider(id: ID!, name: String!): StorageProvider!
+	renameProvider(id: ID!, name: String!): StorageProvider! @auth
 
 	"""
 	Initiate the OAuth flow for an OAuth-type provider.
 	Returns the authorization URL to redirect the user to.
 	The OAuth callback is handled via GET /webhook/callback/:id
 	"""
-	initiateProviderOAuth(id: ID!, source: OAuthInitiator): OAuthInitResult!
+	initiateProviderOAuth(id: ID!, source: OAuthInitiator): OAuthInitResult! @auth
 
 	"""
 	Create and save reusable OAuth app credentials for a provider
 	"""
 	createOAuthProviderCredential(
 		input: CreateOAuthProviderCredentialInput!
-	): OAuthProviderCredential!
+	): OAuthProviderCredential! @auth
 
 	"""
 	Poll-based auth for providers that don't redirect back (e.g. Login Flow v2).
 	Returns pending status or the activated provider on success.
 	The frontend calls this repeatedly after opening the auth popup.
 	"""
-	pollProviderAuth(id: ID!): PollProviderAuthResult!
+	pollProviderAuth(id: ID!): PollProviderAuthResult! @auth
 }
 
 input UpdateProviderQuotaInput {

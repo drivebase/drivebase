@@ -83,22 +83,25 @@ extend type Query {
 	"""
 	Get current user's workspaces
 	"""
-	workspaces: [Workspace!]!
+	workspaces: [Workspace!]! @auth
 
 	"""
 	List members for a workspace
 	"""
 	workspaceMembers(workspaceId: ID!): [WorkspaceMember!]!
+		@auth(workspaceRole: [OWNER, ADMIN, EDITOR, VIEWER])
 
 	"""
 	List active invites for a workspace
 	"""
 	workspaceInvites(workspaceId: ID!): [WorkspaceInvite!]!
+		@auth(workspaceRole: [OWNER, ADMIN])
 
 	"""
 	Get workspace storage and bandwidth stats
 	"""
 	workspaceStats(workspaceId: ID!, days: Int = 30): WorkspaceStats!
+		@auth(workspaceRole: [OWNER, ADMIN, EDITOR, VIEWER])
 }
 
 input CreateWorkspaceInput {
@@ -151,56 +154,62 @@ extend type Mutation {
 	"""
 	Create a new workspace
 	"""
-	createWorkspace(input: CreateWorkspaceInput!): Workspace!
+	createWorkspace(input: CreateWorkspaceInput!): Workspace! @auth
 
 	"""
 	Create workspace invite link with role
 	"""
 	createWorkspaceInvite(input: CreateWorkspaceInviteInput!): WorkspaceInvite!
+		@auth(workspaceRole: [OWNER, ADMIN])
 
 	"""
 	Accept workspace invite link
 	"""
-	acceptWorkspaceInvite(token: String!): Workspace!
+	acceptWorkspaceInvite(token: String!): Workspace! @auth
 
 	"""
 	Update workspace member role
 	"""
 	updateWorkspaceMemberRole(input: UpdateWorkspaceMemberRoleInput!): Boolean!
+		@auth(workspaceRole: [OWNER, ADMIN])
 
 	"""
 	Update workspace name
 	"""
 	updateWorkspaceName(input: UpdateWorkspaceNameInput!): Workspace!
+		@auth(workspaceRole: [OWNER, ADMIN])
 
 	"""
 	Update workspace sync behavior for move/rename operations
 	"""
 	updateWorkspaceSyncOperations(
 		input: UpdateWorkspaceSyncOperationsInput!
-	): Workspace!
+	): Workspace! @auth(workspaceRole: [OWNER, ADMIN])
 
 	"""
 	Remove a member from workspace
 	"""
 	removeWorkspaceMember(workspaceId: ID!, userId: ID!): Boolean!
+		@auth(workspaceRole: [OWNER, ADMIN])
 
 	"""
 	Revoke a workspace invite link
 	"""
 	revokeWorkspaceInvite(workspaceId: ID!, inviteId: ID!): Boolean!
+		@auth(workspaceRole: [OWNER, ADMIN])
 
 	"""
 	Toggle smart search for workspace (indexes file contents on first enable)
 	"""
 	updateWorkspaceSmartSearch(
 		input: UpdateWorkspaceSmartSearchInput!
-	): Workspace!
+	): Workspace! @auth(workspaceRole: [OWNER, ADMIN])
 
 	"""
 	Update scheduled auto-sync for workspace providers
 	"""
 	updateWorkspaceAutoSync(input: UpdateWorkspaceAutoSyncInput!): Workspace!
+		@auth(workspaceRole: [OWNER, ADMIN])
 
 	"""
 	Set (replace) access grants for a workspace member.
@@ -210,7 +219,7 @@ extend type Mutation {
 		workspaceId: ID!
 		userId: ID!
 		grants: [AccessGrantInput!]!
-	): Boolean!
+	): Boolean! @auth(workspaceRole: [OWNER, ADMIN])
 
 	"""
 	Add a user to a workspace directly by their email address.
@@ -220,5 +229,5 @@ extend type Mutation {
 		email: String!
 		role: WorkspaceMemberRole!
 		accessGrants: [AccessGrantInput!]
-	): Boolean!
+	): Boolean! @auth(workspaceRole: [OWNER, ADMIN])
 }

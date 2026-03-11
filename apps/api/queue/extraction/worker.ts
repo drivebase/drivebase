@@ -8,31 +8,22 @@ import {
 } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { and, eq, sql } from "drizzle-orm";
-import { createBullMQConnection } from "../redis/client";
-import { ActivityService } from "../service/activity";
-import { getProviderInstance } from "../service/provider/query";
+import { createBullMQConnection } from "@/redis/client";
+import { ActivityService } from "@/service/activity";
+import { getProviderInstance } from "@/service/provider/query";
 import {
 	getExtractor,
 	isExtractionSupported,
 	isWithinSizeLimit,
-} from "../utils/extraction";
-import {
-	assertNotCancelled,
-	JobCancelledError,
-} from "../utils/jobs/job-cancel";
-import { logger } from "../utils/runtime/logger";
-import type { ExtractionJobData } from "./extraction-queue";
+} from "@/utils/extraction";
+import { assertNotCancelled, JobCancelledError } from "@/utils/jobs/job-cancel";
+import { logger } from "@/utils/runtime/logger";
+import type { ExtractionJobData } from "@/queue/extraction/queue";
 
 const MAX_CONCURRENT = 5;
 
-let extractionWorker: Worker<ExtractionJobData> | null = null;
-
-export function startExtractionWorker(): Worker<ExtractionJobData> {
-	if (extractionWorker) {
-		return extractionWorker;
-	}
-
-	extractionWorker = new Worker<ExtractionJobData>(
+export function createExtractionWorker(): Worker<ExtractionJobData> {
+	const worker = new Worker<ExtractionJobData>(
 		"extraction",
 		async (bullJob) => {
 			const db = getDb();
@@ -228,7 +219,7 @@ export function startExtractionWorker(): Worker<ExtractionJobData> {
 		},
 	);
 
-	extractionWorker.on("failed", (job, error) => {
+	worker.on("failed", (job, error) => {
 		logger.error({
 			msg: "Extraction worker job failed",
 			jobId: job?.id,
@@ -236,16 +227,7 @@ export function startExtractionWorker(): Worker<ExtractionJobData> {
 		});
 	});
 
-	logger.info("Extraction worker started");
-	return extractionWorker;
-}
-
-export async function stopExtractionWorker(): Promise<void> {
-	if (extractionWorker) {
-		await extractionWorker.close();
-		extractionWorker = null;
-		logger.info("Extraction worker stopped");
-	}
+	return worker;
 }
 
 async function markFailed(

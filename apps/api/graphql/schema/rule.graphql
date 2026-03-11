@@ -19,12 +19,12 @@ extend type Query {
 	"""
 	List all file rules for the current workspace
 	"""
-	fileRules: [FileRule!]!
+	fileRules: [FileRule!]! @auth
 
 	"""
 	Get a single file rule by ID
 	"""
-	fileRule(id: ID!): FileRule!
+	fileRule(id: ID!): FileRule! @auth
 }
 
 input CreateFileRuleInput {
@@ -47,20 +47,20 @@ extend type Mutation {
 	"""
 	Create a new file placement rule
 	"""
-	createFileRule(input: CreateFileRuleInput!): FileRule!
+	createFileRule(input: CreateFileRuleInput!): FileRule! @auth
 
 	"""
 	Update an existing file placement rule
 	"""
-	updateFileRule(id: ID!, input: UpdateFileRuleInput!): FileRule!
+	updateFileRule(id: ID!, input: UpdateFileRuleInput!): FileRule! @auth
 
 	"""
 	Delete a file placement rule (soft delete)
 	"""
-	deleteFileRule(id: ID!): Boolean!
+	deleteFileRule(id: ID!): Boolean! @auth
 
 	"""
 	Reorder file rules by providing ordered list of rule IDs
 	"""
-	reorderFileRules(orderedIds: [ID!]!): [FileRule!]!
+	reorderFileRules(orderedIds: [ID!]!): [FileRule!]! @auth
 }

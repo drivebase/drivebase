@@ -10,7 +10,7 @@ import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import {
 	removeWorkspaceAutoSyncSchedule,
 	upsertWorkspaceAutoSyncSchedule,
-} from "@/queue/sync-queue";
+} from "@/queue/sync/queue";
 import { validateCronExpression } from "@/utils/cron";
 
 export type UpdateWorkspaceAutoSyncInput = {

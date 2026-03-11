@@ -9,7 +9,6 @@ import {
 	listWorkspaceAutoSyncProviderIds,
 	listWorkspaceMembers,
 	removeWorkspaceMember,
-	requireWorkspaceRole,
 	revokeWorkspaceInvite,
 	setMemberAccessGrants,
 	updateWorkspaceAutoSync,
@@ -31,7 +30,6 @@ import type {
 	WorkspaceResolvers,
 	Workspace as WorkspaceType,
 } from "../generated/types";
-import { requireAuth } from "./auth-helpers";
 
 function toWorkspaceType(workspace: {
 	id: string;
@@ -94,29 +92,19 @@ function toWorkspaceInviteType(invite: {
 
 export const workspaceQueries: QueryResolvers = {
 	workspaces: async (_parent, _args, context) => {
-		const user = requireAuth(context);
-		const workspaces = await listAccessibleWorkspaces(context.db, user.userId);
+		const workspaces = await listAccessibleWorkspaces(
+			context.db,
+			context.user!.userId,
+		);
 		return workspaces.map(toWorkspaceType);
 	},
 
 	workspaceMembers: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
-			"owner",
-			"admin",
-			"editor",
-			"viewer",
-		]);
 		const members = await listWorkspaceMembers(context.db, args.workspaceId);
 		return members.map(toWorkspaceMemberType);
 	},
 
 	workspaceInvites: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
-			"owner",
-			"admin",
-		]);
 		const invites = await listActiveWorkspaceInvites(
 			context.db,
 			args.workspaceId,
@@ -125,23 +113,15 @@ export const workspaceQueries: QueryResolvers = {
 	},
 
 	workspaceStats: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
-			"owner",
-			"admin",
-			"editor",
-			"viewer",
-		]);
 		return getWorkspaceStats(context.db, args.workspaceId, args.days ?? 30);
 	},
 };
 
 export const workspaceMutations: MutationResolvers = {
 	createWorkspace: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const workspace = await createWorkspace(
 			context.db,
-			user.userId,
+			context.user!.userId,
 			args.input.name,
 			args.input.color.toLowerCase(),
 		);
@@ -149,18 +129,10 @@ export const workspaceMutations: MutationResolvers = {
 	},
 
 	createWorkspaceInvite: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(
-			context.db,
-			args.input.workspaceId,
-			user.userId,
-			["owner", "admin"],
-		);
-
 		const invite = await createWorkspaceInvite(
 			context.db,
 			args.input.workspaceId,
-			user.userId,
+			context.user!.userId,
 			args.input.role.toLowerCase() as "admin" | "editor" | "viewer",
 			args.input.expiresInDays ?? 7,
 			(args.input.accessGrants ?? []).map((g) => ({
@@ -172,24 +144,15 @@ export const workspaceMutations: MutationResolvers = {
 	},
 
 	acceptWorkspaceInvite: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const workspace = await acceptWorkspaceInvite(
 			context.db,
 			args.token,
-			user.userId,
+			context.user!.userId,
 		);
 		return toWorkspaceType(workspace);
 	},
 
 	updateWorkspaceMemberRole: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(
-			context.db,
-			args.input.workspaceId,
-			user.userId,
-			["owner", "admin"],
-		);
-
 		return updateWorkspaceMemberRole(
 			context.db,
 			args.input.workspaceId,
@@ -199,14 +162,6 @@ export const workspaceMutations: MutationResolvers = {
 	},
 
 	updateWorkspaceName: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(
-			context.db,
-			args.input.workspaceId,
-			user.userId,
-			["owner", "admin"],
-		);
-
 		const workspace = await updateWorkspaceName(
 			context.db,
 			args.input.workspaceId,
@@ -217,14 +172,6 @@ export const workspaceMutations: MutationResolvers = {
 	},
 
 	updateWorkspaceSyncOperations: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(
-			context.db,
-			args.input.workspaceId,
-			user.userId,
-			["owner", "admin"],
-		);
-
 		const workspace = await updateWorkspaceSyncOperationsToProvider(
 			context.db,
 			args.input.workspaceId,
@@ -235,32 +182,14 @@ export const workspaceMutations: MutationResolvers = {
 	},
 
 	removeWorkspaceMember: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
-			"owner",
-			"admin",
-		]);
 		return removeWorkspaceMember(context.db, args.workspaceId, args.userId);
 	},
 
 	revokeWorkspaceInvite: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
-			"owner",
-			"admin",
-		]);
 		return revokeWorkspaceInvite(context.db, args.workspaceId, args.inviteId);
 	},
 
 	updateWorkspaceSmartSearch: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(
-			context.db,
-			args.input.workspaceId,
-			user.userId,
-			["owner", "admin"],
-		);
-
 		const workspace = await updateWorkspaceSmartSearch(
 			context.db,
 			args.input.workspaceId,
@@ -271,17 +200,12 @@ export const workspaceMutations: MutationResolvers = {
 	},
 
 	addWorkspaceMemberByEmail: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
-			"owner",
-			"admin",
-		]);
 		return addWorkspaceMemberByEmail(
 			context.db,
 			args.workspaceId,
 			args.email,
 			args.role.toLowerCase() as "admin" | "editor" | "viewer",
-			user.userId,
+			context.user!.userId,
 			(args.accessGrants ?? []).map((g) => ({
 				providerId: g.providerId,
 				folderPath: g.folderPath ?? null,
@@ -290,11 +214,6 @@ export const workspaceMutations: MutationResolvers = {
 	},
 
 	setMemberAccessGrants: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(context.db, args.workspaceId, user.userId, [
-			"owner",
-			"admin",
-		]);
 		return setMemberAccessGrants(
 			context.db,
 			args.workspaceId,
@@ -307,14 +226,6 @@ export const workspaceMutations: MutationResolvers = {
 	},
 
 	updateWorkspaceAutoSync: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		await requireWorkspaceRole(
-			context.db,
-			args.input.workspaceId,
-			user.userId,
-			["owner", "admin"],
-		);
-
 		const workspace = await updateWorkspaceAutoSync(context.db, {
 			workspaceId: args.input.workspaceId,
 			enabled: args.input.enabled,

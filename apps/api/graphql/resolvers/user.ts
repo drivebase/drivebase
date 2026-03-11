@@ -1,17 +1,18 @@
 import type { UserRole } from "@drivebase/core";
-import { UserService } from "../../service/user";
+import { Tokens } from "../../container";
+import type { UserService } from "../../service/user";
 import type {
 	UserRole as GQLUserRole,
 	MutationResolvers,
 	QueryResolvers,
 	UserResolvers,
 } from "../generated/types";
-import { requireAuth, requireRole } from "./auth-helpers";
 
 export const userQueries: QueryResolvers = {
 	users: async (_parent, args, context) => {
-		requireRole(context, ["admin", "owner"]);
-		const userService = new UserService(context.db);
+		const userService = context.container.resolve<UserService>(
+			Tokens.UserService,
+		);
 		return userService.findAll(
 			args.limit ?? undefined,
 			args.offset ?? undefined,
@@ -19,23 +20,26 @@ export const userQueries: QueryResolvers = {
 	},
 
 	user: async (_parent, args, context) => {
-		requireRole(context, ["admin", "owner"]);
-		const userService = new UserService(context.db);
+		const userService = context.container.resolve<UserService>(
+			Tokens.UserService,
+		);
 		return userService.findById(args.id);
 	},
 
 	searchUsers: async (_parent, args, context) => {
-		requireAuth(context);
 		if (!args.query || args.query.trim().length < 2) return [];
-		const userService = new UserService(context.db);
+		const userService = context.container.resolve<UserService>(
+			Tokens.UserService,
+		);
 		return userService.search(args.query, args.limit ?? 8);
 	},
 };
 
 export const userMutations: MutationResolvers = {
 	createUser: async (_parent, args, context) => {
-		requireRole(context, ["admin", "owner"]);
-		const userService = new UserService(context.db);
+		const userService = context.container.resolve<UserService>(
+			Tokens.UserService,
+		);
 
 		return userService.create({
 			email: args.input.email,
@@ -45,8 +49,9 @@ export const userMutations: MutationResolvers = {
 	},
 
 	updateUser: async (_parent, args, context) => {
-		requireRole(context, ["admin", "owner"]);
-		const userService = new UserService(context.db);
+		const userService = context.container.resolve<UserService>(
+			Tokens.UserService,
+		);
 
 		const updateData: { role?: UserRole; isActive?: boolean } = {};
 		if (args.input.role !== null && args.input.role !== undefined) {
@@ -60,8 +65,9 @@ export const userMutations: MutationResolvers = {
 	},
 
 	deleteUser: async (_parent, args, context) => {
-		requireRole(context, ["owner"]);
-		const userService = new UserService(context.db);
+		const userService = context.container.resolve<UserService>(
+			Tokens.UserService,
+		);
 		await userService.delete(args.id);
 		return true;
 	},

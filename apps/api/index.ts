@@ -2,25 +2,7 @@ import { readFile } from "node:fs/promises";
 import { ensureVectorExtension, getDb } from "@drivebase/db";
 import { env } from "./config/env";
 import { mountPluginRoutes } from "./config/providers";
-import { closeExtractionQueue } from "./queue/extraction-queue";
-import {
-	startExtractionWorker,
-	stopExtractionWorker,
-} from "./queue/extraction-worker";
-import { closeFileLifecycleQueue } from "./queue/file-lifecycle-queue";
-import {
-	startFileLifecycleWorker,
-	stopFileLifecycleWorker,
-} from "./queue/file-lifecycle-worker";
-import { closeSyncQueue } from "./queue/sync-queue";
-import { startSyncWorker, stopSyncWorker } from "./queue/sync-worker";
-import { closeTransferQueue } from "./queue/transfer-queue";
-import {
-	startTransferWorker,
-	stopTransferWorker,
-} from "./queue/transfer-worker";
-import { closeUploadQueue } from "./queue/upload-queue";
-import { startUploadWorker, stopUploadWorker } from "./queue/upload-worker";
+import { registry } from "./queue/index";
 import { createApp } from "./server/app";
 import { mountCoreRoutes } from "./server/routes/core";
 import { yoga } from "./server/yoga";
@@ -89,11 +71,7 @@ const server = Bun.serve({
 });
 
 // Start BullMQ workers
-startUploadWorker();
-startSyncWorker();
-startTransferWorker();
-startFileLifecycleWorker();
-startExtractionWorker();
+registry.startAll();
 
 await reconcileWorkspaceAutoSyncSchedules(getDb());
 
@@ -112,16 +90,7 @@ async function shutdown() {
 
 	logger.info("Shutting down gracefully...");
 	server.stop();
-	await stopUploadWorker();
-	await closeUploadQueue();
-	await stopSyncWorker();
-	await closeSyncQueue();
-	await stopTransferWorker();
-	await closeTransferQueue();
-	await stopFileLifecycleWorker();
-	await closeFileLifecycleQueue();
-	await stopExtractionWorker();
-	await closeExtractionQueue();
+	await registry.stopAll();
 	telemetry.capture("server_shutdown");
 	await telemetry.shutdown();
 	process.exit(0);

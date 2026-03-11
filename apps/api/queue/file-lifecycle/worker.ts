@@ -2,27 +2,21 @@ import { sleep, ValidationError } from "@drivebase/core";
 import { files, getDb } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { eq } from "drizzle-orm";
-import { createBullMQConnection } from "../redis/client";
-import { ActivityService } from "../service/activity";
-import { mapProviderLifecycleState } from "../service/file/lifecycle/shared/mapping";
-import { ProviderService } from "../service/provider";
-import { logger } from "../utils/runtime/logger";
+import { createBullMQConnection } from "@/redis/client";
+import { ActivityService } from "@/service/activity";
+import { mapProviderLifecycleState } from "@/service/file/lifecycle/shared/mapping";
+import { ProviderService } from "@/service/provider";
+import { logger } from "@/utils/runtime/logger";
 import {
 	type FileLifecycleJobData,
 	getFileLifecycleQueue,
-} from "./file-lifecycle-queue";
+} from "@/queue/file-lifecycle/queue";
 
 const RESTORE_POLL_ATTEMPTS = 12;
 const RESTORE_POLL_DELAY_MS = 5000;
 
-let fileLifecycleWorker: Worker<FileLifecycleJobData> | null = null;
-
-export function startFileLifecycleWorker(): Worker<FileLifecycleJobData> {
-	if (fileLifecycleWorker) {
-		return fileLifecycleWorker;
-	}
-
-	fileLifecycleWorker = new Worker<FileLifecycleJobData>(
+export function createFileLifecycleWorker(): Worker<FileLifecycleJobData> {
+	const worker = new Worker<FileLifecycleJobData>(
 		"file-lifecycle",
 		async (bullJob) => {
 			const db = getDb();
@@ -226,7 +220,7 @@ export function startFileLifecycleWorker(): Worker<FileLifecycleJobData> {
 		},
 	);
 
-	fileLifecycleWorker.on("failed", (job, error) => {
+	worker.on("failed", (job, error) => {
 		logger.error({
 			msg: "File lifecycle worker failed",
 			jobId: job?.id,
@@ -234,16 +228,7 @@ export function startFileLifecycleWorker(): Worker<FileLifecycleJobData> {
 		});
 	});
 
-	logger.info("File lifecycle worker started");
-	return fileLifecycleWorker;
-}
-
-export async function stopFileLifecycleWorker(): Promise<void> {
-	if (fileLifecycleWorker) {
-		await fileLifecycleWorker.close();
-		fileLifecycleWorker = null;
-		logger.info("File lifecycle worker stopped");
-	}
+	return worker;
 }
 
 export async function drainFileLifecycleQueue(

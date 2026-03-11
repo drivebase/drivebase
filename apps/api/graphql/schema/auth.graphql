@@ -17,12 +17,12 @@ type Query {
 	"""
 	Get current authenticated user
 	"""
-	me: User
+	me: User @auth
 
 	"""
 	List passkeys registered for the current user
 	"""
-	myPasskeys: [Passkey!]!
+	myPasskeys: [Passkey!]! @auth
 }
 
 type Mutation {
@@ -39,7 +39,7 @@ type Mutation {
 	"""
 	Logout current user
 	"""
-	logout: Boolean!
+	logout: Boolean! @auth
 
 	"""
 	Request password reset OTP
@@ -54,27 +54,27 @@ type Mutation {
 	"""
 	Change password (requires authentication)
 	"""
-	changePassword(input: ChangePasswordInput!): Boolean!
+	changePassword(input: ChangePasswordInput!): Boolean! @auth
 
 	"""
 	Update current user's profile
 	"""
-	updateMyProfile(input: UpdateMyProfileInput!): User!
+	updateMyProfile(input: UpdateMyProfileInput!): User! @auth
 
 	"""
 	Complete user onboarding
 	"""
-	completeOnboarding: Boolean!
+	completeOnboarding: Boolean! @auth
 
 	"""
 	Start passkey registration (returns JSON options string)
 	"""
-	startPasskeyRegistration: String!
+	startPasskeyRegistration: String! @auth
 
 	"""
 	Verify passkey registration response and store credential
 	"""
-	verifyPasskeyRegistration(name: String!, response: String!): Passkey!
+	verifyPasskeyRegistration(name: String!, response: String!): Passkey! @auth
 
 	"""
 	Start passkey login — returns JSON with optionsJson and challengeId (no email needed)
@@ -89,7 +89,7 @@ type Mutation {
 	"""
 	Delete a registered passkey
 	"""
-	deletePasskey(id: ID!): Boolean!
+	deletePasskey(id: ID!): Boolean! @auth
 }
 
 input RegisterInput {

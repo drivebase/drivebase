@@ -7,28 +7,19 @@ import {
 } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { eq } from "drizzle-orm";
-import { pubSub } from "../graphql/pubsub";
-import { createBullMQConnection } from "../redis/client";
-import { logFileOperationDebugError } from "../service/file/shared/file-error-log";
-import { UploadSessionManager } from "../service/file/upload";
-import { ProviderService } from "../service/provider";
-import { fileSizeBucket, telemetry } from "../telemetry";
-import { isExtractionSupported } from "../utils/extraction";
-import { logger } from "../utils/runtime/logger";
-import { getExtractionQueue } from "./extraction-queue";
-import type { UploadJobData } from "./upload-queue";
+import { pubSub } from "@/graphql/pubsub";
+import { createBullMQConnection } from "@/redis/client";
+import { logFileOperationDebugError } from "@/service/file/shared/file-error-log";
+import { UploadSessionManager } from "@/service/file/upload";
+import { ProviderService } from "@/service/provider";
+import { fileSizeBucket, telemetry } from "@/telemetry";
+import { isExtractionSupported } from "@/utils/extraction";
+import { logger } from "@/utils/runtime/logger";
+import { getExtractionQueue } from "@/queue/extraction/queue";
+import type { UploadJobData } from "@/queue/uploads/queue";
 
-let uploadWorker: Worker<UploadJobData> | null = null;
-
-/**
- * Start the upload worker
- */
-export function startUploadWorker(): Worker<UploadJobData> {
-	if (uploadWorker) {
-		return uploadWorker;
-	}
-
-	uploadWorker = new Worker<UploadJobData>(
+export function createUploadWorker(): Worker<UploadJobData> {
+	const worker = new Worker<UploadJobData>(
 		"uploads",
 		async (job) => {
 			const {
@@ -307,7 +298,7 @@ export function startUploadWorker(): Worker<UploadJobData> {
 		},
 	);
 
-	uploadWorker.on("error", (error) => {
+	worker.on("error", (error) => {
 		logFileOperationDebugError({
 			operation: "upload",
 			stage: "worker_runtime",
@@ -316,20 +307,7 @@ export function startUploadWorker(): Worker<UploadJobData> {
 		});
 	});
 
-	logger.info("Upload worker started");
-
-	return uploadWorker;
-}
-
-/**
- * Stop the upload worker
- */
-export async function stopUploadWorker(): Promise<void> {
-	if (uploadWorker) {
-		await uploadWorker.close();
-		uploadWorker = null;
-		logger.info("Upload worker stopped");
-	}
+	return worker;
 }
 
 /**

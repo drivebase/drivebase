@@ -1,5 +1,5 @@
 import type { Database } from "@drivebase/db";
-import { enqueueSyncJob } from "@/queue/sync-queue";
+import { enqueueSyncJob } from "@/queue/sync/queue";
 import { logger } from "@/utils/runtime/logger";
 import { syncProvider } from "./sync-provider";
 
