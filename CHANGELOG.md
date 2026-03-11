@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.5.4](https://github.com/drivebase/drivebase/compare/v3.5.3...v3.5.4) (2026-03-11)
+
+### Fixes
+
+* **docker:** set runtime-ci CMD to /usr/local/bin/start.sh so release ([70c1d4f](https://github.com/drivebase/drivebase/commit/70c1d4fb25fb7c9b5d65508f73d34101b7e9aed0))
+
 ## [3.5.3](https://github.com/drivebase/drivebase/compare/v3.5.2...v3.5.3) (2026-03-11)
 
 ### Fixes
