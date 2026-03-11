@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.5.3](https://github.com/drivebase/drivebase/compare/v3.5.2...v3.5.3) (2026-03-11)
+
+### Fixes
+
+* **web:** prevent connect dialog render loop causing maximum update ([28473ab](https://github.com/drivebase/drivebase/commit/28473aba072fdc46021fba6d8378e783d60521a4))
+
+### Others
+
+* **web:** run i18n:extract on build ([b2a6b19](https://github.com/drivebase/drivebase/commit/b2a6b19b14b38682eb3634cfb3c335870a90d50f))
+
 ## [3.5.2](https://github.com/drivebase/drivebase/compare/v3.5.1...v3.5.2) (2026-03-11)
 
 ### Features
