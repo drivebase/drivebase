@@ -105,11 +105,13 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          target: runtime-ci
           platforms: ${{ matrix.platform }}
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}-${{ matrix.suffix }}
           build-args: |
             APP_VERSION=${{ steps.version.outputs.VERSION }}
+            BUILD_WEB=false
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
