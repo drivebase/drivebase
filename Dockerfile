@@ -3,7 +3,7 @@ FROM oven/bun:1.2-alpine AS base
 FROM base AS pruner
 WORKDIR /app
 COPY . .
-RUN bunx turbo prune --scope=api --docker
+RUN bunx turbo prune --scope=api --scope=web --docker
 
 FROM base AS deps
 WORKDIR /app
@@ -14,15 +14,10 @@ RUN bun install --frozen-lockfile --ignore-scripts
 FROM deps AS builder
 WORKDIR /app
 COPY --from=pruner /app/out/full/ .
-RUN bun run --cwd apps/api codegen
+ARG BUILD_WEB=true
+RUN bun run --cwd apps/api codegen && if [ "$BUILD_WEB" = "true" ]; then bun run --cwd apps/web build; fi
 
-FROM base AS web-builder
-WORKDIR /app
-COPY . .
-RUN bun install --ignore-scripts
-RUN bun run --cwd apps/api codegen && bun run --cwd apps/web build
-
-FROM base AS runtime
+FROM base AS runtime-base
 WORKDIR /app
 
 RUN apk add --no-cache caddy supervisor
@@ -32,9 +27,6 @@ COPY --from=builder /app/apps ./apps
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/turbo.json ./turbo.json
-
-# Build frontend assets in-image so local builds do not require prebuilt dist files.
-COPY --from=web-builder /app/apps/web/dist /srv/www
 
 COPY docker/Caddyfile /etc/caddy/Caddyfile
 COPY docker/supervisord.conf /etc/supervisord.conf
@@ -50,4 +42,11 @@ ENV API_UPSTREAM=http://127.0.0.1:4000
 
 EXPOSE 3000
 
+FROM runtime-base AS runtime-local
+COPY --from=builder /app/apps/web/dist /srv/www
+
+FROM runtime-base AS runtime-ci
+COPY apps/web/dist /srv/www
+
+FROM runtime-local AS runtime
 CMD ["/usr/local/bin/start.sh"]
