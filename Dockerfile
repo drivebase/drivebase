@@ -16,6 +16,12 @@ WORKDIR /app
 COPY --from=pruner /app/out/full/ .
 RUN bun run --cwd apps/api codegen
 
+FROM base AS web-builder
+WORKDIR /app
+COPY . .
+RUN bun install --ignore-scripts
+RUN bun run --cwd apps/api codegen && bun run --cwd apps/web build
+
 FROM base AS runtime
 WORKDIR /app
 
@@ -27,8 +33,8 @@ COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/turbo.json ./turbo.json
 
-# Frontend assets are prebuilt once in CI and added to the build context.
-COPY apps/web/dist /srv/www
+# Build frontend assets in-image so local builds do not require prebuilt dist files.
+COPY --from=web-builder /app/apps/web/dist /srv/www
 
 COPY docker/Caddyfile /etc/caddy/Caddyfile
 COPY docker/supervisord.conf /etc/supervisord.conf
