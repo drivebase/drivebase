@@ -26,6 +26,11 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
+      - name: Set up Node.js 25
+        uses: actions/setup-node@v4
+        with:
+          node-version: "25"
+
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
 
@@ -287,6 +292,11 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+
+      - name: Set up Node.js 25
+        uses: actions/setup-node@v4
+        with:
+          node-version: "25"
 
       - name: Extract version
         id: version
