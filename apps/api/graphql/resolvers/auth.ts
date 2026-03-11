@@ -1,23 +1,25 @@
 import type { UserRole } from "@drivebase/core";
-import { AuthService } from "../../service/auth";
+import { Tokens } from "../../container";
+import type { AuthService } from "../../service/auth";
 import type {
 	AuthResponseResolvers,
 	MutationResolvers,
 	QueryResolvers,
 } from "../generated/types";
-import { requireAuth } from "./auth-helpers";
 
 export const authQueries: QueryResolvers = {
 	me: async (_parent, _args, context) => {
-		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
-		return authService.getCurrentUser(user.userId);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
+		return authService.getCurrentUser(context.user!.userId);
 	},
 
 	myPasskeys: async (_parent, _args, context) => {
-		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
-		const list = await authService.getPasskeys(user.userId);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
+		const list = await authService.getPasskeys(context.user!.userId);
 		return list.map((pk) => ({
 			...pk,
 			createdAt: pk.createdAt.toISOString(),
@@ -28,39 +30,39 @@ export const authQueries: QueryResolvers = {
 
 export const authMutations: MutationResolvers = {
 	register: async (_parent, args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		const role = args.input.role.toLowerCase() as UserRole;
-		const result = await authService.register(
+		return authService.register(
 			args.input.email,
 			args.input.password,
 			role,
 			context.ip,
 		);
-		return result;
 	},
 
 	login: async (_parent, args, context) => {
-		const authService = new AuthService(context.db);
-		const result = await authService.login(
-			args.input.email,
-			args.input.password,
-			context.ip,
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
 		);
-		return result;
+		return authService.login(args.input.email, args.input.password, context.ip);
 	},
 
 	logout: async (_parent, _args, context) => {
-		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
-		await authService.logout(user.userId);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
+		await authService.logout(context.user!.userId);
 		return true;
 	},
 
 	changePassword: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		await authService.changePassword(
-			user.userId,
+			context.user!.userId,
 			args.input.currentPassword,
 			args.input.newPassword,
 		);
@@ -68,13 +70,17 @@ export const authMutations: MutationResolvers = {
 	},
 
 	requestPasswordReset: async (_parent, args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		await authService.requestPasswordReset(args.email, context.ip);
 		return true;
 	},
 
 	resetPassword: async (_parent, args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		await authService.resetPassword(
 			args.input.email,
 			args.input.otp,
@@ -84,28 +90,32 @@ export const authMutations: MutationResolvers = {
 	},
 
 	updateMyProfile: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
-		return authService.updateMyProfile(user.userId, args.input.name);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
+		return authService.updateMyProfile(context.user!.userId, args.input.name);
 	},
 
 	completeOnboarding: async (_parent, _args, context) => {
-		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
-		return authService.completeOnboarding(user.userId);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
+		return authService.completeOnboarding(context.user!.userId);
 	},
 
 	startPasskeyRegistration: async (_parent, _args, context) => {
-		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
-		return authService.startPasskeyRegistration(user.userId);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
+		return authService.startPasskeyRegistration(context.user!.userId);
 	},
 
 	verifyPasskeyRegistration: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		const pk = await authService.verifyPasskeyRegistration(
-			user.userId,
+			context.user!.userId,
 			args.name,
 			args.response,
 		);
@@ -117,19 +127,24 @@ export const authMutations: MutationResolvers = {
 	},
 
 	startPasskeyLogin: async (_parent, _args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		return authService.startPasskeyLogin();
 	},
 
 	verifyPasskeyLogin: async (_parent, args, context) => {
-		const authService = new AuthService(context.db);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
 		return authService.verifyPasskeyLogin(args.challengeId, args.response);
 	},
 
 	deletePasskey: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		const authService = new AuthService(context.db);
-		await authService.deletePasskey(user.userId, args.id);
+		const authService = context.container.resolve<AuthService>(
+			Tokens.AuthService,
+		);
+		await authService.deletePasskey(context.user!.userId, args.id);
 		return true;
 	},
 };

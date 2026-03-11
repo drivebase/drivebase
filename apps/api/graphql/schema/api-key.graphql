@@ -53,12 +53,12 @@ input UpdateApiKeyInput {
 }
 
 extend type Query {
-	apiKeys: [ApiKey!]!
-	apiKey(id: ID!): ApiKey!
+	apiKeys: [ApiKey!]! @auth
+	apiKey(id: ID!): ApiKey! @auth
 }
 
 extend type Mutation {
-	createApiKey(input: CreateApiKeyInput!): CreateApiKeyResult!
-	updateApiKey(id: ID!, input: UpdateApiKeyInput!): ApiKey!
-	revokeApiKey(id: ID!): Boolean!
+	createApiKey(input: CreateApiKeyInput!): CreateApiKeyResult! @auth
+	updateApiKey(id: ID!, input: UpdateApiKeyInput!): ApiKey! @auth
+	revokeApiKey(id: ID!): Boolean! @auth
 }

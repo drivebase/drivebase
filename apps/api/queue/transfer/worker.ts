@@ -3,17 +3,17 @@ import { dirname, join } from "node:path";
 import { files, folders, getDb } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { and, eq } from "drizzle-orm";
-import { env } from "../config/env";
-import { createBullMQConnection } from "../redis/client";
-import { ActivityService } from "../service/activity";
-import { ProviderService } from "../service/provider";
+import { env } from "@/config/env";
+import { createBullMQConnection } from "@/redis/client";
+import { ActivityService } from "@/service/activity";
+import { ProviderService } from "@/service/provider";
 import {
 	assertNotCancelled as assertJobNotCancelled,
 	clearJobCancellation,
 	JobCancelledError,
-} from "../utils/jobs/job-cancel";
-import { logger } from "../utils/runtime/logger";
-import type { ProviderTransferJobData } from "./transfer-queue";
+} from "@/utils/jobs/job-cancel";
+import { logger } from "@/utils/runtime/logger";
+import type { ProviderTransferJobData } from "@/queue/transfer/queue";
 
 const DEFAULT_TRANSFER_CHUNK_SIZE = 8 * 1024 * 1024;
 
@@ -31,8 +31,6 @@ interface TransferManifest {
 		parts: Array<{ partNumber: number; etag: string; size: number }>;
 	};
 }
-
-let transferWorker: Worker<ProviderTransferJobData> | null = null;
 
 function getTransferCacheRoot(): string {
 	return env.TRANSFER_CACHE_DIR ?? join(env.DATA_DIR, "transfers");
@@ -74,12 +72,8 @@ async function writeManifest(
 	await writeFile(path, JSON.stringify(manifest, null, 2), "utf-8");
 }
 
-export function startTransferWorker(): Worker<ProviderTransferJobData> {
-	if (transferWorker) {
-		return transferWorker;
-	}
-
-	transferWorker = new Worker<ProviderTransferJobData>(
+export function createTransferWorker(): Worker<ProviderTransferJobData> {
+	const worker = new Worker<ProviderTransferJobData>(
 		"provider-transfers",
 		async (bullJob) => {
 			const db = getDb();
@@ -738,7 +732,7 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 		},
 	);
 
-	transferWorker.on("failed", (job, error) => {
+	worker.on("failed", (job, error) => {
 		logger.error({
 			msg: "Transfer worker failed",
 			jobId: job?.id,
@@ -746,14 +740,5 @@ export function startTransferWorker(): Worker<ProviderTransferJobData> {
 		});
 	});
 
-	logger.info("Transfer worker started");
-	return transferWorker;
-}
-
-export async function stopTransferWorker(): Promise<void> {
-	if (transferWorker) {
-		await transferWorker.close();
-		transferWorker = null;
-		logger.info("Transfer worker stopped");
-	}
+	return worker;
 }

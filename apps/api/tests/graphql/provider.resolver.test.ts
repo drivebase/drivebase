@@ -31,6 +31,17 @@ mock.module("@/config/providers", () => providersMockExports);
 
 import { AuthType, ProviderType } from "../../graphql/generated/types";
 
+function makeContext(user: { userId: string; role: string } | null = null) {
+	return {
+		db: {},
+		user,
+		headers: new Headers(),
+		container: {
+			resolve: () => providerServiceMock,
+		},
+	} as any;
+}
+
 let availableProviderResolvers: typeof import("../../graphql/resolvers/provider")["availableProviderResolvers"];
 let providerMutations: typeof import("../../graphql/resolvers/provider")["providerMutations"];
 let providerQueries: typeof import("../../graphql/resolvers/provider")["providerQueries"];
@@ -53,12 +64,11 @@ describe("provider resolvers", () => {
 		getAvailableProvidersMock.mockReturnValue([
 			{ id: "google_drive", authType: "oauth" },
 		]);
-		const context = { db: {}, user: { userId: "u1", role: "admin" } } as any;
 
 		const result = await providerQueries.availableProviders?.(
 			{},
 			{},
-			context,
+			makeContext({ userId: "u1", role: "admin" }),
 			{} as any,
 		);
 		expect(result).toEqual([{ id: "google_drive", authType: "oauth" } as any]);
@@ -66,7 +76,6 @@ describe("provider resolvers", () => {
 
 	it("connectStorage lowercases provider type for service", async () => {
 		providerServiceMock.connectProvider.mockResolvedValue({ id: "p1" });
-		const context = { db: {}, user: { userId: "u1", role: "admin" } } as any;
 
 		await providerMutations.connectStorage?.(
 			{},
@@ -77,7 +86,7 @@ describe("provider resolvers", () => {
 					config: { x: 1 },
 				},
 			},
-			context,
+			makeContext({ userId: "u1", role: "admin" }),
 			{} as any,
 		);
 

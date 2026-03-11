@@ -3,7 +3,7 @@ import type { Database } from "@drivebase/db";
 import {
 	buildFileLifecycleQueueJobId,
 	getFileLifecycleQueue,
-} from "../../../../queue/file-lifecycle-queue";
+} from "@/queue/file-lifecycle/queue";
 import { ActivityService } from "../../../activity";
 import { ProviderService } from "../../../provider";
 import { getFile } from "../../query/file-read";

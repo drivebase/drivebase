@@ -14,7 +14,6 @@ import type {
 	MutationResolvers,
 	QueryResolvers,
 } from "../generated/types";
-import { requireAuth } from "./auth-helpers";
 
 export const fileRuleResolvers: FileRuleResolvers = {
 	destinationProvider: async (parent, _args, context) => {
@@ -53,7 +52,6 @@ export const fileRuleResolvers: FileRuleResolvers = {
 
 export const ruleQueries: QueryResolvers = {
 	fileRules: async (_parent, _args, context) => {
-		requireAuth(context);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		if (!workspaceId) {
 			throw new Error("Workspace ID is required");
@@ -62,7 +60,6 @@ export const ruleQueries: QueryResolvers = {
 	},
 
 	fileRule: async (_parent, args, context) => {
-		requireAuth(context);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		if (!workspaceId) {
 			throw new Error("Workspace ID is required");
@@ -73,12 +70,11 @@ export const ruleQueries: QueryResolvers = {
 
 export const ruleMutations: MutationResolvers = {
 	createFileRule: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		if (!workspaceId) {
 			throw new Error("Workspace ID is required");
 		}
-		return createRule(context.db, workspaceId, user.userId, {
+		return createRule(context.db, workspaceId, context.user!.userId, {
 			name: args.input.name,
 			conditions: args.input.conditions as RuleConditionGroups,
 			destinationProviderId: args.input.destinationProviderId,
@@ -88,7 +84,6 @@ export const ruleMutations: MutationResolvers = {
 	},
 
 	updateFileRule: async (_parent, args, context) => {
-		requireAuth(context);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		if (!workspaceId) {
 			throw new Error("Workspace ID is required");
@@ -104,7 +99,6 @@ export const ruleMutations: MutationResolvers = {
 	},
 
 	deleteFileRule: async (_parent, args, context) => {
-		requireAuth(context);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		if (!workspaceId) {
 			throw new Error("Workspace ID is required");
@@ -113,7 +107,6 @@ export const ruleMutations: MutationResolvers = {
 	},
 
 	reorderFileRules: async (_parent, args, context) => {
-		requireAuth(context);
 		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
 		if (!workspaceId) {
 			throw new Error("Workspace ID is required");

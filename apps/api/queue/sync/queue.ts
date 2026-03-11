@@ -1,5 +1,5 @@
-import { Queue } from "bullmq";
-import { createBullMQConnection } from "../redis/client";
+import type { Queue } from "bullmq";
+import { registry } from "@/queue/registry";
 
 export interface SyncJobData {
 	providerId: string;
@@ -21,28 +21,17 @@ function getWorkspaceAutoSyncJobId(workspaceId: string) {
 	return `workspace-auto-sync:${workspaceId}`;
 }
 
-let syncQueue: Queue<SyncQueueJobData> | null = null;
+export const SYNC_QUEUE_NAME = "sync";
 
-/**
- * Get or create the sync queue
- */
+export const SYNC_QUEUE_OPTIONS = {
+	attempts: 2,
+	backoff: { type: "exponential" as const, delay: 10000 },
+	removeOnComplete: { count: 50 },
+	removeOnFail: { count: 100 },
+};
+
 export function getSyncQueue(): Queue<SyncQueueJobData> {
-	if (!syncQueue) {
-		syncQueue = new Queue<SyncQueueJobData>("sync", {
-			connection: createBullMQConnection(),
-			defaultJobOptions: {
-				attempts: 2,
-				backoff: {
-					type: "exponential",
-					delay: 10000,
-				},
-				removeOnComplete: { count: 50 },
-				removeOnFail: { count: 100 },
-			},
-		});
-	}
-
-	return syncQueue;
+	return registry.getQueue<SyncQueueJobData>(SYNC_QUEUE_NAME);
 }
 
 /**
@@ -103,15 +92,5 @@ export async function removeWorkspaceAutoSyncSchedule(workspaceId?: string) {
 		}
 
 		await queue.removeRepeatableByKey(repeatableJob.key);
-	}
-}
-
-/**
- * Close the sync queue
- */
-export async function closeSyncQueue(): Promise<void> {
-	if (syncQueue) {
-		await syncQueue.close();
-		syncQueue = null;
 	}
 }

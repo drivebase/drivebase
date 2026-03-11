@@ -6,25 +6,21 @@ import {
 	updateApiKey,
 } from "../../service/api-key";
 import type { MutationResolvers, QueryResolvers } from "../generated/types";
-import { requireAuth } from "./auth-helpers";
 
 export const apiKeyQueries: QueryResolvers = {
 	apiKeys: async (_parent, _args, context) => {
-		const user = requireAuth(context);
-		return listApiKeys(context.db, user.userId);
+		return listApiKeys(context.db, context.user!.userId);
 	},
 
 	apiKey: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		return getApiKey(context.db, args.id, user.userId);
+		return getApiKey(context.db, args.id, context.user!.userId);
 	},
 };
 
 export const apiKeyMutations: MutationResolvers = {
 	createApiKey: async (_parent, args, context) => {
-		const user = requireAuth(context);
 		const { input } = args;
-		return createApiKey(context.db, user.userId, {
+		return createApiKey(context.db, context.user!.userId, {
 			name: input.name,
 			description: input.description ?? null,
 			scopes: input.scopes,
@@ -39,15 +35,13 @@ export const apiKeyMutations: MutationResolvers = {
 	},
 
 	updateApiKey: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		return updateApiKey(context.db, args.id, user.userId, {
+		return updateApiKey(context.db, args.id, context.user!.userId, {
 			name: args.input.name ?? null,
 			description: args.input.description ?? null,
 		});
 	},
 
 	revokeApiKey: async (_parent, args, context) => {
-		const user = requireAuth(context);
-		return revokeApiKey(context.db, args.id, user.userId);
+		return revokeApiKey(context.db, args.id, context.user!.userId);
 	},
 };
