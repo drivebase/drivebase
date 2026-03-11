@@ -47,6 +47,7 @@ COPY --from=builder /app/apps/web/dist /srv/www
 
 FROM runtime-base AS runtime-ci
 COPY apps/web/dist /srv/www
+CMD ["/usr/local/bin/start.sh"]
 
 FROM runtime-local AS runtime
 CMD ["/usr/local/bin/start.sh"]
