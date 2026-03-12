@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -28,10 +28,12 @@ const GROUP_LABELS: Record<string, string> = {
 export function FileContextMenu({ children, item }: FileContextMenuProps) {
 	const { registry, actionContext } = useFileExplorer();
 	const { setContextTarget, isSelected } = useSelection();
+	const openedAtRef = useRef(0);
 
 	const handleOpenChange = useCallback(
 		(open: boolean) => {
 			if (open) {
+				openedAtRef.current = Date.now();
 				// If the right-clicked item is already part of an explicit selection,
 				// let the action context use that selection (effectiveSelection falls
 				// back to selectedItems when contextTarget is null).
@@ -69,7 +71,14 @@ export function FileContextMenu({ children, item }: FileContextMenuProps) {
 									variant={
 										action.variant === "destructive" ? "destructive" : "default"
 									}
-									onSelect={() => {
+									onSelect={(event) => {
+										const elapsed = Date.now() - openedAtRef.current;
+										// Ignore the opening right-click release from selecting
+										// the first item when menu appears under cursor.
+										if (elapsed < 150) {
+											event.preventDefault();
+											return;
+										}
 										void action.execute(actionContext);
 									}}
 								>

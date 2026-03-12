@@ -40,7 +40,8 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
 			mode,
 			status: selected.length > 0 ? "staged" : "idle",
 			items: selected,
-			dimmedItemIds: selected.map((item) => `${item.kind}:${item.id}`),
+			dimmedItemIds:
+				mode === "cut" ? selected.map((item) => `${item.kind}:${item.id}`) : [],
 			pendingJobIds: [],
 		});
 	},

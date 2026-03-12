@@ -308,25 +308,27 @@ function FilesPage() {
 					onFileChange={upload.handleFileChange}
 				/>
 
-				<div ref={scrollRef} className="relative flex-1 overflow-y-auto">
-					<FileExplorerProvider
-						registry={registry}
-						files={files}
-						folders={folders}
-						providers={providers}
-						currentFolderId={folderId}
-						currentFolderName={currentFolder?.name}
-						isLoading={contentsFetching}
-						canWrite={canWriteFiles}
-						navigate={handleNavigate}
-						refresh={refresh}
-					>
-						<div className="h-full min-h-[220px]">
-							<FileExplorer />
-						</div>
-					</FileExplorerProvider>
+				<div className="relative flex-1">
+					<div ref={scrollRef} className="h-full overflow-y-auto">
+						<FileExplorerProvider
+							registry={registry}
+							files={files}
+							folders={folders}
+							providers={providers}
+							currentFolderId={folderId}
+							currentFolderName={currentFolder?.name}
+							isLoading={contentsFetching}
+							canWrite={canWriteFiles}
+							navigate={handleNavigate}
+							refresh={refresh}
+						>
+							<div className="h-full min-h-[220px]">
+								<FileExplorer />
+							</div>
+						</FileExplorerProvider>
+					</div>
 					{isOverflowing && (
-						<div className="pointer-events-none sticky bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
+						<div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-16 bg-gradient-to-t from-background to-transparent" />
 					)}
 				</div>
 

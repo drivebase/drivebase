@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -14,6 +14,7 @@ export function BlankAreaContextMenu({
 	children: React.ReactNode;
 }) {
 	const { registry, actionContext } = useFileExplorer();
+	const openedAtRef = useRef(0);
 
 	const blankAreaActionContext = useMemo(
 		() => ({ ...actionContext, selection: [] }),
@@ -24,8 +25,14 @@ export function BlankAreaContextMenu({
 		.getForSurface("contextMenu", blankAreaActionContext)
 		.filter((action) => action.id === "paste-selection");
 
+	const handleOpenChange = useCallback((open: boolean) => {
+		if (open) {
+			openedAtRef.current = Date.now();
+		}
+	}, []);
+
 	return (
-		<ContextMenu>
+		<ContextMenu onOpenChange={handleOpenChange}>
 			<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
 			<ContextMenuContent className="min-w-52">
 				{actions.length > 0 ? (
@@ -37,7 +44,12 @@ export function BlankAreaContextMenu({
 						return (
 							<ContextMenuItem
 								key={action.id}
-								onSelect={() => {
+								onSelect={(event) => {
+									const elapsed = Date.now() - openedAtRef.current;
+									if (elapsed < 150) {
+										event.preventDefault();
+										return;
+									}
 									void action.execute(blankAreaActionContext);
 								}}
 							>
