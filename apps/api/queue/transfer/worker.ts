@@ -153,6 +153,14 @@ function normalizeJobData(data: unknown): ProviderTransferJobData {
 	};
 }
 
+function isNonRetryableTransferError(error: unknown): boolean {
+	if (error instanceof ConflictError) {
+		return true;
+	}
+	const message = error instanceof Error ? error.message : String(error);
+	return message.includes("already exists at path");
+}
+
 async function sleep(ms: number): Promise<void> {
 	await new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -1160,10 +1168,11 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 					});
 					return;
 				}
+				const nonRetryable = isNonRetryableTransferError(error);
 				const currentAttempt = bullJob.attemptsMade + 1;
 				const maxAttempts =
 					typeof bullJob.opts.attempts === "number" ? bullJob.opts.attempts : 1;
-				const willRetry = currentAttempt < maxAttempts;
+				const willRetry = !nonRetryable && currentAttempt < maxAttempts;
 
 				logger.error({
 					msg: "Provider transfer job failed",
@@ -1172,6 +1181,7 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 					retryAttempt: currentAttempt,
 					retryMax: maxAttempts,
 					willRetry,
+					nonRetryable,
 				});
 
 				if (willRetry) {
@@ -1189,15 +1199,21 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 				} else {
 					await activityService.update(jobId, {
 						status: "error",
-						message: `Transfer failed after ${currentAttempt}/${maxAttempts} attempts`,
+						message: nonRetryable
+							? `Transfer failed: ${message}`
+							: `Transfer failed after ${currentAttempt}/${maxAttempts} attempts`,
 						metadata: {
 							phase: "failed",
 							error: message,
 							retryAttempt: currentAttempt,
 							retryMax: maxAttempts,
 							willRetry: false,
+							nonRetryable,
 						},
 					});
+				}
+				if (nonRetryable) {
+					bullJob.discard();
 				}
 				throw error;
 			} finally {
