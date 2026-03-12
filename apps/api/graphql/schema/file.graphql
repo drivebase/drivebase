@@ -49,6 +49,16 @@ enum RestoreTier {
 	BULK
 }
 
+enum PasteOperation {
+	CUT
+	COPY
+}
+
+enum ClipboardItemKind {
+	FILE
+	FOLDER
+}
+
 type FileLifecycle {
 	state: FileLifecycleState!
 	storageClass: String
@@ -156,6 +166,7 @@ extend type Mutation {
 	Move file to a different storage provider (queued background transfer)
 	"""
 	moveFileToProvider(id: ID!, providerId: ID!): File! @auth
+	pasteSelection(input: PasteSelectionInput!): PasteSelectionResult! @auth
 	archiveFile(id: ID!): Job! @auth
 	requestFileRestore(id: ID!, input: RequestFileRestoreInput!): Job! @auth
 	refreshFileLifecycle(id: ID!): FileLifecycle! @auth
@@ -234,6 +245,22 @@ type DownloadResponse {
 	fileId: ID!
 	downloadUrl: String
 	useDirectDownload: Boolean!
+}
+
+input ClipboardItemInput {
+	kind: ClipboardItemKind!
+	id: ID!
+}
+
+input PasteSelectionInput {
+	operation: PasteOperation!
+	targetFolderId: ID
+	items: [ClipboardItemInput!]!
+}
+
+type PasteSelectionResult {
+	jobs: [Job!]!
+	requiresRefresh: Boolean!
 }
 
 type FileDownloadLink {

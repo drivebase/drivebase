@@ -4,6 +4,10 @@ import { createBulkActions } from "./bulk-actions";
 import { createFileActions } from "./file-actions";
 import { createFolderActions } from "./folder-actions";
 import { createActionRegistry } from "./registry";
+import type {
+	ClipboardItemRef,
+	ClipboardOperation,
+} from "../store/clipboardStore";
 
 interface UseActionsOptions {
 	canWrite: boolean;
@@ -18,6 +22,8 @@ interface UseActionsOptions {
 		files: FileItemFragment[];
 		folders: FolderItemFragment[];
 	}) => Promise<void>;
+	stageClipboard: (mode: ClipboardOperation, items: ClipboardItemRef[]) => void;
+	pasteSelection: (targetFolderId: string | null) => Promise<void>;
 }
 
 export function useActions(opts: UseActionsOptions) {
@@ -39,6 +45,8 @@ export function useActions(opts: UseActionsOptions) {
 			...createBulkActions({
 				canWrite: opts.canWrite,
 				deleteSelection: opts.deleteSelection,
+				stageClipboard: opts.stageClipboard,
+				pasteSelection: opts.pasteSelection,
 			}),
 		];
 
@@ -53,5 +61,7 @@ export function useActions(opts: UseActionsOptions) {
 		opts.toggleFileFavorite,
 		opts.toggleFolderFavorite,
 		opts.deleteSelection,
+		opts.stageClipboard,
+		opts.pasteSelection,
 	]);
 }

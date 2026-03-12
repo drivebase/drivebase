@@ -3,6 +3,7 @@ import type { FolderItemFragment } from "@/gql/graphql";
 import { cn } from "@/shared/lib/utils";
 import { useFileExplorer } from "../../context/FileExplorerProvider";
 import { useSelection } from "../../context/SelectionContext";
+import { useClipboardStore } from "../../store/clipboardStore";
 import { FileContextMenu } from "../ContextMenu";
 
 interface GridFolderItemProps {
@@ -14,6 +15,7 @@ export function GridFolderItem({ folder, registerRef }: GridFolderItemProps) {
 	const { isSelected, selectOnly, toggle } = useSelection();
 	const { actionContext } = useFileExplorer();
 	const itemId = `folder:${folder.id}`;
+	const isClipboardDimmed = useClipboardStore((s) => s.isDimmed(itemId));
 	const selected = isSelected(itemId);
 	const selectionItem = { kind: "folder" as const, data: folder };
 
@@ -39,6 +41,7 @@ export function GridFolderItem({ folder, registerRef }: GridFolderItemProps) {
 				className={cn(
 					"w-full group relative cursor-pointer select-none border border-border/60 bg-background/40 backdrop-blur-lg p-3 transition-colors hover:bg-background/10",
 					selected && "border-primary/50 bg-muted/70",
+					isClipboardDimmed && "opacity-60",
 				)}
 			>
 				<div className="flex items-center gap-4">

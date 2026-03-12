@@ -25,6 +25,7 @@ import { useFileOperations } from "@/features/files/hooks/useFileOperations";
 import { useContents } from "@/features/files/hooks/useFiles";
 import { useUpload } from "@/features/files/hooks/useUpload";
 import { useUploadSessionRestore } from "@/features/files/hooks/useUploadSessionRestore";
+import { useClipboardStore } from "@/features/files/store/clipboardStore";
 import { FilesSettingsDialog } from "@/features/files/settings/FilesSettingsDialog";
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useFileActions } from "@/features/files/useFileActions";
@@ -36,7 +37,12 @@ import {
 	useWorkspaces,
 } from "@/features/workspaces";
 import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
-import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
+import {
+	JobStatus,
+	type FileItemFragment,
+	type FolderItemFragment,
+} from "@/gql/graphql";
+import { useActivityStore } from "@/shared/store/activityStore";
 
 /**
  * Modifier that positions the drag overlay chip near the cursor
@@ -91,6 +97,14 @@ function FilesPage() {
 	const [filterProviderIds, setFilterProviderIds] = useState<string[]>([]);
 	const { showDetails, createDownloadLink } = useFileActions();
 	const { downloadFile } = useDownload();
+	const clipboardMode = useClipboardStore((s) => s.mode);
+	const clipboardItems = useClipboardStore((s) => s.items);
+	const clipboardStatus = useClipboardStore((s) => s.status);
+	const pendingJobIds = useClipboardStore((s) => s.pendingJobIds);
+	const stageClipboard = useClipboardStore((s) => s.stageClipboard);
+	const markTransferring = useClipboardStore((s) => s.markTransferring);
+	const clearClipboard = useClipboardStore((s) => s.clearClipboard);
+	const jobsMap = useActivityStore((s) => s.jobs);
 	const { data: providersData } = useProviders();
 	const [workspacesResult, reexecuteWorkspaces] = useWorkspaces(false);
 	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
@@ -188,7 +202,56 @@ function FilesPage() {
 		toggleFileFavorite: operations.handleToggleFileFavorite,
 		toggleFolderFavorite: operations.handleToggleFolderFavorite,
 		deleteSelection: operations.handleDeleteSelection,
+		stageClipboard,
+		pasteSelection: async (targetFolderId) => {
+			if (!clipboardMode || clipboardItems.length === 0) return;
+			const result = await operations.handlePasteSelection(
+				clipboardMode,
+				targetFolderId,
+				clipboardItems,
+			);
+			if (result.jobs.length > 0) {
+				markTransferring(result.jobs.map((job) => job.id));
+				return;
+			}
+			if (result.requiresRefresh) {
+				clearClipboard();
+			}
+		},
 	});
+
+	useEffect(() => {
+		if (clipboardStatus !== "transferring" || pendingJobIds.length === 0) {
+			return;
+		}
+
+		const pendingJobs = pendingJobIds
+			.map((id) => jobsMap.get(id))
+			.filter(
+				(job): job is NonNullable<typeof job> =>
+					job !== undefined && job !== null,
+			);
+		if (pendingJobs.length < pendingJobIds.length) {
+			return;
+		}
+
+		const hasActive = pendingJobs.some(
+			(job) =>
+				job.status === JobStatus.Pending || job.status === JobStatus.Running,
+		);
+		if (hasActive) {
+			return;
+		}
+
+		void refreshContents({ requestPolicy: "network-only" });
+		clearClipboard();
+	}, [
+		clipboardStatus,
+		pendingJobIds,
+		jobsMap,
+		refreshContents,
+		clearClipboard,
+	]);
 
 	const activeWorkspace =
 		workspacesResult.data?.workspaces?.find(
@@ -252,12 +315,15 @@ function FilesPage() {
 						folders={folders}
 						providers={providers}
 						currentFolderId={folderId}
+						currentFolderName={currentFolder?.name}
 						isLoading={contentsFetching}
 						canWrite={canWriteFiles}
 						navigate={handleNavigate}
 						refresh={refresh}
 					>
-						<FileExplorer />
+						<div className="h-full min-h-[220px]">
+							<FileExplorer />
+						</div>
 					</FileExplorerProvider>
 					{isOverflowing && (
 						<div className="pointer-events-none sticky bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />

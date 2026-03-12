@@ -58,21 +58,29 @@ export function FileContextMenu({ children, item }: FileContextMenuProps) {
 						{GROUP_LABELS[group.group] ? (
 							<ContextMenuLabel>{GROUP_LABELS[group.group]}</ContextMenuLabel>
 						) : null}
-						{group.actions.map((action) => (
-							<ContextMenuItem
-								key={action.id}
-								variant={
-									action.variant === "destructive" ? "destructive" : "default"
-								}
-								onClick={() => action.execute(actionContext)}
-							>
-								<action.icon size={14} className="mr-2" />
-								{action.label}
-								{action.shortcut ? (
-									<ContextMenuShortcut>{action.shortcut}</ContextMenuShortcut>
-								) : null}
-							</ContextMenuItem>
-						))}
+						{group.actions.map((action) => {
+							const label =
+								typeof action.label === "function"
+									? action.label(actionContext)
+									: action.label;
+							return (
+								<ContextMenuItem
+									key={action.id}
+									variant={
+										action.variant === "destructive" ? "destructive" : "default"
+									}
+									onSelect={() => {
+										void action.execute(actionContext);
+									}}
+								>
+									<action.icon size={14} className="mr-2" />
+									{label}
+									{action.shortcut ? (
+										<ContextMenuShortcut>{action.shortcut}</ContextMenuShortcut>
+									) : null}
+								</ContextMenuItem>
+							);
+						})}
 					</div>
 				))}
 				{grouped.length === 0 && (

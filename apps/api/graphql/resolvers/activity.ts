@@ -1,6 +1,6 @@
 import { ValidationError } from "@drivebase/core";
-import { type Job as DbJob, jobs, users } from "@drivebase/db";
-import { and, eq } from "drizzle-orm";
+import { getDb, type Job as DbJob, jobs, users } from "@drivebase/db";
+import { and, eq, inArray } from "drizzle-orm";
 import { Tokens } from "../../container";
 import { getExtractionQueue } from "@/queue/extraction/queue";
 import {
@@ -163,6 +163,53 @@ export const activityMutations: MutationResolvers = {
 /** Remove pending BullMQ jobs for a given tracking job, based on job type. */
 async function removePendingQueueJobs(job: DbJob): Promise<void> {
 	if (job.type === "provider_transfer") {
+		const childJobIds = Array.isArray(job.metadata?.childJobIds)
+			? job.metadata.childJobIds.filter(
+					(value): value is string => typeof value === "string",
+				)
+			: [];
+		if (childJobIds.length > 0) {
+			const childJobs = await getDb()
+				.select()
+				.from(jobs)
+				.where(inArray(jobs.id, childJobIds));
+			const queue = getTransferQueue();
+			for (const childJob of childJobs) {
+				const childQueueJobId =
+					typeof childJob.metadata?.queueJobId === "string"
+						? childJob.metadata.queueJobId
+						: null;
+				if (!childQueueJobId) continue;
+				const queueJob = await queue.getJob(childQueueJobId);
+				const state = queueJob ? await queueJob.getState() : null;
+				if (
+					queueJob &&
+					(state === "waiting" ||
+						state === "delayed" ||
+						state === "prioritized")
+				) {
+					await queueJob.remove().catch(() => {});
+				}
+			}
+		}
+
+		const queueJobId =
+			typeof job.metadata?.queueJobId === "string"
+				? job.metadata.queueJobId
+				: null;
+		if (queueJobId) {
+			const queue = getTransferQueue();
+			const queueJob = await queue.getJob(queueJobId);
+			const state = queueJob ? await queueJob.getState() : null;
+			if (
+				queueJob &&
+				(state === "waiting" || state === "delayed" || state === "prioritized")
+			) {
+				await queueJob.remove().catch(() => {});
+			}
+			return;
+		}
+
 		const fileId =
 			typeof job.metadata?.fileId === "string" ? job.metadata.fileId : null;
 		const targetProviderId =
