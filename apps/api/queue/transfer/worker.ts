@@ -1539,7 +1539,7 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 		},
 		{
 			connection: createBullMQConnection(),
-			concurrency: 2,
+			concurrency: 10,
 		},
 	);
 

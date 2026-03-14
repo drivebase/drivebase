@@ -747,7 +747,7 @@ export async function pasteSelection(
 				const batchJob = await activityService.create(workspaceId, {
 					type: "provider_transfer",
 					title: batchTitle,
-					message: "Preparing transfers",
+					message: `${verb} 0 of ${allFileTransfers.length} files (queued)`,
 					metadata: {
 						entity: "batch",
 						operation,
