@@ -3,7 +3,6 @@ import {
 	PiFolderPlus as FolderPlus,
 	PiHouse as Home,
 	PiSpinnerGap as Loader2,
-	PiGear as Settings,
 	PiUpload as Upload,
 } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
@@ -30,8 +29,6 @@ interface FilesToolbarProps {
 	onBreadcrumbClick: (folderId: string | null) => void;
 	onUploadClick: () => void;
 	onNewFolder: () => void;
-	onOpenSettings: () => void;
-	canManageSettings: boolean;
 	fileInputRef: React.RefObject<HTMLInputElement | null>;
 	onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -48,8 +45,6 @@ export function FilesToolbar({
 	onBreadcrumbClick,
 	onUploadClick,
 	onNewFolder,
-	onOpenSettings,
-	canManageSettings,
 	fileInputRef,
 	onFileChange,
 }: FilesToolbarProps) {
@@ -135,17 +130,6 @@ export function FilesToolbar({
 						<Button onClick={onNewFolder} disabled={isLoading}>
 							<FolderPlus size={18} className="mr-2" />
 							New Folder
-						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							size="icon"
-							onClick={onOpenSettings}
-							disabled={isLoading || !canManageSettings}
-							aria-label="Files settings"
-							title="Files settings"
-						>
-							<Settings size={18} />
 						</Button>
 					</>
 				) : null}
