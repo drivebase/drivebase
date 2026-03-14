@@ -4,6 +4,7 @@ import { logger } from "@/utils/runtime/logger";
 import {
 	buildTransferQueueJobId,
 	getTransferQueue,
+	type ProviderBatchTransferJobData,
 	type ProviderFileTransferJobData,
 	type ProviderFolderTransferJobData,
 } from "./queue";
@@ -15,6 +16,11 @@ type EnqueueProviderTransferInput =
 			metadata?: Record<string, unknown>;
 	  })
 	| (Omit<ProviderFolderTransferJobData, "jobId"> & {
+			title: string;
+			message?: string;
+			metadata?: Record<string, unknown>;
+	  })
+	| (Omit<ProviderBatchTransferJobData, "jobId"> & {
 			title: string;
 			message?: string;
 			metadata?: Record<string, unknown>;
@@ -35,7 +41,6 @@ export async function enqueueProviderTransfer(
 		operation: input.operation,
 		workspaceId: input.workspaceId,
 		userId: input.userId,
-		targetFolderId: input.targetFolderId ?? null,
 		parentJobId: input.parentJobId ?? null,
 		fileId: "fileId" in input ? input.fileId : undefined,
 		folderId: "folderId" in input ? input.folderId : undefined,
@@ -48,7 +53,6 @@ export async function enqueueProviderTransfer(
 			...(input.metadata ?? {}),
 			entity: input.entity,
 			operation: input.operation,
-			targetFolderId: input.targetFolderId ?? null,
 			parentJobId: input.parentJobId ?? null,
 			phase: "queued",
 		},

@@ -1,6 +1,6 @@
 import type { Database } from "@drivebase/db";
 import { activities, jobs } from "@drivebase/db";
-import { and, count, desc, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
 
 interface CreateJobInput {
@@ -15,6 +15,11 @@ interface UpdateJobInput {
 	message?: string;
 	status?: "pending" | "running" | "completed" | "error";
 	metadata?: Record<string, unknown>;
+	/**
+	 * If true, metadata will be completely replaced instead of merged.
+	 * Defaults to false (merge).
+	 */
+	replaceMetadata?: boolean;
 }
 
 interface LogActivityInput {
@@ -55,13 +60,20 @@ export class ActivityService {
 	}
 
 	async update(jobId: string, input: UpdateJobInput) {
+		const metadataSet =
+			input.metadata !== undefined
+				? input.replaceMetadata
+					? input.metadata
+					: sql`COALESCE(${jobs.metadata}, '{}'::jsonb) || ${input.metadata}::jsonb`
+				: undefined;
+
 		const [job] = await this.db
 			.update(jobs)
 			.set({
 				...(input.progress !== undefined && { progress: input.progress }),
 				...(input.message !== undefined && { message: input.message }),
 				...(input.status !== undefined && { status: input.status }),
-				...(input.metadata !== undefined && { metadata: input.metadata }),
+				...(metadataSet !== undefined && { metadata: metadataSet }),
 				updatedAt: new Date(),
 			})
 			.where(eq(jobs.id, jobId))

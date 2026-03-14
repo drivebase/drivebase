@@ -6,7 +6,7 @@ import {
 } from "@drivebase/core";
 import type { Database, Job } from "@drivebase/db";
 import { files, folders } from "@drivebase/db";
-import { and, eq } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import { enqueueProviderTransfer } from "@/queue/transfer/enqueue";
 import { ActivityService } from "@/service/activity";
 import { moveFolder } from "@/service/folder/mutation";
@@ -209,6 +209,230 @@ async function copyFileWithinProvider(
 	}
 }
 
+// ── Cross-provider folder creation ─────────────────────────────────────
+
+interface FolderMapping {
+	sourceFolderId: string;
+	destinationFolderId: string;
+}
+
+/**
+ * Create the destination folder tree for a source folder on the target
+ * provider.  Returns a map of source-folder-ID → destination-folder-ID
+ * so that file transfers can be pointed at the right destination folder.
+ *
+ * Silently reuses destination folders that already exist (retry-safe).
+ */
+async function createDestinationFolderTree(
+	db: Database,
+	workspaceId: string,
+	userId: string,
+	sourceFolder: {
+		id: string;
+		name: string;
+		virtualPath: string;
+		providerId: string;
+	},
+	targetProviderId: string,
+	targetParentFolderId: string | null,
+	targetProvider: {
+		createFolder: (opts: {
+			name: string;
+			parentId?: string;
+		}) => Promise<string>;
+	},
+): Promise<Map<string, string>> {
+	const destinationBySourceId = new Map<string, string>();
+
+	// Resolve target parent folder (if any)
+	const targetParent = targetParentFolderId
+		? await db
+				.select()
+				.from(folders)
+				.where(
+					and(
+						eq(folders.id, targetParentFolderId),
+						eq(folders.nodeType, "folder"),
+						eq(folders.isDeleted, false),
+					),
+				)
+				.limit(1)
+				.then((rows) => rows[0] ?? null)
+		: null;
+
+	const destinationRootPath = joinPath(
+		targetParent?.virtualPath ?? "/",
+		sourceFolder.name,
+	);
+
+	// Load all source subfolders
+	const sourceSubfolders = await db
+		.select()
+		.from(folders)
+		.where(
+			and(
+				eq(folders.workspaceId, workspaceId),
+				eq(folders.providerId, sourceFolder.providerId),
+				eq(folders.nodeType, "folder"),
+				eq(folders.isDeleted, false),
+				like(folders.virtualPath, `${sourceFolder.virtualPath}/%`),
+			),
+		)
+		.orderBy(folders.virtualPath);
+	// Include the root folder itself at the front
+	const allSourceFolders = [
+		{
+			id: sourceFolder.id,
+			name: sourceFolder.name,
+			virtualPath: sourceFolder.virtualPath,
+			parentId: null as string | null,
+		},
+		...sourceSubfolders.map((f) => ({
+			id: f.id,
+			name: f.name,
+			virtualPath: f.virtualPath,
+			parentId: f.parentId,
+		})),
+	];
+	const sourceFolderById = new Map(allSourceFolders.map((f) => [f.id, f]));
+
+	// Process shallowest first
+	const sorted = allSourceFolders.sort(
+		(a, b) => a.virtualPath.length - b.virtualPath.length,
+	);
+
+	for (const src of sorted) {
+		const isRoot = src.id === sourceFolder.id;
+		let destParentId: string | null;
+		let destParentPath: string;
+
+		if (isRoot) {
+			destParentId = targetParentFolderId;
+			destParentPath = targetParent?.virtualPath ?? "/";
+		} else {
+			const srcParent = src.parentId
+				? sourceFolderById.get(src.parentId)
+				: undefined;
+			const mappedParentId = srcParent
+				? destinationBySourceId.get(srcParent.id)
+				: destinationBySourceId.get(sourceFolder.id);
+			destParentId = mappedParentId ?? targetParentFolderId;
+			// Look up the destination parent's virtualPath
+			if (destParentId) {
+				const [destParentRow] = await db
+					.select({ virtualPath: folders.virtualPath })
+					.from(folders)
+					.where(eq(folders.id, destParentId))
+					.limit(1);
+				destParentPath = destParentRow?.virtualPath ?? "/";
+			} else {
+				destParentPath = "/";
+			}
+		}
+
+		const destVirtualPath = joinPath(destParentPath, src.name);
+
+		// Check if destination folder already exists (retry-safe)
+		const [existing] = await db
+			.select()
+			.from(folders)
+			.where(
+				and(
+					eq(folders.nodeType, "folder"),
+					eq(folders.providerId, targetProviderId),
+					eq(folders.virtualPath, destVirtualPath),
+					eq(folders.workspaceId, workspaceId),
+					eq(folders.isDeleted, false),
+				),
+			)
+			.limit(1);
+
+		if (existing) {
+			destinationBySourceId.set(src.id, existing.id);
+			continue;
+		}
+
+		// Resolve remote parent ID for the provider API
+		let remoteParentId: string | undefined;
+		if (destParentId) {
+			const [parentRow] = await db
+				.select({ remoteId: folders.remoteId })
+				.from(folders)
+				.where(eq(folders.id, destParentId))
+				.limit(1);
+			remoteParentId = parentRow?.remoteId ?? undefined;
+		}
+
+		const remoteId = await targetProvider.createFolder({
+			name: src.name,
+			...(remoteParentId ? { parentId: remoteParentId } : {}),
+		});
+
+		const [inserted] = await db
+			.insert(folders)
+			.values({
+				nodeType: "folder",
+				virtualPath: destVirtualPath,
+				name: src.name,
+				remoteId,
+				providerId: targetProviderId,
+				workspaceId,
+				parentId: destParentId,
+				createdBy: userId,
+				isDeleted: false,
+			})
+			.returning();
+
+		if (!inserted) {
+			throw new Error(
+				`Failed to create destination folder: ${destVirtualPath}`,
+			);
+		}
+		destinationBySourceId.set(src.id, inserted.id);
+	}
+
+	return destinationBySourceId;
+}
+
+/**
+ * Collect all files inside a source folder (recursively).
+ */
+async function collectFilesInFolder(
+	db: Database,
+	workspaceId: string,
+	sourceFolder: { id: string; virtualPath: string; providerId: string },
+): Promise<
+	Array<{
+		id: string;
+		name: string;
+		virtualPath: string;
+		providerId: string;
+		folderId: string | null;
+	}>
+> {
+	return db
+		.select({
+			id: files.id,
+			name: files.name,
+			virtualPath: files.virtualPath,
+			providerId: files.providerId,
+			folderId: files.folderId,
+		})
+		.from(files)
+		.where(
+			and(
+				eq(files.workspaceId, workspaceId),
+				eq(files.providerId, sourceFolder.providerId),
+				eq(files.nodeType, "file"),
+				eq(files.isDeleted, false),
+				like(files.virtualPath, `${sourceFolder.virtualPath}/%`),
+			),
+		)
+		.orderBy(files.virtualPath);
+}
+
+// ── Main entry point ───────────────────────────────────────────────────
+
 export async function pasteSelection(
 	db: Database,
 	userId: string,
@@ -276,8 +500,27 @@ export async function pasteSelection(
 	});
 
 	const activityService = new ActivityService(db);
+	const providerService = new ProviderService(db);
 	const queuedJobs: Job[] = [];
 	let requiresRefresh = false;
+
+	// ── Separate same-provider (sync) from cross-provider (async) ──────
+
+	interface CrossProviderFile {
+		fileId: string;
+		fileName: string;
+		sourceProviderId: string;
+		targetProviderId: string;
+		targetFolderId: string | null;
+	}
+
+	interface CrossProviderFolder {
+		folder: LoadedFolderItem;
+		targetProviderId: string;
+	}
+
+	const crossProviderFiles: CrossProviderFile[] = [];
+	const crossProviderFolders: CrossProviderFolder[] = [];
 
 	for (const item of topLevelItems) {
 		if (item.kind === "file") {
@@ -289,15 +532,6 @@ export async function pasteSelection(
 				targetFolder?.virtualPath ?? "/",
 				file.name,
 			);
-			logger.debug({
-				msg: "[paste] handling file item",
-				operation,
-				fileId: file.id,
-				sourceProviderId: file.providerId,
-				targetProviderId,
-				targetFolderId: targetFolder?.id ?? null,
-				destinationPath,
-			});
 
 			if (operation === "cut" && targetProviderId === file.providerId) {
 				await ensureNoFileConflict(
@@ -313,12 +547,6 @@ export async function pasteSelection(
 					workspaceId,
 					targetFolder?.id ?? undefined,
 				);
-				logger.debug({
-					msg: "[paste] executed same-provider file cut",
-					fileId: file.id,
-					targetFolderId: targetFolder?.id ?? null,
-					destinationPath,
-				});
 				requiresRefresh = true;
 				continue;
 			}
@@ -331,47 +559,23 @@ export async function pasteSelection(
 					file.id,
 					targetFolder?.id ?? null,
 				);
-				logger.debug({
-					msg: "[paste] executed same-provider file copy",
-					fileId: file.id,
-					targetFolderId: targetFolder?.id ?? null,
-					destinationPath,
-				});
 				requiresRefresh = true;
 				continue;
 			}
 
+			// Cross-provider file
 			await ensureNoFileConflict(db, destinationPath, targetProviderId);
-			const { activityJob } = await enqueueProviderTransfer(activityService, {
-				entity: "file",
-				operation,
-				workspaceId,
-				userId,
+			crossProviderFiles.push({
 				fileId: file.id,
-				targetProviderId,
-				targetFolderId: targetFolder?.id ?? null,
-				title: `${operation === "cut" ? "Move" : "Copy"} ${file.name}`,
-				message: "Queued for transfer",
-				metadata: {
-					fileId: file.id,
-					fileName: file.name,
-					sourceProviderId: file.providerId,
-					targetProviderId,
-					targetFolderId: targetFolder?.id ?? null,
-				},
-			});
-			queuedJobs.push(activityJob);
-			logger.debug({
-				msg: "[paste] queued file transfer",
-				fileId: file.id,
-				jobId: activityJob.id,
-				operation,
+				fileName: file.name,
+				sourceProviderId: file.providerId,
 				targetProviderId,
 				targetFolderId: targetFolder?.id ?? null,
 			});
 			continue;
 		}
 
+		// Folder item
 		const folder = await getFolder(db, item.id, userId, workspaceId);
 		if (
 			targetFolder &&
@@ -404,55 +608,223 @@ export async function pasteSelection(
 				workspaceId,
 				targetFolder?.id ?? undefined,
 			);
-			logger.debug({
-				msg: "[paste] executed same-provider folder cut",
-				folderId: folder.id,
-				targetFolderId: targetFolder?.id ?? null,
-				destinationPath,
-			});
 			requiresRefresh = true;
 			continue;
 		}
 
+		// Cross-provider folder
 		const targetProviderId = targetFolder
 			? targetFolder.providerId
 			: folder.providerId;
-		const destinationPath = joinPath(
-			targetFolder?.virtualPath ?? "/",
-			folder.name,
-		);
-		// Skip the folder conflict check for cross-provider transfers.
-		// The worker's handleFolderTransfer will reuse any existing
-		// destination folder from a previous failed attempt instead of
-		// erroring out, which makes retries safe.
-
-		const { activityJob } = await enqueueProviderTransfer(activityService, {
-			entity: "folder",
-			operation,
-			workspaceId,
-			userId,
-			folderId: folder.id,
-			targetFolderId: targetFolder?.id ?? null,
-			title: `${operation === "cut" ? "Move" : "Copy"} ${folder.name}`,
-			message: "Queued for transfer",
-			metadata: {
-				folderId: folder.id,
-				folderName: folder.name,
-				sourceProviderId: folder.providerId,
-				targetProviderId,
-				targetFolderId: targetFolder?.id ?? null,
+		crossProviderFolders.push({
+			folder: {
+				kind: "folder",
+				id: folder.id,
+				virtualPath: folder.virtualPath,
+				providerId: folder.providerId,
+				name: folder.name,
+				parentId: folder.parentId,
 			},
-		});
-		queuedJobs.push(activityJob);
-		logger.debug({
-			msg: "[paste] queued folder transfer",
-			folderId: folder.id,
-			jobId: activityJob.id,
-			operation,
 			targetProviderId,
-			targetFolderId: targetFolder?.id ?? null,
-			destinationPath,
 		});
+	}
+
+	// ── Enqueue cross-provider transfers ────────────────────────────────
+
+	const totalCrossProvider =
+		crossProviderFiles.length + crossProviderFolders.length;
+
+	if (totalCrossProvider > 0) {
+		// Group folders by target provider to reuse provider instances
+		const providerInstances = new Map<
+			string,
+			Awaited<ReturnType<ProviderService["getProviderInstance"]>>
+		>();
+
+		async function getTargetProviderInstance(targetProviderId: string) {
+			let instance = providerInstances.get(targetProviderId);
+			if (!instance) {
+				const record = await providerService.getProvider(
+					targetProviderId,
+					userId,
+					workspaceId,
+				);
+				instance = await providerService.getProviderInstance(record);
+				providerInstances.set(targetProviderId, instance);
+			}
+			return instance;
+		}
+
+		try {
+			// Create destination folder trees and collect all files to transfer
+			const allFileTransfers: CrossProviderFile[] = [...crossProviderFiles];
+
+			// Track source folders for cut cleanup
+			const sourceFoldersForCleanup: Array<{
+				id: string;
+				providerId: string;
+				virtualPath: string;
+				remoteId: string;
+			}> = [];
+
+			for (const { folder, targetProviderId } of crossProviderFolders) {
+				const targetProvider =
+					await getTargetProviderInstance(targetProviderId);
+				const folderMap = await createDestinationFolderTree(
+					db,
+					workspaceId,
+					userId,
+					folder,
+					targetProviderId,
+					targetFolder?.id ?? null,
+					targetProvider,
+				);
+
+				// Get the full folder record for cleanup (need remoteId)
+				if (operation === "cut") {
+					const fullFolder = await getFolder(
+						db,
+						folder.id,
+						userId,
+						workspaceId,
+					);
+					sourceFoldersForCleanup.push({
+						id: fullFolder.id,
+						providerId: fullFolder.providerId,
+						virtualPath: fullFolder.virtualPath,
+						remoteId: fullFolder.remoteId,
+					});
+				}
+
+				// Collect files inside this folder
+				const nestedFiles = await collectFilesInFolder(db, workspaceId, folder);
+				for (const nf of nestedFiles) {
+					const destFolderId =
+						(nf.folderId ? folderMap.get(nf.folderId) : null) ??
+						folderMap.get(folder.id) ??
+						null;
+					allFileTransfers.push({
+						fileId: nf.id,
+						fileName: nf.name,
+						sourceProviderId: nf.providerId,
+						targetProviderId,
+						targetFolderId: destFolderId,
+					});
+				}
+			}
+
+			if (allFileTransfers.length === 0 && crossProviderFolders.length > 0) {
+				// Folders with no files — just mark as done
+				requiresRefresh = true;
+			} else if (allFileTransfers.length === 1) {
+				// Single file — no batch needed
+				const ft = allFileTransfers[0]!;
+				const { activityJob } = await enqueueProviderTransfer(activityService, {
+					entity: "file",
+					operation,
+					workspaceId,
+					userId,
+					fileId: ft.fileId,
+					targetProviderId: ft.targetProviderId,
+					targetFolderId: ft.targetFolderId,
+					title: `${operation === "cut" ? "Move" : "Copy"} ${ft.fileName}`,
+					message: "Queued for transfer",
+					metadata: {
+						fileId: ft.fileId,
+						fileName: ft.fileName,
+						sourceProviderId: ft.sourceProviderId,
+						targetProviderId: ft.targetProviderId,
+						targetFolderId: ft.targetFolderId,
+					},
+				});
+				queuedJobs.push(activityJob);
+			} else if (allFileTransfers.length > 1) {
+				// Multiple files — create a batch job, enqueue all files under it
+				const verb = operation === "cut" ? "Moving" : "Copying";
+				const batchTitle = `${verb} ${allFileTransfers.length} files`;
+
+				// Create the batch activity job first (this is the visible one)
+				const batchJob = await activityService.create(workspaceId, {
+					type: "provider_transfer",
+					title: batchTitle,
+					message: "Preparing transfers",
+					metadata: {
+						entity: "batch",
+						operation,
+						totalFiles: allFileTransfers.length,
+						phase: "queued",
+					},
+				});
+
+				// Enqueue individual file transfers under the batch
+				const childJobIds: string[] = [];
+				for (const ft of allFileTransfers) {
+					const { activityJob } = await enqueueProviderTransfer(
+						activityService,
+						{
+							entity: "file",
+							operation,
+							workspaceId,
+							userId,
+							parentJobId: batchJob.id,
+							fileId: ft.fileId,
+							targetProviderId: ft.targetProviderId,
+							targetFolderId: ft.targetFolderId,
+							title: `${operation === "cut" ? "Move" : "Copy"} ${ft.fileName}`,
+							message: "Queued for transfer",
+							metadata: {
+								fileId: ft.fileId,
+								fileName: ft.fileName,
+								sourceProviderId: ft.sourceProviderId,
+								targetProviderId: ft.targetProviderId,
+								targetFolderId: ft.targetFolderId,
+								parentJobId: batchJob.id,
+							},
+						},
+					);
+					childJobIds.push(activityJob.id);
+				}
+
+				// Enqueue the batch monitor worker job (hidden — has parentJobId)
+				await enqueueProviderTransfer(activityService, {
+					entity: "batch",
+					operation,
+					workspaceId,
+					userId,
+					parentJobId: batchJob.id,
+					childJobIds,
+					sourceFolders:
+						operation === "cut" && sourceFoldersForCleanup.length > 0
+							? sourceFoldersForCleanup
+							: undefined,
+					title: batchTitle,
+					message: `${verb} 0 of ${allFileTransfers.length} files`,
+					metadata: {
+						entity: "batch",
+						operation,
+						totalFiles: allFileTransfers.length,
+						childJobIds,
+						parentJobId: batchJob.id,
+					},
+				});
+
+				// Update the visible batch job with child IDs
+				await activityService.update(batchJob.id, {
+					metadata: {
+						...(batchJob.metadata ?? {}),
+						childJobIds,
+						totalFiles: allFileTransfers.length,
+					},
+				});
+
+				queuedJobs.push(batchJob);
+			}
+		} finally {
+			// Cleanup all provider instances
+			for (const instance of providerInstances.values()) {
+				await instance.cleanup().catch(() => {});
+			}
+		}
 	}
 
 	if (queuedJobs.length === 0 && !requiresRefresh) {

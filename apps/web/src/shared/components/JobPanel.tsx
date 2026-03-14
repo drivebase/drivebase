@@ -65,6 +65,12 @@ export function JobPanel() {
 	const jobs = useMemo(
 		() =>
 			Array.from(jobsMap.values())
+				.filter((job) => {
+					// Hide child jobs that belong to a batch — only the batch
+					// job itself should be visible.
+					const meta = job.metadata as Record<string, unknown> | null;
+					return !meta?.parentJobId;
+				})
 				.sort(
 					(a, b) =>
 						new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),

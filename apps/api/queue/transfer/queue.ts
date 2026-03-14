@@ -25,9 +25,23 @@ export interface ProviderFolderTransferJobData extends BaseTransferJobData {
 	operation: TransferOperation;
 }
 
+export interface ProviderBatchTransferJobData extends BaseTransferJobData {
+	entity: "batch";
+	childJobIds: string[];
+	operation: TransferOperation;
+	/** Source folders to mark deleted + remove from provider after cut completes */
+	sourceFolders?: Array<{
+		id: string;
+		providerId: string;
+		virtualPath: string;
+		remoteId: string;
+	}>;
+}
+
 export type ProviderTransferJobData =
 	| ProviderFileTransferJobData
-	| ProviderFolderTransferJobData;
+	| ProviderFolderTransferJobData
+	| ProviderBatchTransferJobData;
 
 interface BuildTransferQueueJobIdInput {
 	jobId: string;
@@ -38,6 +52,12 @@ export function isFileTransferJobData(
 	data: ProviderTransferJobData,
 ): data is ProviderFileTransferJobData {
 	return data.entity === "file";
+}
+
+export function isBatchTransferJobData(
+	data: ProviderTransferJobData,
+): data is ProviderBatchTransferJobData {
+	return data.entity === "batch";
 }
 
 export function buildTransferQueueJobId(
