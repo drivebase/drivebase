@@ -67,7 +67,7 @@ export function createBulkActions(deps: BulkActionDeps): FileAction[] {
 			},
 			icon: Paste,
 			group: "organize",
-			surfaces: ["contextMenu"],
+			surfaces: ["contextMenu", "toolbar"],
 			enabled: (ctx) =>
 				deps.canWrite &&
 				ctx.clipboard.count > 0 &&
