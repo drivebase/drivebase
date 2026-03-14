@@ -299,11 +299,6 @@ export function useFileOperations({
 		if (payload.requiresRefresh) {
 			onMutationComplete?.();
 		}
-		if (payload.jobs.length > 0) {
-			toast.success(
-				`Queued ${payload.jobs.length} transfer job${payload.jobs.length > 1 ? "s" : ""}`,
-			);
-		}
 		return payload;
 	};
 

@@ -68,11 +68,7 @@ export function createBulkActions(deps: BulkActionDeps): FileAction[] {
 			icon: Paste,
 			group: "organize",
 			surfaces: ["contextMenu", "toolbar"],
-			enabled: (ctx) =>
-				deps.canWrite &&
-				ctx.clipboard.count > 0 &&
-				(ctx.selection.length === 0 ||
-					(ctx.selection.length === 1 && ctx.selection[0].kind === "folder")),
+			enabled: (ctx) => deps.canWrite && ctx.clipboard.count > 0,
 			execute: async (ctx) => {
 				const targetFolderId =
 					ctx.selection.length === 1 && ctx.selection[0].kind === "folder"

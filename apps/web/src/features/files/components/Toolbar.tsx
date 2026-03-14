@@ -1,5 +1,6 @@
 import type { Table } from "@tanstack/react-table";
 import {
+	PiClipboardText as Paste,
 	PiColumns as Columns,
 	PiSquaresFour as GridView,
 	PiListBullets as TableViewIcon,
@@ -16,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useFilesStore } from "@/shared/store/filesStore";
 import { useFileExplorer } from "../context/FileExplorerProvider";
 import { useSelection } from "../context/SelectionContext";
+import { useClipboardStore } from "../store/clipboardStore";
 import type { RowItem } from "./file-system-table/types";
 
 interface ToolbarProps {
@@ -29,7 +31,9 @@ export function Toolbar({ table }: ToolbarProps) {
 	const viewMode = useFilesStore((s) => s.viewMode);
 	const setViewMode = useFilesStore((s) => s.setViewMode);
 
+	const clipboardCount = useClipboardStore((s) => s.items.length);
 	const canDelete = canWrite && count > 0;
+	const canPaste = canWrite && clipboardCount > 0;
 
 	if (isLoading) {
 		return (
@@ -84,6 +88,22 @@ export function Toolbar({ table }: ToolbarProps) {
 						/>
 					</Button>
 				</div>
+				{canPaste ? (
+					<Button
+						variant="outline"
+						onClick={() => {
+							const pasteAction = registry.getById("paste-selection");
+							if (!pasteAction) return;
+							pasteAction.execute({
+								...actionContext,
+								selection: selectedItems,
+							});
+						}}
+					>
+						<Paste size={14} className="mr-2" />
+						Paste ({clipboardCount})
+					</Button>
+				) : null}
 				{canDelete ? (
 					<Button
 						variant="destructive"
