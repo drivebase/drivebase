@@ -1,12 +1,12 @@
 import { ValidationError } from "@drivebase/core";
-import { getDb, type Job as DbJob, jobs, users } from "@drivebase/db";
+import { type Job as DbJob, getDb, jobs, users } from "@drivebase/db";
 import { and, eq, inArray } from "drizzle-orm";
-import { Tokens } from "../../container";
 import { getExtractionQueue } from "@/queue/extraction/queue";
 import {
 	buildTransferQueueJobId,
 	getTransferQueue,
 } from "@/queue/transfer/queue";
+import { Tokens } from "../../container";
 import type { ActivityService } from "../../service/activity";
 import { getAccessibleWorkspaceId } from "../../service/workspace";
 import { requestJobCancellation } from "../../utils/jobs/job-cancel";
@@ -23,6 +23,7 @@ import { type PubSubChannels, pubSub } from "../pubsub";
 function toJobStatus(status: DbJob["status"]): JobStatus {
 	if (status === "pending") return JobStatus.Pending;
 	if (status === "running") return JobStatus.Running;
+	if (status === "paused") return JobStatus.Paused;
 	if (status === "completed") return JobStatus.Completed;
 	return JobStatus.Error;
 }

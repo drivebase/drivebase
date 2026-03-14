@@ -1,18 +1,17 @@
 import { mkdir, open, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { ConflictError, joinPath } from "@drivebase/core";
+import { basename, dirname, extname, join } from "node:path";
+import { ConflictError, getParentPath, joinPath } from "@drivebase/core";
 import {
+	type Folder,
 	files,
 	folders,
 	getDb,
-	jobs,
-	type Folder,
 	type Job,
+	jobs,
 } from "@drivebase/db";
 import { Worker } from "bullmq";
 import { and, eq, inArray, like } from "drizzle-orm";
 import { env } from "@/config/env";
-import { createBullMQConnection } from "@/redis/client";
 import { enqueueProviderTransfer } from "@/queue/transfer/enqueue";
 import {
 	isBatchTransferJobData,
@@ -22,6 +21,7 @@ import {
 	type ProviderFolderTransferJobData,
 	type ProviderTransferJobData,
 } from "@/queue/transfer/queue";
+import { createBullMQConnection } from "@/redis/client";
 import { ActivityService } from "@/service/activity";
 import { moveFolder } from "@/service/folder/mutation";
 import { ProviderService } from "@/service/provider";
@@ -229,6 +229,43 @@ async function checkFileConflict(
 	return null;
 }
 
+async function getUniqueFilename(
+	virtualPath: string,
+	providerId: string,
+): Promise<{ name: string; path: string }> {
+	const db = getDb();
+	const parentPath = getParentPath(virtualPath);
+	const name = basename(virtualPath);
+	const ext = extname(name);
+	const baseName = basename(name, ext);
+
+	let counter = 1;
+	let currentName = name;
+	let currentPath = virtualPath;
+
+	while (true) {
+		const [existing] = await db
+			.select()
+			.from(files)
+			.where(
+				and(
+					eq(files.virtualPath, currentPath),
+					eq(files.providerId, providerId),
+					eq(files.isDeleted, false),
+				),
+			)
+			.limit(1);
+
+		if (!existing) {
+			return { name: currentName, path: currentPath };
+		}
+
+		currentName = `${baseName} (${counter})${ext}`;
+		currentPath = joinPath(parentPath, currentName);
+		counter++;
+	}
+}
+
 async function getTargetFolder(
 	workspaceId: string,
 	targetFolderId: string | null,
@@ -311,17 +348,8 @@ export async function handleFileTransfer(
 		}
 
 		const destinationPath = joinPath(folder?.virtualPath ?? "/", file.name);
-		logger.debug({
-			msg: "[transfer:file] resolved destination",
-			jobId,
-			fileId,
-			sourceProviderId: file.providerId,
-			targetProviderId,
-			sourcePath: file.virtualPath,
-			destinationPath,
-			targetFolderId: folder?.id ?? null,
-			operation,
-		});
+		let finalDestinationPath = destinationPath;
+		let finalFileName = file.name;
 
 		const existingConflict = await checkFileConflict(
 			destinationPath,
@@ -330,7 +358,7 @@ export async function handleFileTransfer(
 		);
 
 		if (existingConflict) {
-			let resolution: "overwrite" | "skip" | null = null;
+			let resolution: "overwrite" | "skip" | "duplicate" | null = null;
 			let batchJob: any = null;
 
 			if (data.parentJobId) {
@@ -343,7 +371,8 @@ export async function handleFileTransfer(
 				if (batchJob?.metadata?.conflictResolution) {
 					resolution = batchJob.metadata.conflictResolution as
 						| "overwrite"
-						| "skip";
+						| "skip"
+						| "duplicate";
 				}
 			}
 
@@ -361,7 +390,7 @@ export async function handleFileTransfer(
 
 				const { waitForJobResolution } = await import("@/utils/jobs/job-pause");
 				const res = await waitForJobResolution<{
-					action: "overwrite" | "skip";
+					action: "overwrite" | "skip" | "duplicate";
 					applyToAll?: boolean;
 				}>(jobId);
 				resolution = res.action;
@@ -381,6 +410,25 @@ export async function handleFileTransfer(
 			if (resolution === "skip") {
 				await activityService.complete(jobId, "Skipped by user");
 				return;
+			}
+
+			if (resolution === "duplicate") {
+				const unique = await getUniqueFilename(
+					destinationPath,
+					targetProviderId,
+				);
+				finalDestinationPath = unique.path;
+				finalFileName = unique.name;
+
+				await updateActivity({
+					status: "running",
+					message: `Duplicating as '${finalFileName}'`,
+					metadata: {
+						phase: "prepare",
+						finalFileName,
+						finalDestinationPath,
+					},
+				});
 			}
 
 			if (resolution === "overwrite") {
@@ -547,7 +595,7 @@ export async function handleFileTransfer(
 		) {
 			if (!manifest.multipart) {
 				const multipart = await targetProvider.initiateMultipartUpload({
-					name: file.name,
+					name: finalFileName,
 					mimeType: file.mimeType,
 					size: file.size,
 					parentId: folder?.remoteId,
@@ -637,7 +685,7 @@ export async function handleFileTransfer(
 				manifest.multipart.finalRemoteId ?? manifest.multipart.remoteId;
 		} else {
 			const uploadResponse = await targetProvider.requestUpload({
-				name: file.name,
+				name: finalFileName,
 				mimeType: file.mimeType,
 				size: file.size,
 				parentId: folder?.remoteId,
@@ -699,7 +747,7 @@ export async function handleFileTransfer(
 				fileId: file.id,
 				sourceRemoteId: file.remoteId,
 				targetRemoteId: finalRemoteId,
-				destinationPath,
+				finalDestinationPath,
 			});
 
 			// Update DB first so the record points to the destination.
@@ -715,7 +763,8 @@ export async function handleFileTransfer(
 					providerId: targetProviderId,
 					remoteId: finalRemoteId,
 					folderId: folder?.id ?? null,
-					virtualPath: destinationPath,
+					virtualPath: finalDestinationPath,
+					name: finalFileName,
 					updatedAt: new Date(),
 				})
 				.where(eq(files.id, file.id))
@@ -755,15 +804,15 @@ export async function handleFileTransfer(
 				fileId: file.id,
 				targetProviderId,
 				targetFolderId: folder?.id ?? null,
-				destinationPath,
+				finalDestinationPath,
 			});
 		} else {
 			const [inserted] = await db
 				.insert(files)
 				.values({
 					nodeType: "file",
-					virtualPath: destinationPath,
-					name: file.name,
+					virtualPath: finalDestinationPath,
+					name: finalFileName,
 					mimeType: file.mimeType,
 					size: file.size,
 					hash: file.hash,
@@ -785,7 +834,7 @@ export async function handleFileTransfer(
 				copiedFileId: inserted.id,
 				targetProviderId,
 				targetFolderId: folder?.id ?? null,
-				destinationPath,
+				finalDestinationPath,
 			});
 		}
 
@@ -793,7 +842,7 @@ export async function handleFileTransfer(
 		await activityService.log({
 			kind: "file.transfer.completed",
 			title: "Provider transfer completed",
-			summary: file.name,
+			summary: finalFileName,
 			status: "success",
 			userId,
 			workspaceId,

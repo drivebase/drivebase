@@ -7,7 +7,6 @@ import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { FileDetailsDialog } from "@/features/files/FileDetailsDialog";
 import { JobPanel } from "@/shared/components/JobPanel";
-import { JobConflictDialog } from "@/shared/components/JobConflictDialog";
 import { TransferProgressPanel } from "@/shared/components/TransferProgressPanel";
 import { useActivityFeed } from "@/shared/hooks/useActivityFeed";
 import { useJobsFeed } from "@/shared/hooks/useJobsFeed";
@@ -37,7 +36,6 @@ function RootComponent() {
 			<DownloadLinkConfigDialogHost />
 			<FileDetailsDialog />
 			<JobPanel />
-			<JobConflictDialog />
 			<TransferProgressPanel />
 			<Toaster position="bottom-right" theme={theme} />
 		</>
