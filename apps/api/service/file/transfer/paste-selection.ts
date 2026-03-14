@@ -564,7 +564,7 @@ export async function pasteSelection(
 			}
 
 			// Cross-provider file
-			await ensureNoFileConflict(db, destinationPath, targetProviderId);
+			// Conflict check is deferred to the background worker to allow interactive pause/resume
 			crossProviderFiles.push({
 				fileId: file.id,
 				fileName: file.name,

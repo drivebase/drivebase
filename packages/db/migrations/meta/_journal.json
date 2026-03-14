@@ -57,6 +57,13 @@
       "when": 1773453898336,
       "tag": "0007_enable_sync_to_provider_by_default",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773486817117,
+      "tag": "0008_add_paused_to_jobs",
+      "breakpoints": true
     }
   ]
 }

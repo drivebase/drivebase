@@ -158,6 +158,40 @@ export const activityMutations: MutationResolvers = {
 
 		return true;
 	},
+	resolveJobPause: async (_parent, args, context) => {
+		const workspaceId = await getAccessibleWorkspaceId(
+			context.db,
+			context.user!.userId,
+			context.headers?.get("x-workspace-id") ?? undefined,
+		);
+
+		const [job] = await context.db
+			.select()
+			.from(jobs)
+			.where(and(eq(jobs.id, args.jobId), eq(jobs.workspaceId, workspaceId)))
+			.limit(1);
+
+		if (!job) {
+			throw new ValidationError("Job not found");
+		}
+
+		if (job.status !== "paused") {
+			throw new ValidationError("Job is not paused");
+		}
+
+		const { publishJobResolution } = await import("../../utils/jobs/job-pause");
+		await publishJobResolution(job.id, args.resolution);
+
+		const activityService = context.container.resolve<ActivityService>(
+			Tokens.ActivityService,
+		);
+		const updatedJob = await activityService.update(job.id, {
+			status: "running",
+			message: "Resuming...",
+		});
+
+		return toGraphqlJob(updatedJob);
+	},
 };
 
 /** Remove pending BullMQ jobs for a given tracking job, based on job type. */

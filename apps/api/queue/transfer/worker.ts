@@ -52,7 +52,7 @@ export interface JobContext {
 	updateActivity: (input: {
 		progress?: number;
 		message?: string;
-		status?: "pending" | "running" | "completed" | "error";
+		status?: "pending" | "running" | "paused" | "completed" | "error";
 		metadata?: Record<string, unknown>;
 	}) => Promise<void>;
 }
@@ -197,14 +197,14 @@ async function sleep(ms: number): Promise<void> {
 	await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function ensureNoFileConflict(
+async function checkFileConflict(
 	virtualPath: string,
 	providerId: string,
 	excludingFileId?: string,
 ) {
 	const db = getDb();
 	const [existing] = await db
-		.select({ id: files.id })
+		.select()
 		.from(files)
 		.where(
 			and(
@@ -217,8 +217,9 @@ async function ensureNoFileConflict(
 		.limit(1);
 
 	if (existing && existing.id !== excludingFileId) {
-		throw new ConflictError(`File already exists at path: ${virtualPath}`);
+		return existing;
 	}
+	return null;
 }
 
 async function getTargetFolder(
@@ -314,11 +315,98 @@ export async function handleFileTransfer(
 			targetFolderId: folder?.id ?? null,
 			operation,
 		});
-		await ensureNoFileConflict(
+
+		const existingConflict = await checkFileConflict(
 			destinationPath,
 			targetProviderId,
 			operation === "cut" ? file.id : undefined,
 		);
+
+		if (existingConflict) {
+			let resolution: "overwrite" | "skip" | null = null;
+			let batchJob: any = null;
+
+			if (data.parentJobId) {
+				[batchJob] = await db
+					.select()
+					.from(jobs)
+					.where(eq(jobs.id, data.parentJobId))
+					.limit(1);
+
+				if (batchJob?.metadata?.conflictResolution) {
+					resolution = batchJob.metadata.conflictResolution as
+						| "overwrite"
+						| "skip";
+				}
+			}
+
+			if (!resolution) {
+				await updateActivity({
+					status: "paused",
+					message: `Waiting for user: File '${file.name}' already exists`,
+					metadata: {
+						phase: "conflict",
+						conflictFileId: existingConflict.id,
+						destinationPath,
+						fileName: file.name,
+					},
+				});
+
+				const { waitForJobResolution } = await import("@/utils/jobs/job-pause");
+				const res = await waitForJobResolution<{
+					action: "overwrite" | "skip";
+					applyToAll?: boolean;
+				}>(jobId);
+				resolution = res.action;
+
+				if (res.applyToAll && data.parentJobId) {
+					const batchActivityService = new ActivityService(db);
+					await batchActivityService.update(data.parentJobId, {
+						metadata: {
+							...(batchJob?.metadata ?? {}),
+							conflictResolution: resolution,
+						},
+						suppressEvent: true, // Don't broadcast the internal state update
+					});
+				}
+			}
+
+			if (resolution === "skip") {
+				await activityService.complete(jobId, "Skipped by user");
+				return;
+			}
+
+			if (resolution === "overwrite") {
+				// Initialize target provider early to delete the conflicting file
+				const targetRecord = await providerService.getProvider(
+					targetProviderId,
+					userId,
+					workspaceId,
+				);
+				targetProvider =
+					await providerService.getProviderInstance(targetRecord);
+
+				try {
+					await targetProvider.delete({
+						remoteId: existingConflict.remoteId,
+						isFolder: false,
+					});
+				} catch (deleteErr) {
+					logger.warn({
+						msg: "Failed to delete remote conflicting file",
+						error: deleteErr,
+					});
+				}
+				await db.delete(files).where(eq(files.id, existingConflict.id));
+
+				// Update activity back to running
+				await updateActivity({
+					status: "running",
+					message: "Resuming transfer",
+					metadata: { phase: "prepare" },
+				});
+			}
+		}
 
 		const transferDir = join(
 			getTransferCacheRoot(),
@@ -1469,7 +1557,7 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 			const updateActivity = async (input: {
 				progress?: number;
 				message?: string;
-				status?: "pending" | "running" | "completed" | "error";
+				status?: "pending" | "running" | "paused" | "completed" | "error";
 				metadata?: Record<string, unknown>;
 			}) => {
 				await assertNotCancelled();

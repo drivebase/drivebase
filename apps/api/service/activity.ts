@@ -17,7 +17,7 @@ interface CreateJobInput {
 interface UpdateJobInput {
 	progress?: number;
 	message?: string;
-	status?: "pending" | "running" | "completed" | "error";
+	status?: "pending" | "running" | "paused" | "completed" | "error";
 	metadata?: Record<string, unknown>;
 	/**
 	 * If true, metadata will be completely replaced instead of merged.
