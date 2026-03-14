@@ -857,24 +857,6 @@ export async function handleFolderTransfer(
 			return;
 		}
 
-		const [existingDestination] = await db
-			.select({ id: folders.id })
-			.from(folders)
-			.where(
-				and(
-					eq(folders.nodeType, "folder"),
-					eq(folders.providerId, targetProviderId),
-					eq(folders.virtualPath, destinationPath),
-					eq(folders.isDeleted, false),
-				),
-			)
-			.limit(1);
-		if (existingDestination) {
-			throw new ConflictError(
-				`Folder already exists at path: ${destinationPath}`,
-			);
-		}
-
 		const sourceRecord = await providerService.getProvider(
 			sourceFolder.providerId,
 			userId,
@@ -930,28 +912,56 @@ export async function handleFolderTransfer(
 		);
 		const destinationBySourceId = new Map<string, Folder>();
 
-		const rootRemoteId = await targetProvider.createFolder({
-			name: sourceFolder.name,
-			parentId: targetFolder?.remoteId,
-		});
-		const [rootInserted] = await db
-			.insert(folders)
-			.values({
-				nodeType: "folder",
-				virtualPath: destinationPath,
+		// Reuse existing destination folder if it was created by a previous
+		// (failed) attempt, so retries don't hit a ConflictError.
+		const [existingRoot] = await db
+			.select()
+			.from(folders)
+			.where(
+				and(
+					eq(folders.nodeType, "folder"),
+					eq(folders.providerId, targetProviderId),
+					eq(folders.virtualPath, destinationPath),
+					eq(folders.workspaceId, workspaceId),
+					eq(folders.isDeleted, false),
+				),
+			)
+			.limit(1);
+
+		let rootFolder: Folder;
+		if (existingRoot) {
+			logger.debug({
+				msg: "[transfer:folder] reusing existing destination root",
+				jobId,
+				existingFolderId: existingRoot.id,
+				destinationPath,
+			});
+			rootFolder = existingRoot;
+		} else {
+			const rootRemoteId = await targetProvider.createFolder({
 				name: sourceFolder.name,
-				remoteId: rootRemoteId,
-				providerId: targetProviderId,
-				workspaceId,
-				parentId: targetFolder?.id ?? null,
-				createdBy: userId,
-				isDeleted: false,
-			})
-			.returning();
-		if (!rootInserted) {
-			throw new Error("Failed to create destination folder");
+				parentId: targetFolder?.remoteId,
+			});
+			const [newRoot] = await db
+				.insert(folders)
+				.values({
+					nodeType: "folder",
+					virtualPath: destinationPath,
+					name: sourceFolder.name,
+					remoteId: rootRemoteId,
+					providerId: targetProviderId,
+					workspaceId,
+					parentId: targetFolder?.id ?? null,
+					createdBy: userId,
+					isDeleted: false,
+				})
+				.returning();
+			if (!newRoot) {
+				throw new Error("Failed to create destination folder");
+			}
+			rootFolder = newRoot;
 		}
-		destinationBySourceId.set(sourceFolder.id, rootInserted);
+		destinationBySourceId.set(sourceFolder.id, rootFolder);
 
 		const descendants = sourceSubfolders
 			.filter((folder) => folder.id !== sourceFolder.id)
@@ -963,11 +973,32 @@ export async function handleFolderTransfer(
 				: undefined;
 			const destinationParent =
 				(sourceParent && destinationBySourceId.get(sourceParent.id)) ??
-				rootInserted;
+				rootFolder;
 			const destinationVirtualPath = joinPath(
 				destinationParent.virtualPath,
 				sourceDescendant.name,
 			);
+
+			// Reuse existing descendant folder from a previous attempt.
+			const [existingDescendant] = await db
+				.select()
+				.from(folders)
+				.where(
+					and(
+						eq(folders.nodeType, "folder"),
+						eq(folders.providerId, targetProviderId),
+						eq(folders.virtualPath, destinationVirtualPath),
+						eq(folders.workspaceId, workspaceId),
+						eq(folders.isDeleted, false),
+					),
+				)
+				.limit(1);
+
+			if (existingDescendant) {
+				destinationBySourceId.set(sourceDescendant.id, existingDescendant);
+				continue;
+			}
+
 			const remoteId = await targetProvider.createFolder({
 				name: sourceDescendant.name,
 				parentId: destinationParent.remoteId,
@@ -1010,8 +1041,8 @@ export async function handleFolderTransfer(
 			await assertNotCancelled();
 			const sourceParentFolder = sourceFile.folderId
 				? destinationBySourceId.get(sourceFile.folderId)
-				: rootInserted;
-			const destinationFolderId = sourceParentFolder?.id ?? rootInserted.id;
+				: rootFolder;
+			const destinationFolderId = sourceParentFolder?.id ?? rootFolder.id;
 			const enqueued = await enqueueProviderTransfer(activityService, {
 				entity: "file",
 				operation: childFileOperation,

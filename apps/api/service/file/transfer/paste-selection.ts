@@ -421,7 +421,10 @@ export async function pasteSelection(
 			targetFolder?.virtualPath ?? "/",
 			folder.name,
 		);
-		await ensureNoFolderConflict(db, destinationPath, targetProviderId);
+		// Skip the folder conflict check for cross-provider transfers.
+		// The worker's handleFolderTransfer will reuse any existing
+		// destination folder from a previous failed attempt instead of
+		// erroring out, which makes retries safe.
 
 		const { activityJob } = await enqueueProviderTransfer(activityService, {
 			entity: "folder",
