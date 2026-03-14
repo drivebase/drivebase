@@ -1,4 +1,4 @@
-:3000 {
+:8900 {
   encode gzip zstd
 
   @api_routes {

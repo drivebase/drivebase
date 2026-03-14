@@ -12,7 +12,7 @@ Before going live, ensure you have addressed the following:
 - **Secure Keys**: Change `JWT_SECRET` and `ENCRYPTION_KEY` to strong, random values.
 - **Database Backups**: Implement a regular backup strategy for your PostgreSQL database.
 - **SSL/TLS**: Always serve Drivebase over HTTPS.
-- **CORS Settings**: Restrict `CORS_ORIGIN` to your actual frontend domain.
+- **Public URL**: Ensure `APP_URL` is set to your actual public domain to handle redirects correctly.
 - **Logs**: Set `NODE_ENV=production` to ensure structured JSON logging.
 
 ## Docker Deployment (GHCR)

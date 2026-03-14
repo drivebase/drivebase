@@ -36,11 +36,10 @@ RUN chmod +x /usr/local/bin/start.sh
 
 ENV PORT=4000
 ENV NODE_ENV=production
-ENV CORS_ORIGIN=http://localhost:3000
-ENV API_BASE_URL=http://localhost:3000
+ENV APP_URL=http://localhost:8900
 ENV API_UPSTREAM=http://127.0.0.1:4000
 
-EXPOSE 3000
+EXPOSE 8900
 
 FROM runtime-base AS runtime-local
 COPY --from=builder /app/apps/web/dist /srv/www

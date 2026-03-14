@@ -85,8 +85,7 @@ bun run start
 | `REDIS_URL` | Redis connection string | `redis://localhost:6379` |
 | `JWT_SECRET` | Secret for JWT signing (min 32 chars) | Required |
 | `ENCRYPTION_KEY` | Key for provider credentials encryption (min 32 chars) | Required |
-| `CORS_ORIGIN` | Allowed CORS origin | `http://localhost:3000` |
-| `API_BASE_URL` | Public API URL for OAuth/proxy redirects | Optional (recommended in production) |
+| `APP_URL` | Public app URL for OAuth/proxy redirects | Optional (recommended in production) |
 
 ## GraphQL API
 

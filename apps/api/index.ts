@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { ensureVectorExtension, getDb } from "@drivebase/db";
 import { env } from "./config/env";
 import { mountPluginRoutes } from "./config/providers";
+import { getAppUrl } from "./config/url";
 import { registry } from "./queue/index";
 import { createApp } from "./server/app";
 import { mountCoreRoutes } from "./server/routes/core";
@@ -75,7 +76,7 @@ registry.startAll();
 
 await reconcileWorkspaceAutoSyncSchedules(getDb());
 
-logger.info(`Drivebase API running on http://localhost:${server.port}/graphql`);
+logger.info(`Drivebase running on ${getAppUrl()}`);
 
 telemetry.capture("server_started", { version: appVersion });
 
