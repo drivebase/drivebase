@@ -8,6 +8,10 @@ interface CreateJobInput {
 	title: string;
 	message?: string;
 	metadata?: Record<string, unknown>;
+	/**
+	 * If true, suppresses the GraphQL subscription event (useful for hidden background jobs).
+	 */
+	suppressEvent?: boolean;
 }
 
 interface UpdateJobInput {
@@ -20,6 +24,10 @@ interface UpdateJobInput {
 	 * Defaults to false (merge).
 	 */
 	replaceMetadata?: boolean;
+	/**
+	 * If true, suppresses the GraphQL subscription event (useful for hidden child jobs).
+	 */
+	suppressEvent?: boolean;
 }
 
 interface LogActivityInput {
@@ -55,7 +63,9 @@ export class ActivityService {
 			throw new Error("Failed to create job");
 		}
 
-		pubSub.publish("activityUpdated", workspaceId, job);
+		if (!input.suppressEvent) {
+			pubSub.publish("activityUpdated", workspaceId, job);
+		}
 		return job;
 	}
 
@@ -83,7 +93,9 @@ export class ActivityService {
 			throw new Error("Job not found");
 		}
 
-		pubSub.publish("activityUpdated", job.workspaceId, job);
+		if (!input.suppressEvent) {
+			pubSub.publish("activityUpdated", job.workspaceId, job);
+		}
 		return job;
 	}
 

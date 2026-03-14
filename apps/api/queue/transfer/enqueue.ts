@@ -45,6 +45,11 @@ export async function enqueueProviderTransfer(
 		fileId: "fileId" in input ? input.fileId : undefined,
 		folderId: "folderId" in input ? input.folderId : undefined,
 	});
+
+	// If this job has a parentJobId, it's a child job and we should
+	// suppress the GraphQL subscription event to reduce websocket noise.
+	const suppressEvent = Boolean(input.parentJobId);
+
 	const activityJob = await activityService.create(input.workspaceId, {
 		type: "provider_transfer",
 		title: input.title,
@@ -56,6 +61,7 @@ export async function enqueueProviderTransfer(
 			parentJobId: input.parentJobId ?? null,
 			phase: "queued",
 		},
+		suppressEvent,
 	});
 
 	const queueJobId = buildTransferQueueJobId({
@@ -77,6 +83,7 @@ export async function enqueueProviderTransfer(
 			...(activityJob.metadata ?? {}),
 			queueJobId,
 		},
+		suppressEvent,
 	});
 
 	logger.debug({

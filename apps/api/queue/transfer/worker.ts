@@ -1465,6 +1465,7 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 			});
 
 			const assertNotCancelled = () => assertJobNotCancelled(jobId);
+			const suppressEvent = Boolean(data.parentJobId);
 			const updateActivity = async (input: {
 				progress?: number;
 				message?: string;
@@ -1472,7 +1473,10 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 				metadata?: Record<string, unknown>;
 			}) => {
 				await assertNotCancelled();
-				await activityService.update(jobId, input);
+				await activityService.update(jobId, {
+					...input,
+					suppressEvent,
+				});
 			};
 
 			try {
