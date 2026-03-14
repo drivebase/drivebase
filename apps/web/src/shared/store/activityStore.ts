@@ -68,7 +68,8 @@ export const useActivityStore = create<ActivityStore>((set) => ({
 			for (const [id, job] of state.jobs.entries()) {
 				if (
 					job.status === JobStatus.Pending ||
-					job.status === JobStatus.Running
+					job.status === JobStatus.Running ||
+					job.status === JobStatus.Paused
 				) {
 					jobs.set(id, job);
 				}

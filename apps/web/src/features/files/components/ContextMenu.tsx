@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -28,10 +28,12 @@ const GROUP_LABELS: Record<string, string> = {
 export function FileContextMenu({ children, item }: FileContextMenuProps) {
 	const { registry, actionContext } = useFileExplorer();
 	const { setContextTarget, isSelected } = useSelection();
+	const openedAtRef = useRef(0);
 
 	const handleOpenChange = useCallback(
 		(open: boolean) => {
 			if (open) {
+				openedAtRef.current = Date.now();
 				// If the right-clicked item is already part of an explicit selection,
 				// let the action context use that selection (effectiveSelection falls
 				// back to selectedItems when contextTarget is null).
@@ -58,21 +60,36 @@ export function FileContextMenu({ children, item }: FileContextMenuProps) {
 						{GROUP_LABELS[group.group] ? (
 							<ContextMenuLabel>{GROUP_LABELS[group.group]}</ContextMenuLabel>
 						) : null}
-						{group.actions.map((action) => (
-							<ContextMenuItem
-								key={action.id}
-								variant={
-									action.variant === "destructive" ? "destructive" : "default"
-								}
-								onClick={() => action.execute(actionContext)}
-							>
-								<action.icon size={14} className="mr-2" />
-								{action.label}
-								{action.shortcut ? (
-									<ContextMenuShortcut>{action.shortcut}</ContextMenuShortcut>
-								) : null}
-							</ContextMenuItem>
-						))}
+						{group.actions.map((action) => {
+							const label =
+								typeof action.label === "function"
+									? action.label(actionContext)
+									: action.label;
+							return (
+								<ContextMenuItem
+									key={action.id}
+									variant={
+										action.variant === "destructive" ? "destructive" : "default"
+									}
+									onSelect={(event) => {
+										const elapsed = Date.now() - openedAtRef.current;
+										// Ignore the opening right-click release from selecting
+										// the first item when menu appears under cursor.
+										if (elapsed < 150) {
+											event.preventDefault();
+											return;
+										}
+										void action.execute(actionContext);
+									}}
+								>
+									<action.icon size={14} className="mr-2" />
+									{label}
+									{action.shortcut ? (
+										<ContextMenuShortcut>{action.shortcut}</ContextMenuShortcut>
+									) : null}
+								</ContextMenuItem>
+							);
+						})}
 					</div>
 				))}
 				{grouped.length === 0 && (

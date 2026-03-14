@@ -3,6 +3,7 @@ import type { SelectionItem } from "../actions/types";
 import { useFileExplorer } from "../context/FileExplorerProvider";
 import { useSelection } from "../context/SelectionContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { BlankAreaContextMenu } from "./BlankAreaContextMenu";
 import { FileSystemTableEmpty } from "./file-system-table/FileSystemTableEmpty";
 import { FileSystemTableLoading } from "./file-system-table/FileSystemTableLoading";
 import { GridView } from "./grid/GridView";
@@ -33,8 +34,20 @@ export function FileExplorer() {
 	}
 
 	if (files.length === 0 && folders.length === 0) {
-		return <FileSystemTableEmpty />;
+		return (
+			<BlankAreaContextMenu>
+				<div className="h-full min-h-[220px] w-full">
+					<FileSystemTableEmpty />
+				</div>
+			</BlankAreaContextMenu>
+		);
 	}
 
-	return viewMode === "grid" ? <GridView /> : <TableView />;
+	return (
+		<BlankAreaContextMenu>
+			<div className="h-full min-h-[220px] w-full">
+				{viewMode === "grid" ? <GridView /> : <TableView />}
+			</div>
+		</BlankAreaContextMenu>
+	);
 }

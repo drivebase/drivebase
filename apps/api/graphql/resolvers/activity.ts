@@ -1,6 +1,6 @@
 import { ValidationError } from "@drivebase/core";
-import { type Job as DbJob, jobs, users } from "@drivebase/db";
-import { and, eq } from "drizzle-orm";
+import { getDb, type Job as DbJob, jobs, users } from "@drivebase/db";
+import { and, eq, inArray } from "drizzle-orm";
 import { Tokens } from "../../container";
 import { getExtractionQueue } from "@/queue/extraction/queue";
 import {
@@ -158,11 +158,92 @@ export const activityMutations: MutationResolvers = {
 
 		return true;
 	},
+	resolveJobPause: async (_parent, args, context) => {
+		const workspaceId = await getAccessibleWorkspaceId(
+			context.db,
+			context.user!.userId,
+			context.headers?.get("x-workspace-id") ?? undefined,
+		);
+
+		const [job] = await context.db
+			.select()
+			.from(jobs)
+			.where(and(eq(jobs.id, args.jobId), eq(jobs.workspaceId, workspaceId)))
+			.limit(1);
+
+		if (!job) {
+			throw new ValidationError("Job not found");
+		}
+
+		if (job.status !== "paused") {
+			throw new ValidationError("Job is not paused");
+		}
+
+		const { publishJobResolution } = await import("../../utils/jobs/job-pause");
+		await publishJobResolution(job.id, args.resolution);
+
+		const activityService = context.container.resolve<ActivityService>(
+			Tokens.ActivityService,
+		);
+		const updatedJob = await activityService.update(job.id, {
+			status: "running",
+			message: "Resuming...",
+		});
+
+		return toGraphqlJob(updatedJob);
+	},
 };
 
 /** Remove pending BullMQ jobs for a given tracking job, based on job type. */
 async function removePendingQueueJobs(job: DbJob): Promise<void> {
 	if (job.type === "provider_transfer") {
+		const childJobIds = Array.isArray(job.metadata?.childJobIds)
+			? job.metadata.childJobIds.filter(
+					(value): value is string => typeof value === "string",
+				)
+			: [];
+		if (childJobIds.length > 0) {
+			const childJobs = await getDb()
+				.select()
+				.from(jobs)
+				.where(inArray(jobs.id, childJobIds));
+			const queue = getTransferQueue();
+			for (const childJob of childJobs) {
+				const childQueueJobId =
+					typeof childJob.metadata?.queueJobId === "string"
+						? childJob.metadata.queueJobId
+						: null;
+				if (!childQueueJobId) continue;
+				const queueJob = await queue.getJob(childQueueJobId);
+				const state = queueJob ? await queueJob.getState() : null;
+				if (
+					queueJob &&
+					(state === "waiting" ||
+						state === "delayed" ||
+						state === "prioritized")
+				) {
+					await queueJob.remove().catch(() => {});
+				}
+			}
+		}
+
+		const queueJobId =
+			typeof job.metadata?.queueJobId === "string"
+				? job.metadata.queueJobId
+				: null;
+		if (queueJobId) {
+			const queue = getTransferQueue();
+			const queueJob = await queue.getJob(queueJobId);
+			const state = queueJob ? await queueJob.getState() : null;
+			if (
+				queueJob &&
+				(state === "waiting" || state === "delayed" || state === "prioritized")
+			) {
+				await queueJob.remove().catch(() => {});
+			}
+			return;
+		}
+
 		const fileId =
 			typeof job.metadata?.fileId === "string" ? job.metadata.fileId : null;
 		const targetProviderId =

@@ -4,6 +4,7 @@ import type { FileItemFragment } from "@/gql/graphql";
 import { cn } from "@/shared/lib/utils";
 import { useSelection } from "../../context/SelectionContext";
 import { FileMimeIcon } from "../../FileMimeIcon";
+import { useClipboardStore } from "../../store/clipboardStore";
 import { formatSize } from "../../utils";
 import { FileContextMenu } from "../ContextMenu";
 
@@ -15,6 +16,7 @@ interface GridFileItemProps {
 export function GridFileItem({ file, registerRef }: GridFileItemProps) {
 	const { isSelected, selectOnly, toggle } = useSelection();
 	const itemId = `file:${file.id}`;
+	const isClipboardDimmed = useClipboardStore((s) => s.isDimmed(itemId));
 	const selected = isSelected(itemId);
 	const selectionItem = { kind: "file" as const, data: file };
 
@@ -39,6 +41,7 @@ export function GridFileItem({ file, registerRef }: GridFileItemProps) {
 				className={cn(
 					"group relative select-none border border-border/60 bg-background/40 backdrop-blur-lg p-3 transition-colors hover:bg-background/10",
 					selected && "border-primary/50 bg-background/40 backdrop-blur-md",
+					isClipboardDimmed && "opacity-60",
 				)}
 			>
 				<div className="aspect-square w-full bg-background/20 backdrop-blur-md">

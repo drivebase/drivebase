@@ -15,7 +15,12 @@ import type {
 	QueryResolvers,
 	SubscriptionResolvers,
 } from "../generated/types";
-import { FileLifecycleState, RestoreTier } from "../generated/types";
+import {
+	ClipboardItemKind,
+	FileLifecycleState,
+	PasteOperation,
+	RestoreTier,
+} from "../generated/types";
 import { type PubSubChannels, pubSub } from "../pubsub";
 import { toGraphqlJob } from "./activity";
 
@@ -55,6 +60,16 @@ function fromRestoreTier(tier: RestoreTier): "fast" | "standard" | "bulk" {
 	if (tier === RestoreTier.Fast) return "fast";
 	if (tier === RestoreTier.Bulk) return "bulk";
 	return "standard";
+}
+
+function fromPasteOperation(operation: PasteOperation): "cut" | "copy" {
+	if (operation === PasteOperation.Copy) return "copy";
+	return "cut";
+}
+
+function fromClipboardItemKind(kind: ClipboardItemKind): "file" | "folder" {
+	if (kind === ClipboardItemKind.Folder) return "folder";
+	return "file";
 }
 
 export const fileResolvers: FileResolvers = {
@@ -348,6 +363,29 @@ export const fileMutations: MutationResolvers = {
 			args.providerId,
 			workspaceId,
 		);
+	},
+
+	pasteSelection: async (_parent, args, context) => {
+		const user = context.user!;
+		const fileService = context.container.resolve<FileService>(
+			Tokens.FileService,
+		);
+		const workspaceId = context.headers?.get("x-workspace-id") ?? undefined;
+		const result = await fileService.pasteSelection(
+			user.userId,
+			fromPasteOperation(args.input.operation),
+			args.input.targetFolderId ?? null,
+			args.input.items.map((item) => ({
+				kind: fromClipboardItemKind(item.kind),
+				id: item.id,
+			})),
+			workspaceId,
+		);
+
+		return {
+			jobs: result.jobs.map(toGraphqlJob),
+			requiresRefresh: result.requiresRefresh,
+		};
 	},
 
 	archiveFile: async (_parent, args, context) => {

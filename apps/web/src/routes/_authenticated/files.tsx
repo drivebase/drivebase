@@ -23,12 +23,18 @@ import { useFileOperations } from "@/features/files/hooks/useFileOperations";
 import { useContents } from "@/features/files/hooks/useFiles";
 import { useUpload } from "@/features/files/hooks/useUpload";
 import { useUploadSessionRestore } from "@/features/files/hooks/useUploadSessionRestore";
+import { useClipboardStore } from "@/features/files/store/clipboardStore";
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
 import { can, getActiveWorkspaceId } from "@/features/workspaces";
 import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
-import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
+import {
+	JobStatus,
+	type FileItemFragment,
+	type FolderItemFragment,
+} from "@/gql/graphql";
+import { useActivityStore } from "@/shared/store/activityStore";
 
 /**
  * Modifier that positions the drag overlay chip near the cursor
@@ -82,6 +88,14 @@ function FilesPage() {
 	const [filterProviderIds, setFilterProviderIds] = useState<string[]>([]);
 	const { showDetails, createDownloadLink } = useFileActions();
 	const { downloadFile } = useDownload();
+	const clipboardMode = useClipboardStore((s) => s.mode);
+	const clipboardItems = useClipboardStore((s) => s.items);
+	const clipboardStatus = useClipboardStore((s) => s.status);
+	const pendingJobIds = useClipboardStore((s) => s.pendingJobIds);
+	const stageClipboard = useClipboardStore((s) => s.stageClipboard);
+	const markTransferring = useClipboardStore((s) => s.markTransferring);
+	const clearClipboard = useClipboardStore((s) => s.clearClipboard);
+	const jobsMap = useActivityStore((s) => s.jobs);
 	const { data: providersData } = useProviders();
 	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
 	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
@@ -166,7 +180,56 @@ function FilesPage() {
 		toggleFileFavorite: operations.handleToggleFileFavorite,
 		toggleFolderFavorite: operations.handleToggleFolderFavorite,
 		deleteSelection: operations.handleDeleteSelection,
+		stageClipboard,
+		pasteSelection: async (targetFolderId) => {
+			if (!clipboardMode || clipboardItems.length === 0) return;
+			const result = await operations.handlePasteSelection(
+				clipboardMode,
+				targetFolderId,
+				clipboardItems,
+			);
+			if (result.jobs.length > 0) {
+				markTransferring(result.jobs.map((job) => job.id));
+				return;
+			}
+			if (result.requiresRefresh) {
+				clearClipboard();
+			}
+		},
 	});
+
+	useEffect(() => {
+		if (clipboardStatus !== "transferring" || pendingJobIds.length === 0) {
+			return;
+		}
+
+		const pendingJobs = pendingJobIds
+			.map((id) => jobsMap.get(id))
+			.filter(
+				(job): job is NonNullable<typeof job> =>
+					job !== undefined && job !== null,
+			);
+		if (pendingJobs.length < pendingJobIds.length) {
+			return;
+		}
+
+		const hasActive = pendingJobs.some(
+			(job) =>
+				job.status === JobStatus.Pending || job.status === JobStatus.Running,
+		);
+		if (hasActive) {
+			return;
+		}
+
+		void refreshContents({ requestPolicy: "network-only" });
+		clearClipboard();
+	}, [
+		clipboardStatus,
+		pendingJobIds,
+		jobsMap,
+		refreshContents,
+		clearClipboard,
+	]);
 
 	return (
 		<DndContext
@@ -198,22 +261,27 @@ function FilesPage() {
 					onFileChange={upload.handleFileChange}
 				/>
 
-				<div ref={scrollRef} className="relative flex-1 overflow-y-auto">
-					<FileExplorerProvider
-						registry={registry}
-						files={files}
-						folders={folders}
-						providers={providers}
-						currentFolderId={folderId}
-						isLoading={contentsFetching}
-						canWrite={canWriteFiles}
-						navigate={handleNavigate}
-						refresh={refresh}
-					>
-						<FileExplorer />
-					</FileExplorerProvider>
+				<div className="relative flex-1">
+					<div ref={scrollRef} className="h-full overflow-y-auto">
+						<FileExplorerProvider
+							registry={registry}
+							files={files}
+							folders={folders}
+							providers={providers}
+							currentFolderId={folderId}
+							currentFolderName={currentFolder?.name}
+							isLoading={contentsFetching}
+							canWrite={canWriteFiles}
+							navigate={handleNavigate}
+							refresh={refresh}
+						>
+							<div className="h-full min-h-[220px]">
+								<FileExplorer />
+							</div>
+						</FileExplorerProvider>
+					</div>
 					{isOverflowing && (
-						<div className="pointer-events-none sticky bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
+						<div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-16 bg-gradient-to-t from-background to-transparent" />
 					)}
 				</div>
 

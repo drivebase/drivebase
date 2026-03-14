@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import {
 	useDeleteFile,
+	usePasteSelection,
 	useMoveFileToProvider,
 	useRenameFile,
 	useStarFile,
@@ -12,9 +13,18 @@ import {
 	useStarFolder,
 	useUnstarFolder,
 } from "@/features/files/hooks/useFolders";
-import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
+import {
+	ClipboardItemKind,
+	PasteOperation,
+	type FileItemFragment,
+	type FolderItemFragment,
+} from "@/gql/graphql";
 import { useOptimisticList } from "@/shared/hooks/useOptimisticList";
 import { promptDialog } from "@/shared/lib/promptDialog";
+import type {
+	ClipboardItemRef,
+	ClipboardOperation,
+} from "../store/clipboardStore";
 
 interface UseFileOperationsOptions {
 	serverFiles: FileItemFragment[] | undefined;
@@ -35,6 +45,7 @@ export function useFileOperations({
 	const [, renameFile] = useRenameFile();
 	const [, renameFolder] = useRenameFolder();
 	const [, moveFileToProvider] = useMoveFileToProvider();
+	const [, pasteSelection] = usePasteSelection();
 	const [, starFile] = useStarFile();
 	const [, unstarFile] = useUnstarFile();
 	const [, starFolder] = useStarFolder();
@@ -253,6 +264,44 @@ export function useFileOperations({
 		}
 	};
 
+	const handlePasteSelection = async (
+		operation: ClipboardOperation,
+		targetFolderId: string | null,
+		items: ClipboardItemRef[],
+	) => {
+		if (!operation || items.length === 0) {
+			return { jobs: [], requiresRefresh: false };
+		}
+
+		const result = await pasteSelection({
+			input: {
+				operation:
+					operation === "cut" ? PasteOperation.Cut : PasteOperation.Copy,
+				targetFolderId,
+				items: items.map((item) => ({
+					kind:
+						item.kind === "file"
+							? ClipboardItemKind.File
+							: ClipboardItemKind.Folder,
+					id: item.id,
+				})),
+			},
+		});
+
+		if (result.error || !result.data?.pasteSelection) {
+			toast.error(
+				result.error?.message ?? "Failed to paste selection. Please try again.",
+			);
+			return { jobs: [], requiresRefresh: false };
+		}
+
+		const payload = result.data.pasteSelection;
+		if (payload.requiresRefresh) {
+			onMutationComplete?.();
+		}
+		return payload;
+	};
+
 	return {
 		files: fileList.items,
 		folders: folderList.items,
@@ -264,5 +313,6 @@ export function useFileOperations({
 		handleRenameFolder,
 		handleMoveFileToProvider,
 		handleDeleteSelection,
+		handlePasteSelection,
 	};
 }

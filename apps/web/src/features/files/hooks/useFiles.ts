@@ -9,6 +9,7 @@ import {
 	FILES_QUERY,
 	MOVE_FILE_MUTATION,
 	MOVE_FILE_TO_PROVIDER_MUTATION,
+	PASTE_SELECTION_MUTATION,
 	RECENT_FILES_QUERY,
 	REFRESH_FILE_LIFECYCLE_MUTATION,
 	RENAME_FILE_MUTATION,
@@ -146,6 +147,36 @@ export function useMoveFileToProvider() {
 		variables: Parameters<typeof execute>[0],
 	) => {
 		const mutationResult = await execute(variables);
+		if (!mutationResult.error) {
+			const activeJobsResult = await client
+				.query(
+					ACTIVE_JOBS_QUERY,
+					{},
+					{
+						requestPolicy: "network-only",
+					},
+				)
+				.toPromise();
+			for (const job of activeJobsResult.data?.activeJobs ?? []) {
+				setJob(job);
+			}
+		}
+		return mutationResult;
+	};
+	return [result, executeWithActivityRefresh] as const;
+}
+
+export function usePasteSelection() {
+	const client = useClient();
+	const setJob = useActivityStore((state) => state.setJob);
+	const [result, execute] = useMutation(PASTE_SELECTION_MUTATION);
+	const executeWithActivityRefresh = async (
+		variables: Parameters<typeof execute>[0],
+	) => {
+		const mutationResult = await execute(variables);
+		for (const job of mutationResult.data?.pasteSelection?.jobs ?? []) {
+			setJob(job);
+		}
 		if (!mutationResult.error) {
 			const activeJobsResult = await client
 				.query(

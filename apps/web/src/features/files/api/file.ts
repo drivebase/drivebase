@@ -198,6 +198,25 @@ export const MOVE_FILE_TO_PROVIDER_MUTATION = graphql(`
   }
 `);
 
+export const PASTE_SELECTION_MUTATION = graphql(`
+  mutation PasteSelection($input: PasteSelectionInput!) {
+    pasteSelection(input: $input) {
+      requiresRefresh
+      jobs {
+        id
+        type
+        title
+        message
+        progress
+        status
+        metadata
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`);
+
 export const ARCHIVE_FILE_MUTATION = graphql(`
   mutation ArchiveFile($id: ID!) {
     archiveFile(id: $id) {
