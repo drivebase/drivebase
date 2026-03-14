@@ -1387,7 +1387,10 @@ async function handleBatchTransfer(
 		const completed = childRows.filter((r) => r.status === "completed").length;
 		const failed = childRows.filter((r) => r.status === "error").length;
 		const active = childRows.filter(
-			(r) => r.status === "pending" || r.status === "running",
+			(r) =>
+				r.status === "pending" ||
+				r.status === "running" ||
+				r.status === "paused",
 		);
 		const finishedCount = completed + failed;
 
@@ -1560,7 +1563,6 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 			});
 
 			const assertNotCancelled = () => assertJobNotCancelled(jobId);
-			const suppressEvent = Boolean(data.parentJobId);
 			const updateActivity = async (input: {
 				progress?: number;
 				message?: string;
@@ -1568,9 +1570,10 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 				metadata?: Record<string, unknown>;
 			}) => {
 				await assertNotCancelled();
+				const isPaused = input.status === "paused";
 				await activityService.update(jobId, {
 					...input,
-					suppressEvent,
+					suppressEvent: Boolean(data.parentJobId) && !isPaused,
 				});
 			};
 
