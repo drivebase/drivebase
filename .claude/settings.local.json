@@ -5,6 +5,7 @@
 			"Bash(wc:*)",
 			"Bash(rg:*)",
 			"Bash(grep:*)",
+			"Bash(docker:*)",
 			"Bash(bun run:*)",
 			"Bash(bun add:*)",
 			"Bash(bun install:*)",
