@@ -21,6 +21,7 @@
     "sdk/errors",
     "---Advanced---",
     "deployment/index",
+    "deployment/nginx-proxy-manager",
     "api/index",
     "api-keys",
     "telemetry",
