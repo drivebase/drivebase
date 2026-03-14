@@ -5,7 +5,7 @@ import { z } from "zod";
  */
 const envSchema = z.object({
 	// Server
-	PORT: z.string().default("4000"),
+	PORT: z.string().default("8900"),
 	NODE_ENV: z
 		.enum(["development", "production", "test"])
 		.default("development"),
@@ -20,12 +20,9 @@ const envSchema = z.object({
 	JWT_SECRET: z.string().min(32),
 	ENCRYPTION_KEY: z.string().min(32),
 
-	// CORS
-	CORS_ORIGIN: z.string().default("http://localhost:3000"),
-
-	// Public base URL of this API (used to build OAuth + proxy URLs)
+	// Public base URL of this application (used for OAuth, CORS, and Passkeys)
 	// Example production value: https://app.example.com
-	API_BASE_URL: z.string().url().optional(),
+	APP_URL: z.string().url().optional(),
 
 	// Telemetry — set to "false" to opt out of anonymous usage data
 	DRIVEBASE_TELEMETRY: z.string().default("true"),

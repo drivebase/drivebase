@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { getFileKind } from "@/features/files/utils";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
-import { API_BASE_URL } from "@/shared/lib/apiUrl";
+import { APP_URL } from "@/shared/lib/apiUrl";
 
 /** Max text bytes rendered inline (100 KB) */
 const TEXT_PREVIEW_LIMIT = 100 * 1024;
@@ -33,7 +33,7 @@ export function useFilePreview(
 		setError(null);
 		setResult(null);
 
-		fetch(`${API_BASE_URL}/api/preview?fileId=${encodeURIComponent(fileId)}`, {
+		fetch(`${APP_URL}/api/preview?fileId=${encodeURIComponent(fileId)}`, {
 			signal: controller.signal,
 			headers: {
 				Authorization: `Bearer ${token}`,

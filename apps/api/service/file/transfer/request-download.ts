@@ -1,6 +1,6 @@
 import { ConflictError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import { getPublicApiBaseUrl } from "../../../config/url";
+import { getAppUrl } from "../../../config/url";
 import { ProviderService } from "../../provider";
 import { getFile } from "../query/file-read";
 import { logFileOperationDebugError } from "../shared/file-error-log";
@@ -41,7 +41,7 @@ export async function requestDownload(
 		});
 		await provider.cleanup();
 
-		const proxyUrl = `${getPublicApiBaseUrl()}/api/download/proxy?fileId=${file.id}`;
+		const proxyUrl = `${getAppUrl()}/api/download/proxy?fileId=${file.id}`;
 		const useDirectDownload =
 			downloadResponse.useDirectDownload &&
 			Boolean(downloadResponse.downloadUrl);

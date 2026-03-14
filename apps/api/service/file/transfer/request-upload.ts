@@ -7,7 +7,7 @@ import {
 import type { Database } from "@drivebase/db";
 import { files, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
-import { getPublicApiBaseUrl } from "../../../config/url";
+import { getAppUrl } from "../../../config/url";
 import { ActivityService } from "../../activity";
 import { FolderService } from "../../folder";
 import { ProviderService } from "../../provider";
@@ -120,7 +120,7 @@ export async function requestUpload(
 
 		if (!fileRecord) throw new Error("Failed to create file record");
 
-		const proxyUrl = `${getPublicApiBaseUrl()}/api/upload/proxy?fileId=${fileRecord.id}`;
+		const proxyUrl = `${getAppUrl()}/api/upload/proxy?fileId=${fileRecord.id}`;
 		const uploadUrl = uploadResponse.useDirectUpload
 			? uploadResponse.uploadUrl
 			: proxyUrl;

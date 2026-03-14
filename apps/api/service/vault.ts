@@ -8,7 +8,7 @@ import {
 import type { Database } from "@drivebase/db";
 import { files, folders, vaults } from "@drivebase/db";
 import { and, eq, isNull } from "drizzle-orm";
-import { getPublicApiBaseUrl } from "../config/url";
+import { getAppUrl } from "../config/url";
 import { telemetry } from "../telemetry";
 import { logger } from "../utils/runtime/logger";
 import { ProviderService } from "./provider";
@@ -289,7 +289,7 @@ export class VaultService {
 			throw new Error("Failed to create vault file record");
 		}
 
-		const baseUrl = getPublicApiBaseUrl();
+		const baseUrl = getAppUrl();
 		const proxyUrl = `${baseUrl}/api/upload/proxy?fileId=${fileRecord.id}`;
 		const uploadUrl = uploadResponse.useDirectUpload
 			? uploadResponse.uploadUrl
@@ -342,7 +342,7 @@ export class VaultService {
 			workspaceId,
 		);
 
-		const baseUrl = getPublicApiBaseUrl();
+		const baseUrl = getAppUrl();
 		const proxyUrl = `${baseUrl}/api/download/proxy?fileId=${file.id}`;
 
 		return {

@@ -1,5 +1,5 @@
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
-import { API_BASE_URL } from "@/shared/lib/apiUrl";
+import { APP_URL } from "@/shared/lib/apiUrl";
 
 export interface ExportOptions {
 	includeProviders?: boolean;
@@ -22,16 +22,13 @@ export async function exportWorkspace(options: ExportOptions): Promise<void> {
 		params.append("password", options.password);
 	}
 
-	const response = await fetch(
-		`${API_BASE_URL}/api/export?${params.toString()}`,
-		{
-			method: "GET",
-			headers: {
-				Authorization: token ? `Bearer ${token}` : "",
-				"x-workspace-id": workspaceId || "",
-			},
+	const response = await fetch(`${APP_URL}/api/export?${params.toString()}`, {
+		method: "GET",
+		headers: {
+			Authorization: token ? `Bearer ${token}` : "",
+			"x-workspace-id": workspaceId || "",
 		},
-	);
+	});
 
 	if (!response.ok) {
 		const error = await response.text();

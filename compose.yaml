@@ -10,8 +10,7 @@ services:
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-minimum-32-characters-long-change-this-in-production}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-your-encryption-key-minimum-32-characters-long-change-this-in-production}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
-      API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
+      APP_URL: ${APP_URL:-http://localhost:8900}
       SKIP_DB_MIGRATIONS: ${SKIP_DB_MIGRATIONS:-false}
     depends_on:
       db:
@@ -21,7 +20,7 @@ services:
     volumes:
       - ./data:/app/data
     ports:
-      - "3000:3000"
+      - "8900:8900"
 
   db:
     image: pgvector/pgvector:pg17

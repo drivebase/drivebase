@@ -137,7 +137,7 @@ app.all("/graphql", (c) => yoga.fetch(c.req.raw));
 
 Global CORS middleware in `createApp()`:
 - **Development**: Allows any `localhost` origin
-- **Production**: Allows `env.CORS_ORIGIN`
+- **Production**: Allows the public app URL (`env.APP_URL` or fallback to port 3000)
 - **Credentials**: Always `true`
 - **Methods**: `POST`, `GET`, `OPTIONS`
 - **Headers**: `Content-Type`, `Authorization`

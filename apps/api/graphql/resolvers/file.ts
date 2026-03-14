@@ -3,7 +3,7 @@ import { files, folders, storageProviders, users } from "@drivebase/db";
 import { S3Provider } from "@drivebase/s3";
 import { and, eq } from "drizzle-orm";
 import { Tokens } from "../../container";
-import { getPublicApiBaseUrl } from "../../config/url";
+import { getAppUrl } from "../../config/url";
 import { getUploadQueue } from "@/queue/uploads/queue";
 import { getRedis } from "../../redis/client";
 import type { FileService } from "../../service/file";
@@ -37,7 +37,7 @@ function toFileDownloadLinkType(downloadLink: {
 			downloadLink.maxDownloads === 0
 				? 0
 				: Math.max(0, downloadLink.maxDownloads - downloadLink.downloadCount),
-		downloadLinkUrl: `${getPublicApiBaseUrl()}/api/download/link?token=${downloadLink.token}`,
+		downloadLinkUrl: `${getAppUrl()}/api/download/link?token=${downloadLink.token}`,
 	};
 }
 

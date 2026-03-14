@@ -1,5 +1,5 @@
 import { ValidationError } from "@drivebase/core";
-import { getPublicApiBaseUrl } from "@/config/url";
+import { getAppUrl } from "@/config/url";
 
 export type OAuthInitiatorSource = "default" | "onboarding";
 
@@ -22,5 +22,5 @@ export function parseOAuthState(state: string): {
 }
 
 export function buildOAuthCallbackUrl(): string {
-	return `${getPublicApiBaseUrl()}/webhook/callback`;
+	return `${getAppUrl()}/webhook/callback`;
 }
