@@ -1,6 +1,8 @@
 .git
 .gitignore
 .DS_Store
+.drivebase
+**/.drivebase
 
 # Dependencies and build artifacts
 node_modules
@@ -35,9 +37,10 @@ __pycache__
 **/.venv
 .venv
 *.pt
-.drivebase
 
 # Large directories not needed for main app build
 apps/www
 docker/updater
 services/
+.drivebase
+**/.drivebase

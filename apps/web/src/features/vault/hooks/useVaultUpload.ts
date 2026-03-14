@@ -11,7 +11,7 @@ import {
 import { useVaultCrypto } from "@/features/vault/hooks/useVaultCrypto";
 import { encryptChunk } from "@/features/vault/lib/crypto";
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from "@/features/workspaces/api/workspace";
-import { API_BASE_URL } from "@/shared/lib/apiUrl";
+import { APP_URL } from "@/shared/lib/apiUrl";
 import { progressPanel } from "@/shared/lib/progressPanel";
 
 const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
@@ -238,7 +238,7 @@ export function useVaultUpload({
 						try {
 							const wsId = localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY);
 							const response = await fetch(
-								`${API_BASE_URL}/api/upload/chunk?sessionId=${sessionId}&chunkIndex=${i}`,
+								`${APP_URL}/api/upload/chunk?sessionId=${sessionId}&chunkIndex=${i}`,
 								{
 									method: "POST",
 									headers: {

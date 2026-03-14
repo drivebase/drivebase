@@ -2,6 +2,7 @@ import { getDb, users, workspaces } from "@drivebase/db";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { env } from "../../config/env";
+import { getAppUrl } from "../../config/url";
 import { ProviderService } from "../../service/provider";
 import { logger } from "../../utils/runtime/logger";
 
@@ -23,7 +24,7 @@ export async function handleOAuthCallback(c: Context): Promise<Response> {
 		return c.text("Missing state parameter", 400);
 	}
 
-	const frontendUrl = env.CORS_ORIGIN;
+	const frontendUrl = getAppUrl();
 
 	try {
 		const db = getDb();

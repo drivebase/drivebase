@@ -5,6 +5,7 @@ import type {
 	WebDavResolvedProviderScope,
 } from "@/service/webdav/shared/types";
 import { env } from "../config/env";
+import { getAppUrl } from "../config/url";
 import type { JWTPayload } from "../utils/auth/jwt";
 import { logger } from "../utils/runtime/logger";
 
@@ -31,7 +32,7 @@ export function createApp(): Hono<AppEnv> {
 			if (env.NODE_ENV === "development" && origin?.includes("localhost")) {
 				return origin;
 			}
-			return env.CORS_ORIGIN;
+			return getAppUrl();
 		},
 		credentials: true,
 		allowMethods: ["POST", "GET", "PUT", "OPTIONS"],

@@ -1,0 +1,114 @@
+---
+title: Nginx Proxy Manager
+description: How to expose Drivebase through Nginx Proxy Manager using a shared Docker network
+---
+
+This guide covers setting up Drivebase behind [Nginx Proxy Manager](https://nginxproxymanager.com/) (NPM) using a shared Docker network. This is the recommended approach for self-hosters who already run NPM on the same machine.
+
+## How it works
+
+Drivebase's container runs an internal Caddy server on port `8900`. Instead of exposing that port to the host, you connect both containers to a shared Docker network so NPM can reach Drivebase by container name.
+
+```
+Browser → NPM (443/80) → Docker network → drivebase_app:8900
+```
+
+## 1. Create a shared Docker network
+
+```bash
+docker network create npm-proxy
+```
+
+## 2. Connect NPM to the network
+
+If your NPM container is managed by Docker Compose, add the external network to its `compose.yaml`:
+
+```yaml
+# your existing NPM compose.yaml
+networks:
+  npm-proxy:
+    external: true
+```
+
+Then add `npm-proxy` to NPM's service networks and recreate the container:
+
+```bash
+docker compose up -d
+```
+
+If you run NPM as a standalone container, connect it directly:
+
+```bash
+docker network connect npm-proxy <your-npm-container-name>
+```
+
+## 3. Update Drivebase's compose.yaml
+
+Two changes are needed on the `app` service: remove the `ports` mapping and add the shared network.
+
+**Remove the host port binding:**
+
+```yaml
+# Remove or comment out this block
+ports:
+  - "8900:8900"
+```
+
+**Add the shared network to the `app` service and declare it at the bottom:**
+
+```yaml
+services:
+  app:
+    # ... existing config ...
+    networks:
+      - internal
+      - npm-proxy   # add this
+
+networks:
+  internal:
+  npm-proxy:
+    external: true  # add this block
+```
+
+Apply the changes:
+
+```bash
+docker compose up -d
+```
+
+## 4. Add a Proxy Host in NPM
+
+1. Open Nginx Proxy Manager at `http://<your-server-ip>:81`.
+2. Go to **Proxy Hosts** → **Add Proxy Host**.
+3. Fill in the **Details** tab:
+   - **Domain Names**: `drivebase.example.com`
+   - **Scheme**: `http`
+   - **Forward Hostname / IP**: `drivebase_app` (the container name)
+   - **Forward Port**: `8900`
+   - Enable **Websockets Support**
+4. In the **Advanced** tab, add the following custom config to support large file uploads and SSE:
+
+```nginx
+client_max_body_size 10G;
+proxy_read_timeout 3600s;
+proxy_send_timeout 3600s;
+```
+
+5. On the **SSL** tab, request a **Let's Encrypt** certificate and enable **Force SSL**.
+6. Click **Save**.
+
+## 5. Set APP_URL
+
+Make sure `APP_URL` in your environment matches your public domain exactly (including `https://`). This is required for OAuth callbacks and passkey registration to work correctly.
+
+```yaml
+APP_URL: https://drivebase.example.com
+```
+
+## Verify
+
+Visit `https://drivebase.example.com` — you should see the Drivebase login page. If you see a 502, double-check that:
+
+- Both containers are on the `npm-proxy` network (`docker network inspect npm-proxy`)
+- The forward hostname in NPM matches the container name exactly (`drivebase_app`)
+- The Drivebase container is healthy (`docker compose ps`)

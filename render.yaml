@@ -24,11 +24,8 @@ services:
       - key: ENCRYPTION_KEY
         generateValue: true
 
-      - key: CORS_ORIGIN
-        sync: false
-
       # automatically becomes https://your-service.onrender.com
-      - key: API_BASE_URL
+      - key: APP_URL
         fromService:
           type: web
           name: drivebase

@@ -19,6 +19,7 @@ import {
 import { isoBase64URL, isoUint8Array } from "@simplewebauthn/server/helpers";
 import { and, eq } from "drizzle-orm";
 import { env } from "../../config/env";
+import { getAppUrl } from "../../config/url";
 import {
 	consumeAuthChallenge,
 	consumeRegistrationChallenge,
@@ -29,11 +30,12 @@ import { createSession } from "../../redis/session";
 import { createToken } from "../../utils/auth/jwt";
 
 function getRpConfig() {
-	const url = new URL(env.CORS_ORIGIN);
+	const origin = getAppUrl();
+	const url = new URL(origin);
 	return {
 		rpID: url.hostname,
 		rpName: "Drivebase",
-		rpOrigin: env.CORS_ORIGIN,
+		rpOrigin: origin,
 	};
 }
 
