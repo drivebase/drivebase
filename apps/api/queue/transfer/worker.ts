@@ -1,7 +1,14 @@
 import { mkdir, open, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { ConflictError, joinPath } from "@drivebase/core";
-import { files, folders, getDb, jobs, type Folder } from "@drivebase/db";
+import {
+	files,
+	folders,
+	getDb,
+	jobs,
+	type Folder,
+	type Job,
+} from "@drivebase/db";
 import { Worker } from "bullmq";
 import { and, eq, inArray, like } from "drizzle-orm";
 import { env } from "@/config/env";
@@ -52,7 +59,7 @@ export interface JobContext {
 	updateActivity: (input: {
 		progress?: number;
 		message?: string;
-		status?: "pending" | "running" | "paused" | "completed" | "error";
+		status?: Job["status"];
 		metadata?: Record<string, unknown>;
 	}) => Promise<void>;
 }
@@ -1557,7 +1564,7 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 			const updateActivity = async (input: {
 				progress?: number;
 				message?: string;
-				status?: "pending" | "running" | "paused" | "completed" | "error";
+				status?: Job["status"];
 				metadata?: Record<string, unknown>;
 			}) => {
 				await assertNotCancelled();

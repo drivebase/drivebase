@@ -1,4 +1,4 @@
-import type { Database } from "@drivebase/db";
+import type { Database, Job } from "@drivebase/db";
 import { activities, jobs } from "@drivebase/db";
 import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
@@ -17,7 +17,7 @@ interface CreateJobInput {
 interface UpdateJobInput {
 	progress?: number;
 	message?: string;
-	status?: "pending" | "running" | "paused" | "completed" | "error";
+	status?: Job["status"];
 	metadata?: Record<string, unknown>;
 	/**
 	 * If true, metadata will be completely replaced instead of merged.
