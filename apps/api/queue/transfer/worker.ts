@@ -1223,7 +1223,7 @@ export async function handleFolderTransfer(
 	}
 }
 
-const BATCH_POLL_INTERVAL_MS = 2000;
+const BATCH_POLL_INTERVAL_MS = 1000;
 const BATCH_STALL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 async function handleBatchTransfer(
@@ -1272,8 +1272,8 @@ async function handleBatchTransfer(
 	});
 
 	let lastChangeAt = Date.now();
-	let prevCompleted = 0;
-	let prevFailed = 0;
+	let lastProgress = -1;
+	let lastMessage = "";
 
 	while (true) {
 		await assertNotCancelled();
@@ -1284,6 +1284,7 @@ async function handleBatchTransfer(
 				status: jobs.status,
 				title: jobs.title,
 				message: jobs.message,
+				progress: jobs.progress,
 			})
 			.from(jobs)
 			.where(inArray(jobs.id, childJobIds));
@@ -1293,114 +1294,55 @@ async function handleBatchTransfer(
 		const active = childRows.filter(
 			(r) => r.status === "pending" || r.status === "running",
 		);
-		const finished = completed + failed;
+		const finishedCount = completed + failed;
 
-		// Detect progress change to reset stall timer
-		if (completed !== prevCompleted || failed !== prevFailed) {
+		// Smooth progress: sum of individual file progresses
+		const totalProgress = childRows.reduce(
+			(sum, r) => sum + (r.progress ?? 0),
+			0,
+		);
+		const progress = totalFiles > 0 ? totalProgress / totalFiles : 1;
+
+		// Reset stall timer if progress increased or files finished
+		if (progress > lastProgress || finishedCount > completed + failed) {
 			lastChangeAt = Date.now();
-			prevCompleted = completed;
-			prevFailed = failed;
+		}
+
+		// All children done - exit loop and finalize
+		if (active.length === 0 && childRows.length === totalFiles) {
+			break;
 		}
 
 		// Find the currently running job for display
 		const running = childRows.find((r) => r.status === "running");
 		const currentFileName =
-			running?.title?.replace(/^(Move|Copy)\s+/, "") ?? "";
+			running?.title?.replace(/^(Move|Copy|Transfer)\s+/, "") ?? "";
 
-		const progress = totalFiles > 0 ? finished / totalFiles : 1;
 		let message: string;
 		if (failed > 0 && active.length > 0) {
 			message = `${verb} ${completed} of ${totalFiles} files (${failed} failed)`;
 		} else {
 			message = currentFileName
 				? `${verb} ${completed + 1} of ${totalFiles} — ${currentFileName}`
-				: `${verb} ${finished} of ${totalFiles} files`;
+				: `${verb} ${finishedCount} of ${totalFiles} files`;
 		}
 
-		await updateBatch({
-			progress,
-			message,
-			metadata: {
-				phase: "monitoring",
-				entity: "batch",
-				operation,
-				totalFiles,
-				completedFiles: completed,
-				failedFiles: failed,
-			},
-		});
-
-		// All children done
-		if (active.length === 0) {
-			// Clean up source folders for cut operations
-			if (operation === "cut" && data.sourceFolders?.length) {
-				await updateBatch({
-					message: "Cleaning up source folders",
-				});
-				for (const sf of data.sourceFolders) {
-					try {
-						// Mark source subtree as deleted in DB first (safe)
-						await markFolderSubtreeDeleted(
-							workspaceId,
-							sf.providerId,
-							sf.virtualPath,
-						);
-						// Then delete from provider (orphan is safe)
-						const record = await providerService.getProvider(
-							sf.providerId,
-							userId,
-							workspaceId,
-						);
-						const provider = await providerService.getProviderInstance(record);
-						try {
-							await provider.delete({
-								remoteId: sf.remoteId,
-								isFolder: true,
-							});
-						} catch (deleteError) {
-							logger.warn({
-								msg: "[transfer:batch] source folder deletion failed; remote orphan remains",
-								jobId,
-								folderId: sf.id,
-								error:
-									deleteError instanceof Error
-										? deleteError.message
-										: String(deleteError),
-							});
-						} finally {
-							await provider.cleanup().catch(() => {});
-						}
-					} catch (cleanupError) {
-						logger.warn({
-							msg: "[transfer:batch] source folder cleanup failed",
-							jobId,
-							folderId: sf.id,
-							error:
-								cleanupError instanceof Error
-									? cleanupError.message
-									: String(cleanupError),
-						});
-					}
-				}
-			}
-
-			if (failed > 0) {
-				await activityService.fail(
-					visibleJobId,
-					`${completed} of ${totalFiles} files transferred, ${failed} failed`,
-				);
-			} else {
-				await activityService.complete(
-					visibleJobId,
-					`${completed} files transferred`,
-				);
-			}
-
-			// Mark this hidden monitor job as complete too
-			if (visibleJobId !== jobId) {
-				await activityService.complete(jobId, "Batch monitor done");
-			}
-			return;
+		// Throttle updates: only if message changed or progress jumped > 1%
+		if (message !== lastMessage || Math.abs(progress - lastProgress) >= 0.01) {
+			await updateBatch({
+				progress,
+				message,
+				metadata: {
+					phase: "monitoring",
+					entity: "batch",
+					operation,
+					totalFiles,
+					completedFiles: completed,
+					failedFiles: failed,
+				},
+			});
+			lastMessage = message;
+			lastProgress = progress;
 		}
 
 		// Stall guard — if nothing changes for 5 minutes, bail out
@@ -1418,12 +1360,90 @@ async function handleBatchTransfer(
 				`Transfer stalled: ${completed} of ${totalFiles} completed, ${active.length} stuck`,
 			);
 			if (visibleJobId !== jobId) {
-				await activityService.fail(jobId, "Batch monitor stalled");
+				await activityService.complete(jobId, "Batch monitor stalled");
 			}
 			return;
 		}
 
 		await sleep(BATCH_POLL_INTERVAL_MS);
+	}
+
+	// Finalize batch
+	const finalRows = await db
+		.select({ status: jobs.status })
+		.from(jobs)
+		.where(inArray(jobs.id, childJobIds));
+
+	const completedCount = finalRows.filter(
+		(r) => r.status === "completed",
+	).length;
+	const failedCount = finalRows.filter((r) => r.status === "error").length;
+
+	// Clean up source folders for cut operations
+	if (operation === "cut" && data.sourceFolders?.length) {
+		await updateBatch({
+			progress: 1,
+			message: "Cleaning up source folders",
+		});
+		for (const sf of data.sourceFolders) {
+			try {
+				await markFolderSubtreeDeleted(
+					workspaceId,
+					sf.providerId,
+					sf.virtualPath,
+				);
+				const record = await providerService.getProvider(
+					sf.providerId,
+					userId,
+					workspaceId,
+				);
+				const provider = await providerService.getProviderInstance(record);
+				try {
+					await provider.delete({
+						remoteId: sf.remoteId,
+						isFolder: true,
+					});
+				} catch (deleteError) {
+					logger.warn({
+						msg: "[transfer:batch] source folder deletion failed; remote orphan remains",
+						jobId,
+						folderId: sf.id,
+						error:
+							deleteError instanceof Error
+								? deleteError.message
+								: String(deleteError),
+					});
+				} finally {
+					await provider.cleanup().catch(() => {});
+				}
+			} catch (cleanupError) {
+				logger.warn({
+					msg: "[transfer:batch] source folder cleanup failed",
+					jobId,
+					folderId: sf.id,
+					error:
+						cleanupError instanceof Error
+							? cleanupError.message
+							: String(cleanupError),
+				});
+			}
+		}
+	}
+
+	if (failedCount > 0) {
+		await activityService.fail(
+			visibleJobId,
+			`${completedCount} of ${totalFiles} files transferred, ${failedCount} failed`,
+		);
+	} else {
+		await activityService.complete(
+			visibleJobId,
+			`${completedCount} files transferred`,
+		);
+	}
+
+	if (visibleJobId !== jobId) {
+		await activityService.complete(jobId, "Batch monitor done");
 	}
 }
 
