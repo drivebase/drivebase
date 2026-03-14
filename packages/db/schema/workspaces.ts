@@ -21,7 +21,7 @@ export const workspaces = pgTable("workspaces", {
 		.references(() => users.id, { onDelete: "cascade" }),
 	syncOperationsToProvider: boolean("sync_operations_to_provider")
 		.notNull()
-		.default(false),
+		.default(true),
 	autoSyncEnabled: boolean("auto_sync_enabled").notNull().default(false),
 	autoSyncCron: text("auto_sync_cron"),
 	autoSyncScope: workspaceAutoSyncScopeEnum("auto_sync_scope")
