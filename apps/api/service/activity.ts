@@ -121,7 +121,7 @@ export class ActivityService {
 			.where(
 				and(
 					eq(jobs.workspaceId, workspaceId),
-					inArray(jobs.status, ["pending", "running"]),
+					inArray(jobs.status, ["pending", "running", "paused"]),
 				),
 			);
 	}
