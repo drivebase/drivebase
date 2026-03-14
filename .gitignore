@@ -49,3 +49,5 @@ apps/web/src/locales/*/messages.ts
 
 # SQL
 /*.sql
+
+/data
