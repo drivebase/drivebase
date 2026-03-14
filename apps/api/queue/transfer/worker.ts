@@ -40,7 +40,7 @@ interface TransferManifest {
 	};
 }
 
-interface JobContext {
+export interface JobContext {
 	activityService: ActivityService;
 	providerService: ProviderService;
 	jobId: string;
@@ -210,7 +210,7 @@ async function getTargetFolder(
 	return folder ?? null;
 }
 
-async function handleFileTransfer(
+export async function handleFileTransfer(
 	ctx: JobContext,
 	data: ProviderFileTransferJobData,
 ) {
@@ -574,11 +574,13 @@ async function handleFileTransfer(
 				targetRemoteId: finalRemoteId,
 				destinationPath,
 			});
-			await sourceProvider.delete({
-				remoteId: file.remoteId,
-				isFolder: false,
-			});
-			await assertNotCancelled();
+
+			// Update DB first so the record points to the destination.
+			// If the subsequent source deletion fails the file is duplicated
+			// (exists on both providers) rather than lost — a safe fallback
+			// that can be cleaned up later.
+			const sourceRemoteId = file.remoteId;
+			const sourceProviderId = file.providerId;
 
 			const [updated] = await db
 				.update(files)
@@ -595,6 +597,31 @@ async function handleFileTransfer(
 			if (!updated) {
 				throw new Error("Failed to update file record after transfer");
 			}
+
+			await assertNotCancelled();
+
+			try {
+				await sourceProvider.delete({
+					remoteId: sourceRemoteId,
+					isFolder: false,
+				});
+			} catch (deleteError) {
+				// Source deletion failed — the file now exists on both providers.
+				// Log a warning but do NOT re-throw; the transfer itself succeeded
+				// and the DB record already points to the destination.
+				logger.warn({
+					msg: "[transfer:file] source deletion failed after DB update; file duplicated on source provider",
+					jobId,
+					fileId: file.id,
+					sourceProviderId,
+					sourceRemoteId,
+					error:
+						deleteError instanceof Error
+							? deleteError.message
+							: String(deleteError),
+				});
+			}
+
 			logger.debug({
 				msg: "[transfer:file] cut finalized",
 				jobId,
@@ -712,7 +739,7 @@ async function markFolderSubtreeDeleted(
 		);
 }
 
-async function handleFolderTransfer(
+export async function handleFolderTransfer(
 	ctx: JobContext,
 	data: ProviderFolderTransferJobData,
 ) {
@@ -1084,15 +1111,36 @@ async function handleFolderTransfer(
 				sourceRemoteId: sourceFolder.remoteId,
 				sourcePath: sourceFolder.virtualPath,
 			});
-			await sourceProvider.delete({
-				remoteId: sourceFolder.remoteId,
-				isFolder: true,
-			});
+
+			// Mark DB records as deleted first so the source subtree is no
+			// longer visible.  If the subsequent provider deletion fails the
+			// remote files remain as orphans (safe) rather than the DB
+			// pointing to already-deleted provider objects (data loss).
 			await markFolderSubtreeDeleted(
 				workspaceId,
 				sourceFolder.providerId,
 				sourceFolder.virtualPath,
 			);
+
+			try {
+				await sourceProvider.delete({
+					remoteId: sourceFolder.remoteId,
+					isFolder: true,
+				});
+			} catch (deleteError) {
+				logger.warn({
+					msg: "[transfer:folder] source folder deletion failed after DB update; remote orphan remains",
+					jobId,
+					folderId: sourceFolder.id,
+					sourceRemoteId: sourceFolder.remoteId,
+					sourcePath: sourceFolder.virtualPath,
+					error:
+						deleteError instanceof Error
+							? deleteError.message
+							: String(deleteError),
+				});
+			}
+
 			logger.debug({
 				msg: "[transfer:folder] source subtree marked deleted",
 				jobId,
