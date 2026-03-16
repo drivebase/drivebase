@@ -6,6 +6,7 @@ import {
 } from "fumadocs-ui/layouts/docs/page";
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
+import Script from "next/script";
 import { notFound } from "next/navigation";
 import { LLMCopyButton, ViewOptions } from "@/components/ai/page-actions";
 import { gitConfig } from "@/lib/layout.shared";
@@ -18,9 +19,47 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
   if (!page) notFound();
 
   const MDX = page.data.body;
+  const baseUrl = "https://drivebase.io";
+  const pageUrl = `${baseUrl}${page.url}`;
+
+  const breadcrumbItems = [
+    { "@type": "ListItem", position: 1, name: "Home", item: `${baseUrl}/` },
+    { "@type": "ListItem", position: 2, name: "Docs", item: `${baseUrl}/docs` },
+    ...(page.slugs ?? []).map((slug, i) => ({
+      "@type": "ListItem",
+      position: i + 3,
+      name:
+        i === (page.slugs?.length ?? 0) - 1
+          ? page.data.title
+          : slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      item: `${baseUrl}/docs/${(page.slugs ?? []).slice(0, i + 1).join("/")}`,
+    })),
+  ];
+
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbItems,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      headline: page.data.title,
+      description: page.data.description,
+      url: pageUrl,
+      mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
+      author: { "@type": "Organization", name: "Drivebase", url: baseUrl },
+    },
+  ];
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
+      <Script
+        id={`docs-structured-data-${(page.slugs ?? []).join("-") || "index"}`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription className="mb-0">
         {page.data.description}

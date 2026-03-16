@@ -1,5 +1,13 @@
+import Script from "next/script";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { blog } from "@/lib/source";
+
+export const metadata: Metadata = {
+  title: "Blog",
+  description: "News, tutorials, and product updates from the Drivebase team.",
+  alternates: { canonical: "/blog" },
+};
 
 export default function BlogPage() {
   const posts = [...blog.getPages()].sort(
@@ -9,8 +17,48 @@ export default function BlogPage() {
   );
   const [featuredPost, ...otherPosts] = posts;
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://drivebase.io/",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Blog",
+        item: "https://drivebase.io/blog",
+      },
+    ],
+  };
+
+  const blogListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Drivebase Blog",
+    url: "https://drivebase.io/blog",
+    itemListElement: posts.map((post, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: post.data.title,
+      description: post.data.description,
+      url: `https://drivebase.io${post.url}`,
+    })),
+  };
+
   return (
     <main className="flex-1 w-full mx-auto bg-background">
+      <Script
+        id="blog-list-structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([breadcrumbSchema, blogListSchema]),
+        }}
+      />
       {/* Hero Section */}
       <div className="border-b border-border bg-background z-10 relative">
         <div className="max-w-7xl mx-auto py-24 md:py-32 px-6 lg:px-8 border-x border-border">

@@ -5,6 +5,7 @@ import defaultMdxComponents from "fumadocs-ui/mdx";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { notFound } from "next/navigation";
 import { blog } from "@/lib/source";
 
@@ -69,8 +70,54 @@ export default async function Page(props: {
   if (!page) notFound();
   const Mdx = page.data.body;
 
+  const postUrl = `https://drivebase.io/blog/${page.slugs[0]}`;
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://drivebase.io/",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Blog",
+        item: "https://drivebase.io/blog",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: page.data.title,
+        item: postUrl,
+      },
+    ],
+  };
+
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: page.data.title,
+    description: page.data.description,
+    author: { "@type": "Person", name: page.data.author },
+    datePublished: new Date(page.data.date).toISOString(),
+    url: postUrl,
+    ...(page.data.bannerImage && { image: page.data.bannerImage }),
+    mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+  };
+
   return (
     <main className="flex-1 w-full mx-auto bg-background">
+      <Script
+        id="blog-post-structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([breadcrumbSchema, articleSchema]),
+        }}
+      />
       {/* Hero Section */}
       <div className="border-b border-border bg-background z-10 relative">
         <div className="max-w-7xl mx-auto pt-16 md:pt-24 md:pb-10 px-6 lg:px-8 border-x border-border">
