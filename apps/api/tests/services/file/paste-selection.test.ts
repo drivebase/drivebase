@@ -58,7 +58,7 @@ describe("pasteSelection", () => {
 		enqueueProviderTransfer.mockReset();
 	});
 
-	it("moves same-provider file on cut without queueing transfer jobs", async () => {
+	it("queues same-provider file cut as a transfer job (shows progress)", async () => {
 		const db = createConflictCheckDb() as any;
 		getFile.mockResolvedValue({
 			id: "file-1",
@@ -66,6 +66,7 @@ describe("pasteSelection", () => {
 			virtualPath: "/a.txt",
 			providerId: "provider-1",
 			folderId: null,
+			size: 100,
 		});
 		getFolder.mockResolvedValue({
 			id: "folder-target",
@@ -73,8 +74,16 @@ describe("pasteSelection", () => {
 			virtualPath: "/Target",
 			providerId: "provider-1",
 		});
-		moveFile.mockResolvedValue({
-			id: "file-1",
+		enqueueProviderTransfer.mockResolvedValue({
+			activityJob: {
+				id: "job-1",
+				type: "provider_transfer",
+				title: "Move a.txt",
+				progress: 0,
+				status: "pending",
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			},
 		});
 
 		const result = await pasteSelection(
@@ -86,18 +95,16 @@ describe("pasteSelection", () => {
 			[{ kind: "file", id: "file-1" }],
 		);
 
-		expect(moveFile).toHaveBeenCalledWith(
-			db,
-			"file-1",
-			"user-1",
-			"ws-1",
-			"folder-target",
-		);
-		expect(enqueueProviderTransfer).not.toHaveBeenCalled();
-		expect(result).toEqual({
-			jobs: [],
-			requiresRefresh: true,
+		expect(moveFile).not.toHaveBeenCalled();
+		expect(enqueueProviderTransfer).toHaveBeenCalledTimes(1);
+		expect(enqueueProviderTransfer.mock.calls[0]?.[1]).toMatchObject({
+			entity: "file",
+			operation: "cut",
+			targetProviderId: "provider-1",
+			targetFolderId: "folder-target",
 		});
+		expect(result.requiresRefresh).toBe(false);
+		expect(result.jobs.map((job) => job.id)).toEqual(["job-1"]);
 	});
 
 	it("queues cross-provider file copy jobs", async () => {

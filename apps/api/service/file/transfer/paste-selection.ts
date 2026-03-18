@@ -13,7 +13,6 @@ import { moveFolder } from "@/service/folder/mutation";
 import { getFolder } from "@/service/folder/query";
 import { ProviderService } from "@/service/provider";
 import { logger } from "@/utils/runtime/logger";
-import { moveFile } from "../mutation/move-file";
 import { getFile } from "../query/file-read";
 
 export type PasteOperation = "cut" | "copy";
@@ -137,75 +136,6 @@ async function ensureNoFolderConflict(
 
 	if (existing && existing.id !== excludingId) {
 		throw new ConflictError(`Folder already exists at path: ${virtualPath}`);
-	}
-}
-
-async function copyFileWithinProvider(
-	db: Database,
-	userId: string,
-	workspaceId: string,
-	fileId: string,
-	targetFolderId: string | null,
-) {
-	const sourceFile = await getFile(db, fileId, userId, workspaceId);
-	let targetFolder: Awaited<ReturnType<typeof getFolder>> | null = null;
-	let destinationPath = joinPath("/", sourceFile.name);
-
-	if (targetFolderId) {
-		targetFolder = await getFolder(db, targetFolderId, userId, workspaceId);
-		if (targetFolder.providerId !== sourceFile.providerId) {
-			throw new ValidationError(
-				"Cannot copy file within provider to a different provider destination",
-			);
-		}
-		destinationPath = joinPath(targetFolder.virtualPath, sourceFile.name);
-	}
-
-	await ensureNoFileConflict(
-		db,
-		destinationPath,
-		sourceFile.providerId,
-		undefined,
-	);
-
-	const providerService = new ProviderService(db);
-	const providerRecord = await providerService.getProvider(
-		sourceFile.providerId,
-		userId,
-		workspaceId,
-	);
-	const provider = await providerService.getProviderInstance(providerRecord);
-
-	try {
-		const copiedRemoteId = await provider.copy({
-			remoteId: sourceFile.remoteId,
-			targetParentId: targetFolder?.remoteId,
-		});
-		const [inserted] = await db
-			.insert(files)
-			.values({
-				nodeType: "file",
-				virtualPath: destinationPath,
-				name: sourceFile.name,
-				mimeType: sourceFile.mimeType,
-				size: sourceFile.size,
-				hash: sourceFile.hash,
-				remoteId: copiedRemoteId,
-				providerId: sourceFile.providerId,
-				workspaceId,
-				folderId: targetFolderId,
-				uploadedBy: userId,
-				isDeleted: false,
-			})
-			.returning();
-
-		if (!inserted) {
-			throw new Error("Failed to create copied file record");
-		}
-
-		return inserted;
-	} finally {
-		await provider.cleanup();
 	}
 }
 
@@ -528,43 +458,9 @@ export async function pasteSelection(
 			const targetProviderId = targetFolder
 				? targetFolder.providerId
 				: file.providerId;
-			const destinationPath = joinPath(
-				targetFolder?.virtualPath ?? "/",
-				file.name,
-			);
-
-			if (operation === "cut" && targetProviderId === file.providerId) {
-				await ensureNoFileConflict(
-					db,
-					destinationPath,
-					targetProviderId,
-					file.id,
-				);
-				await moveFile(
-					db,
-					file.id,
-					userId,
-					workspaceId,
-					targetFolder?.id ?? undefined,
-				);
-				requiresRefresh = true;
-				continue;
-			}
-
-			if (operation === "copy" && targetProviderId === file.providerId) {
-				await copyFileWithinProvider(
-					db,
-					userId,
-					workspaceId,
-					file.id,
-					targetFolder?.id ?? null,
-				);
-				requiresRefresh = true;
-				continue;
-			}
-
-			// Cross-provider file
-			// Conflict check is deferred to the background worker to allow interactive pause/resume
+			// All file transfers (same-provider or cross-provider) go through the queue
+			// so progress is always visible. The worker detects same-provider and uses
+			// native move/copy instead of download+reupload.
 			crossProviderFiles.push({
 				fileId: file.id,
 				fileName: file.name,

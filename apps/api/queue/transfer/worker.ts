@@ -463,6 +463,75 @@ export async function handleFileTransfer(
 			}
 		}
 
+		// ── Same-provider fast path ─────────────────────────────────────────────
+		// When source and target are the same provider use native move/copy instead
+		// of downloading and re-uploading.  We still create a queued job so the UI
+		// always shows progress regardless of whether the providers match.
+		if (file.providerId === targetProviderId) {
+			await updateActivity({
+				message: operation === "cut" ? "Moving file" : "Copying file",
+				progress: 0.5,
+				metadata: { phase: "native_op", entity: "file", operation },
+			});
+			await assertNotCancelled();
+
+			const sameRecord = await providerService.getProvider(
+				targetProviderId,
+				userId,
+				workspaceId,
+			);
+			const sameProvider =
+				await providerService.getProviderInstance(sameRecord);
+
+			try {
+				if (operation === "cut") {
+					await sameProvider.move({
+						remoteId: file.remoteId,
+						newParentId: folder?.remoteId,
+						...(finalFileName !== file.name ? { newName: finalFileName } : {}),
+					});
+					await db
+						.update(files)
+						.set({
+							folderId: folder?.id ?? null,
+							virtualPath: finalDestinationPath,
+							name: finalFileName,
+							updatedAt: new Date(),
+						})
+						.where(eq(files.id, file.id));
+				} else {
+					const copiedRemoteId = await sameProvider.copy({
+						remoteId: file.remoteId,
+						targetParentId: folder?.remoteId,
+						...(finalFileName !== file.name ? { newName: finalFileName } : {}),
+					});
+					await db.insert(files).values({
+						nodeType: "file",
+						virtualPath: finalDestinationPath,
+						name: finalFileName,
+						mimeType: file.mimeType,
+						size: file.size,
+						hash: file.hash,
+						remoteId: copiedRemoteId,
+						providerId: targetProviderId,
+						workspaceId,
+						folderId: folder?.id ?? null,
+						uploadedBy: userId,
+						isDeleted: false,
+					});
+				}
+			} finally {
+				await sameProvider.cleanup().catch(() => {});
+			}
+
+			await activityService.complete(
+				jobId,
+				operation === "cut" ? "File moved" : "File copied",
+			);
+			return;
+		}
+		// ── Cross-provider: download from source, upload to target ───────────────
+
 		const transferDir = join(
 			getTransferCacheRoot(),
 			workspaceId,
