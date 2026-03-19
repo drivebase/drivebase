@@ -150,7 +150,8 @@ extend type Mutation {
 	"""
 	Create a download link for a file
 	"""
-	createFileDownloadLink(input: CreateFileDownloadLinkInput!): FileDownloadLink! @auth
+	createFileDownloadLink(input: CreateFileDownloadLinkInput!): FileDownloadLink!
+		@auth
 
 	"""
 	Rename a file
@@ -211,7 +212,8 @@ extend type Mutation {
 	"""
 	Complete an S3 multipart upload by providing part ETags
 	"""
-	completeS3MultipartUpload(sessionId: ID!, parts: [S3PartInput!]!): Boolean! @auth
+	completeS3MultipartUpload(sessionId: ID!, parts: [S3PartInput!]!): Boolean!
+		@auth
 }
 
 extend type Subscription {

@@ -32,6 +32,5 @@ extend type Mutation {
 	createWebDavCredential(
 		input: CreateWebDavCredentialInput!
 	): CreateWebDavCredentialResult! @auth(workspaceRole: [OWNER, ADMIN])
-	revokeWebDavCredential(id: ID!): Boolean!
-		@auth(workspaceRole: [OWNER, ADMIN])
+	revokeWebDavCredential(id: ID!): Boolean! @auth(workspaceRole: [OWNER, ADMIN])
 }

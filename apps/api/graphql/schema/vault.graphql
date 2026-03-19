@@ -52,7 +52,8 @@ extend type Mutation {
 	"""
 	Request an upload slot for an encrypted file inside the vault
 	"""
-	requestVaultUpload(input: RequestVaultUploadInput!): VaultUploadResponse! @auth
+	requestVaultUpload(input: RequestVaultUploadInput!): VaultUploadResponse!
+		@auth
 
 	"""
 	Get a download URL plus the encrypted file key for decryption
