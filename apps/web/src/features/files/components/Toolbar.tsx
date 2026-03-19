@@ -1,9 +1,11 @@
 import type { Table } from "@tanstack/react-table";
 import {
+	PiCopy as Copy,
 	PiClipboardText as Paste,
 	PiColumns as Columns,
 	PiSquaresFour as GridView,
 	PiListBullets as TableViewIcon,
+	PiScissors as Cut,
 	PiTrash as Trash,
 } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,9 @@ export function Toolbar({ table }: ToolbarProps) {
 	const setViewMode = useFilesStore((s) => s.setViewMode);
 
 	const clipboardCount = useClipboardStore((s) => s.items.length);
+	const hasSelection = count > 0;
+	const canCut = canWrite && hasSelection;
+	const canCopy = canWrite && hasSelection;
 	const canDelete = canWrite && count > 0;
 	const canPaste = canWrite && clipboardCount > 0;
 
@@ -102,6 +107,38 @@ export function Toolbar({ table }: ToolbarProps) {
 					>
 						<Paste size={14} className="mr-2" />
 						Paste ({clipboardCount})
+					</Button>
+				) : null}
+				{canCopy ? (
+					<Button
+						variant="outline"
+						onClick={() => {
+							const copyAction = registry.getById("copy-selection");
+							if (!copyAction) return;
+							copyAction.execute({
+								...actionContext,
+								selection: selectedItems,
+							});
+						}}
+					>
+						<Copy size={14} className="mr-2" />
+						Copy ({count})
+					</Button>
+				) : null}
+				{canCut ? (
+					<Button
+						variant="outline"
+						onClick={() => {
+							const cutAction = registry.getById("cut-selection");
+							if (!cutAction) return;
+							cutAction.execute({
+								...actionContext,
+								selection: selectedItems,
+							});
+						}}
+					>
+						<Cut size={14} className="mr-2" />
+						Cut ({count})
 					</Button>
 				) : null}
 				{canDelete ? (

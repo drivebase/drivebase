@@ -29,7 +29,7 @@ export function createBulkActions(deps: BulkActionDeps): FileAction[] {
 			label: "Cut",
 			icon: Cut,
 			group: "organize",
-			surfaces: ["contextMenu"],
+			surfaces: ["contextMenu", "toolbar"],
 			enabled: (ctx) => deps.canWrite && ctx.selection.length > 0,
 			execute: (ctx) => {
 				deps.stageClipboard(
@@ -44,7 +44,7 @@ export function createBulkActions(deps: BulkActionDeps): FileAction[] {
 			label: "Copy",
 			icon: Copy,
 			group: "organize",
-			surfaces: ["contextMenu"],
+			surfaces: ["contextMenu", "toolbar"],
 			enabled: (ctx) => deps.canWrite && ctx.selection.length > 0,
 			execute: (ctx) => {
 				deps.stageClipboard(
