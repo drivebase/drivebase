@@ -1439,7 +1439,7 @@ export async function handleFolderTransfer(
 const BATCH_POLL_INTERVAL_MS = 1000;
 const BATCH_STALL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
-async function handleBatchTransfer(
+export async function handleBatchTransfer(
 	ctx: JobContext,
 	data: ProviderBatchTransferJobData,
 ) {
@@ -1485,7 +1485,9 @@ async function handleBatchTransfer(
 	});
 
 	let lastChangeAt = Date.now();
-	let lastProgress = -1;
+	let lastObservedProgress = -1;
+	let lastObservedFinishedCount = -1;
+	let lastReportedProgress = -1;
 	let lastMessage = "";
 
 	while (true) {
@@ -1520,8 +1522,13 @@ async function handleBatchTransfer(
 		const progress = totalFiles > 0 ? totalProgress / totalFiles : 1;
 
 		// Reset stall timer if progress increased or files finished
-		if (progress > lastProgress || finishedCount > completed + failed) {
+		if (
+			progress > lastObservedProgress ||
+			finishedCount > lastObservedFinishedCount
+		) {
 			lastChangeAt = Date.now();
+			lastObservedProgress = progress;
+			lastObservedFinishedCount = finishedCount;
 		}
 
 		// All children done - exit loop and finalize
@@ -1539,12 +1546,15 @@ async function handleBatchTransfer(
 			message = `${verb} ${completed} of ${totalFiles} files (${failed} failed)`;
 		} else {
 			message = currentFileName
-				? `${verb} ${completed + 1} of ${totalFiles} — ${currentFileName}`
+				? `${verb} ${finishedCount} of ${totalFiles} files — ${currentFileName}`
 				: `${verb} ${finishedCount} of ${totalFiles} files`;
 		}
 
 		// Throttle updates: only if message changed or progress jumped > 1%
-		if (message !== lastMessage || Math.abs(progress - lastProgress) >= 0.01) {
+		if (
+			message !== lastMessage ||
+			Math.abs(progress - lastReportedProgress) >= 0.01
+		) {
 			await updateBatch({
 				progress,
 				message,
@@ -1558,7 +1568,7 @@ async function handleBatchTransfer(
 				},
 			});
 			lastMessage = message;
-			lastProgress = progress;
+			lastReportedProgress = progress;
 		}
 
 		// Stall guard — if nothing changes for 5 minutes, bail out

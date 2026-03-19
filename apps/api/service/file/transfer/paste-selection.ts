@@ -369,6 +369,7 @@ export async function pasteSelection(
 	workspaceId: string,
 	operation: PasteOperation,
 	targetFolderId: string | null,
+	targetProviderId: string | null,
 	items: ClipboardItemInput[],
 ): Promise<PasteSelectionResult> {
 	logger.debug({
@@ -377,6 +378,7 @@ export async function pasteSelection(
 		workspaceId,
 		operation,
 		targetFolderId,
+		targetProviderId,
 		itemCount: items.length,
 	});
 	if (items.length === 0) {
@@ -420,11 +422,22 @@ export async function pasteSelection(
 	const targetFolder = targetFolderId
 		? await getFolder(db, targetFolderId, userId, workspaceId)
 		: null;
+	if (
+		targetFolder &&
+		targetProviderId &&
+		targetFolder.providerId !== targetProviderId
+	) {
+		throw new ValidationError(
+			"Target folder and provider must belong to the same storage provider",
+		);
+	}
+	const effectiveTargetProviderId =
+		targetFolder?.providerId ?? targetProviderId;
 	logger.debug({
 		msg: "[paste] normalized clipboard items",
 		operation,
 		targetFolderId: targetFolder?.id ?? null,
-		targetProviderId: targetFolder?.providerId ?? null,
+		targetProviderId: effectiveTargetProviderId ?? null,
 		dedupedCount: dedupedItems.length,
 		topLevelCount: topLevelItems.length,
 	});
@@ -455,9 +468,7 @@ export async function pasteSelection(
 	for (const item of topLevelItems) {
 		if (item.kind === "file") {
 			const file = await getFile(db, item.id, userId, workspaceId);
-			const targetProviderId = targetFolder
-				? targetFolder.providerId
-				: file.providerId;
+			const targetProviderId = effectiveTargetProviderId ?? file.providerId;
 			// All file transfers (same-provider or cross-provider) go through the queue
 			// so progress is always visible. The worker detects same-provider and uses
 			// native move/copy instead of download+reupload.
@@ -509,9 +520,7 @@ export async function pasteSelection(
 		}
 
 		// Cross-provider folder
-		const targetProviderId = targetFolder
-			? targetFolder.providerId
-			: folder.providerId;
+		const targetProviderId = effectiveTargetProviderId ?? folder.providerId;
 		crossProviderFolders.push({
 			folder: {
 				kind: "folder",

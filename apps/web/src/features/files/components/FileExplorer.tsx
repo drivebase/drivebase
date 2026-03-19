@@ -1,3 +1,4 @@
+import type { Ref } from "react";
 import { useFilesStore } from "@/shared/store/filesStore";
 import type { SelectionItem } from "../actions/types";
 import { useFileExplorer } from "../context/FileExplorerProvider";
@@ -11,7 +12,11 @@ import { TableView } from "./table/TableView";
 import { useFileTable } from "./table/useFileTable";
 import { Toolbar } from "./Toolbar";
 
-export function FileExplorer() {
+interface FileExplorerProps {
+	contentRef?: Ref<HTMLDivElement>;
+}
+
+export function FileExplorer({ contentRef }: FileExplorerProps) {
 	const { files, folders, isLoading, registry, actionContext } =
 		useFileExplorer();
 	const { selectAll, selectOnly, clear } = useSelection();
@@ -38,10 +43,13 @@ export function FileExplorer() {
 
 	if (files.length === 0 && folders.length === 0) {
 		return (
-			<div className="h-full space-y-3">
+			<div className="flex h-full min-h-0 flex-col gap-3">
 				<Toolbar />
 				<BlankAreaContextMenu>
-					<div className="h-full min-h-[220px] w-full">
+					<div
+						ref={contentRef}
+						className="min-h-[220px] flex-1 overflow-y-auto w-full pb-6"
+					>
 						<FileSystemTableEmpty />
 					</div>
 				</BlankAreaContextMenu>
@@ -50,10 +58,13 @@ export function FileExplorer() {
 	}
 
 	return (
-		<div className="h-full space-y-3">
+		<div className="flex h-full min-h-0 flex-col gap-3">
 			<Toolbar table={viewMode === "table" ? table : undefined} />
 			<BlankAreaContextMenu>
-				<div className="h-full min-h-[220px] w-full">
+				<div
+					ref={contentRef}
+					className="min-h-[220px] flex-1 overflow-y-auto w-full pb-6"
+				>
 					{viewMode === "grid" ? (
 						<GridView />
 					) : (

@@ -42,7 +42,7 @@ export function Toolbar({ table }: ToolbarProps) {
 
 	if (isLoading) {
 		return (
-			<div className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 py-2 backdrop-blur supports-backdrop-filter:bg-background/80">
+			<div className="z-30 shrink-0 flex items-center justify-between border-b bg-background/95 py-2 backdrop-blur supports-backdrop-filter:bg-background/80">
 				<Skeleton className="h-4 w-24" />
 				<Button variant="outline" size="sm" disabled>
 					<Columns />
@@ -54,7 +54,7 @@ export function Toolbar({ table }: ToolbarProps) {
 	const total = files.length + folders.length;
 
 	return (
-		<div className="sticky top-0 z-30 flex items-center justify-between">
+		<div className="z-30 shrink-0 flex items-center justify-between border-b bg-background/95 py-2 backdrop-blur supports-backdrop-filter:bg-background/80">
 			<div className="text-xs text-muted-foreground">
 				{count} of {total} selected
 			</div>

@@ -260,6 +260,7 @@ export class FileService {
 		userId: string,
 		operation: PasteOperation,
 		targetFolderId: string | null,
+		targetProviderId: string | null,
 		items: ClipboardItemInput[],
 		preferredWorkspaceId?: string,
 	): Promise<PasteSelectionResult> {
@@ -270,6 +271,7 @@ export class FileService {
 				workspaceId,
 				operation,
 				targetFolderId,
+				targetProviderId,
 				items,
 			),
 		);

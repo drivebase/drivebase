@@ -257,6 +257,7 @@ input ClipboardItemInput {
 input PasteSelectionInput {
 	operation: PasteOperation!
 	targetFolderId: ID
+	targetProviderId: ID
 	items: [ClipboardItemInput!]!
 }
 

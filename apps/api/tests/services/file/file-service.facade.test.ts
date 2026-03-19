@@ -291,6 +291,7 @@ describe("FileService facade", () => {
 				"user-1",
 				"copy",
 				"folder-2",
+				null,
 				[
 					{
 						kind: "file",
@@ -346,6 +347,7 @@ describe("FileService facade", () => {
 				"ws-1",
 				"copy",
 				"folder-2",
+				null,
 				[
 					{
 						kind: "file",

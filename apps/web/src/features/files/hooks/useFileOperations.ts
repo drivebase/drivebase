@@ -267,6 +267,7 @@ export function useFileOperations({
 	const handlePasteSelection = async (
 		operation: ClipboardOperation,
 		targetFolderId: string | null,
+		targetProviderId: string | null,
 		items: ClipboardItemRef[],
 	) => {
 		if (!operation || items.length === 0) {
@@ -278,6 +279,7 @@ export function useFileOperations({
 				operation:
 					operation === "cut" ? PasteOperation.Cut : PasteOperation.Copy,
 				targetFolderId,
+				targetProviderId,
 				items: items.map((item) => ({
 					kind:
 						item.kind === "file"

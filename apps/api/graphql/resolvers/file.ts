@@ -375,6 +375,7 @@ export const fileMutations: MutationResolvers = {
 			user.userId,
 			fromPasteOperation(args.input.operation),
 			args.input.targetFolderId ?? null,
+			args.input.targetProviderId ?? null,
 			args.input.items.map((item) => ({
 				kind: fromClipboardItemKind(item.kind),
 				id: item.id,

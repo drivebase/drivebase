@@ -6,6 +6,9 @@ const getFolder = mock();
 const moveFile = mock();
 const moveFolder = mock();
 const enqueueProviderTransfer = mock();
+const providerGetProvider = mock();
+const providerGetProviderInstance = mock();
+const providerCreateFolder = mock();
 
 class ActivityServiceMock {
 	constructor(_db: unknown) {}
@@ -35,6 +38,13 @@ mock.module("@/service/activity", () => ({
 	ActivityService: ActivityServiceMock,
 }));
 
+mock.module("@/service/provider", () => ({
+	ProviderService: class {
+		getProvider = providerGetProvider;
+		getProviderInstance = providerGetProviderInstance;
+	},
+}));
+
 import { pasteSelection } from "../../../service/file/transfer/paste-selection";
 
 function createConflictCheckDb() {
@@ -49,6 +59,33 @@ function createConflictCheckDb() {
 	};
 }
 
+function createFolderCopyDb(responses: unknown[]) {
+	const queue = [...responses];
+
+	const next = () => {
+		if (queue.length === 0) {
+			throw new Error("No queued DB response available");
+		}
+		return queue.shift();
+	};
+
+	const chain: any = {
+		from: () => chain,
+		where: () => chain,
+		orderBy: async () => next(),
+		limit: async () => next(),
+	};
+
+	return {
+		select: () => chain,
+		insert: () => ({
+			values: () => ({
+				returning: async () => next(),
+			}),
+		}),
+	};
+}
+
 describe("pasteSelection", () => {
 	beforeEach(() => {
 		getFile.mockReset();
@@ -56,6 +93,15 @@ describe("pasteSelection", () => {
 		moveFile.mockReset();
 		moveFolder.mockReset();
 		enqueueProviderTransfer.mockReset();
+		providerGetProvider.mockReset();
+		providerGetProviderInstance.mockReset();
+		providerCreateFolder.mockReset();
+		providerGetProvider.mockResolvedValue({ id: "provider-record" });
+		providerGetProviderInstance.mockResolvedValue({
+			createFolder: providerCreateFolder,
+			cleanup: mock(async () => {}),
+		});
+		providerCreateFolder.mockResolvedValue("remote-folder-1");
 	});
 
 	it("queues same-provider file cut as a transfer job (shows progress)", async () => {
@@ -92,6 +138,7 @@ describe("pasteSelection", () => {
 			"ws-1",
 			"cut",
 			"folder-target",
+			null,
 			[{ kind: "file", id: "file-1" }],
 		);
 
@@ -141,6 +188,7 @@ describe("pasteSelection", () => {
 			"ws-1",
 			"copy",
 			"folder-target",
+			null,
 			[{ kind: "file", id: "file-1" }],
 		);
 
@@ -177,10 +225,111 @@ describe("pasteSelection", () => {
 		});
 
 		await expect(
-			pasteSelection(db, "user-1", "ws-1", "copy", "target-folder", [
+			pasteSelection(db, "user-1", "ws-1", "copy", "target-folder", null, [
 				{ kind: "folder", id: "source-folder" },
 			]),
 		).rejects.toBeInstanceOf(ValidationError);
 		expect(enqueueProviderTransfer).not.toHaveBeenCalled();
+	});
+
+	it("queues a file transfer when copying a folder with nested files", async () => {
+		const db = createFolderCopyDb([
+			[],
+			[],
+			[
+				{
+					id: "dest-folder-1",
+					virtualPath: "/Source",
+					name: "Source",
+					remoteId: "remote-folder-1",
+					providerId: "provider-1",
+				},
+			],
+			[
+				{
+					id: "file-1",
+					name: "a.txt",
+					virtualPath: "/Source/a.txt",
+					providerId: "provider-1",
+					folderId: "source-folder",
+				},
+			],
+		]) as any;
+		getFolder.mockResolvedValue({
+			id: "source-folder",
+			name: "Source",
+			virtualPath: "/Source",
+			providerId: "provider-1",
+			parentId: null,
+		});
+		enqueueProviderTransfer.mockResolvedValue({
+			activityJob: {
+				id: "job-1",
+				type: "provider_transfer",
+				title: "Copy a.txt",
+				progress: 0,
+				status: "pending",
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			},
+		});
+
+		const result = await pasteSelection(
+			db,
+			"user-1",
+			"ws-1",
+			"copy",
+			null,
+			null,
+			[{ kind: "folder", id: "source-folder" }],
+		);
+
+		expect(providerCreateFolder).toHaveBeenCalledWith({ name: "Source" });
+		expect(enqueueProviderTransfer).toHaveBeenCalledTimes(1);
+		expect(enqueueProviderTransfer.mock.calls[0]?.[1]).toMatchObject({
+			entity: "file",
+			operation: "copy",
+			fileId: "file-1",
+			targetProviderId: "provider-1",
+			targetFolderId: "dest-folder-1",
+		});
+		expect(result.jobs.map((job) => job.id)).toEqual(["job-1"]);
+	});
+
+	it("marks empty folder copies as requiring refresh", async () => {
+		const db = createFolderCopyDb([
+			[],
+			[],
+			[
+				{
+					id: "dest-folder-1",
+					virtualPath: "/Empty",
+					name: "Empty",
+					remoteId: "remote-folder-1",
+					providerId: "provider-1",
+				},
+			],
+			[],
+		]) as any;
+		getFolder.mockResolvedValue({
+			id: "empty-folder",
+			name: "Empty",
+			virtualPath: "/Empty",
+			providerId: "provider-1",
+			parentId: null,
+		});
+
+		const result = await pasteSelection(
+			db,
+			"user-1",
+			"ws-1",
+			"copy",
+			null,
+			null,
+			[{ kind: "folder", id: "empty-folder" }],
+		);
+
+		expect(enqueueProviderTransfer).not.toHaveBeenCalled();
+		expect(result).toEqual({ jobs: [], requiresRefresh: true });
 	});
 });

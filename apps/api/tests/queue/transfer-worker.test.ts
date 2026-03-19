@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it, mock } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ProviderError } from "@drivebase/core";
@@ -177,8 +177,14 @@ mock.module("@/utils/runtime/logger", () => ({
 }));
 
 import type { JobContext } from "../../queue/transfer/worker";
-import { handleFileTransfer } from "../../queue/transfer/worker";
-import type { ProviderFileTransferJobData } from "../../queue/transfer/queue";
+import {
+	handleBatchTransfer,
+	handleFileTransfer,
+} from "../../queue/transfer/worker";
+import type {
+	ProviderBatchTransferJobData,
+	ProviderFileTransferJobData,
+} from "../../queue/transfer/queue";
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -253,6 +259,10 @@ async function ensureCacheFile(jobId = "test-job-1") {
 
 afterAll(async () => {
 	await rm(TRANSFER_CACHE, { recursive: true, force: true }).catch(() => {});
+});
+
+beforeEach(() => {
+	warnMock.mockReset();
 });
 
 // ── Tests ──────────────────────────────────────────────────────────────
@@ -339,5 +349,187 @@ describe("handleFileTransfer — cut operation ordering", () => {
 
 		expect(sourceProvider.delete).not.toHaveBeenCalled();
 		expect(ctx.activityService.complete).toHaveBeenCalled();
+	});
+});
+
+function buildBatchDb(sequences: Array<unknown[]>) {
+	const queue = [...sequences];
+	const chain: any = {
+		from: () => chain,
+		where: async () => {
+			if (queue.length === 0) {
+				throw new Error("No queued DB response available");
+			}
+			return queue.shift();
+		},
+	};
+
+	return {
+		db: {
+			select: () => chain,
+		},
+	};
+}
+
+function createBatchCtx(overrides: Partial<JobContext> = {}): JobContext {
+	return {
+		activityService: {
+			update: mock(async () => {}),
+			complete: mock(async () => {}),
+			fail: mock(async () => {}),
+			log: mock(async () => {}),
+		} as any,
+		providerService: {
+			getProvider: mock(async () => ({ id: "provider-record" })),
+			getProviderInstance: mock(),
+		} as any,
+		jobId: "batch-job-1",
+		workspaceId: "ws-1",
+		userId: "user-1",
+		assertNotCancelled: mock(async () => {}),
+		updateActivity: mock(async () => {}),
+		...overrides,
+	};
+}
+
+function makeBatchData(
+	overrides: Partial<ProviderBatchTransferJobData> = {},
+): ProviderBatchTransferJobData {
+	return {
+		entity: "batch",
+		jobId: "monitor-job-1",
+		workspaceId: "ws-1",
+		userId: "user-1",
+		childJobIds: ["child-1", "child-2"],
+		operation: "copy",
+		parentJobId: "visible-job-1",
+		...overrides,
+	};
+}
+
+describe("handleBatchTransfer", () => {
+	it("reports the actual completed count while another file is still running", async () => {
+		activeDb = buildBatchDb([
+			[
+				{
+					id: "child-1",
+					status: "completed",
+					title: "Copy a.txt",
+					message: "",
+					progress: 1,
+				},
+				{
+					id: "child-2",
+					status: "running",
+					title: "Copy b.txt",
+					message: "",
+					progress: 0,
+				},
+			],
+			[
+				{
+					id: "child-1",
+					status: "completed",
+					title: "Copy a.txt",
+					message: "",
+					progress: 1,
+				},
+				{
+					id: "child-2",
+					status: "completed",
+					title: "Copy b.txt",
+					message: "",
+					progress: 1,
+				},
+			],
+			[{ status: "completed" }, { status: "completed" }],
+		]) as any;
+
+		const ctx = createBatchCtx();
+
+		await handleBatchTransfer(ctx, makeBatchData());
+
+		expect(ctx.activityService.update).toHaveBeenCalledWith(
+			"visible-job-1",
+			expect.objectContaining({
+				message: "Copying 1 of 2 files — b.txt",
+			}),
+		);
+		expect(ctx.activityService.complete).toHaveBeenCalledWith(
+			"visible-job-1",
+			"2 files transferred",
+		);
+	});
+
+	it("does not stall when finished count advances without progress changing", async () => {
+		const originalDateNow = Date.now;
+		const dateValues = [0, 0, 1000, 301000, 302000];
+		Date.now = mock(() => dateValues.shift() ?? 302000) as typeof Date.now;
+
+		try {
+			activeDb = buildBatchDb([
+				[
+					{
+						id: "child-1",
+						status: "running",
+						title: "Copy a.txt",
+						message: "",
+						progress: 0,
+					},
+					{
+						id: "child-2",
+						status: "pending",
+						title: "Copy b.txt",
+						message: "",
+						progress: 0,
+					},
+				],
+				[
+					{
+						id: "child-1",
+						status: "completed",
+						title: "Copy a.txt",
+						message: "",
+						progress: 0,
+					},
+					{
+						id: "child-2",
+						status: "running",
+						title: "Copy b.txt",
+						message: "",
+						progress: 0,
+					},
+				],
+				[
+					{
+						id: "child-1",
+						status: "completed",
+						title: "Copy a.txt",
+						message: "",
+						progress: 0,
+					},
+					{
+						id: "child-2",
+						status: "completed",
+						title: "Copy b.txt",
+						message: "",
+						progress: 0,
+					},
+				],
+				[{ status: "completed" }, { status: "completed" }],
+			]) as any;
+
+			const ctx = createBatchCtx();
+
+			await handleBatchTransfer(ctx, makeBatchData());
+
+			expect(ctx.activityService.fail).not.toHaveBeenCalled();
+			expect(ctx.activityService.complete).toHaveBeenCalledWith(
+				"visible-job-1",
+				"2 files transferred",
+			);
+		} finally {
+			Date.now = originalDateNow;
+		}
 	});
 });
