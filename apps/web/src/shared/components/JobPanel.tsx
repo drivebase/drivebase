@@ -275,47 +275,8 @@ export function JobPanel() {
 									</div>
 								</div>
 								<div className="shrink-0 flex items-center gap-2">
-									{job.status === JobStatus.Paused ? (
-										<div className="flex flex-col items-end gap-2">
-											{showApplyToAll ? (
-												<div className="flex items-center gap-2">
-													<Checkbox
-														id={`apply-to-all-${job.id}`}
-														checked={applyToAllMap[job.id] ?? false}
-														onCheckedChange={(checked) =>
-															setApplyToAllMap((prev) => ({
-																...prev,
-																[job.id]: !!checked,
-															}))
-														}
-													/>
-													<Label
-														htmlFor={`apply-to-all-${job.id}`}
-														className="text-xs text-muted-foreground"
-													>
-														<Trans>Apply to all</Trans>
-													</Label>
-												</div>
-											) : null}
-											<div className="flex items-center gap-1">
-												{pauseActions.map((action) => (
-													<Button
-														key={action}
-														size="sm"
-														variant="outline"
-														className="h-7 px-2 text-xs"
-														onClick={() =>
-															void handleResolveJobPause(job, action)
-														}
-														disabled={resolvingJobIds.has(job.id)}
-													>
-														{getPauseActionLabel(action)}
-													</Button>
-												))}
-											</div>
-										</div>
-									) : job.status === JobStatus.Pending ||
-										job.status === JobStatus.Running ? (
+									{(job.status === JobStatus.Pending ||
+										job.status === JobStatus.Running) && (
 										<Button
 											size="sm"
 											variant="outline"
@@ -324,10 +285,48 @@ export function JobPanel() {
 										>
 											<Trans>Cancel</Trans>
 										</Button>
-									) : null}
+									)}
 									{getStatusIcon(job.status)}
 								</div>
 							</div>
+							{job.status === JobStatus.Paused && pauseActions.length > 0 && (
+								<div className="flex items-center justify-between gap-2">
+									<div className="flex items-center gap-1">
+										{pauseActions.map((action) => (
+											<Button
+												key={action}
+												size="sm"
+												variant="outline"
+												className="h-7 px-2 text-xs"
+												onClick={() => void handleResolveJobPause(job, action)}
+												disabled={resolvingJobIds.has(job.id)}
+											>
+												{getPauseActionLabel(action)}
+											</Button>
+										))}
+									</div>
+									{showApplyToAll && (
+										<div className="flex items-center gap-2">
+											<Checkbox
+												id={`apply-to-all-${job.id}`}
+												checked={applyToAllMap[job.id] ?? false}
+												onCheckedChange={(checked) =>
+													setApplyToAllMap((prev) => ({
+														...prev,
+														[job.id]: !!checked,
+													}))
+												}
+											/>
+											<Label
+												htmlFor={`apply-to-all-${job.id}`}
+												className="text-xs text-muted-foreground"
+											>
+												<Trans>Apply to all</Trans>
+											</Label>
+										</div>
+									)}
+								</div>
+							)}
 							<Progress
 								value={progress}
 								className="h-1.5"
