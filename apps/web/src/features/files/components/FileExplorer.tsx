@@ -8,12 +8,15 @@ import { FileSystemTableEmpty } from "./file-system-table/FileSystemTableEmpty";
 import { FileSystemTableLoading } from "./file-system-table/FileSystemTableLoading";
 import { GridView } from "./grid/GridView";
 import { TableView } from "./table/TableView";
+import { useFileTable } from "./table/useFileTable";
+import { Toolbar } from "./Toolbar";
 
 export function FileExplorer() {
 	const { files, folders, isLoading, registry, actionContext } =
 		useFileExplorer();
 	const { selectAll, selectOnly, clear } = useSelection();
 	const viewMode = useFilesStore((s) => s.viewMode);
+	const { table, emptyColSpan } = useFileTable();
 
 	const allItems: SelectionItem[] = [
 		...folders.map((f) => ({ kind: "folder" as const, data: f })),
@@ -35,19 +38,29 @@ export function FileExplorer() {
 
 	if (files.length === 0 && folders.length === 0) {
 		return (
-			<BlankAreaContextMenu>
-				<div className="h-full min-h-[220px] w-full">
-					<FileSystemTableEmpty />
-				</div>
-			</BlankAreaContextMenu>
+			<div className="h-full space-y-3">
+				<Toolbar />
+				<BlankAreaContextMenu>
+					<div className="h-full min-h-[220px] w-full">
+						<FileSystemTableEmpty />
+					</div>
+				</BlankAreaContextMenu>
+			</div>
 		);
 	}
 
 	return (
-		<BlankAreaContextMenu>
-			<div className="h-full min-h-[220px] w-full">
-				{viewMode === "grid" ? <GridView /> : <TableView />}
-			</div>
-		</BlankAreaContextMenu>
+		<div className="h-full space-y-3">
+			<Toolbar table={viewMode === "table" ? table : undefined} />
+			<BlankAreaContextMenu>
+				<div className="h-full min-h-[220px] w-full">
+					{viewMode === "grid" ? (
+						<GridView />
+					) : (
+						<TableView table={table} emptyColSpan={emptyColSpan} />
+					)}
+				</div>
+			</BlankAreaContextMenu>
+		</div>
 	);
 }
