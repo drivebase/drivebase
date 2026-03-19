@@ -10,8 +10,8 @@ import { useJobsFeed } from "./useJobsFeed";
 const useQueryMock = vi.fn();
 const useSubscriptionMock = vi.fn();
 const useActivityStoreMock = vi.fn();
-const setJobsMock = vi.fn();
 const setJobMock = vi.fn();
+const reexecuteRecentJobsMock = vi.fn();
 
 vi.mock("urql", () => ({
 	useQuery: (args: unknown) => useQueryMock(args),
@@ -22,7 +22,6 @@ vi.mock("@/shared/store/activityStore", () => ({
 	useActivityStore: (
 		selector: (state: {
 			jobs: Map<string, Job>;
-			setJobs: (jobs: Job[]) => void;
 			setJob: (job: Job) => void;
 		}) => unknown,
 	) => useActivityStoreMock(selector),
@@ -53,20 +52,18 @@ describe("useJobsFeed", () => {
 		useQueryMock.mockReset();
 		useSubscriptionMock.mockReset();
 		useActivityStoreMock.mockReset();
-		setJobsMock.mockReset();
 		setJobMock.mockReset();
+		reexecuteRecentJobsMock.mockReset();
 
 		useActivityStoreMock.mockImplementation(
 			(
 				selector: (state: {
 					jobs: Map<string, Job>;
-					setJobs: (jobs: Job[]) => void;
 					setJob: (job: Job) => void;
 				}) => unknown,
 			) =>
 				selector({
 					jobs: new Map(),
-					setJobs: setJobsMock,
 					setJob: setJobMock,
 				}),
 		);
@@ -76,6 +73,7 @@ describe("useJobsFeed", () => {
 					recentJobs: [createJob()],
 				},
 			},
+			reexecuteRecentJobsMock,
 		]);
 		useSubscriptionMock.mockReturnValue([{ data: null }]);
 	});
@@ -88,9 +86,9 @@ describe("useJobsFeed", () => {
 			variables: { limit: 50, offset: 0 },
 			requestPolicy: "cache-and-network",
 		});
-		expect(setJobsMock).toHaveBeenCalledWith([
+		expect(setJobMock).toHaveBeenCalledWith(
 			expect.objectContaining({ id: "job-1" }),
-		]);
+		);
 	});
 
 	it("still applies subscription updates for incremental job changes", () => {
@@ -118,5 +116,39 @@ describe("useJobsFeed", () => {
 				status: JobStatus.Running,
 			}),
 		);
+	});
+
+	it("polls recent jobs while active work is present", () => {
+		vi.useFakeTimers();
+		useActivityStoreMock.mockImplementation(
+			(
+				selector: (state: {
+					jobs: Map<string, Job>;
+					setJob: (job: Job) => void;
+				}) => unknown,
+			) =>
+				selector({
+					jobs: new Map([
+						[
+							"job-1",
+							createJob({
+								status: JobStatus.Pending,
+								progress: 0,
+								message: "Queued for transfer",
+							}),
+						],
+					]),
+					setJob: setJobMock,
+				}),
+		);
+
+		renderHook(() => useJobsFeed());
+
+		vi.advanceTimersByTime(3000);
+
+		expect(reexecuteRecentJobsMock).toHaveBeenCalledWith({
+			requestPolicy: "network-only",
+		});
+		vi.useRealTimers();
 	});
 });
