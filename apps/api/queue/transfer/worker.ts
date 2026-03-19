@@ -7,7 +7,7 @@ import {
 	isFileTransferJobData,
 	isRootTransferJobData,
 } from "@/queue/transfer/queue";
-import { createBullMQConnection } from "@/redis/client";
+import { createBullMQConnection, getRedis } from "@/redis/client";
 import { ActivityService } from "@/service/activity";
 import { ProviderService } from "@/service/provider";
 import {
@@ -16,6 +16,7 @@ import {
 	JobCancelledError,
 } from "@/utils/jobs/job-cancel";
 import { logger } from "@/utils/runtime/logger";
+import { publishChildCompletion } from "./job-events";
 import { handleBatchTransfer } from "./handle-batch-transfer";
 import { handleFileTransfer } from "./handle-file-transfer";
 import { handleFolderTransfer } from "./handle-folder-transfer";
@@ -81,8 +82,24 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 					await handleBatchTransfer(ctx, data);
 				} else if (isFileTransferJobData(data)) {
 					await handleFileTransfer(ctx, data);
+					if (data.parentJobId) {
+						await publishChildCompletion(
+							getRedis(),
+							data.parentJobId,
+							jobId,
+							"completed",
+						).catch(() => {});
+					}
 				} else {
 					await handleFolderTransfer(ctx, data);
+					if (data.parentJobId) {
+						await publishChildCompletion(
+							getRedis(),
+							data.parentJobId,
+							jobId,
+							"completed",
+						).catch(() => {});
+					}
 				}
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
@@ -148,6 +165,18 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 				if (nonRetryable) {
 					bullJob.discard();
 				}
+
+				const parentId = (bullJob.data as { parentJobId?: string })
+					?.parentJobId;
+				if (parentId && jobId) {
+					await publishChildCompletion(
+						getRedis(),
+						parentId,
+						jobId,
+						"error",
+					).catch(() => {});
+				}
+
 				throw error;
 			} finally {
 				if (jobId) {

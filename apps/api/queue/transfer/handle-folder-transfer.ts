@@ -11,7 +11,12 @@ import type { ProviderService } from "@/service/provider";
 import { logger } from "@/utils/runtime/logger";
 import { getTargetFolder } from "./conflict";
 import { markFolderSubtreeDeleted } from "./db-ops";
-import type { JobContext } from "./types";
+import { subscribeChildCompletion } from "./job-events";
+import {
+	ENQUEUE_BATCH_SIZE,
+	type JobContext,
+	SAFETY_POLL_INTERVAL_MS,
+} from "./types";
 import { sleep } from "./utils";
 
 export async function handleFolderTransfer(
@@ -312,42 +317,66 @@ export async function handleFolderTransfer(
 		const childJobIds: string[] = [];
 		const childFileOperation: ProviderFileTransferJobData["operation"] =
 			data.operation === "cut" ? "cut" : "copy";
-		for (const sourceFile of sourceSubfiles) {
+
+		// Enqueue in batches to avoid overwhelming the queue
+		for (let i = 0; i < sourceSubfiles.length; i += ENQUEUE_BATCH_SIZE) {
 			await assertNotCancelled();
-			const sourceParentFolder = sourceFile.folderId
-				? destinationBySourceId.get(sourceFile.folderId)
-				: rootFolder;
-			const destinationFolderId = sourceParentFolder?.id ?? rootFolder.id;
-			const enqueued = await enqueueProviderTransfer(activityService, {
-				entity: "file",
-				operation: childFileOperation,
-				workspaceId,
-				userId,
-				parentJobId: jobId,
-				fileId: sourceFile.id,
-				targetProviderId,
-				targetFolderId: destinationFolderId,
-				title: `Transfer ${sourceFile.name}`,
-				message: "Queued from folder transfer",
+			const batch = sourceSubfiles.slice(i, i + ENQUEUE_BATCH_SIZE);
+			const enqueueResults = await Promise.all(
+				batch.map(async (sourceFile) => {
+					const sourceParentFolder = sourceFile.folderId
+						? destinationBySourceId.get(sourceFile.folderId)
+						: rootFolder;
+					const destinationFolderId = sourceParentFolder?.id ?? rootFolder.id;
+					const enqueued = await enqueueProviderTransfer(activityService, {
+						entity: "file",
+						operation: childFileOperation,
+						workspaceId,
+						userId,
+						parentJobId: jobId,
+						fileId: sourceFile.id,
+						targetProviderId,
+						targetFolderId: destinationFolderId,
+						title: `Transfer ${sourceFile.name}`,
+						message: "Queued from folder transfer",
+						metadata: {
+							fileId: sourceFile.id,
+							fileName: sourceFile.name,
+							sourceProviderId: sourceFolder.providerId,
+							targetProviderId,
+							targetFolderId: destinationFolderId,
+							parentJobId: jobId,
+						},
+					});
+					logger.debug({
+						msg: "[transfer:folder] child file job queued",
+						jobId,
+						folderId: sourceFolder.id,
+						childJobId: enqueued.activityJob.id,
+						fileId: sourceFile.id,
+						filePath: sourceFile.virtualPath,
+						targetFolderId: destinationFolderId,
+						operation: childFileOperation,
+					});
+					return enqueued.activityJob.id;
+				}),
+			);
+			childJobIds.push(...enqueueResults);
+
+			await updateActivity({
+				progress:
+					0.25 +
+					0.15 *
+						(Math.min(i + ENQUEUE_BATCH_SIZE, sourceSubfiles.length) /
+							sourceSubfiles.length),
+				message: `Queued ${childJobIds.length} of ${sourceSubfiles.length} file transfers`,
 				metadata: {
-					fileId: sourceFile.id,
-					fileName: sourceFile.name,
-					sourceProviderId: sourceFolder.providerId,
-					targetProviderId,
-					targetFolderId: destinationFolderId,
-					parentJobId: jobId,
+					phase: "queue_children",
+					entity: "folder",
+					operation: data.operation,
+					totalFiles: sourceSubfiles.length,
+					queued: childJobIds.length,
 				},
-			});
-			childJobIds.push(enqueued.activityJob.id);
-			logger.debug({
-				msg: "[transfer:folder] child file job queued",
-				jobId,
-				folderId: sourceFolder.id,
-				childJobId: enqueued.activityJob.id,
-				fileId: sourceFile.id,
-				filePath: sourceFile.virtualPath,
-				targetFolderId: destinationFolderId,
-				operation: childFileOperation,
 			});
 		}
 
@@ -367,38 +396,51 @@ export async function handleFolderTransfer(
 		});
 
 		if (childJobIds.length > 0) {
-			while (true) {
-				await assertNotCancelled();
-				const childRows = await db
-					.select({ id: jobs.id, status: jobs.status })
-					.from(jobs)
-					.where(inArray(jobs.id, childJobIds));
-				if (childRows.length < childJobIds.length) {
-					await sleep(1000);
-					continue;
+			const pending = new Set(childJobIds);
+			let hasFailure = false;
+
+			const sub = await subscribeChildCompletion(jobId, (msg) => {
+				if (pending.delete(msg.childJobId) && msg.status === "error") {
+					hasFailure = true;
 				}
-				const hasActive = childRows.some(
-					(row) => row.status === "pending" || row.status === "running",
+			});
+
+			try {
+				while (pending.size > 0) {
+					await assertNotCancelled();
+
+					// Safety-net DB poll every SAFETY_POLL_INTERVAL_MS
+					await sleep(SAFETY_POLL_INTERVAL_MS);
+					if (pending.size === 0) break;
+
+					const childRows = await db
+						.select({ id: jobs.id, status: jobs.status })
+						.from(jobs)
+						.where(inArray(jobs.id, [...pending]));
+
+					for (const row of childRows) {
+						if (row.status === "completed" || row.status === "error") {
+							pending.delete(row.id);
+							if (row.status === "error") hasFailure = true;
+						}
+					}
+				}
+			} finally {
+				await sub.unsubscribe();
+			}
+
+			if (hasFailure) {
+				logger.error({
+					msg: "[transfer:folder] child file transfers failed",
+					jobId,
+					folderId: sourceFolder.id,
+					childJobIds,
+				});
+				await activityService.fail(
+					jobId,
+					"One or more nested file transfers failed",
 				);
-				if (hasActive) {
-					await sleep(1000);
-					continue;
-				}
-				const hasFailure = childRows.some((row) => row.status === "error");
-				if (hasFailure) {
-					logger.error({
-						msg: "[transfer:folder] child file transfers failed",
-						jobId,
-						folderId: sourceFolder.id,
-						childJobIds,
-					});
-					await activityService.fail(
-						jobId,
-						"One or more nested file transfers failed",
-					);
-					return;
-				}
-				break;
+				return;
 			}
 		}
 		logger.debug({

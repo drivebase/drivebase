@@ -6,6 +6,12 @@ export const DEFAULT_TRANSFER_CHUNK_SIZE = 8 * 1024 * 1024;
 export const BATCH_POLL_INTERVAL_MS = 1000;
 export const BATCH_STALL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
+export const ENQUEUE_BATCH_SIZE = 50;
+export const PERSIST_BATCH_SIZE = 10;
+export const PERSIST_INTERVAL_MS = 2000;
+export const SAFETY_POLL_INTERVAL_MS = 15_000;
+export const FILE_CONCURRENCY = 5;
+
 export interface FileTransferCacheManifest {
 	fileId: string;
 	sourceProviderId: string;

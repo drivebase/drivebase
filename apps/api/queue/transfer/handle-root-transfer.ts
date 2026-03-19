@@ -25,7 +25,15 @@ import {
 } from "./conflict";
 import { markFolderSubtreeDeleted } from "./db-ops";
 import { buildTransferManifest } from "./manifest";
-import { DEFAULT_TRANSFER_CHUNK_SIZE, type JobContext } from "./types";
+import { getProviderLimiter } from "./provider-limiter";
+import { Semaphore } from "./semaphore";
+import {
+	DEFAULT_TRANSFER_CHUNK_SIZE,
+	FILE_CONCURRENCY,
+	type JobContext,
+	PERSIST_BATCH_SIZE,
+	PERSIST_INTERVAL_MS,
+} from "./types";
 import {
 	getTransferCacheRoot,
 	getTransferCompletionMessage,
@@ -445,16 +453,25 @@ export async function handleRootTransfer(
 				let resolution = transferManifest.applyToAllFileResolution ?? null;
 
 				if (!resolution) {
-					const resolved = await waitForConflictResolution(
-						{
-							kind: "file",
-							currentPath: destinationPath,
-							fileName: fileEntry.name,
-							allowedResolutions: ["duplicate", "overwrite", "skip"],
-						},
-						`File '${fileEntry.name}' already exists`,
-					);
-					resolution = resolved.action;
+					const conflictRelease = await conflictMutex.acquire();
+					try {
+						// Re-check after acquiring mutex — another file may have set applyToAll
+						resolution = requireManifest().applyToAllFileResolution ?? null;
+						if (!resolution) {
+							const resolved = await waitForConflictResolution(
+								{
+									kind: "file",
+									currentPath: destinationPath,
+									fileName: fileEntry.name,
+									allowedResolutions: ["duplicate", "overwrite", "skip"],
+								},
+								`File '${fileEntry.name}' already exists`,
+							);
+							resolution = resolved.action;
+						}
+					} finally {
+						conflictRelease();
+					}
 				}
 
 				if (resolution === "skip") {
@@ -503,41 +520,51 @@ export async function handleRootTransfer(
 					),
 				);
 
-				if (data.operation === "cut") {
-					await sameProvider.move({
-						remoteId: file.remoteId,
-						newParentId: destinationFolder?.remoteId,
-						...(finalFileName !== file.name ? { newName: finalFileName } : {}),
-					});
-					await db
-						.update(files)
-						.set({
-							folderId: destinationFolder?.id ?? null,
+				const sameLimiterRelease =
+					await getProviderLimiter(targetProviderId).acquire();
+				try {
+					if (data.operation === "cut") {
+						await sameProvider.move({
+							remoteId: file.remoteId,
+							newParentId: destinationFolder?.remoteId,
+							...(finalFileName !== file.name
+								? { newName: finalFileName }
+								: {}),
+						});
+						await db
+							.update(files)
+							.set({
+								folderId: destinationFolder?.id ?? null,
+								virtualPath: finalDestinationPath,
+								name: finalFileName,
+								updatedAt: new Date(),
+							})
+							.where(eq(files.id, file.id));
+					} else {
+						const copiedRemoteId = await sameProvider.copy({
+							remoteId: file.remoteId,
+							targetParentId: destinationFolder?.remoteId,
+							...(finalFileName !== file.name
+								? { newName: finalFileName }
+								: {}),
+						});
+						await db.insert(files).values({
+							nodeType: "file",
 							virtualPath: finalDestinationPath,
 							name: finalFileName,
-							updatedAt: new Date(),
-						})
-						.where(eq(files.id, file.id));
-				} else {
-					const copiedRemoteId = await sameProvider.copy({
-						remoteId: file.remoteId,
-						targetParentId: destinationFolder?.remoteId,
-						...(finalFileName !== file.name ? { newName: finalFileName } : {}),
-					});
-					await db.insert(files).values({
-						nodeType: "file",
-						virtualPath: finalDestinationPath,
-						name: finalFileName,
-						mimeType: file.mimeType,
-						size: file.size,
-						hash: file.hash,
-						remoteId: copiedRemoteId,
-						providerId: targetProviderId,
-						workspaceId,
-						folderId: destinationFolder?.id ?? null,
-						uploadedBy: userId,
-						isDeleted: false,
-					});
+							mimeType: file.mimeType,
+							size: file.size,
+							hash: file.hash,
+							remoteId: copiedRemoteId,
+							providerId: targetProviderId,
+							workspaceId,
+							folderId: destinationFolder?.id ?? null,
+							uploadedBy: userId,
+							isDeleted: false,
+						});
+					}
+				} finally {
+					sameLimiterRelease();
 				}
 
 				return {
@@ -564,7 +591,15 @@ export async function handleRootTransfer(
 					0.05,
 					buildFileTransferMessage("Downloading", fileEntry.name),
 				);
-				const sourceStream = await sourceProvider.downloadFile(file.remoteId);
+				const srcLimiterRelease = await getProviderLimiter(
+					file.providerId,
+				).acquire();
+				let sourceStream: ReadableStream<Uint8Array>;
+				try {
+					sourceStream = await sourceProvider.downloadFile(file.remoteId);
+				} finally {
+					srcLimiterRelease();
+				}
 				const reader = sourceStream.getReader();
 				const handle = await open(cachedFilePath, "w");
 				let downloadedBytes = 0;
@@ -628,12 +663,23 @@ export async function handleRootTransfer(
 						const chunkData = Buffer.from(
 							await cachedFile.slice(start, end).arrayBuffer(),
 						);
-						const uploadResult = await resolvedTargetProvider.uploadPart(
-							multipart.uploadId,
-							multipart.remoteId,
-							partNumber,
-							chunkData,
-						);
+						const tgtPartRelease =
+							await getProviderLimiter(targetProviderId).acquire();
+						let uploadResult: {
+							partNumber: number;
+							etag: string;
+							finalRemoteId?: string;
+						};
+						try {
+							uploadResult = await resolvedTargetProvider.uploadPart(
+								multipart.uploadId,
+								multipart.remoteId,
+								partNumber,
+								chunkData,
+							);
+						} finally {
+							tgtPartRelease();
+						}
 						parts.push({
 							partNumber: uploadResult.partNumber,
 							etag: uploadResult.etag,
@@ -654,17 +700,23 @@ export async function handleRootTransfer(
 						parts,
 					);
 				} else {
-					const uploadResponse = await resolvedTargetProvider.requestUpload({
-						name: finalFileName,
-						mimeType: file.mimeType,
-						size: file.size,
-						parentId: destinationFolder?.remoteId,
-					});
-					finalRemoteId =
-						(await resolvedTargetProvider.uploadFile(
-							uploadResponse.fileId,
-							Bun.file(cachedFilePath).stream(),
-						)) ?? uploadResponse.fileId;
+					const tgtUpRelease =
+						await getProviderLimiter(targetProviderId).acquire();
+					try {
+						const uploadResponse = await resolvedTargetProvider.requestUpload({
+							name: finalFileName,
+							mimeType: file.mimeType,
+							size: file.size,
+							parentId: destinationFolder?.remoteId,
+						});
+						finalRemoteId =
+							(await resolvedTargetProvider.uploadFile(
+								uploadResponse.fileId,
+								Bun.file(cachedFilePath).stream(),
+							)) ?? uploadResponse.fileId;
+					} finally {
+						tgtUpRelease();
+					}
 				}
 
 				if (!finalRemoteId) {
@@ -758,47 +810,101 @@ export async function handleRootTransfer(
 			}
 		};
 
-		for (const fileEntry of requireManifest().files) {
-			if (fileEntry.status !== "pending") continue;
+		// ── Throttled manifest persistence ────────────────────────────────
+		let pendingPersistCount = 0;
+		let persistTimer: ReturnType<typeof setTimeout> | null = null;
 
-			await assertNotCancelled();
+		const scheduleManifestPersist = () => {
+			pendingPersistCount++;
+			if (pendingPersistCount >= PERSIST_BATCH_SIZE) {
+				if (persistTimer) {
+					clearTimeout(persistTimer);
+					persistTimer = null;
+				}
+				pendingPersistCount = 0;
+				persistManifest(requireManifest(), "running").catch(() => {});
+				return;
+			}
+			if (!persistTimer) {
+				persistTimer = setTimeout(() => {
+					persistTimer = null;
+					pendingPersistCount = 0;
+					persistManifest(requireManifest(), "running").catch(() => {});
+				}, PERSIST_INTERVAL_MS);
+			}
+		};
+
+		const flushManifestPersist = async () => {
+			if (persistTimer) {
+				clearTimeout(persistTimer);
+				persistTimer = null;
+			}
+			if (pendingPersistCount > 0) {
+				pendingPersistCount = 0;
+				await persistManifest(requireManifest(), "running");
+			}
+		};
+
+		// ── Parallel file processing with bounded concurrency ─────────────
+		const fileSemaphore = new Semaphore(FILE_CONCURRENCY);
+		const conflictMutex = new Semaphore(1);
+
+		const pendingFiles = requireManifest().files.filter(
+			(f) => f.status === "pending",
+		);
+
+		const filePromises = pendingFiles.map(async (fileEntry) => {
 			const root = getRootById(fileEntry.sourceRootId);
 			if (root?.status === "skipped") {
 				fileEntry.status = "skipped";
-				continue;
+				scheduleManifestPersist();
+				return;
 			}
 
-			const destinationFolder = await ensureFolderChain(
-				root,
-				fileEntry.relativeDirPath,
-			);
-
+			const release = await fileSemaphore.acquire();
 			try {
-				const result = await executeFileTransfer(fileEntry, destinationFolder);
-				fileEntry.status = result.status;
-				if (result.status === "completed") {
-					fileEntry.finalDestinationPath = result.finalDestinationPath;
-				}
-			} catch (error) {
-				fileEntry.status = "failed";
-				fileEntry.errorMessage =
-					error instanceof Error ? error.message : String(error);
-				logger.error({
-					msg: "[transfer:root] individual file transfer failed",
-					jobId,
-					fileId: fileEntry.sourceFileId,
-					sourceProviderId: fileEntry.sourceProviderId,
-					sourcePath: fileEntry.sourceVirtualPath,
-					targetProviderId,
-					error: fileEntry.errorMessage,
-					...(error instanceof DrivebaseError && error.details
-						? { details: error.details }
-						: {}),
-				});
-			}
+				await assertNotCancelled();
 
-			await persistManifest(requireManifest(), "running");
-		}
+				const destinationFolder = await ensureFolderChain(
+					root,
+					fileEntry.relativeDirPath,
+				);
+
+				try {
+					const result = await executeFileTransfer(
+						fileEntry,
+						destinationFolder,
+					);
+					fileEntry.status = result.status;
+					if (result.status === "completed") {
+						fileEntry.finalDestinationPath = result.finalDestinationPath;
+					}
+				} catch (error) {
+					fileEntry.status = "failed";
+					fileEntry.errorMessage =
+						error instanceof Error ? error.message : String(error);
+					logger.error({
+						msg: "[transfer:root] individual file transfer failed",
+						jobId,
+						fileId: fileEntry.sourceFileId,
+						sourceProviderId: fileEntry.sourceProviderId,
+						sourcePath: fileEntry.sourceVirtualPath,
+						targetProviderId,
+						error: fileEntry.errorMessage,
+						...(error instanceof DrivebaseError && error.details
+							? { details: error.details }
+							: {}),
+					});
+				}
+
+				scheduleManifestPersist();
+			} finally {
+				release();
+			}
+		});
+
+		await Promise.all(filePromises);
+		await flushManifestPersist();
 
 		if (data.operation === "cut") {
 			for (const root of requireManifest().roots) {

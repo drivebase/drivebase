@@ -14,6 +14,7 @@ import {
 	getTargetFolder,
 	getUniqueFilename,
 } from "./conflict";
+import { getProviderLimiter } from "./provider-limiter";
 import {
 	DEFAULT_TRANSFER_CHUNK_SIZE,
 	type FileTransferCacheManifest,
@@ -328,7 +329,15 @@ export async function handleFileTransfer(
 				},
 			});
 
-			const sourceStream = await sourceProvider.downloadFile(file.remoteId);
+			const srcLimiterRelease = await getProviderLimiter(
+				file.providerId,
+			).acquire();
+			let sourceStream: ReadableStream<Uint8Array>;
+			try {
+				sourceStream = await sourceProvider.downloadFile(file.remoteId);
+			} finally {
+				srcLimiterRelease();
+			}
 			const reader = sourceStream.getReader();
 			const handle = await open(cachedFilePath, "w");
 			let downloadedBytes = 0;
@@ -443,12 +452,24 @@ export async function handleFileTransfer(
 				const chunkData = Buffer.from(
 					await cachedFile.slice(start, end).arrayBuffer(),
 				);
-				const uploadResult = await targetProvider.uploadPart(
-					manifest.multipart.uploadId,
-					manifest.multipart.remoteId,
-					partNumber,
-					chunkData,
-				);
+				const tgtPartRelease =
+					await getProviderLimiter(targetProviderId).acquire();
+				let uploadResult: {
+					partNumber: number;
+					etag: string;
+					finalRemoteId?: string;
+					size?: number;
+				};
+				try {
+					uploadResult = await targetProvider.uploadPart(
+						manifest.multipart.uploadId,
+						manifest.multipart.remoteId,
+						partNumber,
+						chunkData,
+					);
+				} finally {
+					tgtPartRelease();
+				}
 				const partState = {
 					partNumber: uploadResult.partNumber,
 					etag: uploadResult.etag,
@@ -496,12 +517,18 @@ export async function handleFileTransfer(
 			finalRemoteId =
 				manifest.multipart.finalRemoteId ?? manifest.multipart.remoteId;
 		} else {
-			const uploadResponse = await targetProvider.requestUpload({
-				name: finalFileName,
-				mimeType: file.mimeType,
-				size: file.size,
-				parentId: folder?.remoteId,
-			});
+			const tgtUpRelease = await getProviderLimiter(targetProviderId).acquire();
+			let uploadResponse: { fileId: string };
+			try {
+				uploadResponse = await targetProvider.requestUpload({
+					name: finalFileName,
+					mimeType: file.mimeType,
+					size: file.size,
+					parentId: folder?.remoteId,
+				});
+			} finally {
+				tgtUpRelease();
+			}
 
 			let uploadedBytes = 0;
 			let lastReportedBytes = 0;

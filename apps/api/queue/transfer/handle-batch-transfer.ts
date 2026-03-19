@@ -3,8 +3,9 @@ import { inArray } from "drizzle-orm";
 import type { ProviderBatchTransferJobData } from "@/queue/transfer/queue";
 import { logger } from "@/utils/runtime/logger";
 import { markFolderSubtreeDeleted } from "./db-ops";
+import { subscribeChildCompletion } from "./job-events";
 import type { JobContext } from "./types";
-import { BATCH_POLL_INTERVAL_MS, BATCH_STALL_TIMEOUT_MS } from "./types";
+import { BATCH_STALL_TIMEOUT_MS, SAFETY_POLL_INTERVAL_MS } from "./types";
 import { sleep } from "./utils";
 
 export async function handleBatchTransfer(
@@ -53,125 +54,96 @@ export async function handleBatchTransfer(
 	});
 
 	let lastChangeAt = Date.now();
-	let lastObservedProgress = -1;
-	let lastObservedFinishedCount = -1;
 	let lastReportedProgress = -1;
 	let lastMessage = "";
+	let completedCount = 0;
+	let failedCount = 0;
 
-	while (true) {
-		await assertNotCancelled();
+	const pending = new Set(childJobIds);
 
-		const childRows = await db
-			.select({
-				id: jobs.id,
-				status: jobs.status,
-				title: jobs.title,
-				message: jobs.message,
-				progress: jobs.progress,
-			})
-			.from(jobs)
-			.where(inArray(jobs.id, childJobIds));
+	const sub = await subscribeChildCompletion(jobId, (msg) => {
+		if (!pending.delete(msg.childJobId)) return;
+		if (msg.status === "completed") completedCount++;
+		else failedCount++;
+		lastChangeAt = Date.now();
+	});
 
-		const completed = childRows.filter((r) => r.status === "completed").length;
-		const failed = childRows.filter((r) => r.status === "error").length;
-		const active = childRows.filter(
-			(r) =>
-				r.status === "pending" ||
-				r.status === "running" ||
-				r.status === "paused",
-		);
-		const finishedCount = completed + failed;
+	try {
+		while (pending.size > 0) {
+			await assertNotCancelled();
 
-		// Smooth progress: sum of individual file progresses
-		const totalProgress = childRows.reduce(
-			(sum, r) => sum + (r.progress ?? 0),
-			0,
-		);
-		const progress = totalFiles > 0 ? totalProgress / totalFiles : 1;
+			const finishedCount = completedCount + failedCount;
+			const progress = totalFiles > 0 ? finishedCount / totalFiles : 1;
 
-		// Reset stall timer if progress increased or files finished
-		if (
-			progress > lastObservedProgress ||
-			finishedCount > lastObservedFinishedCount
-		) {
-			lastChangeAt = Date.now();
-			lastObservedProgress = progress;
-			lastObservedFinishedCount = finishedCount;
-		}
-
-		// All children done - exit loop and finalize
-		if (active.length === 0 && childRows.length === totalFiles) {
-			break;
-		}
-
-		// Find the currently running job for display
-		const running = childRows.find((r) => r.status === "running");
-		const currentFileName =
-			running?.title?.replace(/^(Move|Copy|Transfer)\s+/, "") ?? "";
-
-		let message: string;
-		if (failed > 0 && active.length > 0) {
-			message = `${verb} ${completed} of ${totalFiles} files (${failed} failed)`;
-		} else {
-			message = currentFileName
-				? `${verb} ${finishedCount} of ${totalFiles} files — ${currentFileName}`
-				: `${verb} ${finishedCount} of ${totalFiles} files`;
-		}
-
-		// Throttle updates: only if message changed or progress jumped > 1%
-		if (
-			message !== lastMessage ||
-			Math.abs(progress - lastReportedProgress) >= 0.01
-		) {
-			await updateBatch({
-				progress,
-				message,
-				metadata: {
-					phase: "monitoring",
-					entity: "batch",
-					operation,
-					totalFiles,
-					completedFiles: completed,
-					failedFiles: failed,
-				},
-			});
-			lastMessage = message;
-			lastReportedProgress = progress;
-		}
-
-		// Stall guard — if nothing changes for 5 minutes, bail out
-		if (Date.now() - lastChangeAt > BATCH_STALL_TIMEOUT_MS) {
-			logger.error({
-				msg: "[transfer:batch] stalled — no progress for timeout period",
-				jobId,
-				totalFiles,
-				completed,
-				failed,
-				active: active.length,
-			});
-			await activityService.fail(
-				visibleJobId,
-				`Transfer stalled: ${completed} of ${totalFiles} completed, ${active.length} stuck`,
-			);
-			if (visibleJobId !== jobId) {
-				await activityService.complete(jobId, "Batch monitor stalled");
+			let message: string;
+			if (failedCount > 0 && pending.size > 0) {
+				message = `${verb} ${completedCount} of ${totalFiles} files (${failedCount} failed)`;
+			} else {
+				message = `${verb} ${finishedCount} of ${totalFiles} files`;
 			}
-			return;
+
+			if (
+				message !== lastMessage ||
+				Math.abs(progress - lastReportedProgress) >= 0.01
+			) {
+				await updateBatch({
+					progress,
+					message,
+					metadata: {
+						phase: "monitoring",
+						entity: "batch",
+						operation,
+						totalFiles,
+						completedFiles: completedCount,
+						failedFiles: failedCount,
+					},
+				});
+				lastMessage = message;
+				lastReportedProgress = progress;
+			}
+
+			// Stall guard
+			if (Date.now() - lastChangeAt > BATCH_STALL_TIMEOUT_MS) {
+				logger.error({
+					msg: "[transfer:batch] stalled — no progress for timeout period",
+					jobId,
+					totalFiles,
+					completed: completedCount,
+					failed: failedCount,
+					pending: pending.size,
+				});
+				await activityService.fail(
+					visibleJobId,
+					`Transfer stalled: ${completedCount} of ${totalFiles} completed, ${pending.size} stuck`,
+				);
+				if (visibleJobId !== jobId) {
+					await activityService.complete(jobId, "Batch monitor stalled");
+				}
+				return;
+			}
+
+			// Safety-net DB poll
+			await sleep(SAFETY_POLL_INTERVAL_MS);
+			if (pending.size === 0) break;
+
+			const childRows = await db
+				.select({ id: jobs.id, status: jobs.status })
+				.from(jobs)
+				.where(inArray(jobs.id, [...pending]));
+
+			for (const row of childRows) {
+				if (row.status === "completed" || row.status === "error") {
+					if (pending.delete(row.id)) {
+						if (row.status === "completed") completedCount++;
+						else failedCount++;
+						lastChangeAt = Date.now();
+					}
+				}
+			}
 		}
-
-		await sleep(BATCH_POLL_INTERVAL_MS);
+	} finally {
+		await sub.unsubscribe();
 	}
-
-	// Finalize batch
-	const finalRows = await db
-		.select({ status: jobs.status })
-		.from(jobs)
-		.where(inArray(jobs.id, childJobIds));
-
-	const completedCount = finalRows.filter(
-		(r) => r.status === "completed",
-	).length;
-	const failedCount = finalRows.filter((r) => r.status === "error").length;
 
 	// Clean up source folders for cut operations
 	if (operation === "cut" && data.sourceFolders?.length) {
