@@ -24,8 +24,28 @@ import {
 	STARRED_FILES_QUERY,
 	UNSTAR_FILE_MUTATION,
 } from "@/features/files/api/file";
-import { ACTIVE_JOBS_QUERY } from "@/shared/api/activity";
+import type { Job } from "@/gql/graphql";
+import { RECENT_JOBS_QUERY } from "@/shared/api/activity";
 import { useActivityStore } from "@/shared/store/activityStore";
+
+async function refreshRecentJobs(
+	client: ReturnType<typeof useClient>,
+	setJob: (job: Job) => void,
+) {
+	const recentJobsResult = await client
+		.query(
+			RECENT_JOBS_QUERY,
+			{ limit: 50, offset: 0 },
+			{
+				requestPolicy: "network-only",
+			},
+		)
+		.toPromise();
+
+	for (const job of recentJobsResult.data?.recentJobs ?? []) {
+		setJob(job);
+	}
+}
 
 export function useFiles(folderId?: string | null, limit = 50, offset = 0) {
 	const [result] = useQuery({
@@ -148,18 +168,7 @@ export function useMoveFileToProvider() {
 	) => {
 		const mutationResult = await execute(variables);
 		if (!mutationResult.error) {
-			const activeJobsResult = await client
-				.query(
-					ACTIVE_JOBS_QUERY,
-					{},
-					{
-						requestPolicy: "network-only",
-					},
-				)
-				.toPromise();
-			for (const job of activeJobsResult.data?.activeJobs ?? []) {
-				setJob(job);
-			}
+			await refreshRecentJobs(client, setJob);
 		}
 		return mutationResult;
 	};
@@ -178,18 +187,7 @@ export function usePasteSelection() {
 			setJob(job);
 		}
 		if (!mutationResult.error) {
-			const activeJobsResult = await client
-				.query(
-					ACTIVE_JOBS_QUERY,
-					{},
-					{
-						requestPolicy: "network-only",
-					},
-				)
-				.toPromise();
-			for (const job of activeJobsResult.data?.activeJobs ?? []) {
-				setJob(job);
-			}
+			await refreshRecentJobs(client, setJob);
 		}
 		return mutationResult;
 	};
@@ -211,12 +209,7 @@ export function useArchiveFile() {
 		const mutationResult = await execute(variables);
 		if (mutationResult.data?.archiveFile) {
 			setJob(mutationResult.data.archiveFile);
-			const activeJobsResult = await client
-				.query(ACTIVE_JOBS_QUERY, {}, { requestPolicy: "network-only" })
-				.toPromise();
-			for (const job of activeJobsResult.data?.activeJobs ?? []) {
-				setJob(job);
-			}
+			await refreshRecentJobs(client, setJob);
 		}
 		return mutationResult;
 	};
@@ -233,12 +226,7 @@ export function useRequestFileRestore() {
 		const mutationResult = await execute(variables);
 		if (mutationResult.data?.requestFileRestore) {
 			setJob(mutationResult.data.requestFileRestore);
-			const activeJobsResult = await client
-				.query(ACTIVE_JOBS_QUERY, {}, { requestPolicy: "network-only" })
-				.toPromise();
-			for (const job of activeJobsResult.data?.activeJobs ?? []) {
-				setJob(job);
-			}
+			await refreshRecentJobs(client, setJob);
 		}
 		return mutationResult;
 	};

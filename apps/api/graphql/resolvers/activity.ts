@@ -103,6 +103,35 @@ const CANCELLABLE_JOB_TYPES = new Set([
 	"smart-search-indexing",
 ]);
 
+const PAUSE_RESOLUTIONS = ["duplicate", "overwrite", "skip"] as const;
+type PauseResolution = (typeof PAUSE_RESOLUTIONS)[number];
+
+function getAllowedPauseResolutions(
+	metadata: DbJob["metadata"],
+): PauseResolution[] {
+	if (!metadata || typeof metadata !== "object") {
+		return [...PAUSE_RESOLUTIONS];
+	}
+
+	const allowed = Array.isArray(metadata.allowedResolutions)
+		? metadata.allowedResolutions.filter(
+				(value): value is PauseResolution =>
+					typeof value === "string" &&
+					PAUSE_RESOLUTIONS.includes(value as PauseResolution),
+			)
+		: [];
+
+	return allowed.length > 0 ? allowed : [...PAUSE_RESOLUTIONS];
+}
+
+function allowsApplyToAll(metadata: DbJob["metadata"]): boolean {
+	return (
+		metadata !== null &&
+		typeof metadata === "object" &&
+		metadata.allowApplyToAll === true
+	);
+}
+
 export const activityMutations: MutationResolvers = {
 	clearActivities: async (_parent, args, context) => {
 		const activityService = context.container.resolve<ActivityService>(
@@ -178,6 +207,20 @@ export const activityMutations: MutationResolvers = {
 
 		if (job.status !== "paused") {
 			throw new ValidationError("Job is not paused");
+		}
+
+		const allowedResolutions = getAllowedPauseResolutions(job.metadata);
+		const action = args.resolution?.action;
+		if (
+			typeof action !== "string" ||
+			!allowedResolutions.includes(action as PauseResolution)
+		) {
+			throw new ValidationError("Unsupported resolution for this paused job");
+		}
+		if (args.resolution?.applyToAll && !allowsApplyToAll(job.metadata)) {
+			throw new ValidationError(
+				"Apply to all is not supported for this paused job",
+			);
 		}
 
 		const { publishJobResolution } = await import("../../utils/jobs/job-pause");

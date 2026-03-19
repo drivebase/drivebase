@@ -7,9 +7,15 @@ import {
 	type ProviderBatchTransferJobData,
 	type ProviderFileTransferJobData,
 	type ProviderFolderTransferJobData,
+	type ProviderRootTransferJobData,
 } from "./queue";
 
 type EnqueueProviderTransferInput =
+	| (Omit<ProviderRootTransferJobData, "jobId"> & {
+			title: string;
+			message?: string;
+			metadata?: Record<string, unknown>;
+	  })
 	| (Omit<ProviderFileTransferJobData, "jobId"> & {
 			title: string;
 			message?: string;

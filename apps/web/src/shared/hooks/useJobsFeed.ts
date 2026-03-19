@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from "react";
 import { useQuery, useSubscription } from "urql";
 import {
-	ACTIVE_JOBS_QUERY,
 	JOB_UPDATED_SUBSCRIPTION,
+	RECENT_JOBS_QUERY,
 } from "@/shared/api/activity";
 import { useActivityStore } from "@/shared/store/activityStore";
 
@@ -11,8 +11,9 @@ export function useJobsFeed() {
 	const setJobs = useActivityStore((state) => state.setJobs);
 	const setJob = useActivityStore((state) => state.setJob);
 
-	const [{ data: activeJobsData }] = useQuery({
-		query: ACTIVE_JOBS_QUERY,
+	const [{ data: recentJobsData }] = useQuery({
+		query: RECENT_JOBS_QUERY,
+		variables: { limit: 50, offset: 0 },
 		requestPolicy: "cache-and-network",
 	});
 	const [{ data: jobUpdatedData }] = useSubscription({
@@ -20,10 +21,10 @@ export function useJobsFeed() {
 	});
 
 	useEffect(() => {
-		if (activeJobsData?.activeJobs) {
-			setJobs(activeJobsData.activeJobs);
+		if (recentJobsData?.recentJobs) {
+			setJobs(recentJobsData.recentJobs);
 		}
-	}, [activeJobsData, setJobs]);
+	}, [recentJobsData, setJobs]);
 
 	useEffect(() => {
 		const job = jobUpdatedData?.jobUpdated;

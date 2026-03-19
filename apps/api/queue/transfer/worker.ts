@@ -1,6 +1,11 @@
 import { mkdir, open, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join } from "node:path";
-import { ConflictError, getParentPath, joinPath } from "@drivebase/core";
+import {
+	ConflictError,
+	getParentPath,
+	joinPath,
+	normalizePath,
+} from "@drivebase/core";
 import {
 	type Folder,
 	files,
@@ -8,33 +13,48 @@ import {
 	getDb,
 	type Job,
 	jobs,
+	storageProviders,
 } from "@drivebase/db";
 import { Worker } from "bullmq";
-import { and, eq, inArray, like } from "drizzle-orm";
+import { and, eq, inArray, isNull, like, or } from "drizzle-orm";
 import { env } from "@/config/env";
 import { enqueueProviderTransfer } from "@/queue/transfer/enqueue";
 import {
 	isBatchTransferJobData,
 	isFileTransferJobData,
+	isRootTransferJobData,
 	type ProviderBatchTransferJobData,
 	type ProviderFileTransferJobData,
 	type ProviderFolderTransferJobData,
+	type ProviderRootTransferJobData,
 	type ProviderTransferJobData,
 } from "@/queue/transfer/queue";
 import { createBullMQConnection } from "@/redis/client";
 import { ActivityService } from "@/service/activity";
+import { getFile } from "@/service/file/query/file-read";
 import { moveFolder } from "@/service/folder/mutation";
 import { ProviderService } from "@/service/provider";
+import {
+	getTransferSessionById,
+	type TransferConflictAction,
+	type TransferFileEntry,
+	type TransferFolderEntry,
+	type TransferManifest,
+	type TransferSourceItem,
+	type TransferRootEntry,
+	updateTransferSession,
+} from "@/service/file/transfer/transfer-session";
 import {
 	assertNotCancelled as assertJobNotCancelled,
 	clearJobCancellation,
 	JobCancelledError,
 } from "@/utils/jobs/job-cancel";
+import { waitForJobResolution } from "@/utils/jobs/job-pause";
 import { logger } from "@/utils/runtime/logger";
 
 const DEFAULT_TRANSFER_CHUNK_SIZE = 8 * 1024 * 1024;
 
-interface TransferManifest {
+interface FileTransferCacheManifest {
 	fileId: string;
 	sourceProviderId: string;
 	targetProviderId: string;
@@ -83,10 +103,12 @@ function getTransferProgress(
 	return clampProgress(downloadProgress * 0.5 + uploadProgress * 0.5);
 }
 
-async function readManifest(path: string): Promise<TransferManifest | null> {
+async function readManifest(
+	path: string,
+): Promise<FileTransferCacheManifest | null> {
 	try {
 		const content = await readFile(path, "utf-8");
-		return JSON.parse(content) as TransferManifest;
+		return JSON.parse(content) as FileTransferCacheManifest;
 	} catch {
 		return null;
 	}
@@ -94,7 +116,7 @@ async function readManifest(path: string): Promise<TransferManifest | null> {
 
 async function writeManifest(
 	path: string,
-	manifest: TransferManifest,
+	manifest: FileTransferCacheManifest,
 ): Promise<void> {
 	await mkdir(dirname(path), { recursive: true });
 	await writeFile(path, JSON.stringify(manifest, null, 2), "utf-8");
@@ -102,17 +124,32 @@ async function writeManifest(
 
 function normalizeJobData(data: unknown): ProviderTransferJobData {
 	const legacy = data as {
-		entity?: "file" | "folder";
+		entity?: "transfer" | "file" | "folder";
 		targetFolderId?: string | null;
 		operation?: "cut" | "copy";
 		fileId?: string;
 		targetProviderId?: string;
 		folderId?: string;
+		transferSessionId?: string;
 		jobId: string;
 		workspaceId: string;
 		userId: string;
 		parentJobId?: string;
 	};
+	if (legacy.entity === "transfer") {
+		if (!legacy.transferSessionId || !legacy.operation) {
+			throw new Error("Invalid transfer session payload");
+		}
+		return {
+			entity: "transfer",
+			jobId: legacy.jobId,
+			workspaceId: legacy.workspaceId,
+			userId: legacy.userId,
+			transferSessionId: legacy.transferSessionId,
+			operation: legacy.operation,
+			parentJobId: legacy.parentJobId,
+		};
+	}
 	if (legacy.entity === "file") {
 		if (!legacy.fileId || !legacy.targetProviderId || !legacy.operation) {
 			throw new Error("Invalid file transfer payload");
@@ -197,7 +234,10 @@ function isNonRetryableTransferError(error: unknown): boolean {
 		return true;
 	}
 	const message = error instanceof Error ? error.message : String(error);
-	return message.includes("already exists at path");
+	return (
+		message.includes("already exists at path") ||
+		message.startsWith("Invalid transfer")
+	);
 }
 
 async function sleep(ms: number): Promise<void> {
@@ -266,25 +306,1131 @@ async function getUniqueFilename(
 	}
 }
 
+async function checkFolderConflict(
+	virtualPath: string,
+	providerId: string,
+): Promise<Folder | null> {
+	const db = getDb();
+	const [existing] = await db
+		.select()
+		.from(folders)
+		.where(
+			and(
+				eq(folders.nodeType, "folder"),
+				eq(folders.virtualPath, virtualPath),
+				eq(folders.providerId, providerId),
+				eq(folders.isDeleted, false),
+			),
+		)
+		.limit(1);
+
+	return existing ?? null;
+}
+
+async function getUniqueFolderName(
+	virtualPath: string,
+	providerId: string,
+): Promise<{ name: string; path: string }> {
+	const parentPath = getParentPath(virtualPath);
+	const name = basename(virtualPath);
+
+	let counter = 1;
+	let currentName = `${name} (${counter})`;
+	let currentPath = joinPath(parentPath, currentName);
+
+	while (true) {
+		const existing = await checkFolderConflict(currentPath, providerId);
+		if (!existing) {
+			return { name: currentName, path: currentPath };
+		}
+		counter += 1;
+		currentName = `${name} (${counter})`;
+		currentPath = joinPath(parentPath, currentName);
+	}
+}
+
+function getRelativePath(rootPath: string, value: string): string {
+	const normalizedRoot = normalizePath(rootPath);
+	const normalizedValue = normalizePath(value);
+
+	if (normalizedValue === normalizedRoot) {
+		return "";
+	}
+	if (normalizedRoot === "/") {
+		return normalizedValue.slice(1);
+	}
+	const prefix = `${normalizedRoot}/`;
+	return normalizedValue.startsWith(prefix)
+		? normalizedValue.slice(prefix.length)
+		: normalizedValue;
+}
+
+function syncManifestCounts(manifest: TransferManifest): TransferManifest {
+	const completedFiles = manifest.files.filter(
+		(file) => file.status === "completed",
+	).length;
+	const failedFiles = manifest.files.filter(
+		(file) => file.status === "failed",
+	).length;
+	const skippedFiles = manifest.files.filter(
+		(file) => file.status === "skipped",
+	).length;
+
+	return {
+		...manifest,
+		completedFiles,
+		failedFiles,
+		skippedFiles,
+		totalFiles: manifest.files.length,
+	};
+}
+
+function getTransferCompletionMessage(manifest: TransferManifest): string {
+	const parts = [`${manifest.completedFiles} transferred`];
+
+	if (manifest.skippedFiles > 0) {
+		parts.push(`${manifest.skippedFiles} skipped`);
+	}
+	if (manifest.failedFiles > 0) {
+		parts.push(`${manifest.failedFiles} failed`);
+	}
+	if (manifest.hiddenFiles > 0) {
+		parts.push(`${manifest.hiddenFiles} hidden`);
+	}
+
+	return parts.join(", ");
+}
+
+async function buildTransferManifest(
+	userId: string,
+	workspaceId: string,
+	sourceItems: TransferSourceItem[],
+	targetFolderId: string | null,
+	targetProviderId: string,
+): Promise<TransferManifest> {
+	const db = getDb();
+	const roots: TransferRootEntry[] = [];
+	const foldersForManifest: TransferFolderEntry[] = [];
+	const filesForManifest: TransferFileEntry[] = [];
+
+	for (const sourceItem of sourceItems) {
+		if (sourceItem.kind === "file") {
+			const file = await getFile(db, sourceItem.id, userId, workspaceId);
+
+			filesForManifest.push({
+				id: `file:${file.id}`,
+				sourceFileId: file.id,
+				sourceProviderId: file.providerId,
+				sourceVirtualPath: file.virtualPath,
+				sourceRootId: null,
+				name: file.name,
+				relativeDirPath: "",
+				status: "pending",
+				isHidden: file.name.startsWith("."),
+			});
+			continue;
+		}
+
+		const [sourceFolderRow] = await db
+			.select()
+			.from(folders)
+			.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
+			.where(
+				and(
+					eq(folders.id, sourceItem.id),
+					eq(folders.nodeType, "folder"),
+					eq(folders.isDeleted, false),
+					isNull(folders.vaultId),
+					eq(storageProviders.workspaceId, workspaceId),
+				),
+			)
+			.limit(1);
+		const sourceFolder = sourceFolderRow?.nodes ?? null;
+
+		if (!sourceFolder) {
+			throw new Error(`Source folder not found: ${sourceItem.id}`);
+		}
+
+		const rootId = `root:${sourceFolder.id}`;
+		roots.push({
+			id: rootId,
+			kind: "folder",
+			sourceFolderId: sourceFolder.id,
+			sourceProviderId: sourceFolder.providerId,
+			sourceVirtualPath: sourceFolder.virtualPath,
+			sourceRemoteId: sourceFolder.remoteId,
+			originalName: sourceFolder.name,
+			resolvedName: sourceFolder.name,
+			status: "pending",
+		});
+
+		foldersForManifest.push({
+			id: `folder:${sourceFolder.id}`,
+			sourceFolderId: sourceFolder.id,
+			sourceProviderId: sourceFolder.providerId,
+			sourceVirtualPath: sourceFolder.virtualPath,
+			sourceRootId: rootId,
+			name: sourceFolder.name,
+			relativePath: "",
+			status: "pending",
+		});
+
+		const descendantFolders = await db
+			.select()
+			.from(folders)
+			.where(
+				and(
+					eq(folders.providerId, sourceFolder.providerId),
+					eq(folders.nodeType, "folder"),
+					eq(folders.isDeleted, false),
+					like(folders.virtualPath, `${sourceFolder.virtualPath}/%`),
+				),
+			)
+			.orderBy(folders.virtualPath);
+
+		const folderRelativePathById = new Map<string, string>([
+			[sourceFolder.id, ""],
+		]);
+		for (const descendantFolder of descendantFolders) {
+			const relativePath = getRelativePath(
+				sourceFolder.virtualPath,
+				descendantFolder.virtualPath,
+			);
+			folderRelativePathById.set(descendantFolder.id, relativePath);
+			foldersForManifest.push({
+				id: `folder:${descendantFolder.id}`,
+				sourceFolderId: descendantFolder.id,
+				sourceProviderId: descendantFolder.providerId,
+				sourceVirtualPath: descendantFolder.virtualPath,
+				sourceRootId: rootId,
+				name: descendantFolder.name,
+				relativePath,
+				status: "pending",
+			});
+		}
+
+		const subtreeFolderIds = [
+			sourceFolder.id,
+			...descendantFolders.map((folder) => folder.id),
+		];
+		const descendantFiles = await db
+			.select({
+				id: files.id,
+				name: files.name,
+				virtualPath: files.virtualPath,
+				providerId: files.providerId,
+				folderId: files.folderId,
+			})
+			.from(files)
+			.where(
+				and(
+					eq(files.providerId, sourceFolder.providerId),
+					eq(files.nodeType, "file"),
+					eq(files.isDeleted, false),
+					or(
+						inArray(files.folderId, subtreeFolderIds),
+						like(files.virtualPath, `${sourceFolder.virtualPath}/%`),
+					),
+				),
+			)
+			.orderBy(files.virtualPath);
+
+		for (const descendantFile of descendantFiles) {
+			const relativeDirPath = descendantFile.folderId
+				? (folderRelativePathById.get(descendantFile.folderId) ?? "")
+				: getRelativePath(
+						sourceFolder.virtualPath,
+						getParentPath(descendantFile.virtualPath),
+					);
+
+			filesForManifest.push({
+				id: `file:${descendantFile.id}`,
+				sourceFileId: descendantFile.id,
+				sourceProviderId: descendantFile.providerId,
+				sourceVirtualPath: descendantFile.virtualPath,
+				sourceRootId: rootId,
+				name: descendantFile.name,
+				relativeDirPath,
+				status: "pending",
+				isHidden: descendantFile.name.startsWith("."),
+			});
+		}
+	}
+
+	const hiddenFiles = filesForManifest.filter((file) => file.isHidden).length;
+
+	return syncManifestCounts({
+		targetFolderId,
+		targetProviderId,
+		roots,
+		folders: foldersForManifest,
+		files: filesForManifest,
+		preflightComplete: false,
+		completedFiles: 0,
+		failedFiles: 0,
+		skippedFiles: 0,
+		totalFiles: filesForManifest.length,
+		hiddenFiles,
+		currentConflict: null,
+	});
+}
+
 async function getTargetFolder(
 	workspaceId: string,
 	targetFolderId: string | null,
 ) {
 	if (!targetFolderId) return null;
 	const db = getDb();
-	const [folder] = await db
+	const [folderRow] = await db
 		.select()
 		.from(folders)
+		.innerJoin(storageProviders, eq(storageProviders.id, folders.providerId))
 		.where(
 			and(
 				eq(folders.id, targetFolderId),
 				eq(folders.nodeType, "folder"),
 				eq(folders.isDeleted, false),
-				eq(folders.workspaceId, workspaceId),
+				isNull(folders.vaultId),
+				eq(storageProviders.workspaceId, workspaceId),
 			),
 		)
 		.limit(1);
-	return folder ?? null;
+	return folderRow?.nodes ?? null;
+}
+
+export async function handleRootTransfer(
+	ctx: JobContext,
+	data: ProviderRootTransferJobData,
+) {
+	const db = getDb();
+	const {
+		activityService,
+		providerService,
+		jobId,
+		workspaceId,
+		userId,
+		assertNotCancelled,
+	} = ctx;
+
+	const session = await getTransferSessionById(db, data.transferSessionId);
+	if (!session) {
+		await activityService.fail(jobId, "Transfer session not found");
+		return;
+	}
+
+	let manifest = session.manifestData;
+	let targetProvider: Awaited<
+		ReturnType<ProviderService["getProviderInstance"]>
+	> | null = null;
+	const sourceProviders = new Map<
+		string,
+		Awaited<ReturnType<ProviderService["getProviderInstance"]>>
+	>();
+
+	const persistManifest = async (
+		nextManifest: TransferManifest,
+		status: typeof session.status,
+	) => {
+		manifest = syncManifestCounts(nextManifest);
+		await updateTransferSession(db, session.id, {
+			status,
+			manifest,
+		});
+		return manifest;
+	};
+
+	const updateTransferJob = async (input: {
+		status?: Job["status"];
+		message: string;
+		progress: number;
+		metadata?: Record<string, unknown>;
+	}) => {
+		await assertNotCancelled();
+		await activityService.update(jobId, {
+			...input,
+			metadata: {
+				entity: "transfer",
+				operation: data.operation,
+				totalFiles: manifest?.totalFiles ?? 0,
+				completedFiles: manifest?.completedFiles ?? 0,
+				failedFiles: manifest?.failedFiles ?? 0,
+				skippedFiles: manifest?.skippedFiles ?? 0,
+				...(manifest?.hiddenFiles ? { hiddenFiles: manifest.hiddenFiles } : {}),
+				...(input.metadata ?? {}),
+			},
+		});
+	};
+
+	const requireManifest = (): TransferManifest => {
+		if (!manifest) {
+			throw new Error("Transfer manifest not initialized");
+		}
+		return manifest;
+	};
+
+	const getSourceProvider = async (providerId: string) => {
+		let provider = sourceProviders.get(providerId);
+		if (!provider) {
+			const record = await providerService.getProvider(
+				providerId,
+				userId,
+				workspaceId,
+			);
+			provider = await providerService.getProviderInstance(record);
+			sourceProviders.set(providerId, provider);
+		}
+		return provider;
+	};
+
+	const getRootById = (rootId: string | null) => {
+		if (!rootId) return null;
+		return requireManifest().roots.find((root) => root.id === rootId) ?? null;
+	};
+
+	const markRootSkipped = (rootId: string) => {
+		const transferManifest = requireManifest();
+		for (const root of transferManifest.roots) {
+			if (root.id === rootId) {
+				root.status = "skipped";
+			}
+		}
+		for (const folder of transferManifest.folders) {
+			if (folder.sourceRootId === rootId) {
+				folder.status = "skipped";
+			}
+		}
+		for (const file of transferManifest.files) {
+			if (file.sourceRootId === rootId && file.status === "pending") {
+				file.status = "skipped";
+			}
+		}
+	};
+
+	const waitForConflictResolution = async (
+		conflict: TransferManifest["currentConflict"],
+		message: string,
+	) => {
+		if (!conflict) {
+			throw new Error("Missing transfer manifest conflict state");
+		}
+		const transferManifest = requireManifest();
+
+		transferManifest.currentConflict = conflict;
+		await persistManifest(transferManifest, "paused");
+		await updateTransferJob({
+			status: "paused",
+			message,
+			progress:
+				transferManifest.totalFiles === 0
+					? 0
+					: (transferManifest.completedFiles +
+							transferManifest.failedFiles +
+							transferManifest.skippedFiles) /
+						transferManifest.totalFiles,
+			metadata: {
+				phase: "conflict",
+				conflictKind: conflict.kind,
+				currentPath: conflict.currentPath,
+				allowedResolutions: conflict.allowedResolutions,
+				allowApplyToAll: conflict.kind === "file",
+			},
+		});
+
+		const resolution = await waitForJobResolution<{
+			action: TransferConflictAction;
+			applyToAll?: boolean;
+		}>(jobId);
+
+		if (!conflict.allowedResolutions.includes(resolution.action)) {
+			throw new Error(`Unsupported conflict resolution: ${resolution.action}`);
+		}
+
+		if (conflict.kind === "file" && resolution.applyToAll) {
+			transferManifest.applyToAllFileResolution = resolution.action;
+		}
+		transferManifest.currentConflict = null;
+		await persistManifest(transferManifest, "running");
+
+		return resolution;
+	};
+
+	const buildFileProgress = (
+		_fileEntry: TransferFileEntry,
+		fileProgress = 0,
+	): number => {
+		const transferManifest = manifest;
+		if (!transferManifest || transferManifest.totalFiles === 0) {
+			return 0.95;
+		}
+		const processed =
+			transferManifest.completedFiles +
+			transferManifest.failedFiles +
+			transferManifest.skippedFiles;
+		return Math.min(
+			(processed + fileProgress) / transferManifest.totalFiles,
+			0.99,
+		);
+	};
+
+	const getCurrentFilePosition = (): {
+		current: number;
+		total: number;
+	} => {
+		const transferManifest = requireManifest();
+		const total = Math.max(transferManifest.totalFiles, 1);
+		const processed =
+			transferManifest.completedFiles +
+			transferManifest.failedFiles +
+			transferManifest.skippedFiles;
+
+		return {
+			current: Math.min(processed + 1, total),
+			total,
+		};
+	};
+
+	const buildFileTransferMessage = (verb: string, fileName: string): string => {
+		const { current, total } = getCurrentFilePosition();
+		return `${verb} ${current} of ${total} files — ${fileName}`;
+	};
+
+	const reportFileProgress = async (
+		fileEntry: TransferFileEntry,
+		fileProgress: number,
+		message: string,
+	) => {
+		await updateTransferJob({
+			status: "running",
+			message,
+			progress: buildFileProgress(fileEntry, fileProgress),
+			metadata: {
+				phase: "transfer",
+				currentPath: fileEntry.sourceVirtualPath,
+			},
+		});
+	};
+
+	try {
+		if (!manifest) {
+			await updateTransferJob({
+				status: "running",
+				message: "Scanning source",
+				progress: 0.01,
+				metadata: { phase: "scan" },
+			});
+			manifest = await buildTransferManifest(
+				userId,
+				workspaceId,
+				session.sourceItemsData,
+				session.targetFolderId ?? null,
+				session.targetProviderId ?? "",
+			);
+			await persistManifest(manifest, "scanning");
+		}
+
+		const transferManifest = requireManifest();
+		const targetFolder = await getTargetFolder(
+			workspaceId,
+			transferManifest.targetFolderId ?? null,
+		);
+		const targetProviderId =
+			transferManifest.targetProviderId || targetFolder?.providerId;
+		if (!targetProviderId) {
+			throw new Error("Target provider not resolved for transfer");
+		}
+		transferManifest.targetProviderId = targetProviderId;
+
+		if (targetFolder && targetFolder.providerId !== targetProviderId) {
+			throw new Error("Target folder does not belong to target provider");
+		}
+
+		const targetRecord = await providerService.getProvider(
+			targetProviderId,
+			userId,
+			workspaceId,
+		);
+		targetProvider = await providerService.getProviderInstance(targetRecord);
+		const resolvedTargetProvider = targetProvider;
+
+		if (!transferManifest.preflightComplete) {
+			for (const root of transferManifest.roots) {
+				if (root.status === "skipped") continue;
+
+				const destinationPath = joinPath(
+					targetFolder?.virtualPath ?? "/",
+					root.resolvedName,
+				);
+				const existing = await checkFolderConflict(
+					destinationPath,
+					targetProviderId,
+				);
+				if (!existing) {
+					continue;
+				}
+
+				const resolution = await waitForConflictResolution(
+					{
+						kind: "folder-root",
+						currentPath: destinationPath,
+						rootId: root.id,
+						fileName: root.resolvedName,
+						allowedResolutions: ["duplicate", "skip"],
+					},
+					`Folder '${root.resolvedName}' already exists`,
+				);
+
+				if (resolution.action === "skip") {
+					markRootSkipped(root.id);
+					continue;
+				}
+
+				const unique = await getUniqueFolderName(
+					destinationPath,
+					targetProviderId,
+				);
+				root.resolvedName = unique.name;
+			}
+
+			transferManifest.preflightComplete = true;
+			await persistManifest(transferManifest, "running");
+		}
+
+		const folderCache = new Map<string, Folder | null>();
+		folderCache.set(targetFolder?.virtualPath ?? "/", targetFolder ?? null);
+
+		const ensureFolderChain = async (
+			root: TransferRootEntry | null,
+			relativePath: string,
+		): Promise<Folder | null> => {
+			let currentFolder = targetFolder ?? null;
+			let currentPath = targetFolder?.virtualPath ?? "/";
+			const segments: string[] = [];
+
+			if (root) {
+				segments.push(root.resolvedName);
+			}
+			if (relativePath) {
+				segments.push(...relativePath.split("/").filter(Boolean));
+			}
+
+			for (const segment of segments) {
+				currentPath = joinPath(currentPath, segment);
+				if (folderCache.has(currentPath)) {
+					currentFolder = folderCache.get(currentPath) ?? null;
+					continue;
+				}
+
+				const existing = await checkFolderConflict(
+					currentPath,
+					targetProviderId,
+				);
+				if (existing) {
+					currentFolder = existing;
+					folderCache.set(currentPath, existing);
+					continue;
+				}
+
+				const remoteId = await resolvedTargetProvider.createFolder({
+					name: segment,
+					...(currentFolder?.remoteId
+						? { parentId: currentFolder.remoteId }
+						: {}),
+				});
+				const [createdFolder] = await db
+					.insert(folders)
+					.values({
+						nodeType: "folder",
+						virtualPath: currentPath,
+						name: segment,
+						remoteId,
+						providerId: targetProviderId,
+						workspaceId,
+						parentId: currentFolder?.id ?? null,
+						createdBy: userId,
+						isDeleted: false,
+					})
+					.returning();
+
+				if (!createdFolder) {
+					throw new Error(`Failed to create folder at ${currentPath}`);
+				}
+
+				currentFolder = createdFolder;
+				folderCache.set(currentPath, createdFolder);
+			}
+
+			return currentFolder;
+		};
+
+		for (const folderEntry of [...requireManifest().folders].sort(
+			(a, b) => a.relativePath.length - b.relativePath.length,
+		)) {
+			if (folderEntry.status !== "pending") continue;
+			const root = getRootById(folderEntry.sourceRootId);
+			if (!root || root.status === "skipped") {
+				folderEntry.status = "skipped";
+				continue;
+			}
+
+			await assertNotCancelled();
+			await ensureFolderChain(root, folderEntry.relativePath);
+			folderEntry.status = "completed";
+		}
+		await persistManifest(requireManifest(), "running");
+
+		const executeFileTransfer = async (
+			fileEntry: TransferFileEntry,
+			destinationFolder: Folder | null,
+		) => {
+			let file: Awaited<ReturnType<typeof getFile>>;
+			try {
+				file = await getFile(db, fileEntry.sourceFileId, userId, workspaceId);
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				throw new Error(
+					`Source file not found: ${fileEntry.sourceFileId} (${message})`,
+				);
+			}
+
+			const destinationPath = joinPath(
+				destinationFolder?.virtualPath ?? "/",
+				fileEntry.name,
+			);
+			let finalDestinationPath = destinationPath;
+			let finalFileName = fileEntry.name;
+
+			const existingConflict = await checkFileConflict(
+				destinationPath,
+				targetProviderId,
+				data.operation === "cut" ? file.id : undefined,
+			);
+
+			if (existingConflict) {
+				const transferManifest = requireManifest();
+				let resolution = transferManifest.applyToAllFileResolution ?? null;
+
+				if (!resolution) {
+					const resolved = await waitForConflictResolution(
+						{
+							kind: "file",
+							currentPath: destinationPath,
+							fileName: fileEntry.name,
+							allowedResolutions: ["duplicate", "overwrite", "skip"],
+						},
+						`File '${fileEntry.name}' already exists`,
+					);
+					resolution = resolved.action;
+				}
+
+				if (resolution === "skip") {
+					return { status: "skipped" as const };
+				}
+
+				if (resolution === "duplicate") {
+					const unique = await getUniqueFilename(
+						destinationPath,
+						targetProviderId,
+					);
+					finalDestinationPath = unique.path;
+					finalFileName = unique.name;
+				}
+
+				if (resolution === "overwrite") {
+					const overwriteProvider = await getSourceProvider(targetProviderId);
+					try {
+						await overwriteProvider.delete({
+							remoteId: existingConflict.remoteId,
+							isFolder: false,
+						});
+					} catch (deleteError) {
+						logger.warn({
+							msg: "Failed to delete conflicting destination file",
+							jobId,
+							fileId: existingConflict.id,
+							error:
+								deleteError instanceof Error
+									? deleteError.message
+									: String(deleteError),
+						});
+					}
+					await db.delete(files).where(eq(files.id, existingConflict.id));
+				}
+			}
+
+			if (file.providerId === targetProviderId) {
+				const sameProvider = await getSourceProvider(targetProviderId);
+				await reportFileProgress(
+					fileEntry,
+					0.5,
+					buildFileTransferMessage(
+						data.operation === "cut" ? "Moving" : "Copying",
+						fileEntry.name,
+					),
+				);
+
+				if (data.operation === "cut") {
+					await sameProvider.move({
+						remoteId: file.remoteId,
+						newParentId: destinationFolder?.remoteId,
+						...(finalFileName !== file.name ? { newName: finalFileName } : {}),
+					});
+					await db
+						.update(files)
+						.set({
+							folderId: destinationFolder?.id ?? null,
+							virtualPath: finalDestinationPath,
+							name: finalFileName,
+							updatedAt: new Date(),
+						})
+						.where(eq(files.id, file.id));
+				} else {
+					const copiedRemoteId = await sameProvider.copy({
+						remoteId: file.remoteId,
+						targetParentId: destinationFolder?.remoteId,
+						...(finalFileName !== file.name ? { newName: finalFileName } : {}),
+					});
+					await db.insert(files).values({
+						nodeType: "file",
+						virtualPath: finalDestinationPath,
+						name: finalFileName,
+						mimeType: file.mimeType,
+						size: file.size,
+						hash: file.hash,
+						remoteId: copiedRemoteId,
+						providerId: targetProviderId,
+						workspaceId,
+						folderId: destinationFolder?.id ?? null,
+						uploadedBy: userId,
+						isDeleted: false,
+					});
+				}
+
+				return {
+					status: "completed" as const,
+					finalDestinationPath,
+				};
+			}
+
+			const sourceProvider = await getSourceProvider(file.providerId);
+			const transferDir = join(
+				getTransferCacheRoot(),
+				workspaceId,
+				file.id,
+				jobId,
+			);
+			const cachedFilePath = join(transferDir, "payload.bin");
+			await mkdir(transferDir, { recursive: true });
+
+			let finalRemoteId: string | undefined;
+
+			try {
+				await reportFileProgress(
+					fileEntry,
+					0.05,
+					buildFileTransferMessage("Downloading", fileEntry.name),
+				);
+				const sourceStream = await sourceProvider.downloadFile(file.remoteId);
+				const reader = sourceStream.getReader();
+				const handle = await open(cachedFilePath, "w");
+				let downloadedBytes = 0;
+
+				try {
+					while (true) {
+						await assertNotCancelled();
+						const { done, value } = await reader.read();
+						if (done) break;
+						if (!value) continue;
+
+						const chunk = Buffer.from(value);
+						await handle.write(chunk, 0, chunk.length, downloadedBytes);
+						downloadedBytes += chunk.length;
+
+						await reportFileProgress(
+							fileEntry,
+							getTransferProgress(downloadedBytes, 0, file.size) * 0.5,
+							buildFileTransferMessage("Downloading", fileEntry.name),
+						);
+					}
+				} finally {
+					await handle.close();
+					reader.releaseLock();
+				}
+
+				await reportFileProgress(
+					fileEntry,
+					0.5,
+					buildFileTransferMessage("Uploading", fileEntry.name),
+				);
+
+				if (
+					resolvedTargetProvider.supportsChunkedUpload &&
+					resolvedTargetProvider.initiateMultipartUpload &&
+					resolvedTargetProvider.uploadPart &&
+					resolvedTargetProvider.completeMultipartUpload
+				) {
+					const multipart =
+						await resolvedTargetProvider.initiateMultipartUpload({
+							name: finalFileName,
+							mimeType: file.mimeType,
+							size: file.size,
+							parentId: destinationFolder?.remoteId,
+						});
+					finalRemoteId = multipart.remoteId;
+					const cachedFile = Bun.file(cachedFilePath);
+					const partCount = Math.max(
+						1,
+						Math.ceil(file.size / DEFAULT_TRANSFER_CHUNK_SIZE),
+					);
+					const parts: Array<{ partNumber: number; etag: string }> = [];
+
+					for (let partNumber = 1; partNumber <= partCount; partNumber += 1) {
+						await assertNotCancelled();
+						const start = (partNumber - 1) * DEFAULT_TRANSFER_CHUNK_SIZE;
+						const end = Math.min(
+							start + DEFAULT_TRANSFER_CHUNK_SIZE,
+							file.size,
+						);
+						const chunkData = Buffer.from(
+							await cachedFile.slice(start, end).arrayBuffer(),
+						);
+						const uploadResult = await resolvedTargetProvider.uploadPart(
+							multipart.uploadId,
+							multipart.remoteId,
+							partNumber,
+							chunkData,
+						);
+						parts.push({
+							partNumber: uploadResult.partNumber,
+							etag: uploadResult.etag,
+						});
+						if (uploadResult.finalRemoteId) {
+							finalRemoteId = uploadResult.finalRemoteId;
+						}
+						await reportFileProgress(
+							fileEntry,
+							0.5 + (partNumber / Math.max(partCount, 1)) * 0.5,
+							buildFileTransferMessage("Uploading", fileEntry.name),
+						);
+					}
+
+					await resolvedTargetProvider.completeMultipartUpload(
+						multipart.uploadId,
+						multipart.remoteId,
+						parts,
+					);
+				} else {
+					const uploadResponse = await resolvedTargetProvider.requestUpload({
+						name: finalFileName,
+						mimeType: file.mimeType,
+						size: file.size,
+						parentId: destinationFolder?.remoteId,
+					});
+					finalRemoteId =
+						(await resolvedTargetProvider.uploadFile(
+							uploadResponse.fileId,
+							Bun.file(cachedFilePath).stream(),
+						)) ?? uploadResponse.fileId;
+				}
+
+				if (!finalRemoteId) {
+					throw new Error("Target provider did not return a remote file id");
+				}
+
+				if (data.operation === "cut") {
+					const sourceRemoteId = file.remoteId;
+					const sourceProviderId = file.providerId;
+					const [updated] = await db
+						.update(files)
+						.set({
+							providerId: targetProviderId,
+							remoteId: finalRemoteId,
+							folderId: destinationFolder?.id ?? null,
+							virtualPath: finalDestinationPath,
+							name: finalFileName,
+							updatedAt: new Date(),
+						})
+						.where(eq(files.id, file.id))
+						.returning();
+
+					if (!updated) {
+						try {
+							await resolvedTargetProvider.delete({
+								remoteId: finalRemoteId,
+								isFolder: false,
+							});
+						} catch {
+							// Best effort cleanup only.
+						}
+						throw new Error("Failed to update file record after transfer");
+					}
+
+					try {
+						await sourceProvider.delete({
+							remoteId: sourceRemoteId,
+							isFolder: false,
+						});
+					} catch (deleteError) {
+						logger.warn({
+							msg: "[transfer:root] source deletion failed after DB update; file duplicated on source provider",
+							jobId,
+							fileId: file.id,
+							sourceProviderId,
+							sourceRemoteId,
+							error:
+								deleteError instanceof Error
+									? deleteError.message
+									: String(deleteError),
+						});
+					}
+				} else {
+					const [inserted] = await db
+						.insert(files)
+						.values({
+							nodeType: "file",
+							virtualPath: finalDestinationPath,
+							name: finalFileName,
+							mimeType: file.mimeType,
+							size: file.size,
+							hash: file.hash,
+							remoteId: finalRemoteId,
+							providerId: targetProviderId,
+							workspaceId,
+							folderId: destinationFolder?.id ?? null,
+							uploadedBy: userId,
+							isDeleted: false,
+						})
+						.returning();
+
+					if (!inserted) {
+						try {
+							await resolvedTargetProvider.delete({
+								remoteId: finalRemoteId,
+								isFolder: false,
+							});
+						} catch {
+							// Best effort cleanup only.
+						}
+						throw new Error("Failed to insert copied file");
+					}
+				}
+
+				return {
+					status: "completed" as const,
+					finalDestinationPath,
+				};
+			} finally {
+				await rm(transferDir, { recursive: true, force: true }).catch(() => {});
+			}
+		};
+
+		for (const fileEntry of requireManifest().files) {
+			if (fileEntry.status !== "pending") continue;
+
+			await assertNotCancelled();
+			const root = getRootById(fileEntry.sourceRootId);
+			if (root?.status === "skipped") {
+				fileEntry.status = "skipped";
+				continue;
+			}
+
+			const destinationFolder = await ensureFolderChain(
+				root,
+				fileEntry.relativeDirPath,
+			);
+
+			try {
+				const result = await executeFileTransfer(fileEntry, destinationFolder);
+				fileEntry.status = result.status;
+				if (result.status === "completed") {
+					fileEntry.finalDestinationPath = result.finalDestinationPath;
+				}
+			} catch (error) {
+				fileEntry.status = "failed";
+				fileEntry.errorMessage =
+					error instanceof Error ? error.message : String(error);
+			}
+
+			await persistManifest(requireManifest(), "running");
+		}
+
+		if (data.operation === "cut") {
+			for (const root of requireManifest().roots) {
+				if (root.status === "skipped") continue;
+				const rootFiles = requireManifest().files.filter(
+					(file) => file.sourceRootId === root.id,
+				);
+				const canDeleteSource = rootFiles.every(
+					(file) => file.status === "completed",
+				);
+				if (!canDeleteSource) {
+					continue;
+				}
+
+				await markFolderSubtreeDeleted(
+					workspaceId,
+					root.sourceProviderId,
+					root.sourceVirtualPath,
+				);
+
+				const sourceProvider = await getSourceProvider(root.sourceProviderId);
+				try {
+					await sourceProvider.delete({
+						remoteId: root.sourceRemoteId,
+						isFolder: true,
+					});
+				} catch (deleteError) {
+					logger.warn({
+						msg: "[transfer:root] source folder deletion failed after DB update; remote orphan remains",
+						jobId,
+						folderId: root.sourceFolderId,
+						error:
+							deleteError instanceof Error
+								? deleteError.message
+								: String(deleteError),
+					});
+				}
+			}
+		}
+
+		const finalManifest = requireManifest();
+		await persistManifest(
+			finalManifest,
+			finalManifest.failedFiles > 0 ? "failed" : "completed",
+		);
+
+		if (finalManifest.failedFiles > 0) {
+			await activityService.fail(
+				jobId,
+				getTransferCompletionMessage(finalManifest),
+			);
+			return;
+		}
+
+		await activityService.complete(
+			jobId,
+			getTransferCompletionMessage(finalManifest),
+		);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		logger.error({
+			msg: "[transfer:root] root transfer failed",
+			jobId,
+			transferSessionId: session.id,
+			error: message,
+		});
+		await updateTransferSession(db, session.id, {
+			status: "failed",
+			manifest,
+		}).catch(() => {});
+		await activityService.fail(jobId, message);
+	} finally {
+		for (const provider of sourceProviders.values()) {
+			await provider.cleanup().catch(() => {});
+		}
+		if (targetProvider) {
+			await targetProvider.cleanup().catch(() => {});
+		}
+	}
 }
 
 export async function handleFileTransfer(
@@ -331,13 +1477,10 @@ export async function handleFileTransfer(
 			},
 		});
 
-		const [file] = await db
-			.select()
-			.from(files)
-			.where(eq(files.id, fileId))
-			.limit(1);
-
-		if (!file || file.isDeleted || file.nodeType !== "file") {
+		let file: Awaited<ReturnType<typeof getFile>>;
+		try {
+			file = await getFile(db, fileId, userId, workspaceId);
+		} catch {
 			await activityService.fail(jobId, "File not found");
 			return;
 		}
@@ -565,7 +1708,7 @@ export async function handleFileTransfer(
 				totalSize: file.size,
 				downloadedBytes: 0,
 				uploadedBytes: 0,
-			} satisfies TransferManifest);
+			} satisfies FileTransferCacheManifest);
 
 		const cachedStats = await stat(cachedFilePath).catch(() => null);
 		const hasFullCache =
@@ -1680,32 +2823,36 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 			const db = getDb();
 			const activityService = new ActivityService(db);
 			const providerService = new ProviderService(db);
-			const data = normalizeJobData(bullJob.data);
-			const { jobId, workspaceId, userId } = data;
-
-			logger.debug({
-				msg: "[transfer] job started",
-				jobId,
-				entity: data.entity,
-				attempt: bullJob.attemptsMade + 1,
-			});
-
-			const assertNotCancelled = () => assertJobNotCancelled(jobId);
-			const updateActivity = async (input: {
-				progress?: number;
-				message?: string;
-				status?: Job["status"];
-				metadata?: Record<string, unknown>;
-			}) => {
-				await assertNotCancelled();
-				const isPaused = input.status === "paused";
-				await activityService.update(jobId, {
-					...input,
-					suppressEvent: Boolean(data.parentJobId) && !isPaused,
-				});
-			};
+			const rawData = bullJob.data as { jobId?: string } | undefined;
+			let jobId = rawData?.jobId ?? "";
 
 			try {
+				const data = normalizeJobData(bullJob.data);
+				const { workspaceId, userId } = data;
+				jobId = data.jobId;
+
+				logger.debug({
+					msg: "[transfer] job started",
+					jobId,
+					entity: data.entity,
+					attempt: bullJob.attemptsMade + 1,
+				});
+
+				const assertNotCancelled = () => assertJobNotCancelled(jobId);
+				const updateActivity = async (input: {
+					progress?: number;
+					message?: string;
+					status?: Job["status"];
+					metadata?: Record<string, unknown>;
+				}) => {
+					await assertNotCancelled();
+					const isPaused = input.status === "paused";
+					await activityService.update(jobId, {
+						...input,
+						suppressEvent: Boolean(data.parentJobId) && !isPaused,
+					});
+				};
+
 				const ctx: JobContext = {
 					activityService,
 					providerService,
@@ -1715,7 +2862,9 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 					assertNotCancelled,
 					updateActivity,
 				};
-				if (isBatchTransferJobData(data)) {
+				if (isRootTransferJobData(data)) {
+					await handleRootTransfer(ctx, data);
+				} else if (isBatchTransferJobData(data)) {
 					await handleBatchTransfer(ctx, data);
 				} else if (isFileTransferJobData(data)) {
 					await handleFileTransfer(ctx, data);
@@ -1725,14 +2874,16 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
 				if (error instanceof JobCancelledError) {
-					await activityService.update(jobId, {
-						status: "error",
-						message: "Transfer cancelled",
-						metadata: {
-							phase: "cancelled",
-							cancelled: true,
-						},
-					});
+					if (jobId) {
+						await activityService.update(jobId, {
+							status: "error",
+							message: "Transfer cancelled",
+							metadata: {
+								phase: "cancelled",
+								cancelled: true,
+							},
+						});
+					}
 					return;
 				}
 				const nonRetryable = isNonRetryableTransferError(error);
@@ -1751,40 +2902,44 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 					nonRetryable,
 				});
 
-				if (willRetry) {
-					await activityService.update(jobId, {
-						status: "error",
-						message: `Transfer failed. Retrying (${currentAttempt}/${maxAttempts})`,
-						metadata: {
-							phase: "retry",
-							error: message,
-							retryAttempt: currentAttempt,
-							retryMax: maxAttempts,
-							willRetry: true,
-						},
-					});
-				} else {
-					await activityService.update(jobId, {
-						status: "error",
-						message: nonRetryable
-							? `Transfer failed: ${message}`
-							: `Transfer failed after ${currentAttempt}/${maxAttempts} attempts`,
-						metadata: {
-							phase: "failed",
-							error: message,
-							retryAttempt: currentAttempt,
-							retryMax: maxAttempts,
-							willRetry: false,
-							nonRetryable,
-						},
-					});
+				if (jobId) {
+					if (willRetry) {
+						await activityService.update(jobId, {
+							status: "error",
+							message: `Transfer failed. Retrying (${currentAttempt}/${maxAttempts})`,
+							metadata: {
+								phase: "retry",
+								error: message,
+								retryAttempt: currentAttempt,
+								retryMax: maxAttempts,
+								willRetry: true,
+							},
+						});
+					} else {
+						await activityService.update(jobId, {
+							status: "error",
+							message: nonRetryable
+								? `Transfer failed: ${message}`
+								: `Transfer failed after ${currentAttempt}/${maxAttempts} attempts`,
+							metadata: {
+								phase: "failed",
+								error: message,
+								retryAttempt: currentAttempt,
+								retryMax: maxAttempts,
+								willRetry: false,
+								nonRetryable,
+							},
+						});
+					}
 				}
 				if (nonRetryable) {
 					bullJob.discard();
 				}
 				throw error;
 			} finally {
-				await clearJobCancellation(jobId);
+				if (jobId) {
+					await clearJobCancellation(jobId);
+				}
 			}
 		},
 		{

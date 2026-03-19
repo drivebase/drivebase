@@ -10,6 +10,12 @@ interface BaseTransferJobData {
 	parentJobId?: string;
 }
 
+export interface ProviderRootTransferJobData extends BaseTransferJobData {
+	entity: "transfer";
+	transferSessionId: string;
+	operation: TransferOperation;
+}
+
 export interface ProviderFileTransferJobData extends BaseTransferJobData {
 	entity: "file";
 	fileId: string;
@@ -39,6 +45,7 @@ export interface ProviderBatchTransferJobData extends BaseTransferJobData {
 }
 
 export type ProviderTransferJobData =
+	| ProviderRootTransferJobData
 	| ProviderFileTransferJobData
 	| ProviderFolderTransferJobData
 	| ProviderBatchTransferJobData;
@@ -52,6 +59,12 @@ export function isFileTransferJobData(
 	data: ProviderTransferJobData,
 ): data is ProviderFileTransferJobData {
 	return data.entity === "file";
+}
+
+export function isRootTransferJobData(
+	data: ProviderTransferJobData,
+): data is ProviderRootTransferJobData {
+	return data.entity === "transfer";
 }
 
 export function isBatchTransferJobData(

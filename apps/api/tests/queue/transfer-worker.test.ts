@@ -29,6 +29,7 @@ const FILE_ROW = {
 // ── DB mock builder (fresh per test) ───────────────────────────────────
 
 let activeDb: ReturnType<typeof buildMockDb>;
+const getFileMock = mock(async () => FILE_ROW);
 
 function buildMockDb() {
 	const calls: { op: string }[] = [];
@@ -42,13 +43,7 @@ function buildMockDb() {
 	builder.from = () => builder;
 	builder.where = () => builder;
 	builder.orderBy = () => builder;
-	builder.limit = async () => {
-		// First select → file lookup returns the file row.
-		// Subsequent selects → conflict / target-folder checks return empty.
-		const selectCount = calls.filter((c) => c.op === "select").length;
-		if (selectCount === 1) return [FILE_ROW];
-		return [];
-	};
+	builder.limit = async () => [];
 	builder.update = () => {
 		calls.push({ op: "update" });
 		return builder;
@@ -160,10 +155,20 @@ mock.module("@/service/folder/mutation", () => ({
 	moveFolder: mock(async () => {}),
 }));
 
+mock.module("@/service/file/query/file-read", () => ({
+	getFile: getFileMock,
+}));
+
 mock.module("@/utils/jobs/job-cancel", () => ({
 	assertNotCancelled: mock(async () => {}),
 	clearJobCancellation: mock(async () => {}),
 	JobCancelledError: class extends Error {},
+}));
+
+mock.module("@/utils/jobs/job-pause", () => ({
+	waitForJobResolution: mock(async () => {
+		throw new Error("waitForJobResolution should not be called in this test");
+	}),
 }));
 
 const warnMock = mock(() => {});
@@ -263,6 +268,8 @@ afterAll(async () => {
 
 beforeEach(() => {
 	warnMock.mockReset();
+	getFileMock.mockReset();
+	getFileMock.mockResolvedValue(FILE_ROW);
 });
 
 // ── Tests ──────────────────────────────────────────────────────────────

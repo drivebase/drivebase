@@ -34,6 +34,7 @@ import {
 	type HiddenJobsMap,
 	isTerminalJob,
 } from "./jobPanelUtils";
+import { canApplyToAll, getPauseActions, type PauseAction } from "./jobPauseUi";
 
 const JOB_PANEL_EXPANDED_STORAGE_KEY = "job_panel_expanded";
 
@@ -41,6 +42,16 @@ function getInitialExpandedState(): boolean {
 	const stored = localStorage.getItem(JOB_PANEL_EXPANDED_STORAGE_KEY);
 	if (stored === "false") return false;
 	return true;
+}
+
+function getPauseActionLabel(action: PauseAction) {
+	if (action === "duplicate") {
+		return t`Duplicate`;
+	}
+	if (action === "overwrite") {
+		return t`Overwrite`;
+	}
+	return t`Skip`;
 }
 
 function getStatusIcon(status: JobStatus) {
@@ -249,6 +260,8 @@ export function JobPanel() {
 						Math.min(100, Math.round(job.progress * 100)),
 					);
 					const retryLabel = getRetryLabel(job);
+					const pauseActions = getPauseActions(job.metadata);
+					const showApplyToAll = canApplyToAll(job.metadata);
 
 					return (
 						<div key={job.id} className="space-y-2">
@@ -264,58 +277,41 @@ export function JobPanel() {
 								<div className="shrink-0 flex items-center gap-2">
 									{job.status === JobStatus.Paused ? (
 										<div className="flex flex-col items-end gap-2">
-											<div className="flex items-center gap-2">
-												<Checkbox
-													id={`apply-to-all-${job.id}`}
-													checked={applyToAllMap[job.id] ?? false}
-													onCheckedChange={(checked) =>
-														setApplyToAllMap((prev) => ({
-															...prev,
-															[job.id]: !!checked,
-														}))
-													}
-												/>
-												<Label
-													htmlFor={`apply-to-all-${job.id}`}
-													className="text-xs text-muted-foreground"
-												>
-													<Trans>Apply to all</Trans>
-												</Label>
-											</div>
+											{showApplyToAll ? (
+												<div className="flex items-center gap-2">
+													<Checkbox
+														id={`apply-to-all-${job.id}`}
+														checked={applyToAllMap[job.id] ?? false}
+														onCheckedChange={(checked) =>
+															setApplyToAllMap((prev) => ({
+																...prev,
+																[job.id]: !!checked,
+															}))
+														}
+													/>
+													<Label
+														htmlFor={`apply-to-all-${job.id}`}
+														className="text-xs text-muted-foreground"
+													>
+														<Trans>Apply to all</Trans>
+													</Label>
+												</div>
+											) : null}
 											<div className="flex items-center gap-1">
-												<Button
-													size="sm"
-													variant="outline"
-													className="h-7 px-2 text-xs"
-													onClick={() =>
-														void handleResolveJobPause(job, "duplicate")
-													}
-													disabled={resolvingJobIds.has(job.id)}
-												>
-													<Trans>Duplicate</Trans>
-												</Button>
-												<Button
-													size="sm"
-													variant="outline"
-													className="h-7 px-2 text-xs"
-													onClick={() =>
-														void handleResolveJobPause(job, "overwrite")
-													}
-													disabled={resolvingJobIds.has(job.id)}
-												>
-													<Trans>Override</Trans>
-												</Button>
-												<Button
-													size="sm"
-													variant="outline"
-													className="h-7 px-2 text-xs"
-													onClick={() =>
-														void handleResolveJobPause(job, "skip")
-													}
-													disabled={resolvingJobIds.has(job.id)}
-												>
-													<Trans>Skip</Trans>
-												</Button>
+												{pauseActions.map((action) => (
+													<Button
+														key={action}
+														size="sm"
+														variant="outline"
+														className="h-7 px-2 text-xs"
+														onClick={() =>
+															void handleResolveJobPause(job, action)
+														}
+														disabled={resolvingJobIds.has(job.id)}
+													>
+														{getPauseActionLabel(action)}
+													</Button>
+												))}
 											</div>
 										</div>
 									) : job.status === JobStatus.Pending ||
