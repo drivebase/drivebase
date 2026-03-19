@@ -6,7 +6,7 @@ import {
 } from "@drivebase/core";
 import type { Database, Job } from "@drivebase/db";
 import { files, folders } from "@drivebase/db";
-import { and, eq, like } from "drizzle-orm";
+import { and, eq, inArray, like, or } from "drizzle-orm";
 import { enqueueProviderTransfer } from "@/queue/transfer/enqueue";
 import { ActivityService } from "@/service/activity";
 import { moveFolder } from "@/service/folder/mutation";
@@ -340,6 +340,25 @@ async function collectFilesInFolder(
 		folderId: string | null;
 	}>
 > {
+	const sourceSubfolders = await db
+		.select({ id: folders.id })
+		.from(folders)
+		.where(
+			and(
+				eq(folders.workspaceId, workspaceId),
+				eq(folders.providerId, sourceFolder.providerId),
+				eq(folders.nodeType, "folder"),
+				eq(folders.isDeleted, false),
+				like(folders.virtualPath, `${sourceFolder.virtualPath}/%`),
+			),
+		)
+		.orderBy(folders.virtualPath);
+
+	const subtreeFolderIds = [
+		sourceFolder.id,
+		...sourceSubfolders.map((folder) => folder.id),
+	];
+
 	return db
 		.select({
 			id: files.id,
@@ -355,7 +374,10 @@ async function collectFilesInFolder(
 				eq(files.providerId, sourceFolder.providerId),
 				eq(files.nodeType, "file"),
 				eq(files.isDeleted, false),
-				like(files.virtualPath, `${sourceFolder.virtualPath}/%`),
+				or(
+					inArray(files.folderId, subtreeFolderIds),
+					like(files.virtualPath, `${sourceFolder.virtualPath}/%`),
+				),
 			),
 		)
 		.orderBy(files.virtualPath);

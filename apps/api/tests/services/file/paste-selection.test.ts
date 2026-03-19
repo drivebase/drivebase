@@ -9,9 +9,17 @@ const enqueueProviderTransfer = mock();
 const providerGetProvider = mock();
 const providerGetProviderInstance = mock();
 const providerCreateFolder = mock();
+const activityCreate = mock();
+const activityUpdate = mock();
 
 class ActivityServiceMock {
 	constructor(_db: unknown) {}
+	create(...args: Parameters<typeof activityCreate>) {
+		return activityCreate(...args);
+	}
+	update(...args: Parameters<typeof activityUpdate>) {
+		return activityUpdate(...args);
+	}
 }
 
 mock.module("../../../service/file/query/file-read", () => ({
@@ -96,12 +104,25 @@ describe("pasteSelection", () => {
 		providerGetProvider.mockReset();
 		providerGetProviderInstance.mockReset();
 		providerCreateFolder.mockReset();
+		activityCreate.mockReset();
+		activityUpdate.mockReset();
 		providerGetProvider.mockResolvedValue({ id: "provider-record" });
 		providerGetProviderInstance.mockResolvedValue({
 			createFolder: providerCreateFolder,
 			cleanup: mock(async () => {}),
 		});
 		providerCreateFolder.mockResolvedValue("remote-folder-1");
+		activityCreate.mockResolvedValue({
+			id: "batch-job-1",
+			type: "provider_transfer",
+			title: "Copying 4 files",
+			progress: 0,
+			status: "pending",
+			metadata: null,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		});
+		activityUpdate.mockResolvedValue(undefined);
 	});
 
 	it("queues same-provider file cut as a transfer job (shows progress)", async () => {
@@ -245,6 +266,7 @@ describe("pasteSelection", () => {
 					providerId: "provider-1",
 				},
 			],
+			[],
 			[
 				{
 					id: "file-1",
@@ -310,6 +332,7 @@ describe("pasteSelection", () => {
 				},
 			],
 			[],
+			[],
 		]) as any;
 		getFolder.mockResolvedValue({
 			id: "empty-folder",
@@ -331,5 +354,147 @@ describe("pasteSelection", () => {
 
 		expect(enqueueProviderTransfer).not.toHaveBeenCalled();
 		expect(result).toEqual({ jobs: [], requiresRefresh: true });
+	});
+
+	it("creates a visible batch job and enqueues child transfers for multi-file folder copies", async () => {
+		const db = createFolderCopyDb([
+			[
+				{
+					id: "target-folder",
+					virtualPath: "/Target",
+					name: "Target",
+					remoteId: "remote-target-folder",
+					providerId: "provider-2",
+				},
+			],
+			[],
+			[],
+			[
+				{
+					remoteId: "remote-target-folder",
+				},
+			],
+			[
+				{
+					id: "dest-folder-1",
+					virtualPath: "/Target/Source",
+					name: "Source",
+					remoteId: "remote-folder-1",
+					providerId: "provider-2",
+				},
+			],
+			[],
+			[
+				{
+					id: "file-1",
+					name: "a.txt",
+					virtualPath: "/Source/a.txt",
+					providerId: "provider-1",
+					folderId: "source-folder",
+				},
+				{
+					id: "file-2",
+					name: "b.txt",
+					virtualPath: "/Source/b.txt",
+					providerId: "provider-1",
+					folderId: "source-folder",
+				},
+				{
+					id: "file-3",
+					name: "c.txt",
+					virtualPath: "/Source/c.txt",
+					providerId: "provider-1",
+					folderId: "source-folder",
+				},
+				{
+					id: "file-4",
+					name: "d.txt",
+					virtualPath: "/Source/d.txt",
+					providerId: "provider-1",
+					folderId: "source-folder",
+				},
+			],
+		]) as any;
+
+		getFolder.mockImplementation(async (_db, folderId: string) => {
+			if (folderId === "source-folder") {
+				return {
+					id: "source-folder",
+					name: "Source",
+					virtualPath: "/Source",
+					providerId: "provider-1",
+					parentId: null,
+				};
+			}
+			return {
+				id: "target-folder",
+				name: "Target",
+				virtualPath: "/Target",
+				providerId: "provider-2",
+				parentId: null,
+				remoteId: "remote-target-folder",
+			};
+		});
+
+		enqueueProviderTransfer.mockImplementation(
+			async (_activityService, input) => ({
+				activityJob: {
+					id:
+						input.entity === "batch"
+							? "batch-monitor-job-1"
+							: `child-job-${String(input.fileId)}`,
+					type: "provider_transfer",
+					title: input.title,
+					progress: 0,
+					status: "pending",
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			}),
+		);
+
+		const result = await pasteSelection(
+			db,
+			"user-1",
+			"ws-1",
+			"copy",
+			"target-folder",
+			null,
+			[{ kind: "folder", id: "source-folder" }],
+		);
+
+		expect(providerCreateFolder).toHaveBeenCalledWith({
+			name: "Source",
+			parentId: "remote-target-folder",
+		});
+		expect(activityCreate).toHaveBeenCalledWith("ws-1", {
+			type: "provider_transfer",
+			title: "Copying 4 files",
+			message: "Copying 0 of 4 files (queued)",
+			metadata: {
+				entity: "batch",
+				operation: "copy",
+				totalFiles: 4,
+				phase: "queued",
+			},
+		});
+		expect(enqueueProviderTransfer).toHaveBeenCalledTimes(5);
+		expect(
+			enqueueProviderTransfer.mock.calls
+				.slice(0, 4)
+				.every((call) => call[1]?.entity === "file"),
+		).toBe(true);
+		expect(enqueueProviderTransfer.mock.calls[4]?.[1]).toMatchObject({
+			entity: "batch",
+			parentJobId: "batch-job-1",
+			childJobIds: [
+				"child-job-file-1",
+				"child-job-file-2",
+				"child-job-file-3",
+				"child-job-file-4",
+			],
+		});
+		expect(result.jobs.map((job) => job.id)).toEqual(["batch-job-1"]);
+		expect(result.requiresRefresh).toBe(false);
 	});
 });
