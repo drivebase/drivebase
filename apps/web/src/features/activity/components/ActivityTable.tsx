@@ -8,10 +8,11 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	PiCaretLeft as ChevronLeft,
 	PiCaretRight as ChevronRight,
+	PiEye as Eye,
 	PiFunnel as Filter,
 	PiTrash as Trash,
 	PiX as X,
@@ -19,6 +20,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -39,6 +48,141 @@ import {
 import { confirmDialog } from "@/shared/lib/confirmDialog";
 import { type ActivityItem, PAGE_SIZE } from "../hooks/useActivities";
 
+function hasTransferDetails(activity: ActivityItem): boolean {
+	if (!activity.details) return false;
+	const d = activity.details as Record<string, unknown>;
+	return (
+		typeof d.totalFiles === "number" ||
+		Array.isArray(d.errors) ||
+		typeof d.error === "string"
+	);
+}
+
+interface TransferError {
+	name?: string;
+	sourcePath?: string;
+	error?: string;
+	jobId?: string;
+	title?: string;
+}
+
+function TransferDetailsDialog({
+	activity,
+	open,
+	onOpenChange,
+}: {
+	activity: ActivityItem | null;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+}) {
+	if (!activity?.details) return null;
+	const d = activity.details as Record<string, unknown>;
+	const errors = (d.errors ?? []) as TransferError[];
+	const totalFiles = (d.totalFiles as number) ?? 0;
+	const completedFiles = (d.completedFiles as number) ?? 0;
+	const failedFiles = (d.failedFiles as number) ?? 0;
+	const skippedFiles = (d.skippedFiles as number) ?? 0;
+	const topError = d.error as string | undefined;
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col">
+				<DialogHeader>
+					<DialogTitle>{activity.title}</DialogTitle>
+					<DialogDescription>{activity.summary}</DialogDescription>
+				</DialogHeader>
+
+				<div className="flex flex-col gap-3 overflow-y-auto min-h-0">
+					{/* Summary stats */}
+					<div className="grid grid-cols-2 gap-2 text-xs">
+						<div className="flex justify-between bg-muted/50 px-2 py-1.5 rounded">
+							<span className="text-muted-foreground">
+								<Trans>Total files</Trans>
+							</span>
+							<span className="font-medium">{totalFiles}</span>
+						</div>
+						<div className="flex justify-between bg-muted/50 px-2 py-1.5 rounded">
+							<span className="text-muted-foreground">
+								<Trans>Completed</Trans>
+							</span>
+							<span className="font-medium">{completedFiles}</span>
+						</div>
+						{failedFiles > 0 && (
+							<div className="flex justify-between bg-destructive/10 px-2 py-1.5 rounded">
+								<span className="text-destructive">
+									<Trans>Failed</Trans>
+								</span>
+								<span className="font-medium text-destructive">
+									{failedFiles}
+								</span>
+							</div>
+						)}
+						{skippedFiles > 0 && (
+							<div className="flex justify-between bg-muted/50 px-2 py-1.5 rounded">
+								<span className="text-muted-foreground">
+									<Trans>Skipped</Trans>
+								</span>
+								<span className="font-medium">{skippedFiles}</span>
+							</div>
+						)}
+					</div>
+
+					{/* Top-level error */}
+					{topError && (
+						<div className="bg-destructive/10 text-destructive text-xs px-3 py-2 rounded">
+							{topError}
+						</div>
+					)}
+
+					{/* Per-file errors */}
+					{errors.length > 0 && (
+						<div className="flex flex-col gap-1">
+							<p className="text-xs font-medium text-muted-foreground">
+								<Trans>Failed files</Trans>
+							</p>
+							<div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto">
+								{errors.map((err, i) => (
+									<div
+										// biome-ignore lint/suspicious/noArrayIndexKey: stable list
+										key={i}
+										className="bg-muted/50 text-xs px-3 py-2 rounded flex flex-col gap-0.5"
+									>
+										<span className="font-medium truncate">
+											{err.name || err.title || "Unknown file"}
+										</span>
+										{err.sourcePath && (
+											<span className="text-muted-foreground truncate">
+												{err.sourcePath}
+											</span>
+										)}
+										{err.error && (
+											<span className="text-destructive">{err.error}</span>
+										)}
+									</div>
+								))}
+							</div>
+						</div>
+					)}
+
+					{/* Raw data section */}
+					{(errors.length > 0 || topError) && (
+						<details className="text-xs">
+							<summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+								<Trans>View raw data</Trans>
+							</summary>
+							<pre className="mt-2 bg-muted/50 p-3 rounded overflow-x-auto max-h-48 text-[10px] leading-relaxed">
+								{JSON.stringify(d, null, 2)}
+							</pre>
+						</details>
+					)}
+				</div>
+
+				<DialogFooter showCloseButton />
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 type StatusVariant = "default" | "secondary" | "destructive" | "outline";
 
 function statusVariant(status: string | null | undefined): StatusVariant {
@@ -56,6 +200,7 @@ function statusVariant(status: string | null | undefined): StatusVariant {
 
 function buildColumns(
 	onClearOne: (id: string) => void,
+	onViewDetails: (activity: ActivityItem) => void,
 ): ColumnDef<ActivityItem>[] {
 	return [
 		{
@@ -142,19 +287,34 @@ function buildColumns(
 			id: "actions",
 			header: () => null,
 			cell: ({ row }) => (
-				<Button
-					variant="ghost"
-					size="icon"
-					className="h-7 w-7 text-muted-foreground hover:text-destructive"
-					onClick={() => onClearOne(row.original.id)}
-				>
-					<Trash className="h-4 w-4" />
-					<span className="sr-only">
-						<Trans>Clear</Trans>
-					</span>
-				</Button>
+				<div className="flex items-center gap-0.5">
+					{hasTransferDetails(row.original) && (
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-7 w-7 text-muted-foreground hover:text-foreground"
+							onClick={() => onViewDetails(row.original)}
+						>
+							<Eye className="h-4 w-4" />
+							<span className="sr-only">
+								<Trans>View details</Trans>
+							</span>
+						</Button>
+					)}
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-7 w-7 text-muted-foreground hover:text-destructive"
+						onClick={() => onClearOne(row.original.id)}
+					>
+						<Trash className="h-4 w-4" />
+						<span className="sr-only">
+							<Trans>Clear</Trans>
+						</span>
+					</Button>
+				</div>
 			),
-			size: 48,
+			size: 80,
 		},
 	];
 }
@@ -183,6 +343,9 @@ export function ActivityTable({
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 	const [kindFilter, setKindFilter] = useState<string[]>([]);
 	const [statusFilter, setStatusFilter] = useState<string[]>([]);
+	const [detailActivity, setDetailActivity] = useState<ActivityItem | null>(
+		null,
+	);
 
 	// Derive unique kinds and statuses from all data for filter options
 	const allKinds = useMemo(
@@ -206,13 +369,17 @@ export function ActivityTable({
 		});
 	}, [activities, kindFilter, statusFilter]);
 
+	const handleViewDetails = useCallback((activity: ActivityItem) => {
+		setDetailActivity(activity);
+	}, []);
+
 	const columns = buildColumns(async (id) => {
 		const ok = await confirmDialog(
 			"Clear activity",
 			"Remove this activity entry?",
 		);
 		if (ok) await onClear([id]);
-	});
+	}, handleViewDetails);
 
 	const table = useReactTable({
 		data: filtered,
@@ -476,6 +643,14 @@ export function ActivityTable({
 					</Button>
 				</div>
 			</div>
+
+			<TransferDetailsDialog
+				activity={detailActivity}
+				open={detailActivity !== null}
+				onOpenChange={(open) => {
+					if (!open) setDetailActivity(null);
+				}}
+			/>
 		</div>
 	);
 }

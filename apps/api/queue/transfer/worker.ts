@@ -1,10 +1,13 @@
-import { mkdir, open, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { files, folders, getDb } from "@drivebase/db";
+import type { Job } from "@drivebase/db";
+import { getDb } from "@drivebase/db";
 import { Worker } from "bullmq";
-import { and, eq } from "drizzle-orm";
-import { env } from "@/config/env";
-import { createBullMQConnection } from "@/redis/client";
+import type { ProviderTransferJobData } from "@/queue/transfer/queue";
+import {
+	isBatchTransferJobData,
+	isFileTransferJobData,
+	isRootTransferJobData,
+} from "@/queue/transfer/queue";
+import { createBullMQConnection, getRedis } from "@/redis/client";
 import { ActivityService } from "@/service/activity";
 import { ProviderService } from "@/service/provider";
 import {
@@ -13,64 +16,19 @@ import {
 	JobCancelledError,
 } from "@/utils/jobs/job-cancel";
 import { logger } from "@/utils/runtime/logger";
-import type { ProviderTransferJobData } from "@/queue/transfer/queue";
+import { publishChildCompletion } from "./job-events";
+import { handleBatchTransfer } from "./handle-batch-transfer";
+import { handleFileTransfer } from "./handle-file-transfer";
+import { handleFolderTransfer } from "./handle-folder-transfer";
+import { handleRootTransfer } from "./handle-root-transfer";
+import type { JobContext } from "./types";
+import { isNonRetryableTransferError, normalizeJobData } from "./utils";
 
-const DEFAULT_TRANSFER_CHUNK_SIZE = 8 * 1024 * 1024;
-
-interface TransferManifest {
-	fileId: string;
-	sourceProviderId: string;
-	targetProviderId: string;
-	totalSize: number;
-	downloadedBytes: number;
-	uploadedBytes: number;
-	multipart?: {
-		uploadId: string;
-		remoteId: string;
-		finalRemoteId?: string;
-		parts: Array<{ partNumber: number; etag: string; size: number }>;
-	};
-}
-
-function getTransferCacheRoot(): string {
-	return env.TRANSFER_CACHE_DIR ?? join(env.DATA_DIR, "transfers");
-}
-
-function clampProgress(value: number): number {
-	return Math.max(0, Math.min(1, value));
-}
-
-function getTransferProgress(
-	downloadedBytes: number,
-	uploadedBytes: number,
-	totalSize: number,
-): number {
-	const safeTotal = Math.max(totalSize, 1);
-	const downloadWeight = 0.5;
-	const uploadWeight = 0.5;
-	const downloadProgress = clampProgress(downloadedBytes / safeTotal);
-	const uploadProgress = clampProgress(uploadedBytes / safeTotal);
-	return clampProgress(
-		downloadProgress * downloadWeight + uploadProgress * uploadWeight,
-	);
-}
-
-async function readManifest(path: string): Promise<TransferManifest | null> {
-	try {
-		const content = await readFile(path, "utf-8");
-		return JSON.parse(content) as TransferManifest;
-	} catch {
-		return null;
-	}
-}
-
-async function writeManifest(
-	path: string,
-	manifest: TransferManifest,
-): Promise<void> {
-	await mkdir(dirname(path), { recursive: true });
-	await writeFile(path, JSON.stringify(manifest, null, 2), "utf-8");
-}
+export type { JobContext } from "./types";
+export { handleRootTransfer } from "./handle-root-transfer";
+export { handleFileTransfer } from "./handle-file-transfer";
+export { handleFolderTransfer } from "./handle-folder-transfer";
+export { handleBatchTransfer } from "./handle-batch-transfer";
 
 export function createTransferWorker(): Worker<ProviderTransferJobData> {
 	const worker = new Worker<ProviderTransferJobData>(
@@ -79,656 +37,156 @@ export function createTransferWorker(): Worker<ProviderTransferJobData> {
 			const db = getDb();
 			const activityService = new ActivityService(db);
 			const providerService = new ProviderService(db);
-			const { jobId, workspaceId, userId, fileId, targetProviderId } =
-				bullJob.data;
-
-			logger.debug({
-				msg: "[transfer] job started",
-				jobId,
-				fileId,
-				targetProviderId,
-				attempt: bullJob.attemptsMade + 1,
-			});
-
-			const assertNotCancelled = () => assertJobNotCancelled(jobId);
-			const updateActivity = async (input: {
-				progress?: number;
-				message?: string;
-				status?: "pending" | "running" | "completed" | "error";
-				metadata?: Record<string, unknown>;
-			}) => {
-				await assertNotCancelled();
-				await activityService.update(jobId, input);
-			};
-
-			let sourceProvider: Awaited<
-				ReturnType<ProviderService["getProviderInstance"]>
-			> | null = null;
-			let targetProvider: Awaited<
-				ReturnType<ProviderService["getProviderInstance"]>
-			> | null = null;
+			const rawData = bullJob.data as { jobId?: string } | undefined;
+			let jobId = rawData?.jobId ?? "";
 
 			try {
-				await updateActivity({
-					status: "running",
-					message: "Preparing transfer",
-					progress: 0,
-					metadata: {
-						phase: "prepare",
-						retryAttempt: bullJob.attemptsMade + 1,
-						retryMax:
-							typeof bullJob.opts.attempts === "number"
-								? bullJob.opts.attempts
-								: 1,
-					},
-				});
-
-				const [file] = await db
-					.select()
-					.from(files)
-					.where(eq(files.id, fileId))
-					.limit(1);
-
-				if (!file) {
-					logger.debug({ msg: "[transfer] file not found", jobId, fileId });
-					await activityService.fail(jobId, "File not found");
-					return;
-				}
-
-				if (file.providerId === targetProviderId) {
-					logger.debug({
-						msg: "[transfer] file already on target provider",
-						jobId,
-						fileId,
-					});
-					await activityService.fail(jobId, "File is already on this provider");
-					return;
-				}
+				const data = normalizeJobData(bullJob.data);
+				const { workspaceId, userId } = data;
+				jobId = data.jobId;
 
 				logger.debug({
-					msg: "[transfer] file resolved",
+					msg: "[transfer] job started",
 					jobId,
-					fileName: file.name,
-					fileSize: file.size,
-					mimeType: file.mimeType,
+					entity: data.entity,
+					attempt: bullJob.attemptsMade + 1,
 				});
 
-				const transferDir = join(getTransferCacheRoot(), workspaceId, file.id);
-				const cachedFilePath = join(transferDir, "payload.bin");
-				const manifestPath = join(transferDir, "manifest.json");
-
-				await mkdir(transferDir, { recursive: true });
-				logger.debug({ msg: "[transfer] staging dir ready", transferDir });
-				await assertNotCancelled();
-
-				const sourceRecord = await providerService.getProvider(
-					file.providerId,
-					userId,
-					workspaceId,
-				);
-				const targetRecord = await providerService.getProvider(
-					targetProviderId,
-					userId,
-					workspaceId,
-				);
-				sourceProvider =
-					await providerService.getProviderInstance(sourceRecord);
-				targetProvider =
-					await providerService.getProviderInstance(targetRecord);
-
-				logger.debug({
-					msg: "[transfer] providers resolved",
-					source: sourceRecord.type,
-					target: targetRecord.type,
-				});
-
-				const manifest =
-					(await readManifest(manifestPath)) ??
-					({
-						fileId: file.id,
-						sourceProviderId: file.providerId,
-						targetProviderId,
-						totalSize: file.size,
-						downloadedBytes: 0,
-						uploadedBytes: 0,
-					} satisfies TransferManifest);
-
-				const cachedStats = await stat(cachedFilePath).catch(() => null);
-				const hasFullCache =
-					Boolean(cachedStats) && manifest.downloadedBytes >= file.size;
-
-				if (!hasFullCache) {
-					logger.debug({
-						msg: "[transfer] download starting",
-						jobId,
-						fileName: file.name,
-						fileSize: file.size,
-						resumeFrom: manifest.downloadedBytes,
-					});
-
-					await updateActivity({
-						message: "Downloading from source provider",
-						progress: getTransferProgress(0, manifest.uploadedBytes, file.size),
-						metadata: {
-							phase: "download",
-							downloadedBytes: 0,
-							uploadedBytes: manifest.uploadedBytes,
-							totalSize: file.size,
-						},
-					});
-
-					const sourceStream = await sourceProvider.downloadFile(file.remoteId);
-					const reader = sourceStream.getReader();
-					const handle = await open(cachedFilePath, "w");
-					let downloadedBytes = 0;
-
-					try {
-						while (true) {
-							await assertNotCancelled();
-							const { done, value } = await reader.read();
-							if (done) break;
-							if (!value) continue;
-
-							const chunk = Buffer.from(value);
-							await handle.write(chunk, 0, chunk.length, downloadedBytes);
-							downloadedBytes += chunk.length;
-							manifest.downloadedBytes = downloadedBytes;
-
-							if (
-								downloadedBytes % DEFAULT_TRANSFER_CHUNK_SIZE < chunk.length ||
-								downloadedBytes === file.size
-							) {
-								const pct = (
-									(downloadedBytes / Math.max(file.size, 1)) *
-									100
-								).toFixed(1);
-								logger.debug({
-									msg: `[transfer] download ${pct}%`,
-									jobId,
-									downloadedBytes,
-									totalSize: file.size,
-								});
-								await writeManifest(manifestPath, manifest);
-								await updateActivity({
-									message: `Downloading ${pct}%`,
-									progress: getTransferProgress(
-										downloadedBytes,
-										manifest.uploadedBytes,
-										file.size,
-									),
-									metadata: {
-										phase: "download",
-										downloadedBytes,
-										uploadedBytes: manifest.uploadedBytes,
-										totalSize: file.size,
-									},
-								});
-							}
-						}
-					} finally {
-						await handle.close();
-						reader.releaseLock();
-					}
-
-					manifest.downloadedBytes = file.size;
-					await writeManifest(manifestPath, manifest);
-					logger.debug({
-						msg: "[transfer] download complete",
-						jobId,
-						downloadedBytes: file.size,
-					});
-				} else {
-					logger.debug({
-						msg: "[transfer] cache hit, skipping download",
-						jobId,
-						cachedBytes: manifest.downloadedBytes,
-					});
-					manifest.downloadedBytes = file.size;
-					await writeManifest(manifestPath, manifest);
-				}
-
-				let targetParentId: string | undefined;
-				if (file.folderId) {
-					const [folder] = await db
-						.select()
-						.from(folders)
-						.where(
-							and(
-								eq(folders.id, file.folderId),
-								eq(folders.nodeType, "folder"),
-								eq(folders.providerId, targetProviderId),
-							),
-						)
-						.limit(1);
-					if (folder) {
-						targetParentId = folder.remoteId;
-					}
-				}
-
-				await updateActivity({
-					message: "Uploading to target provider",
-					progress: getTransferProgress(
-						manifest.downloadedBytes,
-						manifest.uploadedBytes,
-						file.size,
-					),
-					metadata: {
-						phase: "upload",
-						downloadedBytes: manifest.downloadedBytes,
-						uploadedBytes: manifest.uploadedBytes,
-						totalSize: file.size,
-					},
-				});
-
-				logger.debug({
-					msg: "[transfer] upload starting",
-					jobId,
-					method:
-						targetProvider.supportsChunkedUpload &&
-						targetProvider.initiateMultipartUpload
-							? "multipart"
-							: "streaming",
-					targetParentId,
-				});
-
-				let finalRemoteId: string;
-				if (
-					targetProvider.supportsChunkedUpload &&
-					targetProvider.initiateMultipartUpload &&
-					targetProvider.uploadPart &&
-					targetProvider.completeMultipartUpload
-				) {
-					if (!manifest.multipart) {
-						logger.debug({
-							msg: "[transfer] initiating multipart upload",
-							jobId,
-						});
-						const multipart = await targetProvider.initiateMultipartUpload({
-							name: file.name,
-							mimeType: file.mimeType,
-							size: file.size,
-							parentId: targetParentId,
-						});
-						manifest.multipart = {
-							uploadId: multipart.uploadId,
-							remoteId: multipart.remoteId,
-							parts: [],
-						};
-						await writeManifest(manifestPath, manifest);
-						logger.debug({
-							msg: "[transfer] multipart initiated",
-							jobId,
-							uploadId: multipart.uploadId,
-						});
-					} else {
-						logger.debug({
-							msg: "[transfer] resuming multipart",
-							jobId,
-							uploadId: manifest.multipart.uploadId,
-							partsAlready: manifest.multipart.parts.length,
-						});
-					}
-
-					const cachedFile = Bun.file(cachedFilePath);
-					const uploadedParts = new Map(
-						manifest.multipart.parts.map((part) => [part.partNumber, part]),
-					);
-
-					let uploadedBytes = manifest.multipart.parts.reduce(
-						(sum, part) => sum + part.size,
-						0,
-					);
-					manifest.uploadedBytes = uploadedBytes;
-
-					const partCount = Math.max(
-						1,
-						Math.ceil(file.size / DEFAULT_TRANSFER_CHUNK_SIZE),
-					);
-
-					logger.debug({
-						msg: "[transfer] uploading parts",
-						jobId,
-						partCount,
-						resumeFrom: uploadedParts.size,
-					});
-
-					for (let partNumber = 1; partNumber <= partCount; partNumber += 1) {
-						await assertNotCancelled();
-						if (uploadedParts.has(partNumber)) {
-							continue;
-						}
-
-						const start = (partNumber - 1) * DEFAULT_TRANSFER_CHUNK_SIZE;
-						const end = Math.min(
-							start + DEFAULT_TRANSFER_CHUNK_SIZE,
-							file.size,
-						);
-						const chunkData = Buffer.from(
-							await cachedFile.slice(start, end).arrayBuffer(),
-						);
-
-						logger.debug({
-							msg: `[transfer] uploading part ${partNumber}/${partCount}`,
-							jobId,
-							chunkSize: chunkData.length,
-						});
-
-						const uploadResult = await targetProvider.uploadPart(
-							manifest.multipart.uploadId,
-							manifest.multipart.remoteId,
-							partNumber,
-							chunkData,
-						);
-
-						const partState = {
-							partNumber: uploadResult.partNumber,
-							etag: uploadResult.etag,
-							size: chunkData.length,
-						};
-						if (uploadResult.finalRemoteId) {
-							manifest.multipart.finalRemoteId = uploadResult.finalRemoteId;
-							logger.debug({
-								msg: "[transfer] got final remoteId from last part",
-								jobId,
-								finalRemoteId: uploadResult.finalRemoteId,
-							});
-						}
-						manifest.multipart.parts.push(partState);
-						uploadedParts.set(uploadResult.partNumber, partState);
-						uploadedBytes += chunkData.length;
-						manifest.uploadedBytes = uploadedBytes;
-
-						const pct = (
-							(uploadedBytes / Math.max(file.size, 1)) *
-							100
-						).toFixed(1);
-						logger.debug({
-							msg: `[transfer] upload ${pct}%`,
-							jobId,
-							uploadedBytes,
-							totalSize: file.size,
-						});
-
-						await writeManifest(manifestPath, manifest);
-						await updateActivity({
-							message: `Uploading ${pct}%`,
-							progress: getTransferProgress(
-								manifest.downloadedBytes,
-								uploadedBytes,
-								file.size,
-							),
-							metadata: {
-								phase: "upload",
-								downloadedBytes: manifest.downloadedBytes,
-								uploadedBytes,
-								totalSize: file.size,
-							},
-						});
-					}
-
+				const assertNotCancelled = () => assertJobNotCancelled(jobId);
+				const updateActivity = async (input: {
+					progress?: number;
+					message?: string;
+					status?: Job["status"];
+					metadata?: Record<string, unknown>;
+				}) => {
 					await assertNotCancelled();
-					logger.debug({
-						msg: "[transfer] completing multipart upload",
-						jobId,
-						parts: manifest.multipart.parts.length,
+					const isPaused = input.status === "paused";
+					await activityService.update(jobId, {
+						...input,
+						suppressEvent: Boolean(data.parentJobId) && !isPaused,
 					});
-					await targetProvider.completeMultipartUpload(
-						manifest.multipart.uploadId,
-						manifest.multipart.remoteId,
-						manifest.multipart.parts
-							.sort((a, b) => a.partNumber - b.partNumber)
-							.map((part) => ({
-								partNumber: part.partNumber,
-								etag: part.etag,
-							})),
-					);
+				};
 
-					finalRemoteId =
-						manifest.multipart.finalRemoteId ?? manifest.multipart.remoteId;
-					manifest.uploadedBytes = file.size;
-					await writeManifest(manifestPath, manifest);
-					logger.debug({
-						msg: "[transfer] multipart upload complete",
-						jobId,
-						finalRemoteId,
-					});
-				} else {
-					logger.debug({
-						msg: "[transfer] requesting streaming upload slot",
-						jobId,
-					});
-					const uploadResponse = await targetProvider.requestUpload({
-						name: file.name,
-						mimeType: file.mimeType,
-						size: file.size,
-						parentId: targetParentId,
-					});
-					logger.debug({
-						msg: "[transfer] streaming upload slot acquired",
-						jobId,
-						fileId: uploadResponse.fileId,
-					});
-
-					let uploadedBytes = 0;
-					let lastReportedBytes = 0;
-					const progressStream = new TransformStream<Uint8Array, Uint8Array>({
-						async transform(chunk, controller) {
-							await assertNotCancelled();
-							uploadedBytes += chunk.byteLength;
-							controller.enqueue(chunk);
-
-							if (
-								uploadedBytes - lastReportedBytes >=
-									DEFAULT_TRANSFER_CHUNK_SIZE ||
-								uploadedBytes === file.size
-							) {
-								const pct = (
-									(uploadedBytes / Math.max(file.size, 1)) *
-									100
-								).toFixed(1);
-								logger.debug({
-									msg: `[transfer] stream upload ${pct}%`,
-									jobId,
-									uploadedBytes,
-									totalSize: file.size,
-								});
-								lastReportedBytes = uploadedBytes;
-								manifest.uploadedBytes = uploadedBytes;
-								writeManifest(manifestPath, manifest).catch(() => {});
-								updateActivity({
-									message: `Uploading ${pct}%`,
-									progress: getTransferProgress(
-										manifest.downloadedBytes,
-										uploadedBytes,
-										file.size,
-									),
-									metadata: {
-										phase: "upload",
-										downloadedBytes: manifest.downloadedBytes,
-										uploadedBytes,
-										totalSize: file.size,
-									},
-								}).catch(() => {});
-							}
-						},
-					});
-
-					const readableStream = Bun.file(cachedFilePath)
-						.stream()
-						.pipeThrough(progressStream);
-					await assertNotCancelled();
-					logger.debug({
-						msg: "[transfer] streaming upload in progress",
-						jobId,
-					});
-					const maybeRemoteId = await targetProvider.uploadFile(
-						uploadResponse.fileId,
-						readableStream,
-					);
-					finalRemoteId = maybeRemoteId || uploadResponse.fileId;
-					manifest.uploadedBytes = Math.max(uploadedBytes, file.size);
-					await writeManifest(manifestPath, manifest);
-					logger.debug({
-						msg: "[transfer] streaming upload complete",
-						jobId,
-						finalRemoteId,
-					});
-				}
-
-				logger.debug({
-					msg: "[transfer] deleting from source provider",
+				const ctx: JobContext = {
+					activityService,
+					providerService,
 					jobId,
-					remoteId: file.remoteId,
-				});
-				await sourceProvider.delete({
-					remoteId: file.remoteId,
-					isFolder: false,
-				});
-				await assertNotCancelled();
-
-				logger.debug({
-					msg: "[transfer] updating file record in db",
-					jobId,
-					fileId: file.id,
-					finalRemoteId,
-					targetProviderId,
-				});
-				const [updated] = await db
-					.update(files)
-					.set({
-						providerId: targetProviderId,
-						remoteId: finalRemoteId,
-						updatedAt: new Date(),
-					})
-					.where(eq(files.id, file.id))
-					.returning();
-
-				if (!updated) {
-					throw new Error("Failed to update file record after transfer");
-				}
-
-				await activityService.complete(jobId, "Transfer completed");
-				await activityService.log({
-					kind: "file.transfer.completed",
-					title: "Provider transfer completed",
-					summary: file.name,
-					status: "success",
-					userId,
 					workspaceId,
-					details: {
-						fileId: file.id,
-						providerId: targetProviderId,
-						sourceProviderId: file.providerId,
-						targetProviderId,
-						jobId,
-					},
-				});
-				logger.debug({
-					msg: "[transfer] cleaning up staging dir",
-					jobId,
-					transferDir,
-				});
-				await rm(transferDir, { recursive: true, force: true });
-				logger.debug({ msg: "[transfer] done", jobId, fileName: file.name });
+					userId,
+					assertNotCancelled,
+					updateActivity,
+				};
+				if (isRootTransferJobData(data)) {
+					await handleRootTransfer(ctx, data);
+				} else if (isBatchTransferJobData(data)) {
+					await handleBatchTransfer(ctx, data);
+				} else if (isFileTransferJobData(data)) {
+					await handleFileTransfer(ctx, data);
+					if (data.parentJobId) {
+						await publishChildCompletion(
+							getRedis(),
+							data.parentJobId,
+							jobId,
+							"completed",
+						).catch(() => {});
+					}
+				} else {
+					await handleFolderTransfer(ctx, data);
+					if (data.parentJobId) {
+						await publishChildCompletion(
+							getRedis(),
+							data.parentJobId,
+							jobId,
+							"completed",
+						).catch(() => {});
+					}
+				}
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
 				if (error instanceof JobCancelledError) {
-					logger.debug({ msg: "[transfer] cancelled", jobId });
-					await activityService.update(jobId, {
-						status: "error",
-						message: "Transfer cancelled",
-						metadata: {
-							phase: "cancelled",
-							cancelled: true,
-						},
-					});
-					await activityService.log({
-						kind: "file.transfer.cancelled",
-						title: "Provider transfer cancelled",
-						summary:
-							typeof bullJob.data.fileId === "string"
-								? bullJob.data.fileId
-								: "Transfer",
-						status: "error",
-						userId,
-						workspaceId,
-						details: {
-							fileId,
-							providerId: targetProviderId,
-							jobId,
-						},
-					});
+					if (jobId) {
+						await activityService.update(jobId, {
+							status: "error",
+							message: "Transfer cancelled",
+							metadata: {
+								phase: "cancelled",
+								cancelled: true,
+							},
+						});
+					}
 					return;
 				}
+				const nonRetryable = isNonRetryableTransferError(error);
 				const currentAttempt = bullJob.attemptsMade + 1;
 				const maxAttempts =
 					typeof bullJob.opts.attempts === "number" ? bullJob.opts.attempts : 1;
-				const willRetry = currentAttempt < maxAttempts;
+				const willRetry = !nonRetryable && currentAttempt < maxAttempts;
 
 				logger.error({
 					msg: "Provider transfer job failed",
 					jobId,
-					fileId,
-					targetProviderId,
 					error: message,
 					retryAttempt: currentAttempt,
 					retryMax: maxAttempts,
 					willRetry,
+					nonRetryable,
 				});
 
-				if (willRetry) {
-					await activityService.update(jobId, {
-						status: "error",
-						message: `Transfer failed. Retrying (${currentAttempt}/${maxAttempts})`,
-						metadata: {
-							phase: "retry",
-							error: message,
-							retryAttempt: currentAttempt,
-							retryMax: maxAttempts,
-							willRetry: true,
-						},
-					});
-				} else {
-					await activityService.update(jobId, {
-						status: "error",
-						message: `Transfer failed after ${currentAttempt}/${maxAttempts} attempts`,
-						metadata: {
-							phase: "failed",
-							error: message,
-							retryAttempt: currentAttempt,
-							retryMax: maxAttempts,
-							willRetry: false,
-						},
-					});
-					await activityService.log({
-						kind: "file.transfer.failed",
-						title: "Provider transfer failed",
-						summary: message,
-						status: "error",
-						userId,
-						workspaceId,
-						details: {
-							fileId,
-							providerId: targetProviderId,
-							jobId,
-							error: message,
-						},
-					});
+				if (jobId) {
+					if (willRetry) {
+						await activityService.update(jobId, {
+							status: "error",
+							message: `Transfer failed. Retrying (${currentAttempt}/${maxAttempts})`,
+							metadata: {
+								phase: "retry",
+								error: message,
+								retryAttempt: currentAttempt,
+								retryMax: maxAttempts,
+								willRetry: true,
+							},
+						});
+					} else {
+						await activityService.update(jobId, {
+							status: "error",
+							message: nonRetryable
+								? `Transfer failed: ${message}`
+								: `Transfer failed after ${currentAttempt}/${maxAttempts} attempts`,
+							metadata: {
+								phase: "failed",
+								error: message,
+								retryAttempt: currentAttempt,
+								retryMax: maxAttempts,
+								willRetry: false,
+								nonRetryable,
+							},
+						});
+					}
 				}
+				if (nonRetryable) {
+					bullJob.discard();
+				}
+
+				const parentId = (bullJob.data as { parentJobId?: string })
+					?.parentJobId;
+				if (parentId && jobId) {
+					await publishChildCompletion(
+						getRedis(),
+						parentId,
+						jobId,
+						"error",
+					).catch(() => {});
+				}
+
 				throw error;
 			} finally {
-				await clearJobCancellation(jobId);
-				if (sourceProvider) {
-					await sourceProvider.cleanup().catch(() => {});
-				}
-				if (targetProvider) {
-					await targetProvider.cleanup().catch(() => {});
+				if (jobId) {
+					await clearJobCancellation(jobId);
 				}
 			}
 		},
 		{
 			connection: createBullMQConnection(),
-			concurrency: 2,
+			concurrency: 10,
 		},
 	);
 

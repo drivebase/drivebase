@@ -33,6 +33,9 @@ export async function renameFolder(
 
 	const parentPath = getParentPath(folder.virtualPath);
 	const newVirtualPath = joinPath(parentPath, sanitizedName);
+	const currentParent = folder.parentId
+		? await getFolder(db, folder.parentId, userId, workspaceId)
+		: null;
 
 	const [existing] = await db
 		.select()
@@ -63,6 +66,7 @@ export async function renameFolder(
 		try {
 			await provider.move({
 				remoteId: folder.remoteId,
+				newParentId: currentParent?.remoteId,
 				newName: sanitizedName,
 			});
 		} finally {

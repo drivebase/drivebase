@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import type { DragItem } from "@/features/files/components/file-system-table/types";
 import { useMoveFile } from "@/features/files/hooks/useFiles";
+import { useMoveFileToProvider } from "@/features/files/hooks/useFiles";
 import { useMoveFolder } from "@/features/files/hooks/useFolders";
 
 interface UseDragAndDropOptions {
@@ -14,6 +15,7 @@ interface UseDragAndDropOptions {
 		removeItems: (ids: Set<string>) => void;
 	};
 	syncEnabled: boolean;
+	resolveRootProviderId?: (items: DragItem[]) => Promise<string | null>;
 	onMoveComplete: () => void;
 }
 
@@ -21,9 +23,11 @@ export function useDragAndDrop({
 	fileList,
 	folderList,
 	syncEnabled,
+	resolveRootProviderId,
 	onMoveComplete,
 }: UseDragAndDropOptions) {
 	const [, moveFile] = useMoveFile();
+	const [, moveFileToProvider] = useMoveFileToProvider();
 	const [, moveFolder] = useMoveFolder();
 	const [activeDrag, setActiveDrag] = useState<DragItem | null>(null);
 
@@ -88,7 +92,7 @@ export function useDragAndDrop({
 			}
 		}
 
-		handleMoveItems([dragData], targetFolderId);
+		void handleMoveItems([dragData], targetFolderId);
 	};
 
 	const handleDragCancel = () => {
@@ -99,6 +103,14 @@ export function useDragAndDrop({
 		items: DragItem[],
 		targetFolderId: string | null,
 	) => {
+		let rootTargetProviderId: string | null = null;
+		if (targetFolderId === null && resolveRootProviderId) {
+			rootTargetProviderId = await resolveRootProviderId(items);
+			if (!rootTargetProviderId) {
+				return;
+			}
+		}
+
 		const movedFileIds = new Set(
 			items.filter((i) => i.type === "file").map((i) => i.id),
 		);
@@ -116,14 +128,34 @@ export function useDragAndDrop({
 		const failed: string[] = [];
 		for (const item of items) {
 			if (item.type === "file") {
-				const result = await moveFile({
-					id: item.id,
-					folderId: targetFolderId,
-				});
+				const itemProviderId = item.item.providerId;
+				const result =
+					targetFolderId === null &&
+					rootTargetProviderId &&
+					rootTargetProviderId !== itemProviderId
+						? await moveFileToProvider({
+								id: item.id,
+								providerId: rootTargetProviderId,
+							})
+						: await moveFile({
+								id: item.id,
+								folderId: targetFolderId,
+							});
 				if (result.error) {
 					failed.push(item.name);
 				}
 			} else {
+				if (
+					targetFolderId === null &&
+					rootTargetProviderId &&
+					rootTargetProviderId !== item.item.providerId
+				) {
+					failed.push(item.name);
+					toast.error(
+						"Moving folders to another provider via root drop is not supported. Open the destination folder and use copy or cut plus paste.",
+					);
+					continue;
+				}
 				const result = await moveFolder({
 					id: item.id,
 					parentId: targetFolderId,

@@ -1,17 +1,19 @@
 {
-	"permissions": {
-		"allow": [
-			"Bash(ls:*)",
-			"Bash(wc:*)",
-			"Bash(rg:*)",
-			"Bash(grep:*)",
-			"Bash(docker:*)",
-			"Bash(bun run:*)",
-			"Bash(bun add:*)",
-			"Bash(bun install:*)",
-			"Bash(bunx tsc:*)",
-			"Bash(bunx drizzle-kit:*)",
-			"Bash(bunx shadcn@latest:*)"
-		]
-	}
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(docker:*)",
+      "Bash(bun run:*)",
+      "Bash(bun add:*)",
+      "Bash(bun install:*)",
+      "Bash(bunx tsc:*)",
+      "Bash(bunx drizzle-kit:*)",
+      "Bash(bunx shadcn@latest:*)",
+      "Bash(bun test:*)",
+      "Bash(find:*)"
+    ]
+  }
 }

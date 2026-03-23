@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PiSpinnerGap as Loader2 } from "react-icons/pi";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -35,6 +36,9 @@ interface CreateFolderDialogProps {
 	isOpen: boolean;
 	onClose: () => void;
 	parentId?: string;
+	currentFolderName?: string;
+	currentFolderProviderId?: string;
+	currentFolderProviderName?: string;
 	providers?: Provider[];
 	onCreated?: (folder: CreatedFolder) => void;
 }
@@ -43,6 +47,9 @@ export function CreateFolderDialog({
 	isOpen,
 	onClose,
 	parentId,
+	currentFolderName,
+	currentFolderProviderId,
+	currentFolderProviderName,
 	providers,
 	onCreated,
 }: CreateFolderDialogProps) {
@@ -51,10 +58,18 @@ export function CreateFolderDialog({
 	const [{ fetching }, createFolder] = useCreateFolder();
 
 	const activeProviders = providers?.filter((p) => p.isActive) ?? [];
+	const isNestedFolder = Boolean(parentId && currentFolderProviderId);
+	const effectiveProviderId = isNestedFolder
+		? currentFolderProviderId
+		: activeProviders.length === 1
+			? (activeProviders[0]?.id ?? "")
+			: selectedProviderId;
 
-	// Auto-select if only one provider
-	const effectiveProviderId =
-		activeProviders.length === 1 ? activeProviders[0].id : selectedProviderId;
+	const description = isNestedFolder
+		? `Create a new folder in ${
+				currentFolderName ? `"${currentFolderName}"` : "the current folder"
+			}${currentFolderProviderName ? ` on ${currentFolderProviderName}` : ""}.`
+		: "Enter a name for your new folder and choose where to create it.";
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -68,14 +83,15 @@ export function CreateFolderDialog({
 			},
 		});
 
-		if (!result.error) {
-			if (result.data?.createFolder) {
-				onCreated?.(result.data.createFolder);
-			}
-			setName("");
-			setSelectedProviderId("");
-			onClose();
+		if (result.error || !result.data?.createFolder) {
+			toast.error(result.error?.message ?? "Failed to create folder");
+			return;
 		}
+
+		onCreated?.(result.data.createFolder);
+		setName("");
+		setSelectedProviderId("");
+		onClose();
 	};
 
 	return (
@@ -83,9 +99,7 @@ export function CreateFolderDialog({
 			<DialogContent className="sm:max-w-106.25">
 				<DialogHeader>
 					<DialogTitle>Create Folder</DialogTitle>
-					<DialogDescription>
-						Enter a name for your new folder and choose where to create it.
-					</DialogDescription>
+					<DialogDescription>{description}</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleSubmit}>
 					<div className="grid gap-4 py-4">
@@ -99,7 +113,7 @@ export function CreateFolderDialog({
 								autoFocus
 							/>
 						</div>
-						{activeProviders.length > 1 ? (
+						{!isNestedFolder && activeProviders.length > 1 ? (
 							<div className="grid gap-2">
 								<Label>Storage Provider</Label>
 								<Select

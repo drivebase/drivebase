@@ -10,6 +10,7 @@ import { z } from "zod";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useActions } from "@/features/files/actions/useActions";
 import { CreateFolderDialog } from "@/features/files/CreateFolderDialog";
+import { DestinationProviderDialog } from "@/features/files/DestinationProviderDialog";
 import { FileDropZone } from "@/features/files/components/FileDropZone";
 import { FileExplorer } from "@/features/files/components/FileExplorer";
 import { FilesToolbar } from "@/features/files/components/FilesToolbar";
@@ -23,12 +24,18 @@ import { useFileOperations } from "@/features/files/hooks/useFileOperations";
 import { useContents } from "@/features/files/hooks/useFiles";
 import { useUpload } from "@/features/files/hooks/useUpload";
 import { useUploadSessionRestore } from "@/features/files/hooks/useUploadSessionRestore";
+import { useClipboardStore } from "@/features/files/store/clipboardStore";
 import { UploadProviderDialog } from "@/features/files/UploadProviderDialog";
 import { useFileActions } from "@/features/files/useFileActions";
 import { useProviders } from "@/features/providers/hooks/useProviders";
 import { can, getActiveWorkspaceId } from "@/features/workspaces";
 import { useWorkspaceMembers } from "@/features/workspaces/hooks/useWorkspaces";
-import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
+import {
+	JobStatus,
+	type FileItemFragment,
+	type FolderItemFragment,
+} from "@/gql/graphql";
+import { useActivityStore } from "@/shared/store/activityStore";
 
 /**
  * Modifier that positions the drag overlay chip near the cursor
@@ -80,8 +87,21 @@ function FilesPage() {
 
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const [filterProviderIds, setFilterProviderIds] = useState<string[]>([]);
+	const [destinationDialogState, setDestinationDialogState] = useState<{
+		title: string;
+		description: string;
+		resolve: (providerId: string | null) => void;
+	} | null>(null);
 	const { showDetails, createDownloadLink } = useFileActions();
 	const { downloadFile } = useDownload();
+	const clipboardMode = useClipboardStore((s) => s.mode);
+	const clipboardItems = useClipboardStore((s) => s.items);
+	const clipboardStatus = useClipboardStore((s) => s.status);
+	const pendingJobIds = useClipboardStore((s) => s.pendingJobIds);
+	const stageClipboard = useClipboardStore((s) => s.stageClipboard);
+	const markTransferring = useClipboardStore((s) => s.markTransferring);
+	const clearClipboard = useClipboardStore((s) => s.clearClipboard);
+	const jobsMap = useActivityStore((s) => s.jobs);
 	const { data: providersData } = useProviders();
 	const currentUserId = useAuthStore((state) => state.user?.id ?? null);
 	const activeWorkspaceId = getActiveWorkspaceId() ?? "";
@@ -116,7 +136,8 @@ function FilesPage() {
 		});
 
 	const upload = useUpload({
-		currentFolderId: currentFolder?.id,
+		currentFolderId: folderId,
+		currentFolderProviderId: currentFolder?.providerId,
 		onUploadComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 
@@ -125,13 +146,6 @@ function FilesPage() {
 	const breadcrumbs = useBreadcrumbs(currentFolder);
 	const { isDragActive, dragHandlers } = useFileDrop({
 		onDrop: upload.handleFilesSelected,
-	});
-
-	const dnd = useDragAndDrop({
-		fileList,
-		folderList,
-		syncEnabled: true,
-		onMoveComplete: () => refreshContents({ requestPolicy: "network-only" }),
 	});
 
 	const handleNavigate = useCallback(
@@ -155,6 +169,47 @@ function FilesPage() {
 		name: p.name,
 		type: p.type,
 	}));
+	const activeProviders =
+		providersData?.storageProviders?.filter((p) => p.isActive) ?? [];
+
+	const chooseDestinationProvider = useCallback(
+		(title: string, description: string) => {
+			if (folderId) {
+				return Promise.resolve<string | null>(
+					currentFolder?.providerId ?? null,
+				);
+			}
+			if (activeProviders.length === 0) {
+				return Promise.resolve<string | null>(null);
+			}
+			if (activeProviders.length === 1) {
+				return Promise.resolve<string | null>(activeProviders[0]?.id ?? null);
+			}
+
+			return new Promise<string | null>((resolve) => {
+				setDestinationDialogState({ title, description, resolve });
+			});
+		},
+		[activeProviders, currentFolder?.providerId, folderId],
+	);
+
+	const dnd = useDragAndDrop({
+		fileList,
+		folderList,
+		syncEnabled: true,
+		resolveRootProviderId: async (items) => {
+			if (folderId) {
+				return currentFolder?.providerId ?? null;
+			}
+			return chooseDestinationProvider(
+				"Choose Destination Provider",
+				items.length === 1
+					? `Select which provider root should receive "${items[0]?.name ?? "this item"}".`
+					: "Select which provider root should receive the dropped items.",
+			);
+		},
+		onMoveComplete: () => refreshContents({ requestPolicy: "network-only" }),
+	});
 
 	const registry = useActions({
 		canWrite: canWriteFiles,
@@ -166,7 +221,67 @@ function FilesPage() {
 		toggleFileFavorite: operations.handleToggleFileFavorite,
 		toggleFolderFavorite: operations.handleToggleFolderFavorite,
 		deleteSelection: operations.handleDeleteSelection,
+		stageClipboard,
+		pasteSelection: async (targetFolderId) => {
+			if (!clipboardMode || clipboardItems.length === 0) return;
+			const targetProviderId =
+				targetFolderId || folderId
+					? null
+					: await chooseDestinationProvider(
+							"Choose Destination Provider",
+							"Select which provider root should receive the pasted items.",
+						);
+			if (!targetFolderId && !folderId && !targetProviderId) {
+				return;
+			}
+			const result = await operations.handlePasteSelection(
+				clipboardMode,
+				targetFolderId,
+				targetProviderId,
+				clipboardItems,
+			);
+			if (result.jobs.length > 0) {
+				markTransferring(result.jobs.map((job) => job.id));
+				return;
+			}
+			if (result.requiresRefresh) {
+				clearClipboard();
+			}
+		},
 	});
+
+	useEffect(() => {
+		if (clipboardStatus !== "transferring" || pendingJobIds.length === 0) {
+			return;
+		}
+
+		const pendingJobs = pendingJobIds
+			.map((id) => jobsMap.get(id))
+			.filter(
+				(job): job is NonNullable<typeof job> =>
+					job !== undefined && job !== null,
+			);
+		if (pendingJobs.length < pendingJobIds.length) {
+			return;
+		}
+
+		const hasActive = pendingJobs.some(
+			(job) =>
+				job.status === JobStatus.Pending || job.status === JobStatus.Running,
+		);
+		if (hasActive) {
+			return;
+		}
+
+		void refreshContents({ requestPolicy: "network-only" });
+		clearClipboard();
+	}, [
+		clipboardStatus,
+		pendingJobIds,
+		jobsMap,
+		refreshContents,
+		clearClipboard,
+	]);
 
 	return (
 		<DndContext
@@ -177,7 +292,7 @@ function FilesPage() {
 			onDragCancel={dnd.handleDragCancel}
 		>
 			<div
-				className="pt-8 px-8 flex flex-col gap-6 h-full relative"
+				className="pt-8 px-8 flex h-full min-h-0 flex-col gap-6 overflow-hidden relative"
 				{...dragHandlers}
 			>
 				<FilesToolbar
@@ -198,22 +313,25 @@ function FilesPage() {
 					onFileChange={upload.handleFileChange}
 				/>
 
-				<div ref={scrollRef} className="relative flex-1 overflow-y-auto">
+				<div className="relative flex-1 min-h-0">
 					<FileExplorerProvider
 						registry={registry}
 						files={files}
 						folders={folders}
 						providers={providers}
 						currentFolderId={folderId}
+						currentFolderName={currentFolder?.name}
 						isLoading={contentsFetching}
 						canWrite={canWriteFiles}
 						navigate={handleNavigate}
 						refresh={refresh}
 					>
-						<FileExplorer />
+						<div className="h-full min-h-0">
+							<FileExplorer contentRef={scrollRef} />
+						</div>
 					</FileExplorerProvider>
 					{isOverflowing && (
-						<div className="pointer-events-none sticky bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
+						<div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-16 bg-gradient-to-t from-background to-transparent" />
 					)}
 				</div>
 
@@ -222,6 +340,13 @@ function FilesPage() {
 						isOpen={isCreateDialogOpen}
 						onClose={() => setIsCreateDialogOpen(false)}
 						parentId={currentFolder?.id}
+						currentFolderName={currentFolder?.name}
+						currentFolderProviderId={currentFolder?.providerId}
+						currentFolderProviderName={
+							providersData?.storageProviders?.find(
+								(provider) => provider.id === currentFolder?.providerId,
+							)?.name
+						}
 						providers={providersData?.storageProviders}
 						onCreated={(folder) => {
 							folderList.addItem(folder as FolderItemFragment);
@@ -240,6 +365,24 @@ function FilesPage() {
 					onSelectProvider={(providerId) =>
 						upload.handleUploadQueue(upload.selectedFiles, providerId)
 					}
+				/>
+
+				<DestinationProviderDialog
+					isOpen={destinationDialogState !== null}
+					onClose={() => {
+						destinationDialogState?.resolve(null);
+						setDestinationDialogState(null);
+					}}
+					title={destinationDialogState?.title ?? "Choose Destination Provider"}
+					description={
+						destinationDialogState?.description ??
+						"Select which provider root should receive these items."
+					}
+					providers={activeProviders}
+					onSelectProvider={(providerId) => {
+						destinationDialogState?.resolve(providerId);
+						setDestinationDialogState(null);
+					}}
 				/>
 
 				<FileDropZone isDragActive={isDragActive} />

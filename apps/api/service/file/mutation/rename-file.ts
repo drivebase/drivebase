@@ -10,6 +10,7 @@ import { files, storageProviders } from "@drivebase/db";
 import { and, eq } from "drizzle-orm";
 import { logger } from "../../../utils/runtime/logger";
 import { ActivityService } from "../../activity";
+import { getFolder } from "../../folder/query";
 import { ProviderService } from "../../provider";
 import { getFile } from "../query/file-read";
 
@@ -27,6 +28,9 @@ export async function renameFile(
 		const file = await getFile(db, fileId, userId, workspaceId);
 		const sanitizedName = sanitizeFilename(newName);
 		if (!sanitizedName) throw new ValidationError("File name is required");
+		const currentParent = file.folderId
+			? await getFolder(db, file.folderId, userId, workspaceId)
+			: null;
 
 		const parentPath = getParentPath(file.virtualPath);
 		const newVirtualPath = joinPath(parentPath, sanitizedName);
@@ -56,8 +60,15 @@ export async function renameFile(
 			workspaceId,
 		);
 		const provider = await providerService.getProviderInstance(providerRecord);
-		await provider.move({ remoteId: file.remoteId, newName: sanitizedName });
-		await provider.cleanup();
+		try {
+			await provider.move({
+				remoteId: file.remoteId,
+				newParentId: currentParent?.remoteId,
+				newName: sanitizedName,
+			});
+		} finally {
+			await provider.cleanup();
+		}
 
 		const [updated] = await db
 			.update(files)

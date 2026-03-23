@@ -1,8 +1,11 @@
 import type { Table } from "@tanstack/react-table";
 import {
+	PiCopy as Copy,
+	PiClipboardText as Paste,
 	PiColumns as Columns,
 	PiSquaresFour as GridView,
 	PiListBullets as TableViewIcon,
+	PiScissors as Cut,
 	PiTrash as Trash,
 } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
@@ -16,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useFilesStore } from "@/shared/store/filesStore";
 import { useFileExplorer } from "../context/FileExplorerProvider";
 import { useSelection } from "../context/SelectionContext";
+import { useClipboardStore } from "../store/clipboardStore";
 import type { RowItem } from "./file-system-table/types";
 
 interface ToolbarProps {
@@ -29,11 +33,16 @@ export function Toolbar({ table }: ToolbarProps) {
 	const viewMode = useFilesStore((s) => s.viewMode);
 	const setViewMode = useFilesStore((s) => s.setViewMode);
 
+	const clipboardCount = useClipboardStore((s) => s.items.length);
+	const hasSelection = count > 0;
+	const canCut = canWrite && hasSelection;
+	const canCopy = canWrite && hasSelection;
 	const canDelete = canWrite && count > 0;
+	const canPaste = canWrite && clipboardCount > 0;
 
 	if (isLoading) {
 		return (
-			<div className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 py-2 backdrop-blur supports-backdrop-filter:bg-background/80">
+			<div className="z-30 shrink-0 flex items-center justify-between border-b bg-background/95 py-2 backdrop-blur supports-backdrop-filter:bg-background/80">
 				<Skeleton className="h-4 w-24" />
 				<Button variant="outline" size="sm" disabled>
 					<Columns />
@@ -45,7 +54,7 @@ export function Toolbar({ table }: ToolbarProps) {
 	const total = files.length + folders.length;
 
 	return (
-		<div className="sticky top-0 z-30 flex items-center justify-between">
+		<div className="z-30 shrink-0 flex items-center justify-between border-b bg-background/95 py-2 backdrop-blur supports-backdrop-filter:bg-background/80">
 			<div className="text-xs text-muted-foreground">
 				{count} of {total} selected
 			</div>
@@ -84,6 +93,54 @@ export function Toolbar({ table }: ToolbarProps) {
 						/>
 					</Button>
 				</div>
+				{canPaste ? (
+					<Button
+						variant="outline"
+						onClick={() => {
+							const pasteAction = registry.getById("paste-selection");
+							if (!pasteAction) return;
+							pasteAction.execute({
+								...actionContext,
+								selection: selectedItems,
+							});
+						}}
+					>
+						<Paste size={14} className="mr-2" />
+						Paste ({clipboardCount})
+					</Button>
+				) : null}
+				{canCopy ? (
+					<Button
+						variant="outline"
+						onClick={() => {
+							const copyAction = registry.getById("copy-selection");
+							if (!copyAction) return;
+							copyAction.execute({
+								...actionContext,
+								selection: selectedItems,
+							});
+						}}
+					>
+						<Copy size={14} className="mr-2" />
+						Copy ({count})
+					</Button>
+				) : null}
+				{canCut ? (
+					<Button
+						variant="outline"
+						onClick={() => {
+							const cutAction = registry.getById("cut-selection");
+							if (!cutAction) return;
+							cutAction.execute({
+								...actionContext,
+								selection: selectedItems,
+							});
+						}}
+					>
+						<Cut size={14} className="mr-2" />
+						Cut ({count})
+					</Button>
+				) : null}
 				{canDelete ? (
 					<Button
 						variant="destructive"

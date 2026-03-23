@@ -14,6 +14,7 @@ export * from "./nodes";
 export * from "./passkeys";
 export * from "./permissions";
 export * from "./providers";
+export * from "./transfer-sessions";
 export * from "./upload-sessions";
 export * from "./users";
 export * from "./vaults";

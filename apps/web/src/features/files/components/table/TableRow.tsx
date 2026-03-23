@@ -6,6 +6,7 @@ import { cn } from "@/shared/lib/utils";
 import type { SelectionItem } from "../../actions/types";
 import { FileContextMenu } from "../ContextMenu";
 import type { DragItem, RowItem } from "../file-system-table/types";
+import { useClipboardStore } from "../../store/clipboardStore";
 
 interface DraggableTableRowProps {
 	row: Row<RowItem>;
@@ -29,6 +30,7 @@ export function DraggableContextRow({ row }: DraggableTableRowProps) {
 	const original = row.original;
 	const dragData = rowToDragItem(row);
 	const selectionItem = rowToSelectionItem(row);
+	const isClipboardDimmed = useClipboardStore((s) => s.isDimmed(original.id));
 
 	const {
 		attributes,
@@ -64,6 +66,7 @@ export function DraggableContextRow({ row }: DraggableTableRowProps) {
 				className={cn(
 					"group relative",
 					isDragging && "opacity-20",
+					isClipboardDimmed && "opacity-60",
 					isOver &&
 						original.kind === "folder" &&
 						"ring-2 ring-primary ring-inset bg-primary/5",
