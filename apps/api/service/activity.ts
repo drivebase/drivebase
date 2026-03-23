@@ -1,6 +1,6 @@
-import type { Database } from "@drivebase/db";
+import type { Database, Job } from "@drivebase/db";
 import { activities, jobs } from "@drivebase/db";
-import { and, count, desc, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { pubSub } from "../graphql/pubsub";
 
 interface CreateJobInput {
@@ -8,13 +8,26 @@ interface CreateJobInput {
 	title: string;
 	message?: string;
 	metadata?: Record<string, unknown>;
+	/**
+	 * If true, suppresses the GraphQL subscription event (useful for hidden background jobs).
+	 */
+	suppressEvent?: boolean;
 }
 
 interface UpdateJobInput {
 	progress?: number;
 	message?: string;
-	status?: "pending" | "running" | "completed" | "error";
+	status?: Job["status"];
 	metadata?: Record<string, unknown>;
+	/**
+	 * If true, metadata will be completely replaced instead of merged.
+	 * Defaults to false (merge).
+	 */
+	replaceMetadata?: boolean;
+	/**
+	 * If true, suppresses the GraphQL subscription event (useful for hidden child jobs).
+	 */
+	suppressEvent?: boolean;
 }
 
 interface LogActivityInput {
@@ -50,18 +63,27 @@ export class ActivityService {
 			throw new Error("Failed to create job");
 		}
 
-		pubSub.publish("activityUpdated", workspaceId, job);
+		if (!input.suppressEvent) {
+			pubSub.publish("activityUpdated", workspaceId, job);
+		}
 		return job;
 	}
 
 	async update(jobId: string, input: UpdateJobInput) {
+		const metadataSet =
+			input.metadata !== undefined
+				? input.replaceMetadata
+					? input.metadata
+					: sql`COALESCE(${jobs.metadata}, '{}'::jsonb) || ${input.metadata}::jsonb`
+				: undefined;
+
 		const [job] = await this.db
 			.update(jobs)
 			.set({
 				...(input.progress !== undefined && { progress: input.progress }),
 				...(input.message !== undefined && { message: input.message }),
 				...(input.status !== undefined && { status: input.status }),
-				...(input.metadata !== undefined && { metadata: input.metadata }),
+				...(metadataSet !== undefined && { metadata: metadataSet }),
 				updatedAt: new Date(),
 			})
 			.where(eq(jobs.id, jobId))
@@ -71,7 +93,9 @@ export class ActivityService {
 			throw new Error("Job not found");
 		}
 
-		pubSub.publish("activityUpdated", job.workspaceId, job);
+		if (!input.suppressEvent) {
+			pubSub.publish("activityUpdated", job.workspaceId, job);
+		}
 		return job;
 	}
 
@@ -97,7 +121,7 @@ export class ActivityService {
 			.where(
 				and(
 					eq(jobs.workspaceId, workspaceId),
-					inArray(jobs.status, ["pending", "running"]),
+					inArray(jobs.status, ["pending", "running", "paused"]),
 				),
 			);
 	}

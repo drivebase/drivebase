@@ -15,6 +15,7 @@ import { workspaces } from "./workspaces";
 export const jobStatusEnum = pgEnum("job_status", [
 	"pending",
 	"running",
+	"paused",
 	"completed",
 	"error",
 ]);

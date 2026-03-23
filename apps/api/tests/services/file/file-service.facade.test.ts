@@ -1,4 +1,4 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
+import { beforeEach, describe, expect, it, mock } from "bun:test";
 
 const getAccessibleWorkspaceId = mock();
 const getAccessibleProviderIds = mock();
@@ -16,6 +16,7 @@ const downloadFileForProxy = mock();
 const renameFile = mock();
 const moveFile = mock();
 const moveFileToProvider = mock();
+const pasteSelection = mock();
 const deleteFile = mock();
 const getFileMetadata = mock();
 const starFile = mock();
@@ -50,6 +51,7 @@ mock.module("../../../service/file/index", () => ({
 	renameFile,
 	moveFile,
 	moveFileToProvider,
+	pasteSelection,
 	deleteFile,
 	getFileMetadata,
 	starFile,
@@ -71,10 +73,6 @@ import { FileService } from "../../../service/file.ts";
 describe("FileService facade", () => {
 	const db = { marker: "db" };
 
-	afterAll(() => {
-		mock.restore();
-	});
-
 	beforeEach(() => {
 		getAccessibleWorkspaceId.mockReset();
 		getAccessibleProviderIds.mockReset();
@@ -91,6 +89,7 @@ describe("FileService facade", () => {
 		renameFile.mockReset();
 		moveFile.mockReset();
 		moveFileToProvider.mockReset();
+		pasteSelection.mockReset();
 		deleteFile.mockReset();
 		getFileMetadata.mockReset();
 		starFile.mockReset();
@@ -288,6 +287,19 @@ describe("FileService facade", () => {
 				"provider-2",
 				"pref-ws",
 			);
+			await service.pasteSelection(
+				"user-1",
+				"copy",
+				"folder-2",
+				null,
+				[
+					{
+						kind: "file",
+						id: "file-1",
+					},
+				],
+				"pref-ws",
+			);
 			await service.deleteFile("file-1", "user-1", "pref-ws");
 			await service.starFile("file-1", "user-1", "pref-ws");
 			await service.unstarFile("file-1", "user-1", "pref-ws");
@@ -328,6 +340,20 @@ describe("FileService facade", () => {
 				"user-1",
 				"provider-2",
 				"ws-1",
+			);
+			expect(pasteSelection).toHaveBeenCalledWith(
+				db,
+				"user-1",
+				"ws-1",
+				"copy",
+				"folder-2",
+				null,
+				[
+					{
+						kind: "file",
+						id: "file-1",
+					},
+				],
 			);
 			expect(deleteFile).toHaveBeenCalledWith(db, "file-1", "user-1", "ws-1");
 			expect(starFile).toHaveBeenCalledWith(db, "file-1", "user-1", "ws-1");

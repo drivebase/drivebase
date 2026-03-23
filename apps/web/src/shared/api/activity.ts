@@ -118,6 +118,15 @@ export const CANCEL_JOB_MUTATION = graphql(`
   }
 `);
 
+export const RESOLVE_JOB_PAUSE_MUTATION = graphql(`
+  mutation ResolveJobPause($jobId: ID!, $resolution: JSON!) {
+    resolveJobPause(jobId: $jobId, resolution: $resolution) {
+      id
+      status
+    }
+  }
+`);
+
 export const ACTIVITY_CREATED_SUBSCRIPTION = graphql(`
   subscription ActivityCreated {
     activityCreated {

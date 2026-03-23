@@ -1,12 +1,12 @@
 import { ValidationError } from "@drivebase/core";
-import { type Job as DbJob, jobs, users } from "@drivebase/db";
-import { and, eq } from "drizzle-orm";
-import { Tokens } from "../../container";
+import { type Job as DbJob, getDb, jobs, users } from "@drivebase/db";
+import { and, eq, inArray } from "drizzle-orm";
 import { getExtractionQueue } from "@/queue/extraction/queue";
 import {
 	buildTransferQueueJobId,
 	getTransferQueue,
 } from "@/queue/transfer/queue";
+import { Tokens } from "../../container";
 import type { ActivityService } from "../../service/activity";
 import { getAccessibleWorkspaceId } from "../../service/workspace";
 import { requestJobCancellation } from "../../utils/jobs/job-cancel";
@@ -23,6 +23,7 @@ import { type PubSubChannels, pubSub } from "../pubsub";
 function toJobStatus(status: DbJob["status"]): JobStatus {
 	if (status === "pending") return JobStatus.Pending;
 	if (status === "running") return JobStatus.Running;
+	if (status === "paused") return JobStatus.Paused;
 	if (status === "completed") return JobStatus.Completed;
 	return JobStatus.Error;
 }
@@ -102,6 +103,35 @@ const CANCELLABLE_JOB_TYPES = new Set([
 	"smart-search-indexing",
 ]);
 
+const PAUSE_RESOLUTIONS = ["duplicate", "overwrite", "skip"] as const;
+type PauseResolution = (typeof PAUSE_RESOLUTIONS)[number];
+
+function getAllowedPauseResolutions(
+	metadata: DbJob["metadata"],
+): PauseResolution[] {
+	if (!metadata || typeof metadata !== "object") {
+		return [...PAUSE_RESOLUTIONS];
+	}
+
+	const allowed = Array.isArray(metadata.allowedResolutions)
+		? metadata.allowedResolutions.filter(
+				(value): value is PauseResolution =>
+					typeof value === "string" &&
+					PAUSE_RESOLUTIONS.includes(value as PauseResolution),
+			)
+		: [];
+
+	return allowed.length > 0 ? allowed : [...PAUSE_RESOLUTIONS];
+}
+
+function allowsApplyToAll(metadata: DbJob["metadata"]): boolean {
+	return (
+		metadata !== null &&
+		typeof metadata === "object" &&
+		metadata.allowApplyToAll === true
+	);
+}
+
 export const activityMutations: MutationResolvers = {
 	clearActivities: async (_parent, args, context) => {
 		const activityService = context.container.resolve<ActivityService>(
@@ -158,11 +188,106 @@ export const activityMutations: MutationResolvers = {
 
 		return true;
 	},
+	resolveJobPause: async (_parent, args, context) => {
+		const workspaceId = await getAccessibleWorkspaceId(
+			context.db,
+			context.user!.userId,
+			context.headers?.get("x-workspace-id") ?? undefined,
+		);
+
+		const [job] = await context.db
+			.select()
+			.from(jobs)
+			.where(and(eq(jobs.id, args.jobId), eq(jobs.workspaceId, workspaceId)))
+			.limit(1);
+
+		if (!job) {
+			throw new ValidationError("Job not found");
+		}
+
+		if (job.status !== "paused") {
+			throw new ValidationError("Job is not paused");
+		}
+
+		const allowedResolutions = getAllowedPauseResolutions(job.metadata);
+		const action = args.resolution?.action;
+		if (
+			typeof action !== "string" ||
+			!allowedResolutions.includes(action as PauseResolution)
+		) {
+			throw new ValidationError("Unsupported resolution for this paused job");
+		}
+		if (args.resolution?.applyToAll && !allowsApplyToAll(job.metadata)) {
+			throw new ValidationError(
+				"Apply to all is not supported for this paused job",
+			);
+		}
+
+		const { publishJobResolution } = await import("../../utils/jobs/job-pause");
+		await publishJobResolution(job.id, args.resolution);
+
+		const activityService = context.container.resolve<ActivityService>(
+			Tokens.ActivityService,
+		);
+		const updatedJob = await activityService.update(job.id, {
+			status: "running",
+			message: "Resuming...",
+		});
+
+		return toGraphqlJob(updatedJob);
+	},
 };
 
 /** Remove pending BullMQ jobs for a given tracking job, based on job type. */
 async function removePendingQueueJobs(job: DbJob): Promise<void> {
 	if (job.type === "provider_transfer") {
+		const childJobIds = Array.isArray(job.metadata?.childJobIds)
+			? job.metadata.childJobIds.filter(
+					(value): value is string => typeof value === "string",
+				)
+			: [];
+		if (childJobIds.length > 0) {
+			const childJobs = await getDb()
+				.select()
+				.from(jobs)
+				.where(inArray(jobs.id, childJobIds));
+			const queue = getTransferQueue();
+			for (const childJob of childJobs) {
+				const childQueueJobId =
+					typeof childJob.metadata?.queueJobId === "string"
+						? childJob.metadata.queueJobId
+						: null;
+				if (!childQueueJobId) continue;
+				const queueJob = await queue.getJob(childQueueJobId);
+				const state = queueJob ? await queueJob.getState() : null;
+				if (
+					queueJob &&
+					(state === "waiting" ||
+						state === "delayed" ||
+						state === "prioritized")
+				) {
+					await queueJob.remove().catch(() => {});
+				}
+			}
+		}
+
+		const queueJobId =
+			typeof job.metadata?.queueJobId === "string"
+				? job.metadata.queueJobId
+				: null;
+		if (queueJobId) {
+			const queue = getTransferQueue();
+			const queueJob = await queue.getJob(queueJobId);
+			const state = queueJob ? await queueJob.getState() : null;
+			if (
+				queueJob &&
+				(state === "waiting" || state === "delayed" || state === "prioritized")
+			) {
+				await queueJob.remove().catch(() => {});
+			}
+			return;
+		}
+
 		const fileId =
 			typeof job.metadata?.fileId === "string" ? job.metadata.fileId : null;
 		const targetProviderId =

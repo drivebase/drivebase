@@ -112,7 +112,8 @@ extend type Query {
 	"""
 	Get reusable OAuth app credentials for the current user and provider type
 	"""
-	oauthProviderCredentials(type: ProviderType!): [OAuthProviderCredential!]! @auth
+	oauthProviderCredentials(type: ProviderType!): [OAuthProviderCredential!]!
+		@auth
 }
 
 input SyncOptionsInput {

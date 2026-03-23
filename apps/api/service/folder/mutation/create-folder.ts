@@ -32,6 +32,11 @@ export async function createFolder(
 
 		if (parentId) {
 			const parentFolder = await getFolder(db, parentId, userId, workspaceId);
+			if (parentFolder.providerId !== providerId) {
+				throw new ValidationError(
+					"Parent folder and provider must belong to the same storage provider",
+				);
+			}
 			remoteParentId = parentFolder.remoteId;
 			virtualPath = joinPath(parentFolder.virtualPath, sanitizedName);
 		} else {

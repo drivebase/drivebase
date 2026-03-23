@@ -52,7 +52,8 @@ extend type Mutation {
 	"""
 	Update user role or status (admin/owner only)
 	"""
-	updateUser(id: ID!, input: UpdateUserInput!): User! @auth(role: [ADMIN, OWNER])
+	updateUser(id: ID!, input: UpdateUserInput!): User!
+		@auth(role: [ADMIN, OWNER])
 
 	"""
 	Delete user (owner only)

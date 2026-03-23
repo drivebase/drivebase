@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo } from "react";
 import type { FileItemFragment, FolderItemFragment } from "@/gql/graphql";
 import type { ActionRegistry } from "../actions/registry";
 import type { ActionContext, ProviderInfo } from "../actions/types";
+import { useClipboardStore } from "../store/clipboardStore";
 import { SelectionProvider, useSelection } from "./SelectionContext";
 
 interface FileExplorerContextValue {
@@ -11,6 +12,7 @@ interface FileExplorerContextValue {
 	folders: FolderItemFragment[];
 	providers: ProviderInfo[];
 	currentFolderId: string | undefined;
+	currentFolderName: string | undefined;
 	isLoading: boolean;
 	canWrite: boolean;
 }
@@ -26,6 +28,7 @@ interface FileExplorerProviderProps {
 	folders: FolderItemFragment[];
 	providers: ProviderInfo[];
 	currentFolderId: string | undefined;
+	currentFolderName: string | undefined;
 	isLoading: boolean;
 	canWrite: boolean;
 	navigate: (folderId: string) => void;
@@ -39,22 +42,44 @@ function FileExplorerInner({
 	folders,
 	providers,
 	currentFolderId,
+	currentFolderName,
 	isLoading,
 	canWrite,
 	navigate,
 	refresh,
 }: FileExplorerProviderProps) {
-	const { effectiveSelection } = useSelection();
+	const { effectiveSelection, clear } = useSelection();
+	const clipboardMode = useClipboardStore((s) => s.mode);
+	const clipboardStatus = useClipboardStore((s) => s.status);
+	const clipboardCount = useClipboardStore((s) => s.items.length);
 
 	const actionContext = useMemo<ActionContext>(
 		() => ({
 			selection: effectiveSelection,
+			clearSelection: clear,
 			providers,
 			currentFolderId,
+			currentFolderName,
+			clipboard: {
+				mode: clipboardMode,
+				status: clipboardStatus,
+				count: clipboardCount,
+			},
 			navigate,
 			refresh,
 		}),
-		[effectiveSelection, providers, currentFolderId, navigate, refresh],
+		[
+			effectiveSelection,
+			clear,
+			providers,
+			currentFolderId,
+			currentFolderName,
+			clipboardMode,
+			clipboardStatus,
+			clipboardCount,
+			navigate,
+			refresh,
+		],
 	);
 
 	const value = useMemo<FileExplorerContextValue>(
@@ -65,6 +90,7 @@ function FileExplorerInner({
 			folders,
 			providers,
 			currentFolderId,
+			currentFolderName,
 			isLoading,
 			canWrite,
 		}),
@@ -75,6 +101,7 @@ function FileExplorerInner({
 			folders,
 			providers,
 			currentFolderId,
+			currentFolderName,
 			isLoading,
 			canWrite,
 		],

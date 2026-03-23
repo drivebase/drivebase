@@ -1,9 +1,6 @@
 import { ValidationError } from "@drivebase/core";
 import type { Database } from "@drivebase/db";
-import {
-	buildTransferQueueJobId,
-	getTransferQueue,
-} from "@/queue/transfer/queue";
+import { enqueueProviderTransfer } from "@/queue/transfer/enqueue";
 import { logger } from "../../../utils/runtime/logger";
 import { ActivityService } from "../../activity";
 import { ProviderService } from "../../provider";
@@ -35,8 +32,14 @@ export async function moveFileToProvider(
 
 	try {
 		const activityService = new ActivityService(db);
-		const activityJob = await activityService.create(workspaceId, {
-			type: "provider_transfer",
+		const { activityJob } = await enqueueProviderTransfer(activityService, {
+			entity: "file",
+			operation: "cut",
+			workspaceId,
+			userId,
+			fileId: file.id,
+			targetProviderId,
+			targetFolderId: null,
 			title: `Transfer ${file.name}`,
 			message: "Queued for transfer",
 			metadata: {
@@ -45,21 +48,8 @@ export async function moveFileToProvider(
 				sourceProviderId: file.providerId,
 				targetProviderId,
 				totalSize: file.size,
-				phase: "queued",
 			},
 		});
-
-		await getTransferQueue().add(
-			"move-file-to-provider",
-			{
-				jobId: activityJob.id,
-				workspaceId,
-				userId,
-				fileId: file.id,
-				targetProviderId,
-			},
-			{ jobId: buildTransferQueueJobId(file.id, targetProviderId) },
-		);
 
 		await activityService.log({
 			kind: "file.transfer.queued",

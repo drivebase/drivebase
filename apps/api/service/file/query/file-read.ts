@@ -25,7 +25,7 @@ export async function getFile(
 		.limit(1);
 
 	if (!file?.nodes) {
-		throw new NotFoundError("File");
+		throw new NotFoundError(`File (id=${fileId})`);
 	}
 
 	return file.nodes;

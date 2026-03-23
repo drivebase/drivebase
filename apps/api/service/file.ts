@@ -16,6 +16,7 @@ import {
 	listFiles,
 	moveFile,
 	moveFileToProvider,
+	pasteSelection,
 	refreshFileLifecycle,
 	renameFile,
 	requestDownload,
@@ -32,6 +33,11 @@ import {
 	getAccessibleProviderIds,
 	getAccessibleWorkspaceId,
 } from "./workspace";
+import type {
+	ClipboardItemInput,
+	PasteOperation,
+	PasteSelectionResult,
+} from "./file/transfer/paste-selection";
 
 export class FileService {
 	constructor(private db: Database) {}
@@ -247,6 +253,27 @@ export class FileService {
 	) {
 		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
 			moveFileToProvider(this.db, fileId, userId, providerId, workspaceId),
+		);
+	}
+
+	pasteSelection(
+		userId: string,
+		operation: PasteOperation,
+		targetFolderId: string | null,
+		targetProviderId: string | null,
+		items: ClipboardItemInput[],
+		preferredWorkspaceId?: string,
+	): Promise<PasteSelectionResult> {
+		return this.withWorkspace(userId, preferredWorkspaceId, (workspaceId) =>
+			pasteSelection(
+				this.db,
+				userId,
+				workspaceId,
+				operation,
+				targetFolderId,
+				targetProviderId,
+				items,
+			),
 		);
 	}
 

@@ -17,7 +17,6 @@ export interface ActivityListItem {
 interface ActivityStore {
 	jobs: Map<string, Job>;
 	activities: Map<string, ActivityListItem>;
-	setJobs: (jobs: Job[]) => void;
 	setJob: (job: Job) => void;
 	removeJob: (id: string) => void;
 	setActivity: (activity: ActivityListItem) => void;
@@ -25,15 +24,23 @@ interface ActivityStore {
 	clearCompleted: () => void;
 }
 
+function getJobUpdatedAt(job: Job | undefined): number {
+	if (!job?.updatedAt) {
+		return 0;
+	}
+	const timestamp = new Date(job.updatedAt).getTime();
+	return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
 export const useActivityStore = create<ActivityStore>((set) => ({
 	jobs: new Map<string, Job>(),
 	activities: new Map<string, ActivityListItem>(),
-	setJobs: (jobs) =>
-		set(() => ({
-			jobs: new Map(jobs.map((job) => [job.id, job])),
-		})),
 	setJob: (job) =>
 		set((state) => {
+			const existing = state.jobs.get(job.id);
+			if (getJobUpdatedAt(existing) > getJobUpdatedAt(job)) {
+				return state;
+			}
 			const jobs = new Map(state.jobs);
 			jobs.set(job.id, job);
 			return { jobs };
@@ -68,7 +75,8 @@ export const useActivityStore = create<ActivityStore>((set) => ({
 			for (const [id, job] of state.jobs.entries()) {
 				if (
 					job.status === JobStatus.Pending ||
-					job.status === JobStatus.Running
+					job.status === JobStatus.Running ||
+					job.status === JobStatus.Paused
 				) {
 					jobs.set(id, job);
 				}

@@ -10,10 +10,20 @@ export type SelectionItem =
 export interface ActionContext {
 	/** Currently selected items */
 	selection: SelectionItem[];
+	/** Clears the current selection */
+	clearSelection: () => void;
 	/** Available storage providers */
 	providers: ProviderInfo[];
 	/** Current folder ID (undefined = root) */
 	currentFolderId: string | undefined;
+	/** Current folder name (undefined = root) */
+	currentFolderName: string | undefined;
+	/** Clipboard state summary */
+	clipboard: {
+		mode: "cut" | "copy" | null;
+		status: "idle" | "staged" | "transferring";
+		count: number;
+	};
 	/** Navigate to a folder */
 	navigate: (folderId: string) => void;
 	/** Refresh contents after mutation */
@@ -22,7 +32,7 @@ export interface ActionContext {
 
 export interface FileAction {
 	id: string;
-	label: string;
+	label: string | ((ctx: ActionContext) => string);
 	icon: ComponentType<{ size?: number; className?: string }>;
 	/** Keyboard shortcut display string (e.g. "Del", "F2") */
 	shortcut?: string;

@@ -14,6 +14,7 @@
 		"dev:api": "bun --env-file=.env.local turbo run --filter=api dev",
 		"dev:web": "bun --env-file=.env.local turbo run --filter=web dev",
 		"test": "bun test --env-file=.env.test",
+		"test:web": "cd apps/web && bunx vitest run",
 		"check-types": "turbo run check-types",
 		"db:generate": "bun run --filter=@drivebase/db generate",
 		"db:migrate": "bun run --filter=@drivebase/db migrate",

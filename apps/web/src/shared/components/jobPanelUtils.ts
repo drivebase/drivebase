@@ -41,6 +41,7 @@ export function isTerminalJob(job: Job): boolean {
 export function getStatusLabel(job: Job): string {
 	if (job.status === JobStatus.Running) return "Running";
 	if (job.status === JobStatus.Pending) return "Pending";
+	if (job.status === JobStatus.Paused) return "Paused";
 	if (job.status === JobStatus.Completed) return "Completed";
 	return "Error";
 }
@@ -48,6 +49,7 @@ export function getStatusLabel(job: Job): string {
 export function getProgressIndicatorClass(status: JobStatus): string {
 	if (status === JobStatus.Error) return "bg-destructive";
 	if (status === JobStatus.Completed) return "bg-emerald-600";
+	if (status === JobStatus.Paused) return "bg-yellow-500";
 	return "bg-primary";
 }
 

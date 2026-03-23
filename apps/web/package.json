@@ -3,7 +3,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "vite --port 3000",
+		"dev": "vite",
 		"build": "bun run codegen && bun run i18n:extract && bun run i18n:compile && vite build && tsc",
 		"preview": "vite preview",
 		"test": "vitest run",

@@ -53,6 +53,11 @@ extend type Mutation {
 	cancelJob(jobId: ID!): Boolean! @auth
 
 	"""
+	Resolve a paused job by providing a user resolution (e.g. overwrite or skip).
+	"""
+	resolveJobPause(jobId: ID!, resolution: JSON!): Job! @auth
+
+	"""
 	Delete activities by ID for the current user
 	"""
 	clearActivities(ids: [ID!]!): Int! @auth
@@ -64,6 +69,7 @@ Job status for trackable long-running operations
 enum JobStatus {
 	PENDING
 	RUNNING
+	PAUSED
 	COMPLETED
 	ERROR
 }

@@ -7,15 +7,21 @@ import {
 	PiCaretDown as ChevronDown,
 	PiCaretUp as ChevronUp,
 	PiClock as Clock3,
+	PiPauseCircle as PauseCircle,
 	PiSpinnerGap as Loader2,
 } from "react-icons/pi";
 import { toast } from "sonner";
 import { useMutation } from "urql";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { getActiveWorkspaceId } from "@/features/workspaces";
 import { type Job, JobStatus } from "@/gql/graphql";
-import { CANCEL_JOB_MUTATION } from "@/shared/api/activity";
+import {
+	CANCEL_JOB_MUTATION,
+	RESOLVE_JOB_PAUSE_MUTATION,
+} from "@/shared/api/activity";
 import { confirmDialog } from "@/shared/lib/confirmDialog";
 import { useActivityStore } from "@/shared/store/activityStore";
 import {
@@ -28,6 +34,7 @@ import {
 	type HiddenJobsMap,
 	isTerminalJob,
 } from "./jobPanelUtils";
+import { canApplyToAll, getPauseActions, type PauseAction } from "./jobPauseUi";
 
 const JOB_PANEL_EXPANDED_STORAGE_KEY = "job_panel_expanded";
 
@@ -37,12 +44,25 @@ function getInitialExpandedState(): boolean {
 	return true;
 }
 
+function getPauseActionLabel(action: PauseAction) {
+	if (action === "duplicate") {
+		return t`Duplicate`;
+	}
+	if (action === "overwrite") {
+		return t`Overwrite`;
+	}
+	return t`Skip`;
+}
+
 function getStatusIcon(status: JobStatus) {
 	if (status === JobStatus.Running) {
 		return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
 	}
 	if (status === JobStatus.Pending) {
 		return <Clock3 className="h-4 w-4 text-muted-foreground" />;
+	}
+	if (status === JobStatus.Paused) {
+		return <PauseCircle className="h-4 w-4 text-yellow-600" />;
 	}
 	if (status === JobStatus.Completed) {
 		return <CheckCircle2 className="h-4 w-4 text-green-600" />;
@@ -56,15 +76,28 @@ export function JobPanel() {
 	const [cancellingJobIds, setCancellingJobIds] = useState<Set<string>>(
 		() => new Set(),
 	);
+	const [resolvingJobIds, setResolvingJobIds] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [applyToAllMap, setApplyToAllMap] = useState<Record<string, boolean>>(
+		{},
+	);
 	const [hiddenJobs, setHiddenJobs] = useState<HiddenJobsMap>(() =>
 		getInitialHiddenJobs(workspaceId),
 	);
 	const [, cancelJob] = useMutation(CANCEL_JOB_MUTATION);
+	const [, resolveJobPause] = useMutation(RESOLVE_JOB_PAUSE_MUTATION);
 	const jobsMap = useActivityStore((state) => state.jobs);
 
 	const jobs = useMemo(
 		() =>
 			Array.from(jobsMap.values())
+				.filter((job) => {
+					// Hide child jobs that belong to a batch — only the batch
+					// job itself should be visible.
+					const meta = job.metadata as Record<string, unknown> | null;
+					return !meta?.parentJobId;
+				})
 				.sort(
 					(a, b) =>
 						new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
@@ -166,6 +199,40 @@ export function JobPanel() {
 		}
 	};
 
+	const handleResolveJobPause = async (
+		job: Job,
+		action: "duplicate" | "overwrite" | "skip",
+	) => {
+		setResolvingJobIds((prev) => {
+			const next = new Set(prev);
+			next.add(job.id);
+			return next;
+		});
+
+		try {
+			const result = await resolveJobPause({
+				jobId: job.id,
+				resolution: {
+					action,
+					applyToAll: applyToAllMap[job.id] ?? false,
+				},
+			});
+			if (result.error || !result.data?.resolveJobPause) {
+				throw new Error(result.error?.message ?? t`Failed to resolve job`);
+			}
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : t`Failed to resolve job`,
+			);
+		} finally {
+			setResolvingJobIds((prev) => {
+				const next = new Set(prev);
+				next.delete(job.id);
+				return next;
+			});
+		}
+	};
+
 	return (
 		<div className="fixed right-6 bottom-6 z-50 w-96 border bg-background shadow-2xl">
 			<div className="flex items-center justify-between border-b px-4 py-3">
@@ -193,6 +260,8 @@ export function JobPanel() {
 						Math.min(100, Math.round(job.progress * 100)),
 					);
 					const retryLabel = getRetryLabel(job);
+					const pauseActions = getPauseActions(job.metadata);
+					const showApplyToAll = canApplyToAll(job.metadata);
 
 					return (
 						<div key={job.id} className="space-y-2">
@@ -206,8 +275,8 @@ export function JobPanel() {
 									</div>
 								</div>
 								<div className="shrink-0 flex items-center gap-2">
-									{job.status === JobStatus.Pending ||
-									job.status === JobStatus.Running ? (
+									{(job.status === JobStatus.Pending ||
+										job.status === JobStatus.Running) && (
 										<Button
 											size="sm"
 											variant="outline"
@@ -216,10 +285,48 @@ export function JobPanel() {
 										>
 											<Trans>Cancel</Trans>
 										</Button>
-									) : null}
+									)}
 									{getStatusIcon(job.status)}
 								</div>
 							</div>
+							{job.status === JobStatus.Paused && pauseActions.length > 0 && (
+								<div className="flex items-center justify-between gap-2">
+									<div className="flex items-center gap-1">
+										{pauseActions.map((action) => (
+											<Button
+												key={action}
+												size="sm"
+												variant="outline"
+												className="h-7 px-2 text-xs"
+												onClick={() => void handleResolveJobPause(job, action)}
+												disabled={resolvingJobIds.has(job.id)}
+											>
+												{getPauseActionLabel(action)}
+											</Button>
+										))}
+									</div>
+									{showApplyToAll && (
+										<div className="flex items-center gap-2">
+											<Checkbox
+												id={`apply-to-all-${job.id}`}
+												checked={applyToAllMap[job.id] ?? false}
+												onCheckedChange={(checked) =>
+													setApplyToAllMap((prev) => ({
+														...prev,
+														[job.id]: !!checked,
+													}))
+												}
+											/>
+											<Label
+												htmlFor={`apply-to-all-${job.id}`}
+												className="text-xs text-muted-foreground"
+											>
+												<Trans>Apply to all</Trans>
+											</Label>
+										</div>
+									)}
+								</div>
+							)}
 							<Progress
 								value={progress}
 								className="h-1.5"

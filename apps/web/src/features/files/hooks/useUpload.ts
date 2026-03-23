@@ -18,11 +18,13 @@ const CHUNK_THRESHOLD = 50 * 1024 * 1024; // 50MB
 
 interface UseUploadOptions {
 	currentFolderId: string | undefined;
+	currentFolderProviderId?: string;
 	onUploadComplete: () => void;
 }
 
 export function useUpload({
 	currentFolderId,
+	currentFolderProviderId,
 	onUploadComplete,
 }: UseUploadOptions) {
 	const { token } = useAuthStore();
@@ -216,6 +218,16 @@ export function useUpload({
 
 	const handleFilesSelected = (incomingFiles: File[]) => {
 		if (!incomingFiles.length) return;
+		if (currentFolderId) {
+			if (!currentFolderProviderId) {
+				toast.error(
+					"Current folder details are still loading. Try the upload again in a moment.",
+				);
+				return;
+			}
+			handleUploadQueue(incomingFiles, currentFolderProviderId);
+			return;
+		}
 		if (activeProviders.length === 1) {
 			handleUploadQueue(incomingFiles, activeProviders[0].id);
 		} else if (activeProviders.length > 1) {
