@@ -951,18 +951,47 @@ export async function handleRootTransfer(
 			finalManifest.failedFiles > 0 ? "failed" : "completed",
 		);
 
-		if (finalManifest.failedFiles > 0) {
-			await activityService.fail(
-				jobId,
-				getTransferCompletionMessage(finalManifest),
-			);
-			return;
+		const completionMessage = getTransferCompletionMessage(finalManifest);
+		const hasFailed = finalManifest.failedFiles > 0;
+
+		if (hasFailed) {
+			await activityService.fail(jobId, completionMessage);
+		} else {
+			await activityService.complete(jobId, completionMessage);
 		}
 
-		await activityService.complete(
-			jobId,
-			getTransferCompletionMessage(finalManifest),
-		);
+		await activityService.log({
+			kind: hasFailed
+				? "transfer.session.failed"
+				: "transfer.session.completed",
+			title: hasFailed
+				? "Transfer completed with errors"
+				: "Transfer completed",
+			summary: completionMessage,
+			status: hasFailed ? "error" : "success",
+			userId,
+			workspaceId,
+			details: {
+				transferSessionId: session.id,
+				jobId,
+				operation: data.operation,
+				totalFiles: finalManifest.totalFiles,
+				completedFiles: finalManifest.completedFiles,
+				failedFiles: finalManifest.failedFiles,
+				skippedFiles: finalManifest.skippedFiles,
+				...(hasFailed
+					? {
+							errors: finalManifest.files
+								.filter((f) => f.status === "failed")
+								.map((f) => ({
+									name: f.name,
+									sourcePath: f.sourceVirtualPath,
+									error: f.errorMessage,
+								})),
+						}
+					: {}),
+			},
+		});
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		logger.error({
@@ -976,6 +1005,37 @@ export async function handleRootTransfer(
 			manifest,
 		}).catch(() => {});
 		await activityService.fail(jobId, message);
+		await activityService
+			.log({
+				kind: "transfer.session.failed",
+				title: "Transfer failed",
+				summary: message,
+				status: "error",
+				userId,
+				workspaceId,
+				details: {
+					transferSessionId: session.id,
+					jobId,
+					operation: data.operation,
+					error: message,
+					totalFiles: manifest?.totalFiles ?? 0,
+					completedFiles: manifest?.completedFiles ?? 0,
+					failedFiles: manifest?.failedFiles ?? 0,
+					skippedFiles: manifest?.skippedFiles ?? 0,
+					...(manifest?.files
+						? {
+								errors: manifest.files
+									.filter((f) => f.status === "failed")
+									.map((f) => ({
+										name: f.name,
+										sourcePath: f.sourceVirtualPath,
+										error: f.errorMessage,
+									})),
+							}
+						: {}),
+				},
+			})
+			.catch(() => {});
 	} finally {
 		for (const provider of sourceProviders.values()) {
 			await provider.cleanup().catch(() => {});

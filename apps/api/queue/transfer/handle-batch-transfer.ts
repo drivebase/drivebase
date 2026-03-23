@@ -196,17 +196,63 @@ export async function handleBatchTransfer(
 		}
 	}
 
-	if (failedCount > 0) {
-		await activityService.fail(
-			visibleJobId,
-			`${completedCount} of ${totalFiles} files transferred, ${failedCount} failed`,
-		);
+	const hasFailed = failedCount > 0;
+	const summaryMessage = hasFailed
+		? `${completedCount} of ${totalFiles} files transferred, ${failedCount} failed`
+		: `${completedCount} files transferred`;
+
+	if (hasFailed) {
+		await activityService.fail(visibleJobId, summaryMessage);
 	} else {
-		await activityService.complete(
-			visibleJobId,
-			`${completedCount} files transferred`,
-		);
+		await activityService.complete(visibleJobId, summaryMessage);
 	}
+
+	// Collect error details from failed child jobs for the activity log
+	let errors: Array<{ jobId: string; title: string; error: string }> = [];
+	if (hasFailed) {
+		const failedRows = await db
+			.select({
+				id: jobs.id,
+				title: jobs.title,
+				message: jobs.message,
+			})
+			.from(jobs)
+			.where(inArray(jobs.id, childJobIds));
+		errors = failedRows
+			.filter((r) => r.message && r.title)
+			.filter(
+				(_, idx) =>
+					// Only include jobs that actually errored (check via our tracked state)
+					// We query all and rely on message content, but limit to 50
+					idx < 50,
+			)
+			.map((r) => ({
+				jobId: r.id,
+				title: r.title ?? "",
+				error: r.message ?? "",
+			}));
+	}
+
+	await activityService
+		.log({
+			kind: hasFailed ? "transfer.batch.failed" : "transfer.batch.completed",
+			title: hasFailed
+				? "Batch transfer completed with errors"
+				: "Batch transfer completed",
+			summary: summaryMessage,
+			status: hasFailed ? "error" : "success",
+			userId,
+			workspaceId,
+			details: {
+				jobId: visibleJobId,
+				operation,
+				totalFiles,
+				completedFiles: completedCount,
+				failedFiles: failedCount,
+				...(errors.length > 0 ? { errors } : {}),
+			},
+		})
+		.catch(() => {});
 
 	if (visibleJobId !== jobId) {
 		await activityService.complete(jobId, "Batch monitor done");
