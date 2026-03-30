@@ -1,5 +1,24 @@
 # Changelog
 
+## [3.5.5](https://github.com/drivebase/drivebase/compare/v3.5.4...v3.5.5) (2026-03-30)
+
+### Features
+
+* add explorer cut/copy/paste clipboard with queued cross-provider folder/file transfers ([746a758](https://github.com/drivebase/drivebase/commit/746a758d55e7c8c31c09bd7f115fe0acfeaba31b))
+* enable sync to provider by default and remove settings toggle ([e4afa43](https://github.com/drivebase/drivebase/commit/e4afa43f25af77e4c59f5df5d89b1199422580b4))
+* **www:** add JSON-LD structured data for SEO across blog and docs ([dd90780](https://github.com/drivebase/drivebase/commit/dd9078045cc171f2f3818d39f1c5f26ad7151bac))
+
+### Fixes
+
+* add DATA_DIR to .env.test ([547442d](https://github.com/drivebase/drivebase/commit/547442d07a3f194844c83844e41854db026ad2c5))
+* reduce docker image size from 1.4GB to 700MB ([9e73420](https://github.com/drivebase/drivebase/commit/9e73420b6679bf5ff2b862cdfb288c0b108ee956))
+* replace pdf-to-img with pdftoppm CLI to fix arm64-musl crash on RPi4 ([4b56358](https://github.com/drivebase/drivebase/commit/4b563580f4debf128fcc5057457785837606435b))
+* set default port to 8900 and remove unnecessary env ([3a61a1d](https://github.com/drivebase/drivebase/commit/3a61a1de17ae0dd4c4590e1ce2914d696b14c48f))
+
+### Others
+
+* add samba docker ([8ea2330](https://github.com/drivebase/drivebase/commit/8ea2330e55791d62b5fd81ebea39ab83549f7c51))
+
 ## [3.5.4](https://github.com/drivebase/drivebase/compare/v3.5.3...v3.5.4) (2026-03-11)
 
 ### Fixes

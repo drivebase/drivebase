@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/drivebase/drivebase:v3.5.4
+    image: ghcr.io/drivebase/drivebase:v3.5.5
     container_name: drivebase_app
     restart: unless-stopped
     environment:
@@ -28,7 +28,7 @@ services:
       - drivebase-network
 
   updater:
-    image: ghcr.io/drivebase/updater:v3.5.4
+    image: ghcr.io/drivebase/updater:v3.5.5
     container_name: drivebase_updater
     restart: unless-stopped
     volumes:
