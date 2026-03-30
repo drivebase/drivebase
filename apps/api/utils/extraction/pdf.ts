@@ -1,3 +1,13 @@
+import { spawnSync } from "node:child_process";
+import {
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { PDFParse } from "pdf-parse";
 import { extractFromImage } from "./image";
 
@@ -31,21 +41,37 @@ export async function extractFromPdf(buffer: Buffer): Promise<{
 }
 
 async function extractPdfViaOcr(buffer: Buffer): Promise<string> {
+	const tmpDir = mkdtempSync(join(tmpdir(), "pdf-ocr-"));
 	try {
-		const { pdf } = await import("pdf-to-img");
-		const pages: string[] = [];
+		const pdfPath = join(tmpDir, "input.pdf");
+		const outPrefix = join(tmpDir, "page");
+		writeFileSync(pdfPath, buffer);
 
-		const document = await pdf(buffer);
-		for await (const page of document) {
-			const imageBuffer = Buffer.from(page);
+		const result = spawnSync(
+			"pdftoppm",
+			["-r", "150", "-png", pdfPath, outPrefix],
+			{
+				timeout: 60_000,
+			},
+		);
+		if (result.status !== 0) return "";
+
+		const pngFiles = readdirSync(tmpDir)
+			.filter((f) => f.endsWith(".png"))
+			.sort()
+			.map((f) => join(tmpDir, f));
+
+		const pages: string[] = [];
+		for (const pngPath of pngFiles) {
+			const imageBuffer = readFileSync(pngPath);
 			const pageText = await extractFromImage(imageBuffer);
-			if (pageText) {
-				pages.push(pageText);
-			}
+			if (pageText) pages.push(pageText);
 		}
 
 		return pages.join("\n\n");
 	} catch {
 		return "";
+	} finally {
+		rmSync(tmpDir, { recursive: true, force: true });
 	}
 }

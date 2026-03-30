@@ -29,7 +29,7 @@ RUN bunx turbo prune --scope=api --docker && \
 FROM base AS runtime-base
 WORKDIR /app
 
-RUN apk add --no-cache caddy supervisor
+RUN apk add --no-cache caddy supervisor poppler-utils
 
 COPY --from=prod-deps /app/out/json/node_modules ./node_modules
 COPY --from=builder /app/apps/api ./apps/api
