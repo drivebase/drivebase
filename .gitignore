@@ -50,4 +50,6 @@ apps/web/src/locales/*/messages.ts
 # SQL
 /*.sql
 
+# data
 /data
+docker/samba/samba_share

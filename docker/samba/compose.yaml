@@ -1,0 +1,16 @@
+services:
+  samba:
+    image: docker.io/dockurr/samba
+    container_name: samba
+    ports:
+      - "9990:445"
+    environment:
+      NAME: Data
+      USER: samba
+      PASS: secret
+    volumes:
+      - ./samba_share:/storage
+      - ./smb.conf:/etc/samba/smb.conf:ro
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
