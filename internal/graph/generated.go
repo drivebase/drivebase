@@ -43,6 +43,14 @@ type ComplexityRoot struct {
 		User         func(childComplexity int) int
 	}
 
+	BandwidthSummary struct {
+		Direction   func(childComplexity int) int
+		PeriodEnd   func(childComplexity int) int
+		PeriodStart func(childComplexity int) int
+		ProviderID  func(childComplexity int) int
+		TotalBytes  func(childComplexity int) int
+	}
+
 	FileNode struct {
 		Checksum         func(childComplexity int) int
 		CreatedAt        func(childComplexity int) int
@@ -72,6 +80,7 @@ type ComplexityRoot struct {
 		DeleteFile           func(childComplexity int, input DeleteFileInput) int
 		DeleteWorkspace      func(childComplexity int, id uuid.UUID) int
 		DisconnectProvider   func(childComplexity int, id uuid.UUID) int
+		GenerateTempLink     func(childComplexity int, fileNodeID uuid.UUID, ttlSeconds *int) int
 		InviteMember         func(childComplexity int, workspaceID uuid.UUID, email string, roleID uuid.UUID) int
 		MoveFile             func(childComplexity int, input MoveFileInput) int
 		RefreshProviderQuota func(childComplexity int, providerID uuid.UUID) int
@@ -119,6 +128,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		BandwidthUsage    func(childComplexity int, workspaceID uuid.UUID, providerID *uuid.UUID, from *time.Time, to *time.Time) int
 		GetFile           func(childComplexity int, providerID uuid.UUID, fileNodeID uuid.UUID) int
 		ListFiles         func(childComplexity int, input ListFilesInput) int
 		Me                func(childComplexity int) int
@@ -238,6 +248,7 @@ type MutationResolver interface {
 	RefreshToken(ctx context.Context, token string) (*AuthPayload, error)
 	SignOut(ctx context.Context) (bool, error)
 	RevokeSession(ctx context.Context, sessionID uuid.UUID) (bool, error)
+	GenerateTempLink(ctx context.Context, fileNodeID uuid.UUID, ttlSeconds *int) (string, error)
 	CreateFolder(ctx context.Context, input CreateFolderInput) (*FileNode, error)
 	DeleteFile(ctx context.Context, input DeleteFileInput) (bool, error)
 	RenameFile(ctx context.Context, input RenameFileInput) (*FileNode, error)
@@ -262,6 +273,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Me(ctx context.Context) (*User, error)
 	MySessions(ctx context.Context) ([]*Session, error)
+	BandwidthUsage(ctx context.Context, workspaceID uuid.UUID, providerID *uuid.UUID, from *time.Time, to *time.Time) ([]*BandwidthSummary, error)
 	ListFiles(ctx context.Context, input ListFilesInput) (*ListFilesResult, error)
 	GetFile(ctx context.Context, providerID uuid.UUID, fileNodeID uuid.UUID) (*FileNode, error)
 	UploadBatch(ctx context.Context, id uuid.UUID) (*UploadBatch, error)
@@ -310,6 +322,37 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.AuthPayload.User(childComplexity), true
+
+	case "BandwidthSummary.direction":
+		if e.ComplexityRoot.BandwidthSummary.Direction == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BandwidthSummary.Direction(childComplexity), true
+	case "BandwidthSummary.periodEnd":
+		if e.ComplexityRoot.BandwidthSummary.PeriodEnd == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BandwidthSummary.PeriodEnd(childComplexity), true
+	case "BandwidthSummary.periodStart":
+		if e.ComplexityRoot.BandwidthSummary.PeriodStart == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BandwidthSummary.PeriodStart(childComplexity), true
+	case "BandwidthSummary.providerID":
+		if e.ComplexityRoot.BandwidthSummary.ProviderID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BandwidthSummary.ProviderID(childComplexity), true
+	case "BandwidthSummary.totalBytes":
+		if e.ComplexityRoot.BandwidthSummary.TotalBytes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BandwidthSummary.TotalBytes(childComplexity), true
 
 	case "FileNode.checksum":
 		if e.ComplexityRoot.FileNode.Checksum == nil {
@@ -485,6 +528,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DisconnectProvider(childComplexity, args["id"].(uuid.UUID)), true
+	case "Mutation.generateTempLink":
+		if e.ComplexityRoot.Mutation.GenerateTempLink == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_generateTempLink_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.GenerateTempLink(childComplexity, args["fileNodeID"].(uuid.UUID), args["ttlSeconds"].(*int)), true
 	case "Mutation.inviteMember":
 		if e.ComplexityRoot.Mutation.InviteMember == nil {
 			break
@@ -779,6 +833,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ProviderValidationResult.Ok(childComplexity), true
 
+	case "Query.bandwidthUsage":
+		if e.ComplexityRoot.Query.BandwidthUsage == nil {
+			break
+		}
+
+		args, err := ec.field_Query_bandwidthUsage_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.BandwidthUsage(childComplexity, args["workspaceID"].(uuid.UUID), args["providerID"].(*uuid.UUID), args["from"].(*time.Time), args["to"].(*time.Time)), true
 	case "Query.getFile":
 		if e.ComplexityRoot.Query.GetFile == nil {
 			break
@@ -1449,7 +1514,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/auth.graphqls" "schema/file.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/sharing.graphqls" "schema/transfer.graphqls" "schema/workspace.graphqls"
+//go:embed "schema/auth.graphqls" "schema/bandwidth.graphqls" "schema/file.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/sharing.graphqls" "schema/transfer.graphqls" "schema/workspace.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -1462,6 +1527,7 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "schema/auth.graphqls", Input: sourceData("schema/auth.graphqls"), BuiltIn: false},
+	{Name: "schema/bandwidth.graphqls", Input: sourceData("schema/bandwidth.graphqls"), BuiltIn: false},
 	{Name: "schema/file.graphqls", Input: sourceData("schema/file.graphqls"), BuiltIn: false},
 	{Name: "schema/provider.graphqls", Input: sourceData("schema/provider.graphqls"), BuiltIn: false},
 	{Name: "schema/schema.graphqls", Input: sourceData("schema/schema.graphqls"), BuiltIn: false},
@@ -1560,6 +1626,22 @@ func (ec *executionContext) field_Mutation_disconnectProvider_args(ctx context.C
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_generateTempLink_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "fileNodeID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["fileNodeID"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "ttlSeconds", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["ttlSeconds"] = arg1
 	return args, nil
 }
 
@@ -1782,6 +1864,32 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_bandwidthUsage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["workspaceID"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "providerID", ec.unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["providerID"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "from", ec.unmarshalOTime2ᚖtimeᚐTime)
+	if err != nil {
+		return nil, err
+	}
+	args["from"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "to", ec.unmarshalOTime2ᚖtimeᚐTime)
+	if err != nil {
+		return nil, err
+	}
+	args["to"] = arg3
 	return args, nil
 }
 
@@ -2077,6 +2185,151 @@ func (ec *executionContext) fieldContext_AuthPayload_user(_ context.Context, fie
 				return ec.fieldContext_User_createdAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BandwidthSummary_providerID(ctx context.Context, field graphql.CollectedField, obj *BandwidthSummary) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_BandwidthSummary_providerID,
+		func(ctx context.Context) (any, error) {
+			return obj.ProviderID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_BandwidthSummary_providerID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BandwidthSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BandwidthSummary_direction(ctx context.Context, field graphql.CollectedField, obj *BandwidthSummary) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_BandwidthSummary_direction,
+		func(ctx context.Context) (any, error) {
+			return obj.Direction, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_BandwidthSummary_direction(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BandwidthSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BandwidthSummary_totalBytes(ctx context.Context, field graphql.CollectedField, obj *BandwidthSummary) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_BandwidthSummary_totalBytes,
+		func(ctx context.Context) (any, error) {
+			return obj.TotalBytes, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_BandwidthSummary_totalBytes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BandwidthSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BandwidthSummary_periodStart(ctx context.Context, field graphql.CollectedField, obj *BandwidthSummary) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_BandwidthSummary_periodStart,
+		func(ctx context.Context) (any, error) {
+			return obj.PeriodStart, nil
+		},
+		nil,
+		ec.marshalNTime2timeᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_BandwidthSummary_periodStart(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BandwidthSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BandwidthSummary_periodEnd(ctx context.Context, field graphql.CollectedField, obj *BandwidthSummary) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_BandwidthSummary_periodEnd,
+		func(ctx context.Context) (any, error) {
+			return obj.PeriodEnd, nil
+		},
+		nil,
+		ec.marshalNTime2timeᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_BandwidthSummary_periodEnd(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BandwidthSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2725,6 +2978,47 @@ func (ec *executionContext) fieldContext_Mutation_revokeSession(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_revokeSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_generateTempLink(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_generateTempLink,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().GenerateTempLink(ctx, fc.Args["fileNodeID"].(uuid.UUID), fc.Args["ttlSeconds"].(*int))
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_generateTempLink(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_generateTempLink_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4411,6 +4705,59 @@ func (ec *executionContext) fieldContext_Query_mySessions(_ context.Context, fie
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Session", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_bandwidthUsage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_bandwidthUsage,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().BandwidthUsage(ctx, fc.Args["workspaceID"].(uuid.UUID), fc.Args["providerID"].(*uuid.UUID), fc.Args["from"].(*time.Time), fc.Args["to"].(*time.Time))
+		},
+		nil,
+		ec.marshalNBandwidthSummary2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐBandwidthSummaryᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_bandwidthUsage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "providerID":
+				return ec.fieldContext_BandwidthSummary_providerID(ctx, field)
+			case "direction":
+				return ec.fieldContext_BandwidthSummary_direction(ctx, field)
+			case "totalBytes":
+				return ec.fieldContext_BandwidthSummary_totalBytes(ctx, field)
+			case "periodStart":
+				return ec.fieldContext_BandwidthSummary_periodStart(ctx, field)
+			case "periodEnd":
+				return ec.fieldContext_BandwidthSummary_periodEnd(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BandwidthSummary", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_bandwidthUsage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -9522,6 +9869,65 @@ func (ec *executionContext) _AuthPayload(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
+var bandwidthSummaryImplementors = []string{"BandwidthSummary"}
+
+func (ec *executionContext) _BandwidthSummary(ctx context.Context, sel ast.SelectionSet, obj *BandwidthSummary) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bandwidthSummaryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BandwidthSummary")
+		case "providerID":
+			out.Values[i] = ec._BandwidthSummary_providerID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "direction":
+			out.Values[i] = ec._BandwidthSummary_direction(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalBytes":
+			out.Values[i] = ec._BandwidthSummary_totalBytes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "periodStart":
+			out.Values[i] = ec._BandwidthSummary_periodStart(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "periodEnd":
+			out.Values[i] = ec._BandwidthSummary_periodEnd(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var fileNodeImplementors = []string{"FileNode"}
 
 func (ec *executionContext) _FileNode(ctx context.Context, sel ast.SelectionSet, obj *FileNode) graphql.Marshaler {
@@ -9695,6 +10101,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "revokeSession":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_revokeSession(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "generateTempLink":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_generateTempLink(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -10093,6 +10506,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_mySessions(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "bandwidthUsage":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_bandwidthUsage(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -11412,6 +11847,32 @@ func (ec *executionContext) unmarshalNAuthType2githubᚗcomᚋdrivebaseᚋdriveb
 
 func (ec *executionContext) marshalNAuthType2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAuthType(ctx context.Context, sel ast.SelectionSet, v AuthType) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNBandwidthSummary2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐBandwidthSummaryᚄ(ctx context.Context, sel ast.SelectionSet, v []*BandwidthSummary) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNBandwidthSummary2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐBandwidthSummary(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNBandwidthSummary2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐBandwidthSummary(ctx context.Context, sel ast.SelectionSet, v *BandwidthSummary) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._BandwidthSummary(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {

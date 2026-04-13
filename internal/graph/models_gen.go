@@ -18,6 +18,14 @@ type AuthPayload struct {
 	User         *User  `json:"user"`
 }
 
+type BandwidthSummary struct {
+	ProviderID  uuid.UUID `json:"providerID"`
+	Direction   string    `json:"direction"`
+	TotalBytes  int       `json:"totalBytes"`
+	PeriodStart time.Time `json:"periodStart"`
+	PeriodEnd   time.Time `json:"periodEnd"`
+}
+
 type ConnectProviderInput struct {
 	WorkspaceID uuid.UUID    `json:"workspaceId"`
 	Name        string       `json:"name"`

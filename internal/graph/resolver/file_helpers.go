@@ -11,6 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// boolVal safely dereferences a *bool, returning false for nil.
+func boolVal(b *bool) bool {
+	if b == nil {
+		return false
+	}
+	return *b
+}
+
 // upsertFileNodes syncs provider file list into DB (fire-and-forget).
 func (r *Resolver) upsertFileNodes(ctx context.Context, providerID uuid.UUID, parentRemoteID string, parentNodeID *uuid.UUID, files []storage.FileInfo) {
 	for _, fi := range files {

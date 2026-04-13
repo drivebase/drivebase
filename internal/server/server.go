@@ -74,6 +74,7 @@ func New(cfg *config.Config, db *ent.Client, rdb *redis.Client, transferEngine *
 	h := &fileHandler{cfg: cfg, db: db}
 	r.Post("/api/v1/upload", h.upload)
 	r.Get("/api/v1/download/{fileNodeID}", h.download)
+	r.Get("/api/v1/templink/{fileNodeID}", h.tempLink)
 
 	return r
 }

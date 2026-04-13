@@ -98,11 +98,3 @@ func (r *queryResolver) SharedLinkByToken(ctx context.Context, token string) (*g
 	}
 	return mapSharedLink(link), nil
 }
-
-// boolVal safely dereferences a *bool, returning false for nil.
-func boolVal(b *bool) bool {
-	if b == nil {
-		return false
-	}
-	return *b
-}

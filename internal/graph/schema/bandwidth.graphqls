@@ -1,0 +1,23 @@
+type BandwidthSummary {
+    providerID: UUID!
+    direction: String!
+    totalBytes: Int!
+    periodStart: Time!
+    periodEnd: Time!
+}
+
+extend type Query {
+    # Returns aggregated bandwidth usage. Optionally filter by provider and time range.
+    bandwidthUsage(
+        workspaceID: UUID!
+        providerID: UUID
+        from: Time
+        to: Time
+    ): [BandwidthSummary!]!
+}
+
+extend type Mutation {
+    # Returns a signed query string ("exp=...&sig=...") for a temp download URL.
+    # Append to /api/v1/templink/{fileNodeID}? to form the full URL.
+    generateTempLink(fileNodeID: UUID!, ttlSeconds: Int): String!
+}
