@@ -324,8 +324,8 @@ func (e AuthType) MarshalJSON() ([]byte, error) {
 type ConflictStrategy string
 
 const (
-	ConflictStrategySkip      ConflictStrategy = "skip"
-	ConflictStrategyOverwrite ConflictStrategy = "overwrite"
+	ConflictStrategySkip      ConflictStrategy = "SKIP"
+	ConflictStrategyOverwrite ConflictStrategy = "OVERWRITE"
 )
 
 var AllConflictStrategy = []ConflictStrategy{
@@ -437,7 +437,7 @@ type ProviderType string
 
 const (
 	ProviderTypeGoogleDrive ProviderType = "google_drive"
-	ProviderTypeS3          ProviderType = "s3"
+	ProviderTypeS3          ProviderType = "S3"
 	ProviderTypeLocal       ProviderType = "local"
 )
 

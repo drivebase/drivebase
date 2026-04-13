@@ -307,7 +307,29 @@ func (r *queryResolver) ListFiles(ctx context.Context, input graph.ListFilesInpu
 		_ = r.FileCache.Set(ctx, input.ProviderID, parentRemoteID, listing)
 	}
 
-	return fileResultToGraphQL(result), nil
+	graphResult := fileResultToGraphQL(result)
+
+	// Enrich with DB UUIDs so callers can use the stable database ID.
+	remoteIDs := make([]string, len(result.Files))
+	for i, f := range result.Files {
+		remoteIDs[i] = f.RemoteID
+	}
+	if len(remoteIDs) > 0 {
+		dbNodes, _ := r.DB.FileNode.Query().
+			Where(entfilenode.ProviderID(input.ProviderID), entfilenode.RemoteIDIn(remoteIDs...)).
+			All(ctx)
+		dbMap := make(map[string]uuid.UUID, len(dbNodes))
+		for _, n := range dbNodes {
+			dbMap[n.RemoteID] = n.ID
+		}
+		for _, gf := range graphResult.Files {
+			if id, ok := dbMap[gf.RemoteID]; ok {
+				gf.ID = id
+			}
+		}
+	}
+
+	return graphResult, nil
 }
 
 // GetFile is the resolver for the getFile field.

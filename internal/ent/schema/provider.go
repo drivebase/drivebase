@@ -15,7 +15,7 @@ type ProviderType string
 
 const (
 	ProviderTypeGoogleDrive ProviderType = "google_drive"
-	ProviderTypeS3          ProviderType = "s3"
+	ProviderTypeS3          ProviderType = "S3"
 	ProviderTypeLocal       ProviderType = "local"
 )
 

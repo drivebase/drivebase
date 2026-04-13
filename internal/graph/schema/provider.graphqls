@@ -42,7 +42,7 @@ type ProviderValidationResult {
 
 enum ProviderType {
   google_drive
-  s3
+  S3
   local
 }
 

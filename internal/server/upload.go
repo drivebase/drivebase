@@ -30,9 +30,19 @@ func (h *fileHandler) upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	providerIDStr := r.URL.Query().Get("provider_id")
+	if err := r.ParseMultipartForm(maxUploadMemory); err != nil {
+		http.Error(w, "failed to parse multipart form", http.StatusBadRequest)
+		return
+	}
+	defer r.MultipartForm.RemoveAll()
+
+	// Accept provider_id from form field or query param
+	providerIDStr := r.FormValue("provider_id")
 	if providerIDStr == "" {
-		http.Error(w, "provider_id query param required", http.StatusBadRequest)
+		providerIDStr = r.URL.Query().Get("provider_id")
+	}
+	if providerIDStr == "" {
+		http.Error(w, "provider_id required", http.StatusBadRequest)
 		return
 	}
 	providerID, err := uuid.Parse(providerIDStr)
@@ -41,17 +51,18 @@ func (h *fileHandler) upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	parentRemoteID := r.URL.Query().Get("parent_remote_id")
-
-	if err := r.ParseMultipartForm(maxUploadMemory); err != nil {
-		http.Error(w, "failed to parse multipart form", http.StatusBadRequest)
-		return
+	parentRemoteID := r.FormValue("parent_remote_id")
+	if parentRemoteID == "" {
+		parentRemoteID = r.URL.Query().Get("parent_remote_id")
 	}
-	defer r.MultipartForm.RemoveAll()
 
+	// Accept files under either "files" or "file" field name
 	files := r.MultipartForm.File["files"]
 	if len(files) == 0 {
-		http.Error(w, "no files provided (use field name 'files')", http.StatusBadRequest)
+		files = r.MultipartForm.File["file"]
+	}
+	if len(files) == 0 {
+		http.Error(w, "no files provided (use field name 'file' or 'files')", http.StatusBadRequest)
 		return
 	}
 

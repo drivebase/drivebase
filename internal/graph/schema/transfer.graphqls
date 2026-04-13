@@ -1,6 +1,6 @@
 enum ConflictStrategy {
-  skip
-  overwrite
+  SKIP
+  OVERWRITE
 }
 
 type TransferJob {

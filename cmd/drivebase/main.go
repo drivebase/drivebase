@@ -10,6 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	"database/sql"
+
+	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/drivebase/drivebase/internal/cache"
@@ -19,7 +23,6 @@ import (
 	"github.com/drivebase/drivebase/internal/sharing"
 	"github.com/drivebase/drivebase/internal/worker"
 
-	"entgo.io/ent/dialect"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -43,12 +46,13 @@ func main() {
 
 	ctx := context.Background()
 
-	// Ent client (uses pgx stdlib driver)
-	client, err := ent.Open(dialect.Postgres, cfg.Database.DSN)
+	// Ent client (pgx stdlib driver, postgres dialect)
+	sqlDB, err := sql.Open("pgx", cfg.Database.DSN)
 	if err != nil {
-		slog.Error("failed to connect to database", "error", err)
+		slog.Error("failed to open database", "error", err)
 		os.Exit(1)
 	}
+	client := ent.NewClient(ent.Driver(entsql.OpenDB(dialect.Postgres, sqlDB)))
 	defer client.Close()
 
 	// Auto-migrate (dev mode — switch to Atlas versioned migrations before prod)

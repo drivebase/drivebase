@@ -88,6 +88,7 @@ require (
 	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.10 // indirect
+	github.com/mdelapenya/tlscert v0.2.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/go-archive v0.2.0 // indirect
@@ -115,6 +116,9 @@ require (
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/testcontainers/testcontainers-go/modules/minio v0.42.0 // indirect
+	github.com/testcontainers/testcontainers-go/modules/postgres v0.42.0 // indirect
+	github.com/testcontainers/testcontainers-go/modules/redis v0.42.0 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
