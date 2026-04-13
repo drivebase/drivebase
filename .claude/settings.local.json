@@ -3,6 +3,7 @@
     "allow": [
       "Bash(go run:*)",
       "Bash(go get:*)",
+      "Bash(go test:*)",
       "Bash(go mod:*)"
     ]
   }
