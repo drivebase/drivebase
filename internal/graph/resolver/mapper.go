@@ -58,6 +58,50 @@ func mapProvider(p *ent.Provider) *graph.Provider {
 	}
 }
 
+func mapFileNode(f *ent.FileNode) *graph.FileNode {
+	gf := &graph.FileNode{
+		ID:         f.ID,
+		ProviderID: f.ProviderID,
+		RemoteID:   f.RemoteID,
+		Name:       f.Name,
+		IsDir:      f.IsDir,
+		Size:       int(f.Size),
+		SyncedAt:   f.SyncedAt,
+		CreatedAt:  f.CreatedAt,
+	}
+	if f.ParentID != nil {
+		gf.ParentID = f.ParentID
+	}
+	if f.MimeType != "" {
+		gf.MimeType = &f.MimeType
+	}
+	if f.Checksum != "" {
+		gf.Checksum = &f.Checksum
+	}
+	gf.RemoteModifiedAt = f.RemoteModifiedAt
+	return gf
+}
+
+func mapUploadBatch(b *ent.UploadBatch) *graph.UploadBatch {
+	gb := &graph.UploadBatch{
+		ID:               b.ID,
+		WorkspaceID:      b.WorkspaceID,
+		ProviderID:       b.ProviderID,
+		Status:           b.Status,
+		TotalFiles:       b.TotalFiles,
+		CompletedFiles:   b.CompletedFiles,
+		FailedFiles:      b.FailedFiles,
+		TotalBytes:       int(b.TotalBytes),
+		TransferredBytes: int(b.TransferredBytes),
+		CreatedAt:        b.CreatedAt,
+	}
+	if b.ParentRemoteID != "" {
+		gb.ParentRemoteID = &b.ParentRemoteID
+	}
+	gb.CompletedAt = b.CompletedAt
+	return gb
+}
+
 func mapWorkspaceMember(m *ent.WorkspaceMember) *graph.WorkspaceMember {
 	gm := &graph.WorkspaceMember{
 		ID:       m.ID,

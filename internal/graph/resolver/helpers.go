@@ -9,6 +9,7 @@ import (
 	"github.com/drivebase/drivebase/internal/crypto"
 	"github.com/drivebase/drivebase/internal/ent"
 	entpc "github.com/drivebase/drivebase/internal/ent/providercredential"
+	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
 	"github.com/google/uuid"
@@ -80,6 +81,19 @@ func loadProviderByID(ctx context.Context, db *ent.Client, encKey string, provid
 	}
 
 	return storage.New(storage.ProviderType(p.Type), storage.Credentials(plaintext))
+}
+
+func authTypeForProvider(t storage.ProviderType) entschema.AuthType {
+	switch t {
+	case storage.ProviderTypeGoogleDrive:
+		return entschema.AuthTypeOAuth
+	case storage.ProviderTypeS3:
+		return entschema.AuthTypeAPIKey
+	case storage.ProviderTypeLocal:
+		return entschema.AuthTypeNone
+	default:
+		return entschema.AuthTypeNone
+	}
 }
 
 // withTx runs fn inside a database transaction, rolling back on error or panic.

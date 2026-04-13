@@ -1,0 +1,79 @@
+type FileNode {
+  id: UUID!
+  providerID: UUID!
+  parentID: UUID
+  remoteID: String!
+  name: String!
+  isDir: Boolean!
+  size: Int!
+  mimeType: String
+  checksum: String
+  remoteModifiedAt: Time
+  syncedAt: Time!
+  createdAt: Time!
+}
+
+type ListFilesResult {
+  files: [FileNode!]!
+  nextPageToken: String
+}
+
+type UploadBatch {
+  id: UUID!
+  workspaceID: UUID!
+  providerID: UUID!
+  parentRemoteID: String
+  status: String!
+  totalFiles: Int!
+  completedFiles: Int!
+  failedFiles: Int!
+  totalBytes: Int!
+  transferredBytes: Int!
+  createdAt: Time!
+  completedAt: Time
+}
+
+input ListFilesInput {
+  providerID: UUID!
+  parentID: UUID
+  pageToken: String
+  pageSize: Int
+}
+
+input DeleteFileInput {
+  providerID: UUID!
+  fileNodeID: UUID!
+}
+
+input CreateFolderInput {
+  providerID: UUID!
+  parentRemoteID: String
+  name: String!
+}
+
+input RenameFileInput {
+  providerID: UUID!
+  fileNodeID: UUID!
+  newName: String!
+}
+
+input MoveFileInput {
+  providerID: UUID!
+  fileNodeID: UUID!
+  newParentRemoteID: String!
+}
+
+extend type Query {
+  listFiles(input: ListFilesInput!): ListFilesResult!
+  getFile(providerID: UUID!, fileNodeID: UUID!): FileNode!
+  uploadBatch(id: UUID!): UploadBatch!
+  myUploadBatches(workspaceID: UUID!): [UploadBatch!]!
+}
+
+extend type Mutation {
+  createFolder(input: CreateFolderInput!): FileNode!
+  deleteFile(input: DeleteFileInput!): Boolean!
+  renameFile(input: RenameFileInput!): FileNode!
+  moveFile(input: MoveFileInput!): FileNode!
+  syncProvider(providerID: UUID!): Boolean!
+}

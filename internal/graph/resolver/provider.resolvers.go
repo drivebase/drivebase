@@ -16,12 +16,7 @@ import (
 	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
-
-	// Import provider packages to trigger their init() registration
 	_ "github.com/drivebase/drivebase/internal/storage/googledrive"
-	_ "github.com/drivebase/drivebase/internal/storage/local"
-	_ "github.com/drivebase/drivebase/internal/storage/s3"
-
 	"github.com/google/uuid"
 )
 
@@ -188,17 +183,4 @@ func (r *queryResolver) Provider(ctx context.Context, id uuid.UUID) (*graph.Prov
 	}
 
 	return mapProvider(p), nil
-}
-
-func authTypeForProvider(t storage.ProviderType) entschema.AuthType {
-	switch t {
-	case storage.ProviderTypeGoogleDrive:
-		return entschema.AuthTypeOAuth
-	case storage.ProviderTypeS3:
-		return entschema.AuthTypeAPIKey
-	case storage.ProviderTypeLocal:
-		return entschema.AuthTypeNone
-	default:
-		return entschema.AuthTypeNone
-	}
 }

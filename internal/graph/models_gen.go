@@ -25,9 +25,53 @@ type ConnectProviderInput struct {
 	Credentials string       `json:"credentials"`
 }
 
+type CreateFolderInput struct {
+	ProviderID     uuid.UUID `json:"providerID"`
+	ParentRemoteID *string   `json:"parentRemoteID,omitempty"`
+	Name           string    `json:"name"`
+}
+
 type CreateWorkspaceInput struct {
 	Name string `json:"name"`
 	Slug string `json:"slug"`
+}
+
+type DeleteFileInput struct {
+	ProviderID uuid.UUID `json:"providerID"`
+	FileNodeID uuid.UUID `json:"fileNodeID"`
+}
+
+type FileNode struct {
+	ID               uuid.UUID  `json:"id"`
+	ProviderID       uuid.UUID  `json:"providerID"`
+	ParentID         *uuid.UUID `json:"parentID,omitempty"`
+	RemoteID         string     `json:"remoteID"`
+	Name             string     `json:"name"`
+	IsDir            bool       `json:"isDir"`
+	Size             int        `json:"size"`
+	MimeType         *string    `json:"mimeType,omitempty"`
+	Checksum         *string    `json:"checksum,omitempty"`
+	RemoteModifiedAt *time.Time `json:"remoteModifiedAt,omitempty"`
+	SyncedAt         time.Time  `json:"syncedAt"`
+	CreatedAt        time.Time  `json:"createdAt"`
+}
+
+type ListFilesInput struct {
+	ProviderID uuid.UUID  `json:"providerID"`
+	ParentID   *uuid.UUID `json:"parentID,omitempty"`
+	PageToken  *string    `json:"pageToken,omitempty"`
+	PageSize   *int       `json:"pageSize,omitempty"`
+}
+
+type ListFilesResult struct {
+	Files         []*FileNode `json:"files"`
+	NextPageToken *string     `json:"nextPageToken,omitempty"`
+}
+
+type MoveFileInput struct {
+	ProviderID        uuid.UUID `json:"providerID"`
+	FileNodeID        uuid.UUID `json:"fileNodeID"`
+	NewParentRemoteID string    `json:"newParentRemoteID"`
 }
 
 type Mutation struct {
@@ -49,6 +93,12 @@ type ProviderValidationResult struct {
 }
 
 type Query struct {
+}
+
+type RenameFileInput struct {
+	ProviderID uuid.UUID `json:"providerID"`
+	FileNodeID uuid.UUID `json:"fileNodeID"`
+	NewName    string    `json:"newName"`
 }
 
 type Role struct {
@@ -83,6 +133,21 @@ type UpdateProviderInput struct {
 
 type UpdateWorkspaceInput struct {
 	Name *string `json:"name,omitempty"`
+}
+
+type UploadBatch struct {
+	ID               uuid.UUID  `json:"id"`
+	WorkspaceID      uuid.UUID  `json:"workspaceID"`
+	ProviderID       uuid.UUID  `json:"providerID"`
+	ParentRemoteID   *string    `json:"parentRemoteID,omitempty"`
+	Status           string     `json:"status"`
+	TotalFiles       int        `json:"totalFiles"`
+	CompletedFiles   int        `json:"completedFiles"`
+	FailedFiles      int        `json:"failedFiles"`
+	TotalBytes       int        `json:"totalBytes"`
+	TransferredBytes int        `json:"transferredBytes"`
+	CreatedAt        time.Time  `json:"createdAt"`
+	CompletedAt      *time.Time `json:"completedAt,omitempty"`
 }
 
 type User struct {

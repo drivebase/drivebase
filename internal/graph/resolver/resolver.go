@@ -1,13 +1,16 @@
 package resolver
 
 import (
+	"github.com/drivebase/drivebase/internal/cache"
 	"github.com/drivebase/drivebase/internal/config"
 	"github.com/drivebase/drivebase/internal/ent"
+	"github.com/redis/go-redis/v9"
 )
 
 // Resolver is the root GraphQL resolver. All dependencies are injected here.
-// Additional fields (Redis, storage registry, River) will be added in later phases.
 type Resolver struct {
-	DB     *ent.Client
-	Config *config.Config
+	DB        *ent.Client
+	Config    *config.Config
+	Redis     *redis.Client
+	FileCache *cache.FileTreeCache
 }
