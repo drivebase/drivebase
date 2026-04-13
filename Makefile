@@ -6,11 +6,12 @@ generate:
 
 # Build the binary
 build:
+	mkdir -p bin
 	go build -o bin/drivebase ./cmd/drivebase
 
 # Run locally (requires .env or env vars)
-run:
-	go run ./cmd/drivebase
+run: build
+	./bin/drivebase
 
 # Unit tests
 test:
