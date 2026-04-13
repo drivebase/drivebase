@@ -4,9 +4,11 @@ go 1.25.4
 
 require (
 	entgo.io/ent v0.14.6
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.9.1
 	github.com/spf13/viper v1.21.0
+	golang.org/x/crypto v0.50.0
 )
 
 require (
