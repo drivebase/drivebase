@@ -1,1 +1,32 @@
-/drivebase
+# Binaries
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Config (contains secrets)
+config.toml
+.env
+
+# Test cache
+.testcache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker volumes (local dev data)
+postgres_data/
+redis_data/
+minio_data/
+
+# Cache (runtime, not source)
+/tmp/
