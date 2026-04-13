@@ -1,0 +1,50 @@
+type SharedLink {
+    id: UUID!
+    workspaceID: UUID!
+    fileNodeID: UUID!
+    token: String!
+    permissions: SharedLinkPermissions!
+    expiresAt: Time
+    maxUploads: Int
+    uploadCount: Int!
+    active: Boolean!
+    createdAt: Time!
+}
+
+type SharedLinkPermissions {
+    upload: Boolean!
+    delete: Boolean!
+    mkdir: Boolean!
+    rename: Boolean!
+    move: Boolean!
+    copy: Boolean!
+}
+
+input CreateSharedLinkInput {
+    workspaceID: UUID!
+    fileNodeID: UUID!
+    password: String
+    expiresAt: Time
+    maxUploads: Int
+    permissions: SharedLinkPermissionsInput
+}
+
+input SharedLinkPermissionsInput {
+    upload: Boolean
+    delete: Boolean
+    mkdir: Boolean
+    rename: Boolean
+    move: Boolean
+    copy: Boolean
+}
+
+extend type Mutation {
+    createSharedLink(input: CreateSharedLinkInput!): SharedLink!
+    revokeSharedLink(id: UUID!): Boolean!
+}
+
+extend type Query {
+    sharedLinks(workspaceID: UUID!): [SharedLink!]!
+    # Public query — no auth required, used to display share page metadata.
+    sharedLinkByToken(token: String!): SharedLink
+}

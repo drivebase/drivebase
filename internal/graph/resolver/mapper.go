@@ -154,6 +154,33 @@ func mapUploadBatch(b *ent.UploadBatch) *graph.UploadBatch {
 	return gb
 }
 
+func mapSharedLink(l *ent.SharedLink) *graph.SharedLink {
+	gl := &graph.SharedLink{
+		ID:          l.ID,
+		WorkspaceID: l.WorkspaceID,
+		FileNodeID:  l.FileNodeID,
+		Token:       l.Token,
+		Permissions: &graph.SharedLinkPermissions{
+			Upload: l.Permissions.Upload,
+			Delete: l.Permissions.Delete,
+			Mkdir:  l.Permissions.Mkdir,
+			Rename: l.Permissions.Rename,
+			Move:   l.Permissions.Move,
+			Copy:   l.Permissions.Copy,
+		},
+		UploadCount: l.UploadCount,
+		Active:      l.Active,
+		CreatedAt:   l.CreatedAt,
+	}
+	if l.ExpiresAt != nil {
+		gl.ExpiresAt = l.ExpiresAt
+	}
+	if l.MaxUploads != nil {
+		gl.MaxUploads = l.MaxUploads
+	}
+	return gl
+}
+
 func mapWorkspaceMember(m *ent.WorkspaceMember) *graph.WorkspaceMember {
 	gm := &graph.WorkspaceMember{
 		ID:       m.ID,

@@ -31,6 +31,15 @@ type CreateFolderInput struct {
 	Name           string    `json:"name"`
 }
 
+type CreateSharedLinkInput struct {
+	WorkspaceID uuid.UUID                   `json:"workspaceID"`
+	FileNodeID  uuid.UUID                   `json:"fileNodeID"`
+	Password    *string                     `json:"password,omitempty"`
+	ExpiresAt   *time.Time                  `json:"expiresAt,omitempty"`
+	MaxUploads  *int                        `json:"maxUploads,omitempty"`
+	Permissions *SharedLinkPermissionsInput `json:"permissions,omitempty"`
+}
+
 type CreateWorkspaceInput struct {
 	Name string `json:"name"`
 	Slug string `json:"slug"`
@@ -125,6 +134,37 @@ type Session struct {
 	UserAgent *string   `json:"userAgent,omitempty"`
 	CreatedAt time.Time `json:"createdAt"`
 	ExpiresAt time.Time `json:"expiresAt"`
+}
+
+type SharedLink struct {
+	ID          uuid.UUID              `json:"id"`
+	WorkspaceID uuid.UUID              `json:"workspaceID"`
+	FileNodeID  uuid.UUID              `json:"fileNodeID"`
+	Token       string                 `json:"token"`
+	Permissions *SharedLinkPermissions `json:"permissions"`
+	ExpiresAt   *time.Time             `json:"expiresAt,omitempty"`
+	MaxUploads  *int                   `json:"maxUploads,omitempty"`
+	UploadCount int                    `json:"uploadCount"`
+	Active      bool                   `json:"active"`
+	CreatedAt   time.Time              `json:"createdAt"`
+}
+
+type SharedLinkPermissions struct {
+	Upload bool `json:"upload"`
+	Delete bool `json:"delete"`
+	Mkdir  bool `json:"mkdir"`
+	Rename bool `json:"rename"`
+	Move   bool `json:"move"`
+	Copy   bool `json:"copy"`
+}
+
+type SharedLinkPermissionsInput struct {
+	Upload *bool `json:"upload,omitempty"`
+	Delete *bool `json:"delete,omitempty"`
+	Mkdir  *bool `json:"mkdir,omitempty"`
+	Rename *bool `json:"rename,omitempty"`
+	Move   *bool `json:"move,omitempty"`
+	Copy   *bool `json:"copy,omitempty"`
 }
 
 type SignInInput struct {

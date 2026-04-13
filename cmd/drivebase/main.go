@@ -16,6 +16,7 @@ import (
 	"github.com/drivebase/drivebase/internal/config"
 	"github.com/drivebase/drivebase/internal/ent"
 	"github.com/drivebase/drivebase/internal/server"
+	"github.com/drivebase/drivebase/internal/sharing"
 	"github.com/drivebase/drivebase/internal/worker"
 
 	"entgo.io/ent/dialect"
@@ -93,10 +94,12 @@ func main() {
 	}
 	slog.Info("River worker pool started")
 
+	sharingSvc := &sharing.Service{DB: client}
+
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	srv := &http.Server{
 		Addr:         addr,
-		Handler:      server.New(cfg, client, rdb, transferEngine),
+		Handler:      server.New(cfg, client, rdb, transferEngine, sharingSvc),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 60 * time.Second,
 		IdleTimeout:  120 * time.Second,

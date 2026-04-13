@@ -67,6 +67,7 @@ type ComplexityRoot struct {
 		CancelTransferJob    func(childComplexity int, id uuid.UUID) int
 		ConnectProvider      func(childComplexity int, input ConnectProviderInput) int
 		CreateFolder         func(childComplexity int, input CreateFolderInput) int
+		CreateSharedLink     func(childComplexity int, input CreateSharedLinkInput) int
 		CreateWorkspace      func(childComplexity int, input CreateWorkspaceInput) int
 		DeleteFile           func(childComplexity int, input DeleteFileInput) int
 		DeleteWorkspace      func(childComplexity int, id uuid.UUID) int
@@ -78,6 +79,7 @@ type ComplexityRoot struct {
 		RemoveMember         func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID) int
 		RenameFile           func(childComplexity int, input RenameFileInput) int
 		RevokeSession        func(childComplexity int, sessionID uuid.UUID) int
+		RevokeSharedLink     func(childComplexity int, id uuid.UUID) int
 		SignIn               func(childComplexity int, input SignInInput) int
 		SignOut              func(childComplexity int) int
 		SignUp               func(childComplexity int, input SignUpInput) int
@@ -117,20 +119,22 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetFile         func(childComplexity int, providerID uuid.UUID, fileNodeID uuid.UUID) int
-		ListFiles       func(childComplexity int, input ListFilesInput) int
-		Me              func(childComplexity int) int
-		MySessions      func(childComplexity int) int
-		MyTransferJobs  func(childComplexity int, workspaceID uuid.UUID) int
-		MyUploadBatches func(childComplexity int, workspaceID uuid.UUID) int
-		MyWorkspaces    func(childComplexity int) int
-		Provider        func(childComplexity int, id uuid.UUID) int
-		ProviderQuota   func(childComplexity int, providerID uuid.UUID) int
-		Providers       func(childComplexity int, workspaceID uuid.UUID) int
-		TransferJob     func(childComplexity int, id uuid.UUID) int
-		UploadBatch     func(childComplexity int, id uuid.UUID) int
-		Workspace       func(childComplexity int, id uuid.UUID) int
-		WorkspaceRoles  func(childComplexity int, workspaceID uuid.UUID) int
+		GetFile           func(childComplexity int, providerID uuid.UUID, fileNodeID uuid.UUID) int
+		ListFiles         func(childComplexity int, input ListFilesInput) int
+		Me                func(childComplexity int) int
+		MySessions        func(childComplexity int) int
+		MyTransferJobs    func(childComplexity int, workspaceID uuid.UUID) int
+		MyUploadBatches   func(childComplexity int, workspaceID uuid.UUID) int
+		MyWorkspaces      func(childComplexity int) int
+		Provider          func(childComplexity int, id uuid.UUID) int
+		ProviderQuota     func(childComplexity int, providerID uuid.UUID) int
+		Providers         func(childComplexity int, workspaceID uuid.UUID) int
+		SharedLinkByToken func(childComplexity int, token string) int
+		SharedLinks       func(childComplexity int, workspaceID uuid.UUID) int
+		TransferJob       func(childComplexity int, id uuid.UUID) int
+		UploadBatch       func(childComplexity int, id uuid.UUID) int
+		Workspace         func(childComplexity int, id uuid.UUID) int
+		WorkspaceRoles    func(childComplexity int, workspaceID uuid.UUID) int
 	}
 
 	Role struct {
@@ -145,6 +149,28 @@ type ComplexityRoot struct {
 		ID        func(childComplexity int) int
 		IPAddress func(childComplexity int) int
 		UserAgent func(childComplexity int) int
+	}
+
+	SharedLink struct {
+		Active      func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		ExpiresAt   func(childComplexity int) int
+		FileNodeID  func(childComplexity int) int
+		ID          func(childComplexity int) int
+		MaxUploads  func(childComplexity int) int
+		Permissions func(childComplexity int) int
+		Token       func(childComplexity int) int
+		UploadCount func(childComplexity int) int
+		WorkspaceID func(childComplexity int) int
+	}
+
+	SharedLinkPermissions struct {
+		Copy   func(childComplexity int) int
+		Delete func(childComplexity int) int
+		Mkdir  func(childComplexity int) int
+		Move   func(childComplexity int) int
+		Rename func(childComplexity int) int
+		Upload func(childComplexity int) int
 	}
 
 	TransferJob struct {
@@ -222,6 +248,8 @@ type MutationResolver interface {
 	UpdateProvider(ctx context.Context, id uuid.UUID, input UpdateProviderInput) (*Provider, error)
 	ValidateProvider(ctx context.Context, id uuid.UUID) (*ProviderValidationResult, error)
 	RefreshProviderQuota(ctx context.Context, providerID uuid.UUID) (*ProviderQuota, error)
+	CreateSharedLink(ctx context.Context, input CreateSharedLinkInput) (*SharedLink, error)
+	RevokeSharedLink(ctx context.Context, id uuid.UUID) (bool, error)
 	StartFolderSync(ctx context.Context, input StartFolderSyncInput) (*TransferJob, error)
 	CancelTransferJob(ctx context.Context, id uuid.UUID) (bool, error)
 	CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*Workspace, error)
@@ -241,6 +269,8 @@ type QueryResolver interface {
 	Providers(ctx context.Context, workspaceID uuid.UUID) ([]*Provider, error)
 	Provider(ctx context.Context, id uuid.UUID) (*Provider, error)
 	ProviderQuota(ctx context.Context, providerID uuid.UUID) (*ProviderQuota, error)
+	SharedLinks(ctx context.Context, workspaceID uuid.UUID) ([]*SharedLink, error)
+	SharedLinkByToken(ctx context.Context, token string) (*SharedLink, error)
 	TransferJob(ctx context.Context, id uuid.UUID) (*TransferJob, error)
 	MyTransferJobs(ctx context.Context, workspaceID uuid.UUID) ([]*TransferJob, error)
 	Workspace(ctx context.Context, id uuid.UUID) (*Workspace, error)
@@ -400,6 +430,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.CreateFolder(childComplexity, args["input"].(CreateFolderInput)), true
+	case "Mutation.createSharedLink":
+		if e.ComplexityRoot.Mutation.CreateSharedLink == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createSharedLink_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateSharedLink(childComplexity, args["input"].(CreateSharedLinkInput)), true
 	case "Mutation.createWorkspace":
 		if e.ComplexityRoot.Mutation.CreateWorkspace == nil {
 			break
@@ -521,6 +562,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RevokeSession(childComplexity, args["sessionId"].(uuid.UUID)), true
+	case "Mutation.revokeSharedLink":
+		if e.ComplexityRoot.Mutation.RevokeSharedLink == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_revokeSharedLink_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RevokeSharedLink(childComplexity, args["id"].(uuid.UUID)), true
 	case "Mutation.signIn":
 		if e.ComplexityRoot.Mutation.SignIn == nil {
 			break
@@ -823,6 +875,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Providers(childComplexity, args["workspaceId"].(uuid.UUID)), true
+	case "Query.sharedLinkByToken":
+		if e.ComplexityRoot.Query.SharedLinkByToken == nil {
+			break
+		}
+
+		args, err := ec.field_Query_sharedLinkByToken_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.SharedLinkByToken(childComplexity, args["token"].(string)), true
+	case "Query.sharedLinks":
+		if e.ComplexityRoot.Query.SharedLinks == nil {
+			break
+		}
+
+		args, err := ec.field_Query_sharedLinks_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.SharedLinks(childComplexity, args["workspaceID"].(uuid.UUID)), true
 	case "Query.transferJob":
 		if e.ComplexityRoot.Query.TransferJob == nil {
 			break
@@ -917,6 +991,104 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Session.UserAgent(childComplexity), true
+
+	case "SharedLink.active":
+		if e.ComplexityRoot.SharedLink.Active == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLink.Active(childComplexity), true
+	case "SharedLink.createdAt":
+		if e.ComplexityRoot.SharedLink.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLink.CreatedAt(childComplexity), true
+	case "SharedLink.expiresAt":
+		if e.ComplexityRoot.SharedLink.ExpiresAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLink.ExpiresAt(childComplexity), true
+	case "SharedLink.fileNodeID":
+		if e.ComplexityRoot.SharedLink.FileNodeID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLink.FileNodeID(childComplexity), true
+	case "SharedLink.id":
+		if e.ComplexityRoot.SharedLink.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLink.ID(childComplexity), true
+	case "SharedLink.maxUploads":
+		if e.ComplexityRoot.SharedLink.MaxUploads == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLink.MaxUploads(childComplexity), true
+	case "SharedLink.permissions":
+		if e.ComplexityRoot.SharedLink.Permissions == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLink.Permissions(childComplexity), true
+	case "SharedLink.token":
+		if e.ComplexityRoot.SharedLink.Token == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLink.Token(childComplexity), true
+	case "SharedLink.uploadCount":
+		if e.ComplexityRoot.SharedLink.UploadCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLink.UploadCount(childComplexity), true
+	case "SharedLink.workspaceID":
+		if e.ComplexityRoot.SharedLink.WorkspaceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLink.WorkspaceID(childComplexity), true
+
+	case "SharedLinkPermissions.copy":
+		if e.ComplexityRoot.SharedLinkPermissions.Copy == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLinkPermissions.Copy(childComplexity), true
+	case "SharedLinkPermissions.delete":
+		if e.ComplexityRoot.SharedLinkPermissions.Delete == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLinkPermissions.Delete(childComplexity), true
+	case "SharedLinkPermissions.mkdir":
+		if e.ComplexityRoot.SharedLinkPermissions.Mkdir == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLinkPermissions.Mkdir(childComplexity), true
+	case "SharedLinkPermissions.move":
+		if e.ComplexityRoot.SharedLinkPermissions.Move == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLinkPermissions.Move(childComplexity), true
+	case "SharedLinkPermissions.rename":
+		if e.ComplexityRoot.SharedLinkPermissions.Rename == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLinkPermissions.Rename(childComplexity), true
+	case "SharedLinkPermissions.upload":
+		if e.ComplexityRoot.SharedLinkPermissions.Upload == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SharedLinkPermissions.Upload(childComplexity), true
 
 	case "TransferJob.completedAt":
 		if e.ComplexityRoot.TransferJob.CompletedAt == nil {
@@ -1191,11 +1363,13 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputConnectProviderInput,
 		ec.unmarshalInputCreateFolderInput,
+		ec.unmarshalInputCreateSharedLinkInput,
 		ec.unmarshalInputCreateWorkspaceInput,
 		ec.unmarshalInputDeleteFileInput,
 		ec.unmarshalInputListFilesInput,
 		ec.unmarshalInputMoveFileInput,
 		ec.unmarshalInputRenameFileInput,
+		ec.unmarshalInputSharedLinkPermissionsInput,
 		ec.unmarshalInputSignInInput,
 		ec.unmarshalInputSignUpInput,
 		ec.unmarshalInputStartFolderSyncInput,
@@ -1275,7 +1449,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/auth.graphqls" "schema/file.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/transfer.graphqls" "schema/workspace.graphqls"
+//go:embed "schema/auth.graphqls" "schema/file.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/sharing.graphqls" "schema/transfer.graphqls" "schema/workspace.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -1291,6 +1465,7 @@ var sources = []*ast.Source{
 	{Name: "schema/file.graphqls", Input: sourceData("schema/file.graphqls"), BuiltIn: false},
 	{Name: "schema/provider.graphqls", Input: sourceData("schema/provider.graphqls"), BuiltIn: false},
 	{Name: "schema/schema.graphqls", Input: sourceData("schema/schema.graphqls"), BuiltIn: false},
+	{Name: "schema/sharing.graphqls", Input: sourceData("schema/sharing.graphqls"), BuiltIn: false},
 	{Name: "schema/transfer.graphqls", Input: sourceData("schema/transfer.graphqls"), BuiltIn: false},
 	{Name: "schema/workspace.graphqls", Input: sourceData("schema/workspace.graphqls"), BuiltIn: false},
 }
@@ -1326,6 +1501,17 @@ func (ec *executionContext) field_Mutation_createFolder_args(ctx context.Context
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNCreateFolderInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateFolderInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createSharedLink_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNCreateSharedLinkInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateSharedLinkInput)
 	if err != nil {
 		return nil, err
 	}
@@ -1466,6 +1652,17 @@ func (ec *executionContext) field_Mutation_revokeSession_args(ctx context.Contex
 		return nil, err
 	}
 	args["sessionId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_revokeSharedLink_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -1667,6 +1864,28 @@ func (ec *executionContext) field_Query_providers_args(ctx context.Context, rawA
 		return nil, err
 	}
 	args["workspaceId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_sharedLinkByToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "token", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["token"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_sharedLinks_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["workspaceID"] = arg0
 	return args, nil
 }
 
@@ -3054,6 +3273,110 @@ func (ec *executionContext) fieldContext_Mutation_refreshProviderQuota(ctx conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_refreshProviderQuota_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createSharedLink(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_createSharedLink,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreateSharedLink(ctx, fc.Args["input"].(CreateSharedLinkInput))
+		},
+		nil,
+		ec.marshalNSharedLink2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLink,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createSharedLink(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_SharedLink_id(ctx, field)
+			case "workspaceID":
+				return ec.fieldContext_SharedLink_workspaceID(ctx, field)
+			case "fileNodeID":
+				return ec.fieldContext_SharedLink_fileNodeID(ctx, field)
+			case "token":
+				return ec.fieldContext_SharedLink_token(ctx, field)
+			case "permissions":
+				return ec.fieldContext_SharedLink_permissions(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_SharedLink_expiresAt(ctx, field)
+			case "maxUploads":
+				return ec.fieldContext_SharedLink_maxUploads(ctx, field)
+			case "uploadCount":
+				return ec.fieldContext_SharedLink_uploadCount(ctx, field)
+			case "active":
+				return ec.fieldContext_SharedLink_active(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_SharedLink_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SharedLink", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createSharedLink_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_revokeSharedLink(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_revokeSharedLink,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RevokeSharedLink(ctx, fc.Args["id"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_revokeSharedLink(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_revokeSharedLink_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4517,6 +4840,132 @@ func (ec *executionContext) fieldContext_Query_providerQuota(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_sharedLinks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_sharedLinks,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().SharedLinks(ctx, fc.Args["workspaceID"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNSharedLink2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLinkᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_sharedLinks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_SharedLink_id(ctx, field)
+			case "workspaceID":
+				return ec.fieldContext_SharedLink_workspaceID(ctx, field)
+			case "fileNodeID":
+				return ec.fieldContext_SharedLink_fileNodeID(ctx, field)
+			case "token":
+				return ec.fieldContext_SharedLink_token(ctx, field)
+			case "permissions":
+				return ec.fieldContext_SharedLink_permissions(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_SharedLink_expiresAt(ctx, field)
+			case "maxUploads":
+				return ec.fieldContext_SharedLink_maxUploads(ctx, field)
+			case "uploadCount":
+				return ec.fieldContext_SharedLink_uploadCount(ctx, field)
+			case "active":
+				return ec.fieldContext_SharedLink_active(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_SharedLink_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SharedLink", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_sharedLinks_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_sharedLinkByToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_sharedLinkByToken,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().SharedLinkByToken(ctx, fc.Args["token"].(string))
+		},
+		nil,
+		ec.marshalOSharedLink2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLink,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_sharedLinkByToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_SharedLink_id(ctx, field)
+			case "workspaceID":
+				return ec.fieldContext_SharedLink_workspaceID(ctx, field)
+			case "fileNodeID":
+				return ec.fieldContext_SharedLink_fileNodeID(ctx, field)
+			case "token":
+				return ec.fieldContext_SharedLink_token(ctx, field)
+			case "permissions":
+				return ec.fieldContext_SharedLink_permissions(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_SharedLink_expiresAt(ctx, field)
+			case "maxUploads":
+				return ec.fieldContext_SharedLink_maxUploads(ctx, field)
+			case "uploadCount":
+				return ec.fieldContext_SharedLink_uploadCount(ctx, field)
+			case "active":
+				return ec.fieldContext_SharedLink_active(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_SharedLink_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SharedLink", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_sharedLinkByToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_transferJob(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -5153,6 +5602,484 @@ func (ec *executionContext) fieldContext_Session_expiresAt(_ context.Context, fi
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLink_id(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLink_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLink_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLink",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLink_workspaceID(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLink_workspaceID,
+		func(ctx context.Context) (any, error) {
+			return obj.WorkspaceID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLink_workspaceID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLink",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLink_fileNodeID(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLink_fileNodeID,
+		func(ctx context.Context) (any, error) {
+			return obj.FileNodeID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLink_fileNodeID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLink",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLink_token(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLink_token,
+		func(ctx context.Context) (any, error) {
+			return obj.Token, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLink_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLink",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLink_permissions(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLink_permissions,
+		func(ctx context.Context) (any, error) {
+			return obj.Permissions, nil
+		},
+		nil,
+		ec.marshalNSharedLinkPermissions2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLinkPermissions,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLink_permissions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLink",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "upload":
+				return ec.fieldContext_SharedLinkPermissions_upload(ctx, field)
+			case "delete":
+				return ec.fieldContext_SharedLinkPermissions_delete(ctx, field)
+			case "mkdir":
+				return ec.fieldContext_SharedLinkPermissions_mkdir(ctx, field)
+			case "rename":
+				return ec.fieldContext_SharedLinkPermissions_rename(ctx, field)
+			case "move":
+				return ec.fieldContext_SharedLinkPermissions_move(ctx, field)
+			case "copy":
+				return ec.fieldContext_SharedLinkPermissions_copy(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SharedLinkPermissions", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLink_expiresAt(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLink_expiresAt,
+		func(ctx context.Context) (any, error) {
+			return obj.ExpiresAt, nil
+		},
+		nil,
+		ec.marshalOTime2ᚖtimeᚐTime,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLink_expiresAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLink",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLink_maxUploads(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLink_maxUploads,
+		func(ctx context.Context) (any, error) {
+			return obj.MaxUploads, nil
+		},
+		nil,
+		ec.marshalOInt2ᚖint,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLink_maxUploads(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLink",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLink_uploadCount(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLink_uploadCount,
+		func(ctx context.Context) (any, error) {
+			return obj.UploadCount, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLink_uploadCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLink",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLink_active(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLink_active,
+		func(ctx context.Context) (any, error) {
+			return obj.Active, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLink_active(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLink",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLink_createdAt(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLink_createdAt,
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		ec.marshalNTime2timeᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLink_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLink",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLinkPermissions_upload(ctx context.Context, field graphql.CollectedField, obj *SharedLinkPermissions) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLinkPermissions_upload,
+		func(ctx context.Context) (any, error) {
+			return obj.Upload, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLinkPermissions_upload(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLinkPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLinkPermissions_delete(ctx context.Context, field graphql.CollectedField, obj *SharedLinkPermissions) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLinkPermissions_delete,
+		func(ctx context.Context) (any, error) {
+			return obj.Delete, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLinkPermissions_delete(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLinkPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLinkPermissions_mkdir(ctx context.Context, field graphql.CollectedField, obj *SharedLinkPermissions) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLinkPermissions_mkdir,
+		func(ctx context.Context) (any, error) {
+			return obj.Mkdir, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLinkPermissions_mkdir(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLinkPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLinkPermissions_rename(ctx context.Context, field graphql.CollectedField, obj *SharedLinkPermissions) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLinkPermissions_rename,
+		func(ctx context.Context) (any, error) {
+			return obj.Rename, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLinkPermissions_rename(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLinkPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLinkPermissions_move(ctx context.Context, field graphql.CollectedField, obj *SharedLinkPermissions) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLinkPermissions_move,
+		func(ctx context.Context) (any, error) {
+			return obj.Move, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLinkPermissions_move(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLinkPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SharedLinkPermissions_copy(ctx context.Context, field graphql.CollectedField, obj *SharedLinkPermissions) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SharedLinkPermissions_copy,
+		func(ctx context.Context) (any, error) {
+			return obj.Copy, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SharedLinkPermissions_copy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SharedLinkPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7982,6 +8909,71 @@ func (ec *executionContext) unmarshalInputCreateFolderInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateSharedLinkInput(ctx context.Context, obj any) (CreateSharedLinkInput, error) {
+	var it CreateSharedLinkInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"workspaceID", "fileNodeID", "password", "expiresAt", "maxUploads", "permissions"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "workspaceID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("workspaceID"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WorkspaceID = data
+		case "fileNodeID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fileNodeID"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FileNodeID = data
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = data
+		case "expiresAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expiresAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExpiresAt = data
+		case "maxUploads":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxUploads"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MaxUploads = data
+		case "permissions":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("permissions"))
+			data, err := ec.unmarshalOSharedLinkPermissionsInput2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLinkPermissionsInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Permissions = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateWorkspaceInput(ctx context.Context, obj any) (CreateWorkspaceInput, error) {
 	var it CreateWorkspaceInput
 	if obj == nil {
@@ -8190,6 +9182,71 @@ func (ec *executionContext) unmarshalInputRenameFileInput(ctx context.Context, o
 				return it, err
 			}
 			it.NewName = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSharedLinkPermissionsInput(ctx context.Context, obj any) (SharedLinkPermissionsInput, error) {
+	var it SharedLinkPermissionsInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"upload", "delete", "mkdir", "rename", "move", "copy"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "upload":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("upload"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Upload = data
+		case "delete":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("delete"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Delete = data
+		case "mkdir":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mkdir"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Mkdir = data
+		case "rename":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rename"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Rename = data
+		case "move":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("move"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Move = data
+		case "copy":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("copy"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Copy = data
 		}
 	}
 	return it, nil
@@ -8712,6 +9769,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "createSharedLink":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createSharedLink(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "revokeSharedLink":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_revokeSharedLink(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "startFolderSync":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_startFolderSync(ctx, field)
@@ -9185,6 +10256,47 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "sharedLinks":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_sharedLinks(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "sharedLinkByToken":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_sharedLinkByToken(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "transferJob":
 			field := field
 
@@ -9402,6 +10514,148 @@ func (ec *executionContext) _Session(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "expiresAt":
 			out.Values[i] = ec._Session_expiresAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var sharedLinkImplementors = []string{"SharedLink"}
+
+func (ec *executionContext) _SharedLink(ctx context.Context, sel ast.SelectionSet, obj *SharedLink) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sharedLinkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SharedLink")
+		case "id":
+			out.Values[i] = ec._SharedLink_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "workspaceID":
+			out.Values[i] = ec._SharedLink_workspaceID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "fileNodeID":
+			out.Values[i] = ec._SharedLink_fileNodeID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "token":
+			out.Values[i] = ec._SharedLink_token(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "permissions":
+			out.Values[i] = ec._SharedLink_permissions(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "expiresAt":
+			out.Values[i] = ec._SharedLink_expiresAt(ctx, field, obj)
+		case "maxUploads":
+			out.Values[i] = ec._SharedLink_maxUploads(ctx, field, obj)
+		case "uploadCount":
+			out.Values[i] = ec._SharedLink_uploadCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "active":
+			out.Values[i] = ec._SharedLink_active(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._SharedLink_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var sharedLinkPermissionsImplementors = []string{"SharedLinkPermissions"}
+
+func (ec *executionContext) _SharedLinkPermissions(ctx context.Context, sel ast.SelectionSet, obj *SharedLinkPermissions) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sharedLinkPermissionsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SharedLinkPermissions")
+		case "upload":
+			out.Values[i] = ec._SharedLinkPermissions_upload(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "delete":
+			out.Values[i] = ec._SharedLinkPermissions_delete(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "mkdir":
+			out.Values[i] = ec._SharedLinkPermissions_mkdir(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "rename":
+			out.Values[i] = ec._SharedLinkPermissions_rename(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "move":
+			out.Values[i] = ec._SharedLinkPermissions_move(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "copy":
+			out.Values[i] = ec._SharedLinkPermissions_copy(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -10186,6 +11440,11 @@ func (ec *executionContext) unmarshalNCreateFolderInput2githubᚗcomᚋdrivebase
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateSharedLinkInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateSharedLinkInput(ctx context.Context, v any) (CreateSharedLinkInput, error) {
+	res, err := ec.unmarshalInputCreateSharedLinkInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateWorkspaceInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateWorkspaceInput(ctx context.Context, v any) (CreateWorkspaceInput, error) {
 	res, err := ec.unmarshalInputCreateWorkspaceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -10399,6 +11658,46 @@ func (ec *executionContext) marshalNSession2ᚖgithubᚗcomᚋdrivebaseᚋdriveb
 		return graphql.Null
 	}
 	return ec._Session(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSharedLink2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLink(ctx context.Context, sel ast.SelectionSet, v SharedLink) graphql.Marshaler {
+	return ec._SharedLink(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSharedLink2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLinkᚄ(ctx context.Context, sel ast.SelectionSet, v []*SharedLink) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNSharedLink2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLink(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSharedLink2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLink(ctx context.Context, sel ast.SelectionSet, v *SharedLink) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SharedLink(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSharedLinkPermissions2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLinkPermissions(ctx context.Context, sel ast.SelectionSet, v *SharedLinkPermissions) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SharedLinkPermissions(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNSignInInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSignInInput(ctx context.Context, v any) (SignInInput, error) {
@@ -10804,6 +12103,21 @@ func (ec *executionContext) marshalOProviderQuota2ᚖgithubᚗcomᚋdrivebaseᚋ
 		return graphql.Null
 	}
 	return ec._ProviderQuota(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSharedLink2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLink(ctx context.Context, sel ast.SelectionSet, v *SharedLink) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SharedLink(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOSharedLinkPermissionsInput2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLinkPermissionsInput(ctx context.Context, v any) (*SharedLinkPermissionsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSharedLinkPermissionsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {

@@ -8,17 +8,13 @@ import (
 
 	"github.com/drivebase/drivebase/internal/auth"
 	entschema "github.com/drivebase/drivebase/internal/ent/schema"
+	"github.com/drivebase/drivebase/internal/sharing"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
 func (h *fileHandler) download(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	if u, _ := auth.UserFromCtx(ctx); u == nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
 
 	fileNodeIDStr := chi.URLParam(r, "fileNodeID")
 	fileNodeID, err := uuid.Parse(fileNodeIDStr)
@@ -33,15 +29,27 @@ func (h *fileHandler) download(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prov, err := h.db.Provider.Get(ctx, fn.ProviderID)
-	if err != nil {
-		http.Error(w, "provider not found", http.StatusNotFound)
-		return
+	// Auth: authenticated user OR valid share token that covers this file
+	authed := false
+	if u, _ := auth.UserFromCtx(ctx); u != nil {
+		prov, err := h.db.Provider.Get(ctx, fn.ProviderID)
+		if err != nil {
+			http.Error(w, "provider not found", http.StatusNotFound)
+			return
+		}
+		if err := auth.Check(ctx, h.db, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionRead)); err != nil {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+		authed = true
 	}
 
-	if err := auth.Check(ctx, h.db, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionRead)); err != nil {
-		http.Error(w, "forbidden", http.StatusForbidden)
-		return
+	if !authed {
+		link := sharing.SharedLinkFromCtx(ctx)
+		if link == nil || !sharing.IsFileAccessible(link, fn.ID, fn.ParentID) {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
 	}
 
 	sp, err := loadStorageProvider(ctx, h.db, h.cfg.Crypto.EncryptionKey, fn.ProviderID)
@@ -57,7 +65,6 @@ func (h *fileHandler) download(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rc.Close()
 
-	// Set response headers
 	if fi.MimeType != "" {
 		w.Header().Set("Content-Type", fi.MimeType)
 	} else {

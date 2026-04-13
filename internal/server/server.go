@@ -17,13 +17,14 @@ import (
 	"github.com/drivebase/drivebase/internal/ent"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/graph/resolver"
+	"github.com/drivebase/drivebase/internal/sharing"
 	"github.com/drivebase/drivebase/internal/transfer"
 	"github.com/redis/go-redis/v9"
 )
 
 // New builds and returns the HTTP server mux.
 // transferEngine is the wired transfer.Engine (with River dispatcher set by the worker pool).
-func New(cfg *config.Config, db *ent.Client, rdb *redis.Client, transferEngine *transfer.Engine) http.Handler {
+func New(cfg *config.Config, db *ent.Client, rdb *redis.Client, transferEngine *transfer.Engine, sharingSvc *sharing.Service) http.Handler {
 	r := chi.NewRouter()
 
 	// Core middleware
@@ -43,6 +44,9 @@ func New(cfg *config.Config, db *ent.Client, rdb *redis.Client, transferEngine *
 	// Auth middleware — injects user into context if Bearer token present
 	r.Use(auth.Extractor(cfg.Auth.JWTSecret, db))
 
+	// Share token middleware — injects SharedLink into context if X-Share-Token present
+	r.Use(sharing.Extractor(sharingSvc))
+
 	// Inject HTTP request into context (resolvers use it for IP/UA)
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -58,7 +62,7 @@ func New(cfg *config.Config, db *ent.Client, rdb *redis.Client, transferEngine *
 	})
 
 	// GraphQL
-	gqlSrv := newGQLServer(cfg, db, rdb, transferEngine)
+	gqlSrv := newGQLServer(cfg, db, rdb, transferEngine, sharingSvc)
 	r.Handle("/graphql", gqlSrv)
 
 	// Playground (dev only)
@@ -74,7 +78,7 @@ func New(cfg *config.Config, db *ent.Client, rdb *redis.Client, transferEngine *
 	return r
 }
 
-func newGQLServer(cfg *config.Config, db *ent.Client, rdb *redis.Client, transferEngine *transfer.Engine) *handler.Server {
+func newGQLServer(cfg *config.Config, db *ent.Client, rdb *redis.Client, transferEngine *transfer.Engine, sharingSvc *sharing.Service) *handler.Server {
 	var fileCache *cache.FileTreeCache
 	if rdb != nil {
 		fileCache = cache.NewFileTreeCache(rdb, cfg.Cache.FileCacheTTL)
@@ -87,6 +91,7 @@ func newGQLServer(cfg *config.Config, db *ent.Client, rdb *redis.Client, transfe
 			Redis:     rdb,
 			FileCache: fileCache,
 			Transfer:  transferEngine,
+			Sharing:   sharingSvc,
 		},
 	}))
 
