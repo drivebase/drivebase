@@ -85,6 +85,31 @@ func mapProviderQuota(q *ent.ProviderQuota) *graph.ProviderQuota {
 	return gq
 }
 
+func mapTransferJob(j *ent.TransferJob) *graph.TransferJob {
+	gj := &graph.TransferJob{
+		ID:                   j.ID,
+		WorkspaceID:          j.WorkspaceID,
+		SourceProviderID:     j.SourceProviderID,
+		DestProviderID:       j.DestProviderID,
+		SourceFolderRemoteID: j.SourceFolderRemoteID,
+		DestFolderRemoteID:   j.DestFolderRemoteID,
+		Operation:            j.Operation,
+		ConflictStrategy:     j.ConflictStrategy,
+		Status:               j.Status,
+		TotalFiles:           j.TotalFiles,
+		CompletedFiles:       j.CompletedFiles,
+		FailedFiles:          j.FailedFiles,
+		TotalBytes:           int(j.TotalBytes),
+		TransferredBytes:     int(j.TransferredBytes),
+		CreatedAt:            j.CreatedAt,
+	}
+	if j.ErrorMessage != "" {
+		gj.ErrorMessage = &j.ErrorMessage
+	}
+	gj.CompletedAt = j.CompletedAt
+	return gj
+}
+
 func mapFileNode(f *ent.FileNode) *graph.FileNode {
 	gf := &graph.FileNode{
 		ID:         f.ID,

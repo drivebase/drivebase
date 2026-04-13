@@ -139,6 +139,35 @@ type SignUpInput struct {
 	Password string `json:"password"`
 }
 
+type StartFolderSyncInput struct {
+	WorkspaceID          uuid.UUID         `json:"workspaceID"`
+	SourceProviderID     uuid.UUID         `json:"sourceProviderID"`
+	SourceFolderRemoteID *string           `json:"sourceFolderRemoteID,omitempty"`
+	DestProviderID       uuid.UUID         `json:"destProviderID"`
+	DestFolderRemoteID   *string           `json:"destFolderRemoteID,omitempty"`
+	ConflictStrategy     *ConflictStrategy `json:"conflictStrategy,omitempty"`
+}
+
+type TransferJob struct {
+	ID                   uuid.UUID  `json:"id"`
+	WorkspaceID          uuid.UUID  `json:"workspaceID"`
+	SourceProviderID     uuid.UUID  `json:"sourceProviderID"`
+	DestProviderID       uuid.UUID  `json:"destProviderID"`
+	SourceFolderRemoteID string     `json:"sourceFolderRemoteID"`
+	DestFolderRemoteID   string     `json:"destFolderRemoteID"`
+	Operation            string     `json:"operation"`
+	ConflictStrategy     string     `json:"conflictStrategy"`
+	Status               string     `json:"status"`
+	TotalFiles           int        `json:"totalFiles"`
+	CompletedFiles       int        `json:"completedFiles"`
+	FailedFiles          int        `json:"failedFiles"`
+	TotalBytes           int        `json:"totalBytes"`
+	TransferredBytes     int        `json:"transferredBytes"`
+	ErrorMessage         *string    `json:"errorMessage,omitempty"`
+	CreatedAt            time.Time  `json:"createdAt"`
+	CompletedAt          *time.Time `json:"completedAt,omitempty"`
+}
+
 type UpdateProviderInput struct {
 	Name *string `json:"name,omitempty"`
 }
@@ -239,6 +268,61 @@ func (e *AuthType) UnmarshalJSON(b []byte) error {
 }
 
 func (e AuthType) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type ConflictStrategy string
+
+const (
+	ConflictStrategySkip      ConflictStrategy = "skip"
+	ConflictStrategyOverwrite ConflictStrategy = "overwrite"
+)
+
+var AllConflictStrategy = []ConflictStrategy{
+	ConflictStrategySkip,
+	ConflictStrategyOverwrite,
+}
+
+func (e ConflictStrategy) IsValid() bool {
+	switch e {
+	case ConflictStrategySkip, ConflictStrategyOverwrite:
+		return true
+	}
+	return false
+}
+
+func (e ConflictStrategy) String() string {
+	return string(e)
+}
+
+func (e *ConflictStrategy) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ConflictStrategy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ConflictStrategy", str)
+	}
+	return nil
+}
+
+func (e ConflictStrategy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ConflictStrategy) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ConflictStrategy) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

@@ -17,6 +17,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/graph/resolver"
+	"github.com/drivebase/drivebase/internal/transfer"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -78,12 +79,15 @@ func newGQLServer(cfg *config.Config, db *ent.Client, rdb *redis.Client) *handle
 		fileCache = cache.NewFileTreeCache(rdb, cfg.Cache.FileCacheTTL)
 	}
 
+	transferEngine := &transfer.Engine{DB: db, EncKey: cfg.Crypto.EncryptionKey}
+
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolver.Resolver{
 			DB:        db,
 			Config:    cfg,
 			Redis:     rdb,
 			FileCache: fileCache,
+			Transfer:  transferEngine,
 		},
 	}))
 

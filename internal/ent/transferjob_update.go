@@ -73,6 +73,46 @@ func (_u *TransferJobUpdate) SetNillableDestProviderID(v *uuid.UUID) *TransferJo
 	return _u
 }
 
+// SetSourceFolderRemoteID sets the "source_folder_remote_id" field.
+func (_u *TransferJobUpdate) SetSourceFolderRemoteID(v string) *TransferJobUpdate {
+	_u.mutation.SetSourceFolderRemoteID(v)
+	return _u
+}
+
+// SetNillableSourceFolderRemoteID sets the "source_folder_remote_id" field if the given value is not nil.
+func (_u *TransferJobUpdate) SetNillableSourceFolderRemoteID(v *string) *TransferJobUpdate {
+	if v != nil {
+		_u.SetSourceFolderRemoteID(*v)
+	}
+	return _u
+}
+
+// ClearSourceFolderRemoteID clears the value of the "source_folder_remote_id" field.
+func (_u *TransferJobUpdate) ClearSourceFolderRemoteID() *TransferJobUpdate {
+	_u.mutation.ClearSourceFolderRemoteID()
+	return _u
+}
+
+// SetDestFolderRemoteID sets the "dest_folder_remote_id" field.
+func (_u *TransferJobUpdate) SetDestFolderRemoteID(v string) *TransferJobUpdate {
+	_u.mutation.SetDestFolderRemoteID(v)
+	return _u
+}
+
+// SetNillableDestFolderRemoteID sets the "dest_folder_remote_id" field if the given value is not nil.
+func (_u *TransferJobUpdate) SetNillableDestFolderRemoteID(v *string) *TransferJobUpdate {
+	if v != nil {
+		_u.SetDestFolderRemoteID(*v)
+	}
+	return _u
+}
+
+// ClearDestFolderRemoteID clears the value of the "dest_folder_remote_id" field.
+func (_u *TransferJobUpdate) ClearDestFolderRemoteID() *TransferJobUpdate {
+	_u.mutation.ClearDestFolderRemoteID()
+	return _u
+}
+
 // SetOperation sets the "operation" field.
 func (_u *TransferJobUpdate) SetOperation(v string) *TransferJobUpdate {
 	_u.mutation.SetOperation(v)
@@ -83,6 +123,20 @@ func (_u *TransferJobUpdate) SetOperation(v string) *TransferJobUpdate {
 func (_u *TransferJobUpdate) SetNillableOperation(v *string) *TransferJobUpdate {
 	if v != nil {
 		_u.SetOperation(*v)
+	}
+	return _u
+}
+
+// SetConflictStrategy sets the "conflict_strategy" field.
+func (_u *TransferJobUpdate) SetConflictStrategy(v string) *TransferJobUpdate {
+	_u.mutation.SetConflictStrategy(v)
+	return _u
+}
+
+// SetNillableConflictStrategy sets the "conflict_strategy" field if the given value is not nil.
+func (_u *TransferJobUpdate) SetNillableConflictStrategy(v *string) *TransferJobUpdate {
+	if v != nil {
+		_u.SetConflictStrategy(*v)
 	}
 	return _u
 }
@@ -351,8 +405,23 @@ func (_u *TransferJobUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.DestProviderID(); ok {
 		_spec.SetField(transferjob.FieldDestProviderID, field.TypeUUID, value)
 	}
+	if value, ok := _u.mutation.SourceFolderRemoteID(); ok {
+		_spec.SetField(transferjob.FieldSourceFolderRemoteID, field.TypeString, value)
+	}
+	if _u.mutation.SourceFolderRemoteIDCleared() {
+		_spec.ClearField(transferjob.FieldSourceFolderRemoteID, field.TypeString)
+	}
+	if value, ok := _u.mutation.DestFolderRemoteID(); ok {
+		_spec.SetField(transferjob.FieldDestFolderRemoteID, field.TypeString, value)
+	}
+	if _u.mutation.DestFolderRemoteIDCleared() {
+		_spec.ClearField(transferjob.FieldDestFolderRemoteID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Operation(); ok {
 		_spec.SetField(transferjob.FieldOperation, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ConflictStrategy(); ok {
+		_spec.SetField(transferjob.FieldConflictStrategy, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(transferjob.FieldStatus, field.TypeString, value)
@@ -535,6 +604,46 @@ func (_u *TransferJobUpdateOne) SetNillableDestProviderID(v *uuid.UUID) *Transfe
 	return _u
 }
 
+// SetSourceFolderRemoteID sets the "source_folder_remote_id" field.
+func (_u *TransferJobUpdateOne) SetSourceFolderRemoteID(v string) *TransferJobUpdateOne {
+	_u.mutation.SetSourceFolderRemoteID(v)
+	return _u
+}
+
+// SetNillableSourceFolderRemoteID sets the "source_folder_remote_id" field if the given value is not nil.
+func (_u *TransferJobUpdateOne) SetNillableSourceFolderRemoteID(v *string) *TransferJobUpdateOne {
+	if v != nil {
+		_u.SetSourceFolderRemoteID(*v)
+	}
+	return _u
+}
+
+// ClearSourceFolderRemoteID clears the value of the "source_folder_remote_id" field.
+func (_u *TransferJobUpdateOne) ClearSourceFolderRemoteID() *TransferJobUpdateOne {
+	_u.mutation.ClearSourceFolderRemoteID()
+	return _u
+}
+
+// SetDestFolderRemoteID sets the "dest_folder_remote_id" field.
+func (_u *TransferJobUpdateOne) SetDestFolderRemoteID(v string) *TransferJobUpdateOne {
+	_u.mutation.SetDestFolderRemoteID(v)
+	return _u
+}
+
+// SetNillableDestFolderRemoteID sets the "dest_folder_remote_id" field if the given value is not nil.
+func (_u *TransferJobUpdateOne) SetNillableDestFolderRemoteID(v *string) *TransferJobUpdateOne {
+	if v != nil {
+		_u.SetDestFolderRemoteID(*v)
+	}
+	return _u
+}
+
+// ClearDestFolderRemoteID clears the value of the "dest_folder_remote_id" field.
+func (_u *TransferJobUpdateOne) ClearDestFolderRemoteID() *TransferJobUpdateOne {
+	_u.mutation.ClearDestFolderRemoteID()
+	return _u
+}
+
 // SetOperation sets the "operation" field.
 func (_u *TransferJobUpdateOne) SetOperation(v string) *TransferJobUpdateOne {
 	_u.mutation.SetOperation(v)
@@ -545,6 +654,20 @@ func (_u *TransferJobUpdateOne) SetOperation(v string) *TransferJobUpdateOne {
 func (_u *TransferJobUpdateOne) SetNillableOperation(v *string) *TransferJobUpdateOne {
 	if v != nil {
 		_u.SetOperation(*v)
+	}
+	return _u
+}
+
+// SetConflictStrategy sets the "conflict_strategy" field.
+func (_u *TransferJobUpdateOne) SetConflictStrategy(v string) *TransferJobUpdateOne {
+	_u.mutation.SetConflictStrategy(v)
+	return _u
+}
+
+// SetNillableConflictStrategy sets the "conflict_strategy" field if the given value is not nil.
+func (_u *TransferJobUpdateOne) SetNillableConflictStrategy(v *string) *TransferJobUpdateOne {
+	if v != nil {
+		_u.SetConflictStrategy(*v)
 	}
 	return _u
 }
@@ -843,8 +966,23 @@ func (_u *TransferJobUpdateOne) sqlSave(ctx context.Context) (_node *TransferJob
 	if value, ok := _u.mutation.DestProviderID(); ok {
 		_spec.SetField(transferjob.FieldDestProviderID, field.TypeUUID, value)
 	}
+	if value, ok := _u.mutation.SourceFolderRemoteID(); ok {
+		_spec.SetField(transferjob.FieldSourceFolderRemoteID, field.TypeString, value)
+	}
+	if _u.mutation.SourceFolderRemoteIDCleared() {
+		_spec.ClearField(transferjob.FieldSourceFolderRemoteID, field.TypeString)
+	}
+	if value, ok := _u.mutation.DestFolderRemoteID(); ok {
+		_spec.SetField(transferjob.FieldDestFolderRemoteID, field.TypeString, value)
+	}
+	if _u.mutation.DestFolderRemoteIDCleared() {
+		_spec.ClearField(transferjob.FieldDestFolderRemoteID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Operation(); ok {
 		_spec.SetField(transferjob.FieldOperation, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ConflictStrategy(); ok {
+		_spec.SetField(transferjob.FieldConflictStrategy, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(transferjob.FieldStatus, field.TypeString, value)

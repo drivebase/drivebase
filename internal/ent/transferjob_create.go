@@ -41,6 +41,34 @@ func (_c *TransferJobCreate) SetDestProviderID(v uuid.UUID) *TransferJobCreate {
 	return _c
 }
 
+// SetSourceFolderRemoteID sets the "source_folder_remote_id" field.
+func (_c *TransferJobCreate) SetSourceFolderRemoteID(v string) *TransferJobCreate {
+	_c.mutation.SetSourceFolderRemoteID(v)
+	return _c
+}
+
+// SetNillableSourceFolderRemoteID sets the "source_folder_remote_id" field if the given value is not nil.
+func (_c *TransferJobCreate) SetNillableSourceFolderRemoteID(v *string) *TransferJobCreate {
+	if v != nil {
+		_c.SetSourceFolderRemoteID(*v)
+	}
+	return _c
+}
+
+// SetDestFolderRemoteID sets the "dest_folder_remote_id" field.
+func (_c *TransferJobCreate) SetDestFolderRemoteID(v string) *TransferJobCreate {
+	_c.mutation.SetDestFolderRemoteID(v)
+	return _c
+}
+
+// SetNillableDestFolderRemoteID sets the "dest_folder_remote_id" field if the given value is not nil.
+func (_c *TransferJobCreate) SetNillableDestFolderRemoteID(v *string) *TransferJobCreate {
+	if v != nil {
+		_c.SetDestFolderRemoteID(*v)
+	}
+	return _c
+}
+
 // SetOperation sets the "operation" field.
 func (_c *TransferJobCreate) SetOperation(v string) *TransferJobCreate {
 	_c.mutation.SetOperation(v)
@@ -51,6 +79,20 @@ func (_c *TransferJobCreate) SetOperation(v string) *TransferJobCreate {
 func (_c *TransferJobCreate) SetNillableOperation(v *string) *TransferJobCreate {
 	if v != nil {
 		_c.SetOperation(*v)
+	}
+	return _c
+}
+
+// SetConflictStrategy sets the "conflict_strategy" field.
+func (_c *TransferJobCreate) SetConflictStrategy(v string) *TransferJobCreate {
+	_c.mutation.SetConflictStrategy(v)
+	return _c
+}
+
+// SetNillableConflictStrategy sets the "conflict_strategy" field if the given value is not nil.
+func (_c *TransferJobCreate) SetNillableConflictStrategy(v *string) *TransferJobCreate {
+	if v != nil {
+		_c.SetConflictStrategy(*v)
 	}
 	return _c
 }
@@ -250,9 +292,21 @@ func (_c *TransferJobCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *TransferJobCreate) defaults() {
+	if _, ok := _c.mutation.SourceFolderRemoteID(); !ok {
+		v := transferjob.DefaultSourceFolderRemoteID
+		_c.mutation.SetSourceFolderRemoteID(v)
+	}
+	if _, ok := _c.mutation.DestFolderRemoteID(); !ok {
+		v := transferjob.DefaultDestFolderRemoteID
+		_c.mutation.SetDestFolderRemoteID(v)
+	}
 	if _, ok := _c.mutation.Operation(); !ok {
 		v := transferjob.DefaultOperation
 		_c.mutation.SetOperation(v)
+	}
+	if _, ok := _c.mutation.ConflictStrategy(); !ok {
+		v := transferjob.DefaultConflictStrategy
+		_c.mutation.SetConflictStrategy(v)
 	}
 	if _, ok := _c.mutation.Status(); !ok {
 		v := transferjob.DefaultStatus
@@ -301,6 +355,9 @@ func (_c *TransferJobCreate) check() error {
 	}
 	if _, ok := _c.mutation.Operation(); !ok {
 		return &ValidationError{Name: "operation", err: errors.New(`ent: missing required field "TransferJob.operation"`)}
+	}
+	if _, ok := _c.mutation.ConflictStrategy(); !ok {
+		return &ValidationError{Name: "conflict_strategy", err: errors.New(`ent: missing required field "TransferJob.conflict_strategy"`)}
 	}
 	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "TransferJob.status"`)}
@@ -369,9 +426,21 @@ func (_c *TransferJobCreate) createSpec() (*TransferJob, *sqlgraph.CreateSpec) {
 		_spec.SetField(transferjob.FieldDestProviderID, field.TypeUUID, value)
 		_node.DestProviderID = value
 	}
+	if value, ok := _c.mutation.SourceFolderRemoteID(); ok {
+		_spec.SetField(transferjob.FieldSourceFolderRemoteID, field.TypeString, value)
+		_node.SourceFolderRemoteID = value
+	}
+	if value, ok := _c.mutation.DestFolderRemoteID(); ok {
+		_spec.SetField(transferjob.FieldDestFolderRemoteID, field.TypeString, value)
+		_node.DestFolderRemoteID = value
+	}
 	if value, ok := _c.mutation.Operation(); ok {
 		_spec.SetField(transferjob.FieldOperation, field.TypeString, value)
 		_node.Operation = value
+	}
+	if value, ok := _c.mutation.ConflictStrategy(); ok {
+		_spec.SetField(transferjob.FieldConflictStrategy, field.TypeString, value)
+		_node.ConflictStrategy = value
 	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(transferjob.FieldStatus, field.TypeString, value)

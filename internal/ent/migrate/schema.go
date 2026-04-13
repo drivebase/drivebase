@@ -329,7 +329,10 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "source_provider_id", Type: field.TypeUUID},
 		{Name: "dest_provider_id", Type: field.TypeUUID},
+		{Name: "source_folder_remote_id", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "dest_folder_remote_id", Type: field.TypeString, Nullable: true, Default: ""},
 		{Name: "operation", Type: field.TypeString, Default: "copy"},
+		{Name: "conflict_strategy", Type: field.TypeString, Default: "skip"},
 		{Name: "status", Type: field.TypeString, Default: "pending"},
 		{Name: "total_files", Type: field.TypeInt, Default: 0},
 		{Name: "completed_files", Type: field.TypeInt, Default: 0},
@@ -349,7 +352,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "transfer_jobs_workspaces_transfer_jobs",
-				Columns:    []*schema.Column{TransferJobsColumns[13]},
+				Columns:    []*schema.Column{TransferJobsColumns[16]},
 				RefColumns: []*schema.Column{WorkspacesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -358,7 +361,7 @@ var (
 			{
 				Name:    "transferjob_workspace_id",
 				Unique:  false,
-				Columns: []*schema.Column{TransferJobsColumns[13]},
+				Columns: []*schema.Column{TransferJobsColumns[16]},
 			},
 		},
 	}

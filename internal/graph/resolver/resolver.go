@@ -4,6 +4,7 @@ import (
 	"github.com/drivebase/drivebase/internal/cache"
 	"github.com/drivebase/drivebase/internal/config"
 	"github.com/drivebase/drivebase/internal/ent"
+	"github.com/drivebase/drivebase/internal/transfer"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -13,4 +14,5 @@ type Resolver struct {
 	Config    *config.Config
 	Redis     *redis.Client
 	FileCache *cache.FileTreeCache
+	Transfer  *transfer.Engine
 }

@@ -25,8 +25,14 @@ type TransferJob struct {
 	SourceProviderID uuid.UUID `json:"source_provider_id,omitempty"`
 	// DestProviderID holds the value of the "dest_provider_id" field.
 	DestProviderID uuid.UUID `json:"dest_provider_id,omitempty"`
+	// SourceFolderRemoteID holds the value of the "source_folder_remote_id" field.
+	SourceFolderRemoteID string `json:"source_folder_remote_id,omitempty"`
+	// DestFolderRemoteID holds the value of the "dest_folder_remote_id" field.
+	DestFolderRemoteID string `json:"dest_folder_remote_id,omitempty"`
 	// Operation holds the value of the "operation" field.
 	Operation string `json:"operation,omitempty"`
+	// ConflictStrategy holds the value of the "conflict_strategy" field.
+	ConflictStrategy string `json:"conflict_strategy,omitempty"`
 	// Status holds the value of the "status" field.
 	Status string `json:"status,omitempty"`
 	// TotalFiles holds the value of the "total_files" field.
@@ -89,7 +95,7 @@ func (*TransferJob) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case transferjob.FieldTotalFiles, transferjob.FieldCompletedFiles, transferjob.FieldFailedFiles, transferjob.FieldTotalBytes, transferjob.FieldTransferredBytes:
 			values[i] = new(sql.NullInt64)
-		case transferjob.FieldOperation, transferjob.FieldStatus, transferjob.FieldErrorMessage:
+		case transferjob.FieldSourceFolderRemoteID, transferjob.FieldDestFolderRemoteID, transferjob.FieldOperation, transferjob.FieldConflictStrategy, transferjob.FieldStatus, transferjob.FieldErrorMessage:
 			values[i] = new(sql.NullString)
 		case transferjob.FieldCreatedAt, transferjob.FieldCompletedAt:
 			values[i] = new(sql.NullTime)
@@ -134,11 +140,29 @@ func (_m *TransferJob) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.DestProviderID = *value
 			}
+		case transferjob.FieldSourceFolderRemoteID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source_folder_remote_id", values[i])
+			} else if value.Valid {
+				_m.SourceFolderRemoteID = value.String
+			}
+		case transferjob.FieldDestFolderRemoteID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dest_folder_remote_id", values[i])
+			} else if value.Valid {
+				_m.DestFolderRemoteID = value.String
+			}
 		case transferjob.FieldOperation:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field operation", values[i])
 			} else if value.Valid {
 				_m.Operation = value.String
+			}
+		case transferjob.FieldConflictStrategy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field conflict_strategy", values[i])
+			} else if value.Valid {
+				_m.ConflictStrategy = value.String
 			}
 		case transferjob.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -250,8 +274,17 @@ func (_m *TransferJob) String() string {
 	builder.WriteString("dest_provider_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DestProviderID))
 	builder.WriteString(", ")
+	builder.WriteString("source_folder_remote_id=")
+	builder.WriteString(_m.SourceFolderRemoteID)
+	builder.WriteString(", ")
+	builder.WriteString("dest_folder_remote_id=")
+	builder.WriteString(_m.DestFolderRemoteID)
+	builder.WriteString(", ")
 	builder.WriteString("operation=")
 	builder.WriteString(_m.Operation)
+	builder.WriteString(", ")
+	builder.WriteString("conflict_strategy=")
+	builder.WriteString(_m.ConflictStrategy)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(_m.Status)

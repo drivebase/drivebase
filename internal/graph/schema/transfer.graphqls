@@ -1,0 +1,46 @@
+enum ConflictStrategy {
+  skip
+  overwrite
+}
+
+type TransferJob {
+  id: UUID!
+  workspaceID: UUID!
+  sourceProviderID: UUID!
+  destProviderID: UUID!
+  # Empty string means root folder.
+  sourceFolderRemoteID: String!
+  destFolderRemoteID: String!
+  operation: String!
+  conflictStrategy: String!
+  status: String!
+  totalFiles: Int!
+  completedFiles: Int!
+  failedFiles: Int!
+  totalBytes: Int!
+  transferredBytes: Int!
+  errorMessage: String
+  createdAt: Time!
+  completedAt: Time
+}
+
+input StartFolderSyncInput {
+  workspaceID: UUID!
+  sourceProviderID: UUID!
+  # Use "" or "." for root.
+  sourceFolderRemoteID: String
+  destProviderID: UUID!
+  # Use "" or "." for root.
+  destFolderRemoteID: String
+  conflictStrategy: ConflictStrategy
+}
+
+extend type Mutation {
+  startFolderSync(input: StartFolderSyncInput!): TransferJob!
+  cancelTransferJob(id: UUID!): Boolean!
+}
+
+extend type Query {
+  transferJob(id: UUID!): TransferJob!
+  myTransferJobs(workspaceID: UUID!): [TransferJob!]!
+}

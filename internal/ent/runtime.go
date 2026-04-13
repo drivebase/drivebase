@@ -250,36 +250,48 @@ func init() {
 	sharedlink.DefaultID = sharedlinkDescID.Default.(func() uuid.UUID)
 	transferjobFields := schema.TransferJob{}.Fields()
 	_ = transferjobFields
+	// transferjobDescSourceFolderRemoteID is the schema descriptor for source_folder_remote_id field.
+	transferjobDescSourceFolderRemoteID := transferjobFields[4].Descriptor()
+	// transferjob.DefaultSourceFolderRemoteID holds the default value on creation for the source_folder_remote_id field.
+	transferjob.DefaultSourceFolderRemoteID = transferjobDescSourceFolderRemoteID.Default.(string)
+	// transferjobDescDestFolderRemoteID is the schema descriptor for dest_folder_remote_id field.
+	transferjobDescDestFolderRemoteID := transferjobFields[5].Descriptor()
+	// transferjob.DefaultDestFolderRemoteID holds the default value on creation for the dest_folder_remote_id field.
+	transferjob.DefaultDestFolderRemoteID = transferjobDescDestFolderRemoteID.Default.(string)
 	// transferjobDescOperation is the schema descriptor for operation field.
-	transferjobDescOperation := transferjobFields[4].Descriptor()
+	transferjobDescOperation := transferjobFields[6].Descriptor()
 	// transferjob.DefaultOperation holds the default value on creation for the operation field.
 	transferjob.DefaultOperation = transferjobDescOperation.Default.(string)
+	// transferjobDescConflictStrategy is the schema descriptor for conflict_strategy field.
+	transferjobDescConflictStrategy := transferjobFields[7].Descriptor()
+	// transferjob.DefaultConflictStrategy holds the default value on creation for the conflict_strategy field.
+	transferjob.DefaultConflictStrategy = transferjobDescConflictStrategy.Default.(string)
 	// transferjobDescStatus is the schema descriptor for status field.
-	transferjobDescStatus := transferjobFields[5].Descriptor()
+	transferjobDescStatus := transferjobFields[8].Descriptor()
 	// transferjob.DefaultStatus holds the default value on creation for the status field.
 	transferjob.DefaultStatus = transferjobDescStatus.Default.(string)
 	// transferjobDescTotalFiles is the schema descriptor for total_files field.
-	transferjobDescTotalFiles := transferjobFields[6].Descriptor()
+	transferjobDescTotalFiles := transferjobFields[9].Descriptor()
 	// transferjob.DefaultTotalFiles holds the default value on creation for the total_files field.
 	transferjob.DefaultTotalFiles = transferjobDescTotalFiles.Default.(int)
 	// transferjobDescCompletedFiles is the schema descriptor for completed_files field.
-	transferjobDescCompletedFiles := transferjobFields[7].Descriptor()
+	transferjobDescCompletedFiles := transferjobFields[10].Descriptor()
 	// transferjob.DefaultCompletedFiles holds the default value on creation for the completed_files field.
 	transferjob.DefaultCompletedFiles = transferjobDescCompletedFiles.Default.(int)
 	// transferjobDescFailedFiles is the schema descriptor for failed_files field.
-	transferjobDescFailedFiles := transferjobFields[8].Descriptor()
+	transferjobDescFailedFiles := transferjobFields[11].Descriptor()
 	// transferjob.DefaultFailedFiles holds the default value on creation for the failed_files field.
 	transferjob.DefaultFailedFiles = transferjobDescFailedFiles.Default.(int)
 	// transferjobDescTotalBytes is the schema descriptor for total_bytes field.
-	transferjobDescTotalBytes := transferjobFields[9].Descriptor()
+	transferjobDescTotalBytes := transferjobFields[12].Descriptor()
 	// transferjob.DefaultTotalBytes holds the default value on creation for the total_bytes field.
 	transferjob.DefaultTotalBytes = transferjobDescTotalBytes.Default.(int64)
 	// transferjobDescTransferredBytes is the schema descriptor for transferred_bytes field.
-	transferjobDescTransferredBytes := transferjobFields[10].Descriptor()
+	transferjobDescTransferredBytes := transferjobFields[13].Descriptor()
 	// transferjob.DefaultTransferredBytes holds the default value on creation for the transferred_bytes field.
 	transferjob.DefaultTransferredBytes = transferjobDescTransferredBytes.Default.(int64)
 	// transferjobDescCreatedAt is the schema descriptor for created_at field.
-	transferjobDescCreatedAt := transferjobFields[12].Descriptor()
+	transferjobDescCreatedAt := transferjobFields[15].Descriptor()
 	// transferjob.DefaultCreatedAt holds the default value on creation for the created_at field.
 	transferjob.DefaultCreatedAt = transferjobDescCreatedAt.Default.(func() time.Time)
 	// transferjobDescID is the schema descriptor for id field.

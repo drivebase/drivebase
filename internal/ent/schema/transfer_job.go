@@ -10,12 +10,21 @@ import (
 	"github.com/google/uuid"
 )
 
-// TransferOperation is copy or move.
+// TransferOperation is copy, move, or sync.
 type TransferOperation string
 
 const (
 	TransferOperationCopy TransferOperation = "copy"
 	TransferOperationMove TransferOperation = "move"
+	TransferOperationSync TransferOperation = "sync"
+)
+
+// ConflictStrategy controls what happens when a destination file already exists.
+type ConflictStrategy string
+
+const (
+	ConflictStrategySkip      ConflictStrategy = "skip"
+	ConflictStrategyOverwrite ConflictStrategy = "overwrite"
 )
 
 // TransferJob is the parent record for a cross-provider file transfer.
@@ -29,7 +38,11 @@ func (TransferJob) Fields() []ent.Field {
 		field.UUID("workspace_id", uuid.UUID{}),
 		field.UUID("source_provider_id", uuid.UUID{}),
 		field.UUID("dest_provider_id", uuid.UUID{}),
-		field.String("operation").Default(string(TransferOperationCopy)), // copy | move
+		// source/dest folder remote IDs — empty string means root
+		field.String("source_folder_remote_id").Optional().Default(""),
+		field.String("dest_folder_remote_id").Optional().Default(""),
+		field.String("operation").Default(string(TransferOperationCopy)), // copy | move | sync
+		field.String("conflict_strategy").Default(string(ConflictStrategySkip)),
 		field.String("status").Default(string(BatchStatusPending)),
 		field.Int("total_files").Default(0),
 		field.Int("completed_files").Default(0),

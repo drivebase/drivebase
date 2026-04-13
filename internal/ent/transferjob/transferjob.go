@@ -21,8 +21,14 @@ const (
 	FieldSourceProviderID = "source_provider_id"
 	// FieldDestProviderID holds the string denoting the dest_provider_id field in the database.
 	FieldDestProviderID = "dest_provider_id"
+	// FieldSourceFolderRemoteID holds the string denoting the source_folder_remote_id field in the database.
+	FieldSourceFolderRemoteID = "source_folder_remote_id"
+	// FieldDestFolderRemoteID holds the string denoting the dest_folder_remote_id field in the database.
+	FieldDestFolderRemoteID = "dest_folder_remote_id"
 	// FieldOperation holds the string denoting the operation field in the database.
 	FieldOperation = "operation"
+	// FieldConflictStrategy holds the string denoting the conflict_strategy field in the database.
+	FieldConflictStrategy = "conflict_strategy"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldTotalFiles holds the string denoting the total_files field in the database.
@@ -69,7 +75,10 @@ var Columns = []string{
 	FieldWorkspaceID,
 	FieldSourceProviderID,
 	FieldDestProviderID,
+	FieldSourceFolderRemoteID,
+	FieldDestFolderRemoteID,
 	FieldOperation,
+	FieldConflictStrategy,
 	FieldStatus,
 	FieldTotalFiles,
 	FieldCompletedFiles,
@@ -92,8 +101,14 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultSourceFolderRemoteID holds the default value on creation for the "source_folder_remote_id" field.
+	DefaultSourceFolderRemoteID string
+	// DefaultDestFolderRemoteID holds the default value on creation for the "dest_folder_remote_id" field.
+	DefaultDestFolderRemoteID string
 	// DefaultOperation holds the default value on creation for the "operation" field.
 	DefaultOperation string
+	// DefaultConflictStrategy holds the default value on creation for the "conflict_strategy" field.
+	DefaultConflictStrategy string
 	// DefaultStatus holds the default value on creation for the "status" field.
 	DefaultStatus string
 	// DefaultTotalFiles holds the default value on creation for the "total_files" field.
@@ -135,9 +150,24 @@ func ByDestProviderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDestProviderID, opts...).ToFunc()
 }
 
+// BySourceFolderRemoteID orders the results by the source_folder_remote_id field.
+func BySourceFolderRemoteID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSourceFolderRemoteID, opts...).ToFunc()
+}
+
+// ByDestFolderRemoteID orders the results by the dest_folder_remote_id field.
+func ByDestFolderRemoteID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDestFolderRemoteID, opts...).ToFunc()
+}
+
 // ByOperation orders the results by the operation field.
 func ByOperation(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOperation, opts...).ToFunc()
+}
+
+// ByConflictStrategy orders the results by the conflict_strategy field.
+func ByConflictStrategy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConflictStrategy, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

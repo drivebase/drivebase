@@ -64,6 +64,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		CancelTransferJob    func(childComplexity int, id uuid.UUID) int
 		ConnectProvider      func(childComplexity int, input ConnectProviderInput) int
 		CreateFolder         func(childComplexity int, input CreateFolderInput) int
 		CreateWorkspace      func(childComplexity int, input CreateWorkspaceInput) int
@@ -80,6 +81,7 @@ type ComplexityRoot struct {
 		SignIn               func(childComplexity int, input SignInInput) int
 		SignOut              func(childComplexity int) int
 		SignUp               func(childComplexity int, input SignUpInput) int
+		StartFolderSync      func(childComplexity int, input StartFolderSyncInput) int
 		SyncProvider         func(childComplexity int, providerID uuid.UUID) int
 		UpdateMemberRole     func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID, roleID uuid.UUID) int
 		UpdateProvider       func(childComplexity int, id uuid.UUID, input UpdateProviderInput) int
@@ -119,11 +121,13 @@ type ComplexityRoot struct {
 		ListFiles       func(childComplexity int, input ListFilesInput) int
 		Me              func(childComplexity int) int
 		MySessions      func(childComplexity int) int
+		MyTransferJobs  func(childComplexity int, workspaceID uuid.UUID) int
 		MyUploadBatches func(childComplexity int, workspaceID uuid.UUID) int
 		MyWorkspaces    func(childComplexity int) int
 		Provider        func(childComplexity int, id uuid.UUID) int
 		ProviderQuota   func(childComplexity int, providerID uuid.UUID) int
 		Providers       func(childComplexity int, workspaceID uuid.UUID) int
+		TransferJob     func(childComplexity int, id uuid.UUID) int
 		UploadBatch     func(childComplexity int, id uuid.UUID) int
 		Workspace       func(childComplexity int, id uuid.UUID) int
 		WorkspaceRoles  func(childComplexity int, workspaceID uuid.UUID) int
@@ -141,6 +145,26 @@ type ComplexityRoot struct {
 		ID        func(childComplexity int) int
 		IPAddress func(childComplexity int) int
 		UserAgent func(childComplexity int) int
+	}
+
+	TransferJob struct {
+		CompletedAt          func(childComplexity int) int
+		CompletedFiles       func(childComplexity int) int
+		ConflictStrategy     func(childComplexity int) int
+		CreatedAt            func(childComplexity int) int
+		DestFolderRemoteID   func(childComplexity int) int
+		DestProviderID       func(childComplexity int) int
+		ErrorMessage         func(childComplexity int) int
+		FailedFiles          func(childComplexity int) int
+		ID                   func(childComplexity int) int
+		Operation            func(childComplexity int) int
+		SourceFolderRemoteID func(childComplexity int) int
+		SourceProviderID     func(childComplexity int) int
+		Status               func(childComplexity int) int
+		TotalBytes           func(childComplexity int) int
+		TotalFiles           func(childComplexity int) int
+		TransferredBytes     func(childComplexity int) int
+		WorkspaceID          func(childComplexity int) int
 	}
 
 	UploadBatch struct {
@@ -198,6 +222,8 @@ type MutationResolver interface {
 	UpdateProvider(ctx context.Context, id uuid.UUID, input UpdateProviderInput) (*Provider, error)
 	ValidateProvider(ctx context.Context, id uuid.UUID) (*ProviderValidationResult, error)
 	RefreshProviderQuota(ctx context.Context, providerID uuid.UUID) (*ProviderQuota, error)
+	StartFolderSync(ctx context.Context, input StartFolderSyncInput) (*TransferJob, error)
+	CancelTransferJob(ctx context.Context, id uuid.UUID) (bool, error)
 	CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*Workspace, error)
 	UpdateWorkspace(ctx context.Context, id uuid.UUID, input UpdateWorkspaceInput) (*Workspace, error)
 	DeleteWorkspace(ctx context.Context, id uuid.UUID) (bool, error)
@@ -215,6 +241,8 @@ type QueryResolver interface {
 	Providers(ctx context.Context, workspaceID uuid.UUID) ([]*Provider, error)
 	Provider(ctx context.Context, id uuid.UUID) (*Provider, error)
 	ProviderQuota(ctx context.Context, providerID uuid.UUID) (*ProviderQuota, error)
+	TransferJob(ctx context.Context, id uuid.UUID) (*TransferJob, error)
+	MyTransferJobs(ctx context.Context, workspaceID uuid.UUID) ([]*TransferJob, error)
 	Workspace(ctx context.Context, id uuid.UUID) (*Workspace, error)
 	MyWorkspaces(ctx context.Context) ([]*Workspace, error)
 	WorkspaceRoles(ctx context.Context, workspaceID uuid.UUID) ([]*Role, error)
@@ -339,6 +367,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ListFilesResult.NextPageToken(childComplexity), true
 
+	case "Mutation.cancelTransferJob":
+		if e.ComplexityRoot.Mutation.CancelTransferJob == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_cancelTransferJob_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CancelTransferJob(childComplexity, args["id"].(uuid.UUID)), true
 	case "Mutation.connectProvider":
 		if e.ComplexityRoot.Mutation.ConnectProvider == nil {
 			break
@@ -510,6 +549,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.SignUp(childComplexity, args["input"].(SignUpInput)), true
+	case "Mutation.startFolderSync":
+		if e.ComplexityRoot.Mutation.StartFolderSync == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_startFolderSync_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.StartFolderSync(childComplexity, args["input"].(StartFolderSyncInput)), true
 	case "Mutation.syncProvider":
 		if e.ComplexityRoot.Mutation.SyncProvider == nil {
 			break
@@ -712,6 +762,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.MySessions(childComplexity), true
+	case "Query.myTransferJobs":
+		if e.ComplexityRoot.Query.MyTransferJobs == nil {
+			break
+		}
+
+		args, err := ec.field_Query_myTransferJobs_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.MyTransferJobs(childComplexity, args["workspaceID"].(uuid.UUID)), true
 	case "Query.myUploadBatches":
 		if e.ComplexityRoot.Query.MyUploadBatches == nil {
 			break
@@ -762,6 +823,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Providers(childComplexity, args["workspaceId"].(uuid.UUID)), true
+	case "Query.transferJob":
+		if e.ComplexityRoot.Query.TransferJob == nil {
+			break
+		}
+
+		args, err := ec.field_Query_transferJob_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.TransferJob(childComplexity, args["id"].(uuid.UUID)), true
 	case "Query.uploadBatch":
 		if e.ComplexityRoot.Query.UploadBatch == nil {
 			break
@@ -845,6 +917,109 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Session.UserAgent(childComplexity), true
+
+	case "TransferJob.completedAt":
+		if e.ComplexityRoot.TransferJob.CompletedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.CompletedAt(childComplexity), true
+	case "TransferJob.completedFiles":
+		if e.ComplexityRoot.TransferJob.CompletedFiles == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.CompletedFiles(childComplexity), true
+	case "TransferJob.conflictStrategy":
+		if e.ComplexityRoot.TransferJob.ConflictStrategy == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.ConflictStrategy(childComplexity), true
+	case "TransferJob.createdAt":
+		if e.ComplexityRoot.TransferJob.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.CreatedAt(childComplexity), true
+	case "TransferJob.destFolderRemoteID":
+		if e.ComplexityRoot.TransferJob.DestFolderRemoteID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.DestFolderRemoteID(childComplexity), true
+	case "TransferJob.destProviderID":
+		if e.ComplexityRoot.TransferJob.DestProviderID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.DestProviderID(childComplexity), true
+	case "TransferJob.errorMessage":
+		if e.ComplexityRoot.TransferJob.ErrorMessage == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.ErrorMessage(childComplexity), true
+	case "TransferJob.failedFiles":
+		if e.ComplexityRoot.TransferJob.FailedFiles == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.FailedFiles(childComplexity), true
+	case "TransferJob.id":
+		if e.ComplexityRoot.TransferJob.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.ID(childComplexity), true
+	case "TransferJob.operation":
+		if e.ComplexityRoot.TransferJob.Operation == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.Operation(childComplexity), true
+	case "TransferJob.sourceFolderRemoteID":
+		if e.ComplexityRoot.TransferJob.SourceFolderRemoteID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.SourceFolderRemoteID(childComplexity), true
+	case "TransferJob.sourceProviderID":
+		if e.ComplexityRoot.TransferJob.SourceProviderID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.SourceProviderID(childComplexity), true
+	case "TransferJob.status":
+		if e.ComplexityRoot.TransferJob.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.Status(childComplexity), true
+	case "TransferJob.totalBytes":
+		if e.ComplexityRoot.TransferJob.TotalBytes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.TotalBytes(childComplexity), true
+	case "TransferJob.totalFiles":
+		if e.ComplexityRoot.TransferJob.TotalFiles == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.TotalFiles(childComplexity), true
+	case "TransferJob.transferredBytes":
+		if e.ComplexityRoot.TransferJob.TransferredBytes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.TransferredBytes(childComplexity), true
+	case "TransferJob.workspaceID":
+		if e.ComplexityRoot.TransferJob.WorkspaceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TransferJob.WorkspaceID(childComplexity), true
 
 	case "UploadBatch.completedAt":
 		if e.ComplexityRoot.UploadBatch.CompletedAt == nil {
@@ -1023,6 +1198,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputRenameFileInput,
 		ec.unmarshalInputSignInInput,
 		ec.unmarshalInputSignUpInput,
+		ec.unmarshalInputStartFolderSyncInput,
 		ec.unmarshalInputUpdateProviderInput,
 		ec.unmarshalInputUpdateWorkspaceInput,
 	)
@@ -1099,7 +1275,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/auth.graphqls" "schema/file.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/workspace.graphqls"
+//go:embed "schema/auth.graphqls" "schema/file.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/transfer.graphqls" "schema/workspace.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -1115,6 +1291,7 @@ var sources = []*ast.Source{
 	{Name: "schema/file.graphqls", Input: sourceData("schema/file.graphqls"), BuiltIn: false},
 	{Name: "schema/provider.graphqls", Input: sourceData("schema/provider.graphqls"), BuiltIn: false},
 	{Name: "schema/schema.graphqls", Input: sourceData("schema/schema.graphqls"), BuiltIn: false},
+	{Name: "schema/transfer.graphqls", Input: sourceData("schema/transfer.graphqls"), BuiltIn: false},
 	{Name: "schema/workspace.graphqls", Input: sourceData("schema/workspace.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -1122,6 +1299,17 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_cancelTransferJob_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_connectProvider_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -1303,6 +1491,17 @@ func (ec *executionContext) field_Mutation_signUp_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_startFolderSync_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNStartFolderSyncInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐStartFolderSyncInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_syncProvider_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1416,6 +1615,17 @@ func (ec *executionContext) field_Query_listFiles_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_myTransferJobs_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["workspaceID"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_myUploadBatches_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1457,6 +1667,17 @@ func (ec *executionContext) field_Query_providers_args(ctx context.Context, rawA
 		return nil, err
 	}
 	args["workspaceId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_transferJob_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -2839,6 +3060,124 @@ func (ec *executionContext) fieldContext_Mutation_refreshProviderQuota(ctx conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_startFolderSync(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_startFolderSync,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().StartFolderSync(ctx, fc.Args["input"].(StartFolderSyncInput))
+		},
+		nil,
+		ec.marshalNTransferJob2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐTransferJob,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_startFolderSync(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TransferJob_id(ctx, field)
+			case "workspaceID":
+				return ec.fieldContext_TransferJob_workspaceID(ctx, field)
+			case "sourceProviderID":
+				return ec.fieldContext_TransferJob_sourceProviderID(ctx, field)
+			case "destProviderID":
+				return ec.fieldContext_TransferJob_destProviderID(ctx, field)
+			case "sourceFolderRemoteID":
+				return ec.fieldContext_TransferJob_sourceFolderRemoteID(ctx, field)
+			case "destFolderRemoteID":
+				return ec.fieldContext_TransferJob_destFolderRemoteID(ctx, field)
+			case "operation":
+				return ec.fieldContext_TransferJob_operation(ctx, field)
+			case "conflictStrategy":
+				return ec.fieldContext_TransferJob_conflictStrategy(ctx, field)
+			case "status":
+				return ec.fieldContext_TransferJob_status(ctx, field)
+			case "totalFiles":
+				return ec.fieldContext_TransferJob_totalFiles(ctx, field)
+			case "completedFiles":
+				return ec.fieldContext_TransferJob_completedFiles(ctx, field)
+			case "failedFiles":
+				return ec.fieldContext_TransferJob_failedFiles(ctx, field)
+			case "totalBytes":
+				return ec.fieldContext_TransferJob_totalBytes(ctx, field)
+			case "transferredBytes":
+				return ec.fieldContext_TransferJob_transferredBytes(ctx, field)
+			case "errorMessage":
+				return ec.fieldContext_TransferJob_errorMessage(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_TransferJob_createdAt(ctx, field)
+			case "completedAt":
+				return ec.fieldContext_TransferJob_completedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TransferJob", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_startFolderSync_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_cancelTransferJob(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_cancelTransferJob,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CancelTransferJob(ctx, fc.Args["id"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_cancelTransferJob(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_cancelTransferJob_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createWorkspace(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4178,6 +4517,160 @@ func (ec *executionContext) fieldContext_Query_providerQuota(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_transferJob(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_transferJob,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().TransferJob(ctx, fc.Args["id"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNTransferJob2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐTransferJob,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_transferJob(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TransferJob_id(ctx, field)
+			case "workspaceID":
+				return ec.fieldContext_TransferJob_workspaceID(ctx, field)
+			case "sourceProviderID":
+				return ec.fieldContext_TransferJob_sourceProviderID(ctx, field)
+			case "destProviderID":
+				return ec.fieldContext_TransferJob_destProviderID(ctx, field)
+			case "sourceFolderRemoteID":
+				return ec.fieldContext_TransferJob_sourceFolderRemoteID(ctx, field)
+			case "destFolderRemoteID":
+				return ec.fieldContext_TransferJob_destFolderRemoteID(ctx, field)
+			case "operation":
+				return ec.fieldContext_TransferJob_operation(ctx, field)
+			case "conflictStrategy":
+				return ec.fieldContext_TransferJob_conflictStrategy(ctx, field)
+			case "status":
+				return ec.fieldContext_TransferJob_status(ctx, field)
+			case "totalFiles":
+				return ec.fieldContext_TransferJob_totalFiles(ctx, field)
+			case "completedFiles":
+				return ec.fieldContext_TransferJob_completedFiles(ctx, field)
+			case "failedFiles":
+				return ec.fieldContext_TransferJob_failedFiles(ctx, field)
+			case "totalBytes":
+				return ec.fieldContext_TransferJob_totalBytes(ctx, field)
+			case "transferredBytes":
+				return ec.fieldContext_TransferJob_transferredBytes(ctx, field)
+			case "errorMessage":
+				return ec.fieldContext_TransferJob_errorMessage(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_TransferJob_createdAt(ctx, field)
+			case "completedAt":
+				return ec.fieldContext_TransferJob_completedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TransferJob", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_transferJob_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_myTransferJobs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_myTransferJobs,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().MyTransferJobs(ctx, fc.Args["workspaceID"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNTransferJob2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐTransferJobᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_myTransferJobs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TransferJob_id(ctx, field)
+			case "workspaceID":
+				return ec.fieldContext_TransferJob_workspaceID(ctx, field)
+			case "sourceProviderID":
+				return ec.fieldContext_TransferJob_sourceProviderID(ctx, field)
+			case "destProviderID":
+				return ec.fieldContext_TransferJob_destProviderID(ctx, field)
+			case "sourceFolderRemoteID":
+				return ec.fieldContext_TransferJob_sourceFolderRemoteID(ctx, field)
+			case "destFolderRemoteID":
+				return ec.fieldContext_TransferJob_destFolderRemoteID(ctx, field)
+			case "operation":
+				return ec.fieldContext_TransferJob_operation(ctx, field)
+			case "conflictStrategy":
+				return ec.fieldContext_TransferJob_conflictStrategy(ctx, field)
+			case "status":
+				return ec.fieldContext_TransferJob_status(ctx, field)
+			case "totalFiles":
+				return ec.fieldContext_TransferJob_totalFiles(ctx, field)
+			case "completedFiles":
+				return ec.fieldContext_TransferJob_completedFiles(ctx, field)
+			case "failedFiles":
+				return ec.fieldContext_TransferJob_failedFiles(ctx, field)
+			case "totalBytes":
+				return ec.fieldContext_TransferJob_totalBytes(ctx, field)
+			case "transferredBytes":
+				return ec.fieldContext_TransferJob_transferredBytes(ctx, field)
+			case "errorMessage":
+				return ec.fieldContext_TransferJob_errorMessage(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_TransferJob_createdAt(ctx, field)
+			case "completedAt":
+				return ec.fieldContext_TransferJob_completedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TransferJob", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_myTransferJobs_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_workspace(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4655,6 +5148,499 @@ func (ec *executionContext) _Session_expiresAt(ctx context.Context, field graphq
 func (ec *executionContext) fieldContext_Session_expiresAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Session",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_id(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_workspaceID(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_workspaceID,
+		func(ctx context.Context) (any, error) {
+			return obj.WorkspaceID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_workspaceID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_sourceProviderID(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_sourceProviderID,
+		func(ctx context.Context) (any, error) {
+			return obj.SourceProviderID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_sourceProviderID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_destProviderID(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_destProviderID,
+		func(ctx context.Context) (any, error) {
+			return obj.DestProviderID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_destProviderID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_sourceFolderRemoteID(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_sourceFolderRemoteID,
+		func(ctx context.Context) (any, error) {
+			return obj.SourceFolderRemoteID, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_sourceFolderRemoteID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_destFolderRemoteID(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_destFolderRemoteID,
+		func(ctx context.Context) (any, error) {
+			return obj.DestFolderRemoteID, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_destFolderRemoteID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_operation(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_operation,
+		func(ctx context.Context) (any, error) {
+			return obj.Operation, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_operation(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_conflictStrategy(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_conflictStrategy,
+		func(ctx context.Context) (any, error) {
+			return obj.ConflictStrategy, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_conflictStrategy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_status(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_status,
+		func(ctx context.Context) (any, error) {
+			return obj.Status, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_totalFiles(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_totalFiles,
+		func(ctx context.Context) (any, error) {
+			return obj.TotalFiles, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_totalFiles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_completedFiles(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_completedFiles,
+		func(ctx context.Context) (any, error) {
+			return obj.CompletedFiles, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_completedFiles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_failedFiles(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_failedFiles,
+		func(ctx context.Context) (any, error) {
+			return obj.FailedFiles, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_failedFiles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_totalBytes(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_totalBytes,
+		func(ctx context.Context) (any, error) {
+			return obj.TotalBytes, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_totalBytes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_transferredBytes(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_transferredBytes,
+		func(ctx context.Context) (any, error) {
+			return obj.TransferredBytes, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_transferredBytes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_errorMessage(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_errorMessage,
+		func(ctx context.Context) (any, error) {
+			return obj.ErrorMessage, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_errorMessage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_createdAt(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_createdAt,
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		ec.marshalNTime2timeᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TransferJob_completedAt(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_TransferJob_completedAt,
+		func(ctx context.Context) (any, error) {
+			return obj.CompletedAt, nil
+		},
+		nil,
+		ec.marshalOTime2ᚖtimeᚐTime,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_TransferJob_completedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TransferJob",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -7297,6 +8283,71 @@ func (ec *executionContext) unmarshalInputSignUpInput(ctx context.Context, obj a
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputStartFolderSyncInput(ctx context.Context, obj any) (StartFolderSyncInput, error) {
+	var it StartFolderSyncInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"workspaceID", "sourceProviderID", "sourceFolderRemoteID", "destProviderID", "destFolderRemoteID", "conflictStrategy"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "workspaceID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("workspaceID"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WorkspaceID = data
+		case "sourceProviderID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sourceProviderID"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SourceProviderID = data
+		case "sourceFolderRemoteID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sourceFolderRemoteID"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SourceFolderRemoteID = data
+		case "destProviderID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("destProviderID"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DestProviderID = data
+		case "destFolderRemoteID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("destFolderRemoteID"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DestFolderRemoteID = data
+		case "conflictStrategy":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("conflictStrategy"))
+			data, err := ec.unmarshalOConflictStrategy2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐConflictStrategy(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ConflictStrategy = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateProviderInput(ctx context.Context, obj any) (UpdateProviderInput, error) {
 	var it UpdateProviderInput
 	if obj == nil {
@@ -7657,6 +8708,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "refreshProviderQuota":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_refreshProviderQuota(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "startFolderSync":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_startFolderSync(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "cancelTransferJob":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_cancelTransferJob(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -8120,6 +9185,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "transferJob":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_transferJob(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "myTransferJobs":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_myTransferJobs(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "workspace":
 			field := field
 
@@ -8296,6 +9405,119 @@ func (ec *executionContext) _Session(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var transferJobImplementors = []string{"TransferJob"}
+
+func (ec *executionContext) _TransferJob(ctx context.Context, sel ast.SelectionSet, obj *TransferJob) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, transferJobImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TransferJob")
+		case "id":
+			out.Values[i] = ec._TransferJob_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "workspaceID":
+			out.Values[i] = ec._TransferJob_workspaceID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sourceProviderID":
+			out.Values[i] = ec._TransferJob_sourceProviderID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "destProviderID":
+			out.Values[i] = ec._TransferJob_destProviderID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sourceFolderRemoteID":
+			out.Values[i] = ec._TransferJob_sourceFolderRemoteID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "destFolderRemoteID":
+			out.Values[i] = ec._TransferJob_destFolderRemoteID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "operation":
+			out.Values[i] = ec._TransferJob_operation(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "conflictStrategy":
+			out.Values[i] = ec._TransferJob_conflictStrategy(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "status":
+			out.Values[i] = ec._TransferJob_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalFiles":
+			out.Values[i] = ec._TransferJob_totalFiles(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "completedFiles":
+			out.Values[i] = ec._TransferJob_completedFiles(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "failedFiles":
+			out.Values[i] = ec._TransferJob_failedFiles(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalBytes":
+			out.Values[i] = ec._TransferJob_totalBytes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "transferredBytes":
+			out.Values[i] = ec._TransferJob_transferredBytes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "errorMessage":
+			out.Values[i] = ec._TransferJob_errorMessage(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._TransferJob_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "completedAt":
+			out.Values[i] = ec._TransferJob_completedAt(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9189,6 +10411,11 @@ func (ec *executionContext) unmarshalNSignUpInput2githubᚗcomᚋdrivebaseᚋdri
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNStartFolderSyncInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐStartFolderSyncInput(ctx context.Context, v any) (StartFolderSyncInput, error) {
+	res, err := ec.unmarshalInputStartFolderSyncInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -9212,6 +10439,36 @@ func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v an
 
 func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
 	return ec._Time(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTransferJob2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐTransferJob(ctx context.Context, sel ast.SelectionSet, v TransferJob) graphql.Marshaler {
+	return ec._TransferJob(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTransferJob2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐTransferJobᚄ(ctx context.Context, sel ast.SelectionSet, v []*TransferJob) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNTransferJob2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐTransferJob(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTransferJob2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐTransferJob(ctx context.Context, sel ast.SelectionSet, v *TransferJob) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._TransferJob(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v any) (uuid.UUID, error) {
@@ -9506,6 +10763,22 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOConflictStrategy2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐConflictStrategy(ctx context.Context, v any) (*ConflictStrategy, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(ConflictStrategy)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOConflictStrategy2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐConflictStrategy(ctx context.Context, sel ast.SelectionSet, v *ConflictStrategy) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v any) (*int, error) {

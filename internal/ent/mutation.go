@@ -8222,35 +8222,38 @@ func (m *SharedLinkMutation) ResetEdge(name string) error {
 // TransferJobMutation represents an operation that mutates the TransferJob nodes in the graph.
 type TransferJobMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	source_provider_id   *uuid.UUID
-	dest_provider_id     *uuid.UUID
-	operation            *string
-	status               *string
-	total_files          *int
-	addtotal_files       *int
-	completed_files      *int
-	addcompleted_files   *int
-	failed_files         *int
-	addfailed_files      *int
-	total_bytes          *int64
-	addtotal_bytes       *int64
-	transferred_bytes    *int64
-	addtransferred_bytes *int64
-	error_message        *string
-	created_at           *time.Time
-	completed_at         *time.Time
-	clearedFields        map[string]struct{}
-	workspace            *uuid.UUID
-	clearedworkspace     bool
-	files                map[uuid.UUID]struct{}
-	removedfiles         map[uuid.UUID]struct{}
-	clearedfiles         bool
-	done                 bool
-	oldValue             func(context.Context) (*TransferJob, error)
-	predicates           []predicate.TransferJob
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	source_provider_id      *uuid.UUID
+	dest_provider_id        *uuid.UUID
+	source_folder_remote_id *string
+	dest_folder_remote_id   *string
+	operation               *string
+	conflict_strategy       *string
+	status                  *string
+	total_files             *int
+	addtotal_files          *int
+	completed_files         *int
+	addcompleted_files      *int
+	failed_files            *int
+	addfailed_files         *int
+	total_bytes             *int64
+	addtotal_bytes          *int64
+	transferred_bytes       *int64
+	addtransferred_bytes    *int64
+	error_message           *string
+	created_at              *time.Time
+	completed_at            *time.Time
+	clearedFields           map[string]struct{}
+	workspace               *uuid.UUID
+	clearedworkspace        bool
+	files                   map[uuid.UUID]struct{}
+	removedfiles            map[uuid.UUID]struct{}
+	clearedfiles            bool
+	done                    bool
+	oldValue                func(context.Context) (*TransferJob, error)
+	predicates              []predicate.TransferJob
 }
 
 var _ ent.Mutation = (*TransferJobMutation)(nil)
@@ -8465,6 +8468,104 @@ func (m *TransferJobMutation) ResetDestProviderID() {
 	m.dest_provider_id = nil
 }
 
+// SetSourceFolderRemoteID sets the "source_folder_remote_id" field.
+func (m *TransferJobMutation) SetSourceFolderRemoteID(s string) {
+	m.source_folder_remote_id = &s
+}
+
+// SourceFolderRemoteID returns the value of the "source_folder_remote_id" field in the mutation.
+func (m *TransferJobMutation) SourceFolderRemoteID() (r string, exists bool) {
+	v := m.source_folder_remote_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceFolderRemoteID returns the old "source_folder_remote_id" field's value of the TransferJob entity.
+// If the TransferJob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransferJobMutation) OldSourceFolderRemoteID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourceFolderRemoteID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourceFolderRemoteID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceFolderRemoteID: %w", err)
+	}
+	return oldValue.SourceFolderRemoteID, nil
+}
+
+// ClearSourceFolderRemoteID clears the value of the "source_folder_remote_id" field.
+func (m *TransferJobMutation) ClearSourceFolderRemoteID() {
+	m.source_folder_remote_id = nil
+	m.clearedFields[transferjob.FieldSourceFolderRemoteID] = struct{}{}
+}
+
+// SourceFolderRemoteIDCleared returns if the "source_folder_remote_id" field was cleared in this mutation.
+func (m *TransferJobMutation) SourceFolderRemoteIDCleared() bool {
+	_, ok := m.clearedFields[transferjob.FieldSourceFolderRemoteID]
+	return ok
+}
+
+// ResetSourceFolderRemoteID resets all changes to the "source_folder_remote_id" field.
+func (m *TransferJobMutation) ResetSourceFolderRemoteID() {
+	m.source_folder_remote_id = nil
+	delete(m.clearedFields, transferjob.FieldSourceFolderRemoteID)
+}
+
+// SetDestFolderRemoteID sets the "dest_folder_remote_id" field.
+func (m *TransferJobMutation) SetDestFolderRemoteID(s string) {
+	m.dest_folder_remote_id = &s
+}
+
+// DestFolderRemoteID returns the value of the "dest_folder_remote_id" field in the mutation.
+func (m *TransferJobMutation) DestFolderRemoteID() (r string, exists bool) {
+	v := m.dest_folder_remote_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDestFolderRemoteID returns the old "dest_folder_remote_id" field's value of the TransferJob entity.
+// If the TransferJob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransferJobMutation) OldDestFolderRemoteID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDestFolderRemoteID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDestFolderRemoteID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDestFolderRemoteID: %w", err)
+	}
+	return oldValue.DestFolderRemoteID, nil
+}
+
+// ClearDestFolderRemoteID clears the value of the "dest_folder_remote_id" field.
+func (m *TransferJobMutation) ClearDestFolderRemoteID() {
+	m.dest_folder_remote_id = nil
+	m.clearedFields[transferjob.FieldDestFolderRemoteID] = struct{}{}
+}
+
+// DestFolderRemoteIDCleared returns if the "dest_folder_remote_id" field was cleared in this mutation.
+func (m *TransferJobMutation) DestFolderRemoteIDCleared() bool {
+	_, ok := m.clearedFields[transferjob.FieldDestFolderRemoteID]
+	return ok
+}
+
+// ResetDestFolderRemoteID resets all changes to the "dest_folder_remote_id" field.
+func (m *TransferJobMutation) ResetDestFolderRemoteID() {
+	m.dest_folder_remote_id = nil
+	delete(m.clearedFields, transferjob.FieldDestFolderRemoteID)
+}
+
 // SetOperation sets the "operation" field.
 func (m *TransferJobMutation) SetOperation(s string) {
 	m.operation = &s
@@ -8499,6 +8600,42 @@ func (m *TransferJobMutation) OldOperation(ctx context.Context) (v string, err e
 // ResetOperation resets all changes to the "operation" field.
 func (m *TransferJobMutation) ResetOperation() {
 	m.operation = nil
+}
+
+// SetConflictStrategy sets the "conflict_strategy" field.
+func (m *TransferJobMutation) SetConflictStrategy(s string) {
+	m.conflict_strategy = &s
+}
+
+// ConflictStrategy returns the value of the "conflict_strategy" field in the mutation.
+func (m *TransferJobMutation) ConflictStrategy() (r string, exists bool) {
+	v := m.conflict_strategy
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConflictStrategy returns the old "conflict_strategy" field's value of the TransferJob entity.
+// If the TransferJob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransferJobMutation) OldConflictStrategy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConflictStrategy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConflictStrategy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConflictStrategy: %w", err)
+	}
+	return oldValue.ConflictStrategy, nil
+}
+
+// ResetConflictStrategy resets all changes to the "conflict_strategy" field.
+func (m *TransferJobMutation) ResetConflictStrategy() {
+	m.conflict_strategy = nil
 }
 
 // SetStatus sets the "status" field.
@@ -9066,7 +9203,7 @@ func (m *TransferJobMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TransferJobMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 16)
 	if m.workspace != nil {
 		fields = append(fields, transferjob.FieldWorkspaceID)
 	}
@@ -9076,8 +9213,17 @@ func (m *TransferJobMutation) Fields() []string {
 	if m.dest_provider_id != nil {
 		fields = append(fields, transferjob.FieldDestProviderID)
 	}
+	if m.source_folder_remote_id != nil {
+		fields = append(fields, transferjob.FieldSourceFolderRemoteID)
+	}
+	if m.dest_folder_remote_id != nil {
+		fields = append(fields, transferjob.FieldDestFolderRemoteID)
+	}
 	if m.operation != nil {
 		fields = append(fields, transferjob.FieldOperation)
+	}
+	if m.conflict_strategy != nil {
+		fields = append(fields, transferjob.FieldConflictStrategy)
 	}
 	if m.status != nil {
 		fields = append(fields, transferjob.FieldStatus)
@@ -9120,8 +9266,14 @@ func (m *TransferJobMutation) Field(name string) (ent.Value, bool) {
 		return m.SourceProviderID()
 	case transferjob.FieldDestProviderID:
 		return m.DestProviderID()
+	case transferjob.FieldSourceFolderRemoteID:
+		return m.SourceFolderRemoteID()
+	case transferjob.FieldDestFolderRemoteID:
+		return m.DestFolderRemoteID()
 	case transferjob.FieldOperation:
 		return m.Operation()
+	case transferjob.FieldConflictStrategy:
+		return m.ConflictStrategy()
 	case transferjob.FieldStatus:
 		return m.Status()
 	case transferjob.FieldTotalFiles:
@@ -9155,8 +9307,14 @@ func (m *TransferJobMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldSourceProviderID(ctx)
 	case transferjob.FieldDestProviderID:
 		return m.OldDestProviderID(ctx)
+	case transferjob.FieldSourceFolderRemoteID:
+		return m.OldSourceFolderRemoteID(ctx)
+	case transferjob.FieldDestFolderRemoteID:
+		return m.OldDestFolderRemoteID(ctx)
 	case transferjob.FieldOperation:
 		return m.OldOperation(ctx)
+	case transferjob.FieldConflictStrategy:
+		return m.OldConflictStrategy(ctx)
 	case transferjob.FieldStatus:
 		return m.OldStatus(ctx)
 	case transferjob.FieldTotalFiles:
@@ -9205,12 +9363,33 @@ func (m *TransferJobMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDestProviderID(v)
 		return nil
+	case transferjob.FieldSourceFolderRemoteID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceFolderRemoteID(v)
+		return nil
+	case transferjob.FieldDestFolderRemoteID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDestFolderRemoteID(v)
+		return nil
 	case transferjob.FieldOperation:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOperation(v)
+		return nil
+	case transferjob.FieldConflictStrategy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConflictStrategy(v)
 		return nil
 	case transferjob.FieldStatus:
 		v, ok := value.(string)
@@ -9368,6 +9547,12 @@ func (m *TransferJobMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TransferJobMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(transferjob.FieldSourceFolderRemoteID) {
+		fields = append(fields, transferjob.FieldSourceFolderRemoteID)
+	}
+	if m.FieldCleared(transferjob.FieldDestFolderRemoteID) {
+		fields = append(fields, transferjob.FieldDestFolderRemoteID)
+	}
 	if m.FieldCleared(transferjob.FieldErrorMessage) {
 		fields = append(fields, transferjob.FieldErrorMessage)
 	}
@@ -9388,6 +9573,12 @@ func (m *TransferJobMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TransferJobMutation) ClearField(name string) error {
 	switch name {
+	case transferjob.FieldSourceFolderRemoteID:
+		m.ClearSourceFolderRemoteID()
+		return nil
+	case transferjob.FieldDestFolderRemoteID:
+		m.ClearDestFolderRemoteID()
+		return nil
 	case transferjob.FieldErrorMessage:
 		m.ClearErrorMessage()
 		return nil
@@ -9411,8 +9602,17 @@ func (m *TransferJobMutation) ResetField(name string) error {
 	case transferjob.FieldDestProviderID:
 		m.ResetDestProviderID()
 		return nil
+	case transferjob.FieldSourceFolderRemoteID:
+		m.ResetSourceFolderRemoteID()
+		return nil
+	case transferjob.FieldDestFolderRemoteID:
+		m.ResetDestFolderRemoteID()
+		return nil
 	case transferjob.FieldOperation:
 		m.ResetOperation()
+		return nil
+	case transferjob.FieldConflictStrategy:
+		m.ResetConflictStrategy()
 		return nil
 	case transferjob.FieldStatus:
 		m.ResetStatus()

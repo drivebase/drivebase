@@ -17,12 +17,7 @@ import (
 	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
-
-	// Import provider packages to trigger their init() registration
 	_ "github.com/drivebase/drivebase/internal/storage/googledrive"
-	_ "github.com/drivebase/drivebase/internal/storage/local"
-	_ "github.com/drivebase/drivebase/internal/storage/s3"
-
 	"github.com/google/uuid"
 )
 

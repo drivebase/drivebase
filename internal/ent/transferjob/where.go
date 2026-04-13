@@ -71,9 +71,24 @@ func DestProviderID(v uuid.UUID) predicate.TransferJob {
 	return predicate.TransferJob(sql.FieldEQ(FieldDestProviderID, v))
 }
 
+// SourceFolderRemoteID applies equality check predicate on the "source_folder_remote_id" field. It's identical to SourceFolderRemoteIDEQ.
+func SourceFolderRemoteID(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldEQ(FieldSourceFolderRemoteID, v))
+}
+
+// DestFolderRemoteID applies equality check predicate on the "dest_folder_remote_id" field. It's identical to DestFolderRemoteIDEQ.
+func DestFolderRemoteID(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldEQ(FieldDestFolderRemoteID, v))
+}
+
 // Operation applies equality check predicate on the "operation" field. It's identical to OperationEQ.
 func Operation(v string) predicate.TransferJob {
 	return predicate.TransferJob(sql.FieldEQ(FieldOperation, v))
+}
+
+// ConflictStrategy applies equality check predicate on the "conflict_strategy" field. It's identical to ConflictStrategyEQ.
+func ConflictStrategy(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldEQ(FieldConflictStrategy, v))
 }
 
 // Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
@@ -221,6 +236,156 @@ func DestProviderIDLTE(v uuid.UUID) predicate.TransferJob {
 	return predicate.TransferJob(sql.FieldLTE(FieldDestProviderID, v))
 }
 
+// SourceFolderRemoteIDEQ applies the EQ predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDEQ(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldEQ(FieldSourceFolderRemoteID, v))
+}
+
+// SourceFolderRemoteIDNEQ applies the NEQ predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDNEQ(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldNEQ(FieldSourceFolderRemoteID, v))
+}
+
+// SourceFolderRemoteIDIn applies the In predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDIn(vs ...string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldIn(FieldSourceFolderRemoteID, vs...))
+}
+
+// SourceFolderRemoteIDNotIn applies the NotIn predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDNotIn(vs ...string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldNotIn(FieldSourceFolderRemoteID, vs...))
+}
+
+// SourceFolderRemoteIDGT applies the GT predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDGT(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldGT(FieldSourceFolderRemoteID, v))
+}
+
+// SourceFolderRemoteIDGTE applies the GTE predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDGTE(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldGTE(FieldSourceFolderRemoteID, v))
+}
+
+// SourceFolderRemoteIDLT applies the LT predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDLT(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldLT(FieldSourceFolderRemoteID, v))
+}
+
+// SourceFolderRemoteIDLTE applies the LTE predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDLTE(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldLTE(FieldSourceFolderRemoteID, v))
+}
+
+// SourceFolderRemoteIDContains applies the Contains predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDContains(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldContains(FieldSourceFolderRemoteID, v))
+}
+
+// SourceFolderRemoteIDHasPrefix applies the HasPrefix predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDHasPrefix(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldHasPrefix(FieldSourceFolderRemoteID, v))
+}
+
+// SourceFolderRemoteIDHasSuffix applies the HasSuffix predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDHasSuffix(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldHasSuffix(FieldSourceFolderRemoteID, v))
+}
+
+// SourceFolderRemoteIDIsNil applies the IsNil predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDIsNil() predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldIsNull(FieldSourceFolderRemoteID))
+}
+
+// SourceFolderRemoteIDNotNil applies the NotNil predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDNotNil() predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldNotNull(FieldSourceFolderRemoteID))
+}
+
+// SourceFolderRemoteIDEqualFold applies the EqualFold predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDEqualFold(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldEqualFold(FieldSourceFolderRemoteID, v))
+}
+
+// SourceFolderRemoteIDContainsFold applies the ContainsFold predicate on the "source_folder_remote_id" field.
+func SourceFolderRemoteIDContainsFold(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldContainsFold(FieldSourceFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDEQ applies the EQ predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDEQ(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldEQ(FieldDestFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDNEQ applies the NEQ predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDNEQ(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldNEQ(FieldDestFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDIn applies the In predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDIn(vs ...string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldIn(FieldDestFolderRemoteID, vs...))
+}
+
+// DestFolderRemoteIDNotIn applies the NotIn predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDNotIn(vs ...string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldNotIn(FieldDestFolderRemoteID, vs...))
+}
+
+// DestFolderRemoteIDGT applies the GT predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDGT(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldGT(FieldDestFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDGTE applies the GTE predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDGTE(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldGTE(FieldDestFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDLT applies the LT predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDLT(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldLT(FieldDestFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDLTE applies the LTE predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDLTE(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldLTE(FieldDestFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDContains applies the Contains predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDContains(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldContains(FieldDestFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDHasPrefix applies the HasPrefix predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDHasPrefix(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldHasPrefix(FieldDestFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDHasSuffix applies the HasSuffix predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDHasSuffix(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldHasSuffix(FieldDestFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDIsNil applies the IsNil predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDIsNil() predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldIsNull(FieldDestFolderRemoteID))
+}
+
+// DestFolderRemoteIDNotNil applies the NotNil predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDNotNil() predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldNotNull(FieldDestFolderRemoteID))
+}
+
+// DestFolderRemoteIDEqualFold applies the EqualFold predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDEqualFold(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldEqualFold(FieldDestFolderRemoteID, v))
+}
+
+// DestFolderRemoteIDContainsFold applies the ContainsFold predicate on the "dest_folder_remote_id" field.
+func DestFolderRemoteIDContainsFold(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldContainsFold(FieldDestFolderRemoteID, v))
+}
+
 // OperationEQ applies the EQ predicate on the "operation" field.
 func OperationEQ(v string) predicate.TransferJob {
 	return predicate.TransferJob(sql.FieldEQ(FieldOperation, v))
@@ -284,6 +449,71 @@ func OperationEqualFold(v string) predicate.TransferJob {
 // OperationContainsFold applies the ContainsFold predicate on the "operation" field.
 func OperationContainsFold(v string) predicate.TransferJob {
 	return predicate.TransferJob(sql.FieldContainsFold(FieldOperation, v))
+}
+
+// ConflictStrategyEQ applies the EQ predicate on the "conflict_strategy" field.
+func ConflictStrategyEQ(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldEQ(FieldConflictStrategy, v))
+}
+
+// ConflictStrategyNEQ applies the NEQ predicate on the "conflict_strategy" field.
+func ConflictStrategyNEQ(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldNEQ(FieldConflictStrategy, v))
+}
+
+// ConflictStrategyIn applies the In predicate on the "conflict_strategy" field.
+func ConflictStrategyIn(vs ...string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldIn(FieldConflictStrategy, vs...))
+}
+
+// ConflictStrategyNotIn applies the NotIn predicate on the "conflict_strategy" field.
+func ConflictStrategyNotIn(vs ...string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldNotIn(FieldConflictStrategy, vs...))
+}
+
+// ConflictStrategyGT applies the GT predicate on the "conflict_strategy" field.
+func ConflictStrategyGT(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldGT(FieldConflictStrategy, v))
+}
+
+// ConflictStrategyGTE applies the GTE predicate on the "conflict_strategy" field.
+func ConflictStrategyGTE(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldGTE(FieldConflictStrategy, v))
+}
+
+// ConflictStrategyLT applies the LT predicate on the "conflict_strategy" field.
+func ConflictStrategyLT(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldLT(FieldConflictStrategy, v))
+}
+
+// ConflictStrategyLTE applies the LTE predicate on the "conflict_strategy" field.
+func ConflictStrategyLTE(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldLTE(FieldConflictStrategy, v))
+}
+
+// ConflictStrategyContains applies the Contains predicate on the "conflict_strategy" field.
+func ConflictStrategyContains(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldContains(FieldConflictStrategy, v))
+}
+
+// ConflictStrategyHasPrefix applies the HasPrefix predicate on the "conflict_strategy" field.
+func ConflictStrategyHasPrefix(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldHasPrefix(FieldConflictStrategy, v))
+}
+
+// ConflictStrategyHasSuffix applies the HasSuffix predicate on the "conflict_strategy" field.
+func ConflictStrategyHasSuffix(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldHasSuffix(FieldConflictStrategy, v))
+}
+
+// ConflictStrategyEqualFold applies the EqualFold predicate on the "conflict_strategy" field.
+func ConflictStrategyEqualFold(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldEqualFold(FieldConflictStrategy, v))
+}
+
+// ConflictStrategyContainsFold applies the ContainsFold predicate on the "conflict_strategy" field.
+func ConflictStrategyContainsFold(v string) predicate.TransferJob {
+	return predicate.TransferJob(sql.FieldContainsFold(FieldConflictStrategy, v))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
