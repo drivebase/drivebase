@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/drivebase/drivebase/internal/cache"
 	"github.com/drivebase/drivebase/internal/config"
 	"github.com/drivebase/drivebase/internal/ent"
 	"github.com/drivebase/drivebase/internal/server"
@@ -52,10 +53,19 @@ func main() {
 	}
 	slog.Info("database schema up to date")
 
+	// Redis (optional — file tree cache disabled if Redis unavailable)
+	rdb, err := cache.NewRedisClient(cfg.Redis)
+	if err != nil {
+		slog.Warn("redis unavailable — file tree cache disabled", "error", err)
+		rdb = nil
+	} else {
+		slog.Info("redis connected")
+	}
+
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	srv := &http.Server{
 		Addr:         addr,
-		Handler:      server.New(cfg, client),
+		Handler:      server.New(cfg, client, rdb),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 60 * time.Second,
 		IdleTimeout:  120 * time.Second,

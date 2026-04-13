@@ -12,14 +12,16 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/drivebase/drivebase/internal/auth"
+	"github.com/drivebase/drivebase/internal/cache"
 	"github.com/drivebase/drivebase/internal/config"
 	"github.com/drivebase/drivebase/internal/ent"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/graph/resolver"
+	"github.com/redis/go-redis/v9"
 )
 
 // New builds and returns the HTTP server mux.
-func New(cfg *config.Config, db *ent.Client) http.Handler {
+func New(cfg *config.Config, db *ent.Client, rdb *redis.Client) http.Handler {
 	r := chi.NewRouter()
 
 	// Core middleware
@@ -54,7 +56,7 @@ func New(cfg *config.Config, db *ent.Client) http.Handler {
 	})
 
 	// GraphQL
-	gqlSrv := newGQLServer(cfg, db)
+	gqlSrv := newGQLServer(cfg, db, rdb)
 	r.Handle("/graphql", gqlSrv)
 
 	// Playground (dev only)
@@ -62,14 +64,26 @@ func New(cfg *config.Config, db *ent.Client) http.Handler {
 		r.Handle("/playground", playground.Handler("Drivebase", "/graphql"))
 	}
 
+	// REST file endpoints
+	h := &fileHandler{cfg: cfg, db: db}
+	r.Post("/api/v1/upload", h.upload)
+	r.Get("/api/v1/download/{fileNodeID}", h.download)
+
 	return r
 }
 
-func newGQLServer(cfg *config.Config, db *ent.Client) *handler.Server {
+func newGQLServer(cfg *config.Config, db *ent.Client, rdb *redis.Client) *handler.Server {
+	var fileCache *cache.FileTreeCache
+	if rdb != nil {
+		fileCache = cache.NewFileTreeCache(rdb, cfg.Cache.FileCacheTTL)
+	}
+
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolver.Resolver{
-			DB:     db,
-			Config: cfg,
+			DB:        db,
+			Config:    cfg,
+			Redis:     rdb,
+			FileCache: fileCache,
 		},
 	}))
 

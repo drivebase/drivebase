@@ -44,8 +44,9 @@ type CryptoConfig struct {
 }
 
 type CacheConfig struct {
-	DiskPath    string
-	DefaultTTL  time.Duration
+	DiskPath     string
+	DefaultTTL   time.Duration
+	FileCacheTTL time.Duration
 }
 
 type WorkerConfig struct {
