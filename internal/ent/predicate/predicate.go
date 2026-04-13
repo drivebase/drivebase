@@ -24,6 +24,9 @@ type Provider func(*sql.Selector)
 // ProviderCredential is the predicate function for providercredential builders.
 type ProviderCredential func(*sql.Selector)
 
+// ProviderQuota is the predicate function for providerquota builders.
+type ProviderQuota func(*sql.Selector)
+
 // Role is the predicate function for role builders.
 type Role func(*sql.Selector)
 

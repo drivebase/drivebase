@@ -35,6 +35,8 @@ const (
 	EdgeCredential = "credential"
 	// EdgeCacheConfig holds the string denoting the cache_config edge name in mutations.
 	EdgeCacheConfig = "cache_config"
+	// EdgeQuota holds the string denoting the quota edge name in mutations.
+	EdgeQuota = "quota"
 	// EdgeFileNodes holds the string denoting the file_nodes edge name in mutations.
 	EdgeFileNodes = "file_nodes"
 	// Table holds the table name of the provider in the database.
@@ -60,6 +62,13 @@ const (
 	CacheConfigInverseTable = "cache_configs"
 	// CacheConfigColumn is the table column denoting the cache_config relation/edge.
 	CacheConfigColumn = "provider_id"
+	// QuotaTable is the table that holds the quota relation/edge.
+	QuotaTable = "provider_quota"
+	// QuotaInverseTable is the table name for the ProviderQuota entity.
+	// It exists in this package in order to avoid circular dependency with the "providerquota" package.
+	QuotaInverseTable = "provider_quota"
+	// QuotaColumn is the table column denoting the quota relation/edge.
+	QuotaColumn = "provider_id"
 	// FileNodesTable is the table that holds the file_nodes relation/edge.
 	FileNodesTable = "file_nodes"
 	// FileNodesInverseTable is the table name for the FileNode entity.
@@ -174,6 +183,13 @@ func ByCacheConfigField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByQuotaField orders the results by quota field.
+func ByQuotaField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newQuotaStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByFileNodesCount orders the results by file_nodes count.
 func ByFileNodesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -206,6 +222,13 @@ func newCacheConfigStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CacheConfigInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, CacheConfigTable, CacheConfigColumn),
+	)
+}
+func newQuotaStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(QuotaInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, QuotaTable, QuotaColumn),
 	)
 }
 func newFileNodesStep() *sqlgraph.Step {

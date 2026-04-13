@@ -174,6 +174,19 @@ func TestGenerateTempLink_notSupported(t *testing.T) {
 	assert.ErrorIs(t, err, storage.ErrNotSupported)
 }
 
+func TestGetQuota(t *testing.T) {
+	p := newTestProvider(t)
+
+	qp, ok := storage.Provider(p).(storage.QuotaProvider)
+	require.True(t, ok, "localProvider should implement QuotaProvider")
+
+	info, err := qp.GetQuota(context.Background())
+	require.NoError(t, err)
+	assert.Greater(t, info.TotalBytes, int64(0))
+	assert.GreaterOrEqual(t, info.FreeBytes, int64(0))
+	assert.Equal(t, "Local Disk", info.PlanName)
+}
+
 func TestUpload_nestedFolder(t *testing.T) {
 	p := newTestProvider(t)
 	ctx := context.Background()

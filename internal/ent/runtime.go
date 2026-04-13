@@ -11,6 +11,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/permission"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
+	"github.com/drivebase/drivebase/internal/ent/providerquota"
 	"github.com/drivebase/drivebase/internal/ent/role"
 	"github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/ent/session"
@@ -163,6 +164,32 @@ func init() {
 	providercredentialDescID := providercredentialFields[0].Descriptor()
 	// providercredential.DefaultID holds the default value on creation for the id field.
 	providercredential.DefaultID = providercredentialDescID.Default.(func() uuid.UUID)
+	providerquotaFields := schema.ProviderQuota{}.Fields()
+	_ = providerquotaFields
+	// providerquotaDescTotalBytes is the schema descriptor for total_bytes field.
+	providerquotaDescTotalBytes := providerquotaFields[2].Descriptor()
+	// providerquota.DefaultTotalBytes holds the default value on creation for the total_bytes field.
+	providerquota.DefaultTotalBytes = providerquotaDescTotalBytes.Default.(int64)
+	// providerquotaDescUsedBytes is the schema descriptor for used_bytes field.
+	providerquotaDescUsedBytes := providerquotaFields[3].Descriptor()
+	// providerquota.DefaultUsedBytes holds the default value on creation for the used_bytes field.
+	providerquota.DefaultUsedBytes = providerquotaDescUsedBytes.Default.(int64)
+	// providerquotaDescFreeBytes is the schema descriptor for free_bytes field.
+	providerquotaDescFreeBytes := providerquotaFields[4].Descriptor()
+	// providerquota.DefaultFreeBytes holds the default value on creation for the free_bytes field.
+	providerquota.DefaultFreeBytes = providerquotaDescFreeBytes.Default.(int64)
+	// providerquotaDescTrashBytes is the schema descriptor for trash_bytes field.
+	providerquotaDescTrashBytes := providerquotaFields[5].Descriptor()
+	// providerquota.DefaultTrashBytes holds the default value on creation for the trash_bytes field.
+	providerquota.DefaultTrashBytes = providerquotaDescTrashBytes.Default.(int64)
+	// providerquotaDescSyncedAt is the schema descriptor for synced_at field.
+	providerquotaDescSyncedAt := providerquotaFields[8].Descriptor()
+	// providerquota.DefaultSyncedAt holds the default value on creation for the synced_at field.
+	providerquota.DefaultSyncedAt = providerquotaDescSyncedAt.Default.(func() time.Time)
+	// providerquotaDescID is the schema descriptor for id field.
+	providerquotaDescID := providerquotaFields[0].Descriptor()
+	// providerquota.DefaultID holds the default value on creation for the id field.
+	providerquota.DefaultID = providerquotaDescID.Default.(func() uuid.UUID)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
 	// roleDescName is the schema descriptor for name field.

@@ -85,6 +85,18 @@ type Provider struct {
 	AuthType    AuthType       `json:"authType"`
 	Status      ProviderStatus `json:"status"`
 	CreatedAt   time.Time      `json:"createdAt"`
+	Quota       *ProviderQuota `json:"quota,omitempty"`
+}
+
+type ProviderQuota struct {
+	ProviderID uuid.UUID `json:"providerID"`
+	TotalBytes int       `json:"totalBytes"`
+	UsedBytes  int       `json:"usedBytes"`
+	FreeBytes  int       `json:"freeBytes"`
+	TrashBytes int       `json:"trashBytes"`
+	PlanName   *string   `json:"planName,omitempty"`
+	Extra      *string   `json:"extra,omitempty"`
+	SyncedAt   time.Time `json:"syncedAt"`
 }
 
 type ProviderValidationResult struct {

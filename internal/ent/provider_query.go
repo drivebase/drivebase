@@ -17,6 +17,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
+	"github.com/drivebase/drivebase/internal/ent/providerquota"
 	"github.com/drivebase/drivebase/internal/ent/workspace"
 	"github.com/google/uuid"
 )
@@ -31,6 +32,7 @@ type ProviderQuery struct {
 	withWorkspace   *WorkspaceQuery
 	withCredential  *ProviderCredentialQuery
 	withCacheConfig *CacheConfigQuery
+	withQuota       *ProviderQuotaQuery
 	withFileNodes   *FileNodeQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -127,6 +129,28 @@ func (_q *ProviderQuery) QueryCacheConfig() *CacheConfigQuery {
 			sqlgraph.From(provider.Table, provider.FieldID, selector),
 			sqlgraph.To(cacheconfig.Table, cacheconfig.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, provider.CacheConfigTable, provider.CacheConfigColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryQuota chains the current query on the "quota" edge.
+func (_q *ProviderQuery) QueryQuota() *ProviderQuotaQuery {
+	query := (&ProviderQuotaClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provider.Table, provider.FieldID, selector),
+			sqlgraph.To(providerquota.Table, providerquota.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, provider.QuotaTable, provider.QuotaColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -351,6 +375,7 @@ func (_q *ProviderQuery) Clone() *ProviderQuery {
 		withWorkspace:   _q.withWorkspace.Clone(),
 		withCredential:  _q.withCredential.Clone(),
 		withCacheConfig: _q.withCacheConfig.Clone(),
+		withQuota:       _q.withQuota.Clone(),
 		withFileNodes:   _q.withFileNodes.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
@@ -388,6 +413,17 @@ func (_q *ProviderQuery) WithCacheConfig(opts ...func(*CacheConfigQuery)) *Provi
 		opt(query)
 	}
 	_q.withCacheConfig = query
+	return _q
+}
+
+// WithQuota tells the query-builder to eager-load the nodes that are connected to
+// the "quota" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProviderQuery) WithQuota(opts ...func(*ProviderQuotaQuery)) *ProviderQuery {
+	query := (&ProviderQuotaClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withQuota = query
 	return _q
 }
 
@@ -480,10 +516,11 @@ func (_q *ProviderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pro
 	var (
 		nodes       = []*Provider{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withWorkspace != nil,
 			_q.withCredential != nil,
 			_q.withCacheConfig != nil,
+			_q.withQuota != nil,
 			_q.withFileNodes != nil,
 		}
 	)
@@ -520,6 +557,12 @@ func (_q *ProviderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pro
 	if query := _q.withCacheConfig; query != nil {
 		if err := _q.loadCacheConfig(ctx, query, nodes, nil,
 			func(n *Provider, e *CacheConfig) { n.Edges.CacheConfig = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withQuota; query != nil {
+		if err := _q.loadQuota(ctx, query, nodes, nil,
+			func(n *Provider, e *ProviderQuota) { n.Edges.Quota = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -601,6 +644,33 @@ func (_q *ProviderQuery) loadCacheConfig(ctx context.Context, query *CacheConfig
 	}
 	query.Where(predicate.CacheConfig(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(provider.CacheConfigColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProviderID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "provider_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ProviderQuery) loadQuota(ctx context.Context, query *ProviderQuotaQuery, nodes []*Provider, init func(*Provider), assign func(*Provider, *ProviderQuota)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Provider)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(providerquota.FieldProviderID)
+	}
+	query.Where(predicate.ProviderQuota(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(provider.QuotaColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

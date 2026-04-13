@@ -520,6 +520,29 @@ func HasCacheConfigWith(preds ...predicate.CacheConfig) predicate.Provider {
 	})
 }
 
+// HasQuota applies the HasEdge predicate on the "quota" edge.
+func HasQuota() predicate.Provider {
+	return predicate.Provider(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, QuotaTable, QuotaColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasQuotaWith applies the HasEdge predicate on the "quota" edge with a given conditions (other predicates).
+func HasQuotaWith(preds ...predicate.ProviderQuota) predicate.Provider {
+	return predicate.Provider(func(s *sql.Selector) {
+		step := newQuotaStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasFileNodes applies the HasEdge predicate on the "file_nodes" edge.
 func HasFileNodes() predicate.Provider {
 	return predicate.Provider(func(s *sql.Selector) {

@@ -18,6 +18,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/permission"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
+	"github.com/drivebase/drivebase/internal/ent/providerquota"
 	"github.com/drivebase/drivebase/internal/ent/role"
 	"github.com/drivebase/drivebase/internal/ent/session"
 	"github.com/drivebase/drivebase/internal/ent/sharedlink"
@@ -94,6 +95,7 @@ func checkColumn(t, c string) error {
 			permission.Table:         permission.ValidColumn,
 			provider.Table:           provider.ValidColumn,
 			providercredential.Table: providercredential.ValidColumn,
+			providerquota.Table:      providerquota.ValidColumn,
 			role.Table:               role.ValidColumn,
 			session.Table:            session.ValidColumn,
 			sharedlink.Table:         sharedlink.ValidColumn,

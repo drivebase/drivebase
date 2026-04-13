@@ -160,3 +160,37 @@ func TestGDrive_Type(t *testing.T) {
 	p := &gdProvider{}
 	assert.Equal(t, storage.ProviderTypeGoogleDrive, p.Type())
 }
+
+func TestGDrive_GetQuota(t *testing.T) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/about" {
+			json.NewEncoder(w).Encode(map[string]any{
+				"storageQuota": map[string]any{
+					"limit":              "107374182400", // 100 GB
+					"usage":              "10737418240",  // 10 GB used
+					"usageInDrive":       "9663676416",   // 9 GB in Drive
+					"usageInDriveTrash": "1073741824",   // 1 GB in trash
+				},
+				"user": map[string]string{
+					"displayName":  "Test User",
+					"emailAddress": "test@example.com",
+				},
+			})
+			return
+		}
+		http.NotFound(w, r)
+	})
+
+	p := newFakeProvider(t, handler)
+	qp, ok := storage.Provider(p).(storage.QuotaProvider)
+	require.True(t, ok, "gdProvider should implement QuotaProvider")
+
+	info, err := qp.GetQuota(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, int64(107374182400), info.TotalBytes)
+	assert.Equal(t, int64(10737418240), info.UsedBytes)
+	assert.Equal(t, int64(96636764160), info.FreeBytes)
+	assert.Equal(t, int64(1073741824), info.TrashBytes)
+	assert.Equal(t, "Google One 100 GB", info.PlanName)
+	assert.Equal(t, "Test User", info.Extra["display_name"])
+}

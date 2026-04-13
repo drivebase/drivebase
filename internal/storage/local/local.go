@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/drivebase/drivebase/internal/storage"
@@ -46,6 +47,28 @@ func New(creds storage.Credentials) (*localProvider, error) {
 }
 
 func (p *localProvider) Type() storage.ProviderType { return storage.ProviderTypeLocal }
+
+// GetQuota returns disk usage stats for the volume containing basePath.
+func (p *localProvider) GetQuota(_ context.Context) (*storage.QuotaInfo, error) {
+	var stat syscall.Statfs_t
+	if err := syscall.Statfs(p.basePath, &stat); err != nil {
+		return nil, fmt.Errorf("local: statfs: %w", err)
+	}
+	blockSize := int64(stat.Bsize)
+	total := int64(stat.Blocks) * blockSize
+	free := int64(stat.Bavail) * blockSize // available to unprivileged processes
+	used := total - int64(stat.Bfree)*blockSize
+
+	return &storage.QuotaInfo{
+		TotalBytes: total,
+		UsedBytes:  used,
+		FreeBytes:  free,
+		PlanName:   "Local Disk",
+		Extra: map[string]any{
+			"base_path": p.basePath,
+		},
+	}, nil
+}
 
 func (p *localProvider) Validate(_ context.Context) error {
 	info, err := os.Stat(p.basePath)

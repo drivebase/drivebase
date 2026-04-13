@@ -49,6 +49,24 @@ type UploadParams struct {
 	Body     interface{ Read([]byte) (int, error) } // io.Reader
 }
 
+// QuotaInfo holds storage quota and plan details for a provider.
+// Fields are zero-valued when not reported by the provider.
+type QuotaInfo struct {
+	// TotalBytes is the total storage capacity. 0 = unlimited or unknown.
+	TotalBytes int64
+	// UsedBytes is the amount of storage currently consumed.
+	UsedBytes int64
+	// FreeBytes is the remaining available space. 0 = unlimited or unknown.
+	FreeBytes int64
+	// TrashBytes is space used by trashed/deleted files (provider-specific).
+	TrashBytes int64
+	// PlanName is a human-readable name for the current subscription tier.
+	// Empty if the provider does not expose this.
+	PlanName string
+	// Extra holds any provider-specific fields (e.g. breakdown by service).
+	Extra map[string]any
+}
+
 // Credentials is an opaque JSON blob specific to each provider type.
 // Google Drive: {"client_id","client_secret","access_token","refresh_token","expiry"}
 // S3:           {"endpoint","region","bucket","access_key","secret_key","use_path_style"}

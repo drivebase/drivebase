@@ -60,6 +60,7 @@ func (Provider) Edges() []ent.Edge {
 		edge.From("workspace", Workspace.Type).Ref("providers").Field("workspace_id").Unique().Required(),
 		edge.To("credential", ProviderCredential.Type).Unique(),
 		edge.To("cache_config", CacheConfig.Type).Unique(),
+		edge.To("quota", ProviderQuota.Type).Unique(),
 		edge.To("file_nodes", FileNode.Type),
 	}
 }

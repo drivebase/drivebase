@@ -6,6 +6,18 @@ import (
 	"time"
 )
 
+// QuotaProvider is an optional extension of Provider for backends that can
+// report storage quota and plan information. Callers should type-assert:
+//
+//	if qp, ok := prov.(storage.QuotaProvider); ok {
+//	    info, err := qp.GetQuota(ctx)
+//	}
+type QuotaProvider interface {
+	Provider
+	// GetQuota returns current storage quota and usage information.
+	GetQuota(ctx context.Context) (*QuotaInfo, error)
+}
+
 // Provider is the interface every storage backend must implement.
 // All methods must be safe for concurrent use.
 type Provider interface {

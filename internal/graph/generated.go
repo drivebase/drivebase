@@ -64,26 +64,27 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		ConnectProvider    func(childComplexity int, input ConnectProviderInput) int
-		CreateFolder       func(childComplexity int, input CreateFolderInput) int
-		CreateWorkspace    func(childComplexity int, input CreateWorkspaceInput) int
-		DeleteFile         func(childComplexity int, input DeleteFileInput) int
-		DeleteWorkspace    func(childComplexity int, id uuid.UUID) int
-		DisconnectProvider func(childComplexity int, id uuid.UUID) int
-		InviteMember       func(childComplexity int, workspaceID uuid.UUID, email string, roleID uuid.UUID) int
-		MoveFile           func(childComplexity int, input MoveFileInput) int
-		RefreshToken       func(childComplexity int, token string) int
-		RemoveMember       func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID) int
-		RenameFile         func(childComplexity int, input RenameFileInput) int
-		RevokeSession      func(childComplexity int, sessionID uuid.UUID) int
-		SignIn             func(childComplexity int, input SignInInput) int
-		SignOut            func(childComplexity int) int
-		SignUp             func(childComplexity int, input SignUpInput) int
-		SyncProvider       func(childComplexity int, providerID uuid.UUID) int
-		UpdateMemberRole   func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID, roleID uuid.UUID) int
-		UpdateProvider     func(childComplexity int, id uuid.UUID, input UpdateProviderInput) int
-		UpdateWorkspace    func(childComplexity int, id uuid.UUID, input UpdateWorkspaceInput) int
-		ValidateProvider   func(childComplexity int, id uuid.UUID) int
+		ConnectProvider      func(childComplexity int, input ConnectProviderInput) int
+		CreateFolder         func(childComplexity int, input CreateFolderInput) int
+		CreateWorkspace      func(childComplexity int, input CreateWorkspaceInput) int
+		DeleteFile           func(childComplexity int, input DeleteFileInput) int
+		DeleteWorkspace      func(childComplexity int, id uuid.UUID) int
+		DisconnectProvider   func(childComplexity int, id uuid.UUID) int
+		InviteMember         func(childComplexity int, workspaceID uuid.UUID, email string, roleID uuid.UUID) int
+		MoveFile             func(childComplexity int, input MoveFileInput) int
+		RefreshProviderQuota func(childComplexity int, providerID uuid.UUID) int
+		RefreshToken         func(childComplexity int, token string) int
+		RemoveMember         func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID) int
+		RenameFile           func(childComplexity int, input RenameFileInput) int
+		RevokeSession        func(childComplexity int, sessionID uuid.UUID) int
+		SignIn               func(childComplexity int, input SignInInput) int
+		SignOut              func(childComplexity int) int
+		SignUp               func(childComplexity int, input SignUpInput) int
+		SyncProvider         func(childComplexity int, providerID uuid.UUID) int
+		UpdateMemberRole     func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID, roleID uuid.UUID) int
+		UpdateProvider       func(childComplexity int, id uuid.UUID, input UpdateProviderInput) int
+		UpdateWorkspace      func(childComplexity int, id uuid.UUID, input UpdateWorkspaceInput) int
+		ValidateProvider     func(childComplexity int, id uuid.UUID) int
 	}
 
 	Provider struct {
@@ -91,9 +92,21 @@ type ComplexityRoot struct {
 		CreatedAt   func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
+		Quota       func(childComplexity int) int
 		Status      func(childComplexity int) int
 		Type        func(childComplexity int) int
 		WorkspaceID func(childComplexity int) int
+	}
+
+	ProviderQuota struct {
+		Extra      func(childComplexity int) int
+		FreeBytes  func(childComplexity int) int
+		PlanName   func(childComplexity int) int
+		ProviderID func(childComplexity int) int
+		SyncedAt   func(childComplexity int) int
+		TotalBytes func(childComplexity int) int
+		TrashBytes func(childComplexity int) int
+		UsedBytes  func(childComplexity int) int
 	}
 
 	ProviderValidationResult struct {
@@ -109,6 +122,7 @@ type ComplexityRoot struct {
 		MyUploadBatches func(childComplexity int, workspaceID uuid.UUID) int
 		MyWorkspaces    func(childComplexity int) int
 		Provider        func(childComplexity int, id uuid.UUID) int
+		ProviderQuota   func(childComplexity int, providerID uuid.UUID) int
 		Providers       func(childComplexity int, workspaceID uuid.UUID) int
 		UploadBatch     func(childComplexity int, id uuid.UUID) int
 		Workspace       func(childComplexity int, id uuid.UUID) int
@@ -183,6 +197,7 @@ type MutationResolver interface {
 	DisconnectProvider(ctx context.Context, id uuid.UUID) (bool, error)
 	UpdateProvider(ctx context.Context, id uuid.UUID, input UpdateProviderInput) (*Provider, error)
 	ValidateProvider(ctx context.Context, id uuid.UUID) (*ProviderValidationResult, error)
+	RefreshProviderQuota(ctx context.Context, providerID uuid.UUID) (*ProviderQuota, error)
 	CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*Workspace, error)
 	UpdateWorkspace(ctx context.Context, id uuid.UUID, input UpdateWorkspaceInput) (*Workspace, error)
 	DeleteWorkspace(ctx context.Context, id uuid.UUID) (bool, error)
@@ -199,6 +214,7 @@ type QueryResolver interface {
 	MyUploadBatches(ctx context.Context, workspaceID uuid.UUID) ([]*UploadBatch, error)
 	Providers(ctx context.Context, workspaceID uuid.UUID) ([]*Provider, error)
 	Provider(ctx context.Context, id uuid.UUID) (*Provider, error)
+	ProviderQuota(ctx context.Context, providerID uuid.UUID) (*ProviderQuota, error)
 	Workspace(ctx context.Context, id uuid.UUID) (*Workspace, error)
 	MyWorkspaces(ctx context.Context) ([]*Workspace, error)
 	WorkspaceRoles(ctx context.Context, workspaceID uuid.UUID) ([]*Role, error)
@@ -411,6 +427,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.MoveFile(childComplexity, args["input"].(MoveFileInput)), true
+	case "Mutation.refreshProviderQuota":
+		if e.ComplexityRoot.Mutation.RefreshProviderQuota == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_refreshProviderQuota_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RefreshProviderQuota(childComplexity, args["providerID"].(uuid.UUID)), true
 	case "Mutation.refreshToken":
 		if e.ComplexityRoot.Mutation.RefreshToken == nil {
 			break
@@ -563,6 +590,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Provider.Name(childComplexity), true
+	case "Provider.quota":
+		if e.ComplexityRoot.Provider.Quota == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Provider.Quota(childComplexity), true
 	case "Provider.status":
 		if e.ComplexityRoot.Provider.Status == nil {
 			break
@@ -581,6 +614,55 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Provider.WorkspaceID(childComplexity), true
+
+	case "ProviderQuota.extra":
+		if e.ComplexityRoot.ProviderQuota.Extra == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ProviderQuota.Extra(childComplexity), true
+	case "ProviderQuota.freeBytes":
+		if e.ComplexityRoot.ProviderQuota.FreeBytes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ProviderQuota.FreeBytes(childComplexity), true
+	case "ProviderQuota.planName":
+		if e.ComplexityRoot.ProviderQuota.PlanName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ProviderQuota.PlanName(childComplexity), true
+	case "ProviderQuota.providerID":
+		if e.ComplexityRoot.ProviderQuota.ProviderID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ProviderQuota.ProviderID(childComplexity), true
+	case "ProviderQuota.syncedAt":
+		if e.ComplexityRoot.ProviderQuota.SyncedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ProviderQuota.SyncedAt(childComplexity), true
+	case "ProviderQuota.totalBytes":
+		if e.ComplexityRoot.ProviderQuota.TotalBytes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ProviderQuota.TotalBytes(childComplexity), true
+	case "ProviderQuota.trashBytes":
+		if e.ComplexityRoot.ProviderQuota.TrashBytes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ProviderQuota.TrashBytes(childComplexity), true
+	case "ProviderQuota.usedBytes":
+		if e.ComplexityRoot.ProviderQuota.UsedBytes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ProviderQuota.UsedBytes(childComplexity), true
 
 	case "ProviderValidationResult.error":
 		if e.ComplexityRoot.ProviderValidationResult.Error == nil {
@@ -658,6 +740,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Provider(childComplexity, args["id"].(uuid.UUID)), true
+	case "Query.providerQuota":
+		if e.ComplexityRoot.Query.ProviderQuota == nil {
+			break
+		}
+
+		args, err := ec.field_Query_providerQuota_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ProviderQuota(childComplexity, args["providerID"].(uuid.UUID)), true
 	case "Query.providers":
 		if e.ComplexityRoot.Query.Providers == nil {
 			break
@@ -1128,6 +1221,17 @@ func (ec *executionContext) field_Mutation_moveFile_args(ctx context.Context, ra
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_refreshProviderQuota_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "providerID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["providerID"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1320,6 +1424,17 @@ func (ec *executionContext) field_Query_myUploadBatches_args(ctx context.Context
 		return nil, err
 	}
 	args["workspaceID"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_providerQuota_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "providerID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["providerID"] = arg0
 	return args, nil
 }
 
@@ -2498,6 +2613,8 @@ func (ec *executionContext) fieldContext_Mutation_connectProvider(ctx context.Co
 				return ec.fieldContext_Provider_status(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Provider_createdAt(ctx, field)
+			case "quota":
+				return ec.fieldContext_Provider_quota(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Provider", field.Name)
 		},
@@ -2596,6 +2713,8 @@ func (ec *executionContext) fieldContext_Mutation_updateProvider(ctx context.Con
 				return ec.fieldContext_Provider_status(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Provider_createdAt(ctx, field)
+			case "quota":
+				return ec.fieldContext_Provider_quota(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Provider", field.Name)
 		},
@@ -2655,6 +2774,65 @@ func (ec *executionContext) fieldContext_Mutation_validateProvider(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_validateProvider_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_refreshProviderQuota(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_refreshProviderQuota,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RefreshProviderQuota(ctx, fc.Args["providerID"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNProviderQuota2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderQuota,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_refreshProviderQuota(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "providerID":
+				return ec.fieldContext_ProviderQuota_providerID(ctx, field)
+			case "totalBytes":
+				return ec.fieldContext_ProviderQuota_totalBytes(ctx, field)
+			case "usedBytes":
+				return ec.fieldContext_ProviderQuota_usedBytes(ctx, field)
+			case "freeBytes":
+				return ec.fieldContext_ProviderQuota_freeBytes(ctx, field)
+			case "trashBytes":
+				return ec.fieldContext_ProviderQuota_trashBytes(ctx, field)
+			case "planName":
+				return ec.fieldContext_ProviderQuota_planName(ctx, field)
+			case "extra":
+				return ec.fieldContext_ProviderQuota_extra(ctx, field)
+			case "syncedAt":
+				return ec.fieldContext_ProviderQuota_syncedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ProviderQuota", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_refreshProviderQuota_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3158,6 +3336,285 @@ func (ec *executionContext) fieldContext_Provider_createdAt(_ context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Provider_quota(ctx context.Context, field graphql.CollectedField, obj *Provider) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Provider_quota,
+		func(ctx context.Context) (any, error) {
+			return obj.Quota, nil
+		},
+		nil,
+		ec.marshalOProviderQuota2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderQuota,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Provider_quota(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Provider",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "providerID":
+				return ec.fieldContext_ProviderQuota_providerID(ctx, field)
+			case "totalBytes":
+				return ec.fieldContext_ProviderQuota_totalBytes(ctx, field)
+			case "usedBytes":
+				return ec.fieldContext_ProviderQuota_usedBytes(ctx, field)
+			case "freeBytes":
+				return ec.fieldContext_ProviderQuota_freeBytes(ctx, field)
+			case "trashBytes":
+				return ec.fieldContext_ProviderQuota_trashBytes(ctx, field)
+			case "planName":
+				return ec.fieldContext_ProviderQuota_planName(ctx, field)
+			case "extra":
+				return ec.fieldContext_ProviderQuota_extra(ctx, field)
+			case "syncedAt":
+				return ec.fieldContext_ProviderQuota_syncedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ProviderQuota", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProviderQuota_providerID(ctx context.Context, field graphql.CollectedField, obj *ProviderQuota) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProviderQuota_providerID,
+		func(ctx context.Context) (any, error) {
+			return obj.ProviderID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProviderQuota_providerID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProviderQuota",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProviderQuota_totalBytes(ctx context.Context, field graphql.CollectedField, obj *ProviderQuota) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProviderQuota_totalBytes,
+		func(ctx context.Context) (any, error) {
+			return obj.TotalBytes, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProviderQuota_totalBytes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProviderQuota",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProviderQuota_usedBytes(ctx context.Context, field graphql.CollectedField, obj *ProviderQuota) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProviderQuota_usedBytes,
+		func(ctx context.Context) (any, error) {
+			return obj.UsedBytes, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProviderQuota_usedBytes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProviderQuota",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProviderQuota_freeBytes(ctx context.Context, field graphql.CollectedField, obj *ProviderQuota) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProviderQuota_freeBytes,
+		func(ctx context.Context) (any, error) {
+			return obj.FreeBytes, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProviderQuota_freeBytes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProviderQuota",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProviderQuota_trashBytes(ctx context.Context, field graphql.CollectedField, obj *ProviderQuota) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProviderQuota_trashBytes,
+		func(ctx context.Context) (any, error) {
+			return obj.TrashBytes, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProviderQuota_trashBytes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProviderQuota",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProviderQuota_planName(ctx context.Context, field graphql.CollectedField, obj *ProviderQuota) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProviderQuota_planName,
+		func(ctx context.Context) (any, error) {
+			return obj.PlanName, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProviderQuota_planName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProviderQuota",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProviderQuota_extra(ctx context.Context, field graphql.CollectedField, obj *ProviderQuota) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProviderQuota_extra,
+		func(ctx context.Context) (any, error) {
+			return obj.Extra, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProviderQuota_extra(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProviderQuota",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProviderQuota_syncedAt(ctx context.Context, field graphql.CollectedField, obj *ProviderQuota) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProviderQuota_syncedAt,
+		func(ctx context.Context) (any, error) {
+			return obj.SyncedAt, nil
+		},
+		nil,
+		ec.marshalNTime2timeᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProviderQuota_syncedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProviderQuota",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ProviderValidationResult_ok(ctx context.Context, field graphql.CollectedField, obj *ProviderValidationResult) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3583,6 +4040,8 @@ func (ec *executionContext) fieldContext_Query_providers(ctx context.Context, fi
 				return ec.fieldContext_Provider_status(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Provider_createdAt(ctx, field)
+			case "quota":
+				return ec.fieldContext_Provider_quota(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Provider", field.Name)
 		},
@@ -3640,6 +4099,8 @@ func (ec *executionContext) fieldContext_Query_provider(ctx context.Context, fie
 				return ec.fieldContext_Provider_status(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Provider_createdAt(ctx, field)
+			case "quota":
+				return ec.fieldContext_Provider_quota(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Provider", field.Name)
 		},
@@ -3652,6 +4113,65 @@ func (ec *executionContext) fieldContext_Query_provider(ctx context.Context, fie
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_provider_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_providerQuota(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_providerQuota,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().ProviderQuota(ctx, fc.Args["providerID"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalOProviderQuota2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderQuota,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_providerQuota(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "providerID":
+				return ec.fieldContext_ProviderQuota_providerID(ctx, field)
+			case "totalBytes":
+				return ec.fieldContext_ProviderQuota_totalBytes(ctx, field)
+			case "usedBytes":
+				return ec.fieldContext_ProviderQuota_usedBytes(ctx, field)
+			case "freeBytes":
+				return ec.fieldContext_ProviderQuota_freeBytes(ctx, field)
+			case "trashBytes":
+				return ec.fieldContext_ProviderQuota_trashBytes(ctx, field)
+			case "planName":
+				return ec.fieldContext_ProviderQuota_planName(ctx, field)
+			case "extra":
+				return ec.fieldContext_ProviderQuota_extra(ctx, field)
+			case "syncedAt":
+				return ec.fieldContext_ProviderQuota_syncedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ProviderQuota", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_providerQuota_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7134,6 +7654,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "refreshProviderQuota":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_refreshProviderQuota(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createWorkspace":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createWorkspace(ctx, field)
@@ -7242,6 +7769,76 @@ func (ec *executionContext) _Provider(ctx context.Context, sel ast.SelectionSet,
 			}
 		case "createdAt":
 			out.Values[i] = ec._Provider_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "quota":
+			out.Values[i] = ec._Provider_quota(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var providerQuotaImplementors = []string{"ProviderQuota"}
+
+func (ec *executionContext) _ProviderQuota(ctx context.Context, sel ast.SelectionSet, obj *ProviderQuota) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, providerQuotaImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ProviderQuota")
+		case "providerID":
+			out.Values[i] = ec._ProviderQuota_providerID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalBytes":
+			out.Values[i] = ec._ProviderQuota_totalBytes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "usedBytes":
+			out.Values[i] = ec._ProviderQuota_usedBytes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "freeBytes":
+			out.Values[i] = ec._ProviderQuota_freeBytes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "trashBytes":
+			out.Values[i] = ec._ProviderQuota_trashBytes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "planName":
+			out.Values[i] = ec._ProviderQuota_planName(ctx, field, obj)
+		case "extra":
+			out.Values[i] = ec._ProviderQuota_extra(ctx, field, obj)
+		case "syncedAt":
+			out.Values[i] = ec._ProviderQuota_syncedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7495,6 +8092,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "providerQuota":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_providerQuota(ctx, field)
 				return res
 			}
 
@@ -8458,6 +9074,20 @@ func (ec *executionContext) marshalNProvider2ᚖgithubᚗcomᚋdrivebaseᚋdrive
 	return ec._Provider(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNProviderQuota2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderQuota(ctx context.Context, sel ast.SelectionSet, v ProviderQuota) graphql.Marshaler {
+	return ec._ProviderQuota(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNProviderQuota2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderQuota(ctx context.Context, sel ast.SelectionSet, v *ProviderQuota) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ProviderQuota(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNProviderStatus2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderStatus(ctx context.Context, v any) (ProviderStatus, error) {
 	var res ProviderStatus
 	err := res.UnmarshalGQL(v)
@@ -8894,6 +9524,13 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	_ = ctx
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOProviderQuota2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderQuota(ctx context.Context, sel ast.SelectionSet, v *ProviderQuota) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ProviderQuota(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {

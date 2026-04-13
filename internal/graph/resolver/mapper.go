@@ -1,6 +1,8 @@
 package resolver
 
 import (
+	"encoding/json"
+
 	"github.com/drivebase/drivebase/internal/ent"
 	"github.com/drivebase/drivebase/internal/graph"
 )
@@ -47,7 +49,7 @@ func mapRole(r *ent.Role) *graph.Role {
 }
 
 func mapProvider(p *ent.Provider) *graph.Provider {
-	return &graph.Provider{
+	gp := &graph.Provider{
 		ID:          p.ID,
 		WorkspaceID: p.WorkspaceID,
 		Name:        p.Name,
@@ -56,6 +58,31 @@ func mapProvider(p *ent.Provider) *graph.Provider {
 		Status:      graph.ProviderStatus(p.Status),
 		CreatedAt:   p.CreatedAt,
 	}
+	if q := p.Edges.Quota; q != nil {
+		gp.Quota = mapProviderQuota(q)
+	}
+	return gp
+}
+
+func mapProviderQuota(q *ent.ProviderQuota) *graph.ProviderQuota {
+	gq := &graph.ProviderQuota{
+		ProviderID: q.ProviderID,
+		TotalBytes: int(q.TotalBytes),
+		UsedBytes:  int(q.UsedBytes),
+		FreeBytes:  int(q.FreeBytes),
+		TrashBytes: int(q.TrashBytes),
+		SyncedAt:   q.SyncedAt,
+	}
+	if q.PlanName != "" {
+		gq.PlanName = &q.PlanName
+	}
+	if q.Extra != nil {
+		if b, err := json.Marshal(q.Extra); err == nil {
+			s := string(b)
+			gq.Extra = &s
+		}
+	}
+	return gq
 }
 
 func mapFileNode(f *ent.FileNode) *graph.FileNode {

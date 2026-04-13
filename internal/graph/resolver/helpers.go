@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/drivebase/drivebase/internal/auth"
 	"github.com/drivebase/drivebase/internal/crypto"
 	"github.com/drivebase/drivebase/internal/ent"
 	entpc "github.com/drivebase/drivebase/internal/ent/providercredential"
+	entproviderquota "github.com/drivebase/drivebase/internal/ent/providerquota"
 	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
@@ -81,6 +83,71 @@ func loadProviderByID(ctx context.Context, db *ent.Client, encKey string, provid
 	}
 
 	return storage.New(storage.ProviderType(p.Type), storage.Credentials(plaintext))
+}
+
+// refreshQuota fetches live quota from the provider and upserts the DB record.
+func refreshQuota(ctx context.Context, r *Resolver, providerID uuid.UUID) (*graph.ProviderQuota, error) {
+	p, err := r.DB.Provider.Get(ctx, providerID)
+	if err != nil {
+		return nil, fmt.Errorf("provider not found")
+	}
+	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), p.WorkspaceID, string(entschema.ActionWrite)); err != nil {
+		return nil, err
+	}
+
+	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, providerID)
+	if err != nil {
+		return nil, err
+	}
+
+	qp, ok := sp.(storage.QuotaProvider)
+	if !ok {
+		return nil, fmt.Errorf("this provider does not support quota reporting")
+	}
+
+	info, err := qp.GetQuota(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get quota: %w", err)
+	}
+
+	now := time.Now()
+
+	// Upsert: try update first, create if not exists
+	existing, err := r.DB.ProviderQuota.Query().
+		Where(entproviderquota.ProviderID(providerID)).
+		Only(ctx)
+	if err != nil {
+		// Create new record
+		q, err := r.DB.ProviderQuota.Create().
+			SetProviderID(providerID).
+			SetTotalBytes(info.TotalBytes).
+			SetUsedBytes(info.UsedBytes).
+			SetFreeBytes(info.FreeBytes).
+			SetTrashBytes(info.TrashBytes).
+			SetPlanName(info.PlanName).
+			SetExtra(info.Extra).
+			SetSyncedAt(now).
+			Save(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("save quota: %w", err)
+		}
+		return mapProviderQuota(q), nil
+	}
+
+	// Update existing record
+	q, err := r.DB.ProviderQuota.UpdateOneID(existing.ID).
+		SetTotalBytes(info.TotalBytes).
+		SetUsedBytes(info.UsedBytes).
+		SetFreeBytes(info.FreeBytes).
+		SetTrashBytes(info.TrashBytes).
+		SetPlanName(info.PlanName).
+		SetExtra(info.Extra).
+		SetSyncedAt(now).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("update quota: %w", err)
+	}
+	return mapProviderQuota(q), nil
 }
 
 func authTypeForProvider(t storage.ProviderType) entschema.AuthType {

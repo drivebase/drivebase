@@ -12,6 +12,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/cacheconfig"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
+	"github.com/drivebase/drivebase/internal/ent/providerquota"
 	"github.com/drivebase/drivebase/internal/ent/workspace"
 	"github.com/google/uuid"
 )
@@ -49,11 +50,13 @@ type ProviderEdges struct {
 	Credential *ProviderCredential `json:"credential,omitempty"`
 	// CacheConfig holds the value of the cache_config edge.
 	CacheConfig *CacheConfig `json:"cache_config,omitempty"`
+	// Quota holds the value of the quota edge.
+	Quota *ProviderQuota `json:"quota,omitempty"`
 	// FileNodes holds the value of the file_nodes edge.
 	FileNodes []*FileNode `json:"file_nodes,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -89,10 +92,21 @@ func (e ProviderEdges) CacheConfigOrErr() (*CacheConfig, error) {
 	return nil, &NotLoadedError{edge: "cache_config"}
 }
 
+// QuotaOrErr returns the Quota value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProviderEdges) QuotaOrErr() (*ProviderQuota, error) {
+	if e.Quota != nil {
+		return e.Quota, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: providerquota.Label}
+	}
+	return nil, &NotLoadedError{edge: "quota"}
+}
+
 // FileNodesOrErr returns the FileNodes value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProviderEdges) FileNodesOrErr() ([]*FileNode, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.FileNodes, nil
 	}
 	return nil, &NotLoadedError{edge: "file_nodes"}
@@ -198,6 +212,11 @@ func (_m *Provider) QueryCredential() *ProviderCredentialQuery {
 // QueryCacheConfig queries the "cache_config" edge of the Provider entity.
 func (_m *Provider) QueryCacheConfig() *CacheConfigQuery {
 	return NewProviderClient(_m.config).QueryCacheConfig(_m)
+}
+
+// QueryQuota queries the "quota" edge of the Provider entity.
+func (_m *Provider) QueryQuota() *ProviderQuotaQuery {
+	return NewProviderClient(_m.config).QueryQuota(_m)
 }
 
 // QueryFileNodes queries the "file_nodes" edge of the Provider entity.

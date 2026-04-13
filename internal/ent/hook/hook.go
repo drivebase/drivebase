@@ -81,6 +81,18 @@ func (f ProviderCredentialFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProviderCredentialMutation", m)
 }
 
+// The ProviderQuotaFunc type is an adapter to allow the use of ordinary
+// function as ProviderQuota mutator.
+type ProviderQuotaFunc func(context.Context, *ent.ProviderQuotaMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProviderQuotaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProviderQuotaMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProviderQuotaMutation", m)
+}
+
 // The RoleFunc type is an adapter to allow the use of ordinary
 // function as Role mutator.
 type RoleFunc func(context.Context, *ent.RoleMutation) (ent.Value, error)

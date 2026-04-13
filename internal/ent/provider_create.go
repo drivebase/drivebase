@@ -14,6 +14,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/filenode"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
+	"github.com/drivebase/drivebase/internal/ent/providerquota"
 	"github.com/drivebase/drivebase/internal/ent/workspace"
 	"github.com/google/uuid"
 )
@@ -146,6 +147,25 @@ func (_c *ProviderCreate) SetNillableCacheConfigID(id *uuid.UUID) *ProviderCreat
 // SetCacheConfig sets the "cache_config" edge to the CacheConfig entity.
 func (_c *ProviderCreate) SetCacheConfig(v *CacheConfig) *ProviderCreate {
 	return _c.SetCacheConfigID(v.ID)
+}
+
+// SetQuotaID sets the "quota" edge to the ProviderQuota entity by ID.
+func (_c *ProviderCreate) SetQuotaID(id uuid.UUID) *ProviderCreate {
+	_c.mutation.SetQuotaID(id)
+	return _c
+}
+
+// SetNillableQuotaID sets the "quota" edge to the ProviderQuota entity by ID if the given value is not nil.
+func (_c *ProviderCreate) SetNillableQuotaID(id *uuid.UUID) *ProviderCreate {
+	if id != nil {
+		_c = _c.SetQuotaID(*id)
+	}
+	return _c
+}
+
+// SetQuota sets the "quota" edge to the ProviderQuota entity.
+func (_c *ProviderCreate) SetQuota(v *ProviderQuota) *ProviderCreate {
+	return _c.SetQuotaID(v.ID)
 }
 
 // AddFileNodeIDs adds the "file_nodes" edge to the FileNode entity by IDs.
@@ -358,6 +378,22 @@ func (_c *ProviderCreate) createSpec() (*Provider, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(cacheconfig.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.QuotaIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   provider.QuotaTable,
+			Columns: []string{provider.QuotaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(providerquota.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

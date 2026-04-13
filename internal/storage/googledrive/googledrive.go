@@ -100,6 +100,76 @@ func WithTokenRefreshCallback(fn OnTokenRefresh) Option {
 
 func (p *gdProvider) Type() storage.ProviderType { return storage.ProviderTypeGoogleDrive }
 
+// GetQuota returns storage quota from the Drive About endpoint.
+// Google Drive reports quota as total (limit) and usage broken down by service.
+func (p *gdProvider) GetQuota(ctx context.Context) (*storage.QuotaInfo, error) {
+	about, err := p.svc.About.Get().
+		Fields("storageQuota,user").
+		Context(ctx).Do()
+	if err != nil {
+		return nil, fmt.Errorf("googledrive: get quota: %w", err)
+	}
+
+	q := about.StorageQuota
+	info := &storage.QuotaInfo{
+		Extra: map[string]any{},
+	}
+
+	if q != nil {
+		info.UsedBytes = q.Usage
+		info.TrashBytes = q.UsageInDriveTrash
+
+		if q.Limit > 0 {
+			// Limit = 0 means unlimited (e.g., Google Workspace with pooled storage)
+			info.TotalBytes = q.Limit
+			info.FreeBytes = q.Limit - q.Usage
+			if info.FreeBytes < 0 {
+				info.FreeBytes = 0
+			}
+		}
+
+		// Breakdown by service
+		info.Extra["usage_in_drive"] = q.UsageInDrive
+		info.Extra["usage_in_drive_trash"] = q.UsageInDriveTrash
+
+		// Derive a human-readable plan name from the limit
+		info.PlanName = googleDrivePlanName(q.Limit)
+	}
+
+	if about.User != nil {
+		info.Extra["display_name"] = about.User.DisplayName
+		info.Extra["email_address"] = about.User.EmailAddress
+	}
+
+	return info, nil
+}
+
+// googleDrivePlanName maps the quota limit in bytes to a well-known plan name.
+// Google does not expose the plan name directly via API.
+func googleDrivePlanName(limitBytes int64) string {
+	const (
+		gb  = int64(1 << 30)
+		tb  = int64(1 << 40)
+	)
+	if limitBytes == 0 {
+		return "Unlimited (Google Workspace)"
+	}
+	switch {
+	case limitBytes <= 15*gb:
+		return "Google Free (15 GB)"
+	case limitBytes <= 100*gb:
+		return "Google One 100 GB"
+	case limitBytes <= 200*gb:
+		return "Google One 200 GB"
+	case limitBytes <= 2*tb:
+		return "Google One 2 TB"
+	case limitBytes <= 5*tb:
+		return "Google One 5 TB"
+	default:
+		return "Google Workspace"
+	}
+}
+
 func (p *gdProvider) Validate(ctx context.Context) error {
 	_, err := p.svc.About.Get().Fields("user").Context(ctx).Do()
 	if err != nil {

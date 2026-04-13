@@ -1,6 +1,7 @@
 extend type Query {
   providers(workspaceId: UUID!): [Provider!]!
   provider(id: UUID!): Provider!
+  providerQuota(providerID: UUID!): ProviderQuota
 }
 
 extend type Mutation {
@@ -8,6 +9,7 @@ extend type Mutation {
   disconnectProvider(id: UUID!): Boolean!
   updateProvider(id: UUID!, input: UpdateProviderInput!): Provider!
   validateProvider(id: UUID!): ProviderValidationResult!
+  refreshProviderQuota(providerID: UUID!): ProviderQuota!
 }
 
 type Provider {
@@ -18,6 +20,19 @@ type Provider {
   authType: AuthType!
   status: ProviderStatus!
   createdAt: Time!
+  quota: ProviderQuota
+}
+
+type ProviderQuota {
+  providerID: UUID!
+  totalBytes: Int!
+  usedBytes: Int!
+  freeBytes: Int!
+  trashBytes: Int!
+  planName: String
+  # extra is a JSON string with provider-specific breakdown (e.g. Gmail/Photos usage).
+  extra: String
+  syncedAt: Time!
 }
 
 type ProviderValidationResult {

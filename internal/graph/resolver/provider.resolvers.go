@@ -13,10 +13,16 @@ import (
 	"github.com/drivebase/drivebase/internal/crypto"
 	"github.com/drivebase/drivebase/internal/ent"
 	entprovider "github.com/drivebase/drivebase/internal/ent/provider"
+	entproviderquota "github.com/drivebase/drivebase/internal/ent/providerquota"
 	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
+
+	// Import provider packages to trigger their init() registration
 	_ "github.com/drivebase/drivebase/internal/storage/googledrive"
+	_ "github.com/drivebase/drivebase/internal/storage/local"
+	_ "github.com/drivebase/drivebase/internal/storage/s3"
+
 	"github.com/google/uuid"
 )
 
@@ -151,6 +157,11 @@ func (r *mutationResolver) ValidateProvider(ctx context.Context, id uuid.UUID) (
 	return &graph.ProviderValidationResult{Ok: true}, nil
 }
 
+// RefreshProviderQuota is the resolver for the refreshProviderQuota field.
+func (r *mutationResolver) RefreshProviderQuota(ctx context.Context, providerID uuid.UUID) (*graph.ProviderQuota, error) {
+	return refreshQuota(ctx, r.Resolver, providerID)
+}
+
 // Providers is the resolver for the providers field.
 func (r *queryResolver) Providers(ctx context.Context, workspaceID uuid.UUID) ([]*graph.Provider, error) {
 	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
@@ -159,6 +170,7 @@ func (r *queryResolver) Providers(ctx context.Context, workspaceID uuid.UUID) ([
 
 	providers, err := r.DB.Provider.Query().
 		Where(entprovider.WorkspaceID(workspaceID)).
+		WithQuota().
 		All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("internal error")
@@ -173,7 +185,10 @@ func (r *queryResolver) Providers(ctx context.Context, workspaceID uuid.UUID) ([
 
 // Provider is the resolver for the provider field.
 func (r *queryResolver) Provider(ctx context.Context, id uuid.UUID) (*graph.Provider, error) {
-	p, err := r.DB.Provider.Get(ctx, id)
+	p, err := r.DB.Provider.Query().
+		Where(entprovider.ID(id)).
+		WithQuota().
+		Only(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
 	}
@@ -183,4 +198,23 @@ func (r *queryResolver) Provider(ctx context.Context, id uuid.UUID) (*graph.Prov
 	}
 
 	return mapProvider(p), nil
+}
+
+// ProviderQuota is the resolver for the providerQuota field.
+func (r *queryResolver) ProviderQuota(ctx context.Context, providerID uuid.UUID) (*graph.ProviderQuota, error) {
+	p, err := r.DB.Provider.Get(ctx, providerID)
+	if err != nil {
+		return nil, fmt.Errorf("provider not found")
+	}
+	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), p.WorkspaceID, string(entschema.ActionRead)); err != nil {
+		return nil, err
+	}
+
+	q, err := r.DB.ProviderQuota.Query().
+		Where(entproviderquota.ProviderID(providerID)).
+		Only(ctx)
+	if err != nil {
+		return nil, nil // no quota record yet
+	}
+	return mapProviderQuota(q), nil
 }

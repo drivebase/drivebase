@@ -24,6 +24,8 @@ type Tx struct {
 	Provider *ProviderClient
 	// ProviderCredential is the client for interacting with the ProviderCredential builders.
 	ProviderCredential *ProviderCredentialClient
+	// ProviderQuota is the client for interacting with the ProviderQuota builders.
+	ProviderQuota *ProviderQuotaClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// Session is the client for interacting with the Session builders.
@@ -181,6 +183,7 @@ func (tx *Tx) init() {
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Provider = NewProviderClient(tx.config)
 	tx.ProviderCredential = NewProviderCredentialClient(tx.config)
+	tx.ProviderQuota = NewProviderQuotaClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 	tx.SharedLink = NewSharedLinkClient(tx.config)

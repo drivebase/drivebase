@@ -16,6 +16,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
+	"github.com/drivebase/drivebase/internal/ent/providerquota"
 	"github.com/drivebase/drivebase/internal/ent/workspace"
 	"github.com/google/uuid"
 )
@@ -152,6 +153,25 @@ func (_u *ProviderUpdate) SetCacheConfig(v *CacheConfig) *ProviderUpdate {
 	return _u.SetCacheConfigID(v.ID)
 }
 
+// SetQuotaID sets the "quota" edge to the ProviderQuota entity by ID.
+func (_u *ProviderUpdate) SetQuotaID(id uuid.UUID) *ProviderUpdate {
+	_u.mutation.SetQuotaID(id)
+	return _u
+}
+
+// SetNillableQuotaID sets the "quota" edge to the ProviderQuota entity by ID if the given value is not nil.
+func (_u *ProviderUpdate) SetNillableQuotaID(id *uuid.UUID) *ProviderUpdate {
+	if id != nil {
+		_u = _u.SetQuotaID(*id)
+	}
+	return _u
+}
+
+// SetQuota sets the "quota" edge to the ProviderQuota entity.
+func (_u *ProviderUpdate) SetQuota(v *ProviderQuota) *ProviderUpdate {
+	return _u.SetQuotaID(v.ID)
+}
+
 // AddFileNodeIDs adds the "file_nodes" edge to the FileNode entity by IDs.
 func (_u *ProviderUpdate) AddFileNodeIDs(ids ...uuid.UUID) *ProviderUpdate {
 	_u.mutation.AddFileNodeIDs(ids...)
@@ -187,6 +207,12 @@ func (_u *ProviderUpdate) ClearCredential() *ProviderUpdate {
 // ClearCacheConfig clears the "cache_config" edge to the CacheConfig entity.
 func (_u *ProviderUpdate) ClearCacheConfig() *ProviderUpdate {
 	_u.mutation.ClearCacheConfig()
+	return _u
+}
+
+// ClearQuota clears the "quota" edge to the ProviderQuota entity.
+func (_u *ProviderUpdate) ClearQuota() *ProviderUpdate {
+	_u.mutation.ClearQuota()
 	return _u
 }
 
@@ -384,6 +410,35 @@ func (_u *ProviderUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.QuotaCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   provider.QuotaTable,
+			Columns: []string{provider.QuotaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(providerquota.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.QuotaIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   provider.QuotaTable,
+			Columns: []string{provider.QuotaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(providerquota.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.FileNodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -568,6 +623,25 @@ func (_u *ProviderUpdateOne) SetCacheConfig(v *CacheConfig) *ProviderUpdateOne {
 	return _u.SetCacheConfigID(v.ID)
 }
 
+// SetQuotaID sets the "quota" edge to the ProviderQuota entity by ID.
+func (_u *ProviderUpdateOne) SetQuotaID(id uuid.UUID) *ProviderUpdateOne {
+	_u.mutation.SetQuotaID(id)
+	return _u
+}
+
+// SetNillableQuotaID sets the "quota" edge to the ProviderQuota entity by ID if the given value is not nil.
+func (_u *ProviderUpdateOne) SetNillableQuotaID(id *uuid.UUID) *ProviderUpdateOne {
+	if id != nil {
+		_u = _u.SetQuotaID(*id)
+	}
+	return _u
+}
+
+// SetQuota sets the "quota" edge to the ProviderQuota entity.
+func (_u *ProviderUpdateOne) SetQuota(v *ProviderQuota) *ProviderUpdateOne {
+	return _u.SetQuotaID(v.ID)
+}
+
 // AddFileNodeIDs adds the "file_nodes" edge to the FileNode entity by IDs.
 func (_u *ProviderUpdateOne) AddFileNodeIDs(ids ...uuid.UUID) *ProviderUpdateOne {
 	_u.mutation.AddFileNodeIDs(ids...)
@@ -603,6 +677,12 @@ func (_u *ProviderUpdateOne) ClearCredential() *ProviderUpdateOne {
 // ClearCacheConfig clears the "cache_config" edge to the CacheConfig entity.
 func (_u *ProviderUpdateOne) ClearCacheConfig() *ProviderUpdateOne {
 	_u.mutation.ClearCacheConfig()
+	return _u
+}
+
+// ClearQuota clears the "quota" edge to the ProviderQuota entity.
+func (_u *ProviderUpdateOne) ClearQuota() *ProviderUpdateOne {
+	_u.mutation.ClearQuota()
 	return _u
 }
 
@@ -823,6 +903,35 @@ func (_u *ProviderUpdateOne) sqlSave(ctx context.Context) (_node *Provider, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(cacheconfig.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.QuotaCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   provider.QuotaTable,
+			Columns: []string{provider.QuotaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(providerquota.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.QuotaIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   provider.QuotaTable,
+			Columns: []string{provider.QuotaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(providerquota.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

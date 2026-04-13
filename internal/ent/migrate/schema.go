@@ -192,6 +192,32 @@ var (
 			},
 		},
 	}
+	// ProviderQuotaColumns holds the columns for the "provider_quota" table.
+	ProviderQuotaColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "total_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "used_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "free_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "trash_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "plan_name", Type: field.TypeString, Nullable: true},
+		{Name: "extra", Type: field.TypeJSON, Nullable: true},
+		{Name: "synced_at", Type: field.TypeTime},
+		{Name: "provider_id", Type: field.TypeUUID, Unique: true},
+	}
+	// ProviderQuotaTable holds the schema information for the "provider_quota" table.
+	ProviderQuotaTable = &schema.Table{
+		Name:       "provider_quota",
+		Columns:    ProviderQuotaColumns,
+		PrimaryKey: []*schema.Column{ProviderQuotaColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "provider_quota_providers_quota",
+				Columns:    []*schema.Column{ProviderQuotaColumns[8]},
+				RefColumns: []*schema.Column{ProvidersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// RolesColumns holds the columns for the "roles" table.
 	RolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -534,6 +560,7 @@ var (
 		PermissionsTable,
 		ProvidersTable,
 		ProviderCredentialsTable,
+		ProviderQuotaTable,
 		RolesTable,
 		SessionsTable,
 		SharedLinksTable,
@@ -555,6 +582,7 @@ func init() {
 	PermissionsTable.ForeignKeys[0].RefTable = RolesTable
 	ProvidersTable.ForeignKeys[0].RefTable = WorkspacesTable
 	ProviderCredentialsTable.ForeignKeys[0].RefTable = ProvidersTable
+	ProviderQuotaTable.ForeignKeys[0].RefTable = ProvidersTable
 	RolesTable.ForeignKeys[0].RefTable = WorkspacesTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 	SharedLinksTable.ForeignKeys[0].RefTable = WorkspacesTable

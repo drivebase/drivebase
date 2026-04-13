@@ -22,6 +22,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/permission"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
+	"github.com/drivebase/drivebase/internal/ent/providerquota"
 	"github.com/drivebase/drivebase/internal/ent/role"
 	"github.com/drivebase/drivebase/internal/ent/session"
 	"github.com/drivebase/drivebase/internal/ent/sharedlink"
@@ -51,6 +52,8 @@ type Client struct {
 	Provider *ProviderClient
 	// ProviderCredential is the client for interacting with the ProviderCredential builders.
 	ProviderCredential *ProviderCredentialClient
+	// ProviderQuota is the client for interacting with the ProviderQuota builders.
+	ProviderQuota *ProviderQuotaClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// Session is the client for interacting with the Session builders.
@@ -88,6 +91,7 @@ func (c *Client) init() {
 	c.Permission = NewPermissionClient(c.config)
 	c.Provider = NewProviderClient(c.config)
 	c.ProviderCredential = NewProviderCredentialClient(c.config)
+	c.ProviderQuota = NewProviderQuotaClient(c.config)
 	c.Role = NewRoleClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.SharedLink = NewSharedLinkClient(c.config)
@@ -196,6 +200,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Permission:         NewPermissionClient(cfg),
 		Provider:           NewProviderClient(cfg),
 		ProviderCredential: NewProviderCredentialClient(cfg),
+		ProviderQuota:      NewProviderQuotaClient(cfg),
 		Role:               NewRoleClient(cfg),
 		Session:            NewSessionClient(cfg),
 		SharedLink:         NewSharedLinkClient(cfg),
@@ -231,6 +236,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Permission:         NewPermissionClient(cfg),
 		Provider:           NewProviderClient(cfg),
 		ProviderCredential: NewProviderCredentialClient(cfg),
+		ProviderQuota:      NewProviderQuotaClient(cfg),
 		Role:               NewRoleClient(cfg),
 		Session:            NewSessionClient(cfg),
 		SharedLink:         NewSharedLinkClient(cfg),
@@ -271,9 +277,9 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.BandwidthLog, c.CacheConfig, c.FileNode, c.Permission, c.Provider,
-		c.ProviderCredential, c.Role, c.Session, c.SharedLink, c.TransferJob,
-		c.TransferJobFile, c.UploadBatch, c.UploadBatchFile, c.User, c.Workspace,
-		c.WorkspaceMember,
+		c.ProviderCredential, c.ProviderQuota, c.Role, c.Session, c.SharedLink,
+		c.TransferJob, c.TransferJobFile, c.UploadBatch, c.UploadBatchFile, c.User,
+		c.Workspace, c.WorkspaceMember,
 	} {
 		n.Use(hooks...)
 	}
@@ -284,9 +290,9 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.BandwidthLog, c.CacheConfig, c.FileNode, c.Permission, c.Provider,
-		c.ProviderCredential, c.Role, c.Session, c.SharedLink, c.TransferJob,
-		c.TransferJobFile, c.UploadBatch, c.UploadBatchFile, c.User, c.Workspace,
-		c.WorkspaceMember,
+		c.ProviderCredential, c.ProviderQuota, c.Role, c.Session, c.SharedLink,
+		c.TransferJob, c.TransferJobFile, c.UploadBatch, c.UploadBatchFile, c.User,
+		c.Workspace, c.WorkspaceMember,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -307,6 +313,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Provider.mutate(ctx, m)
 	case *ProviderCredentialMutation:
 		return c.ProviderCredential.mutate(ctx, m)
+	case *ProviderQuotaMutation:
+		return c.ProviderQuota.mutate(ctx, m)
 	case *RoleMutation:
 		return c.Role.mutate(ctx, m)
 	case *SessionMutation:
@@ -1116,6 +1124,22 @@ func (c *ProviderClient) QueryCacheConfig(_m *Provider) *CacheConfigQuery {
 	return query
 }
 
+// QueryQuota queries the quota edge of a Provider.
+func (c *ProviderClient) QueryQuota(_m *Provider) *ProviderQuotaQuery {
+	query := (&ProviderQuotaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provider.Table, provider.FieldID, id),
+			sqlgraph.To(providerquota.Table, providerquota.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, provider.QuotaTable, provider.QuotaColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryFileNodes queries the file_nodes edge of a Provider.
 func (c *ProviderClient) QueryFileNodes(_m *Provider) *FileNodeQuery {
 	query := (&FileNodeClient{config: c.config}).Query()
@@ -1303,6 +1327,155 @@ func (c *ProviderCredentialClient) mutate(ctx context.Context, m *ProviderCreden
 		return (&ProviderCredentialDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ProviderCredential mutation op: %q", m.Op())
+	}
+}
+
+// ProviderQuotaClient is a client for the ProviderQuota schema.
+type ProviderQuotaClient struct {
+	config
+}
+
+// NewProviderQuotaClient returns a client for the ProviderQuota from the given config.
+func NewProviderQuotaClient(c config) *ProviderQuotaClient {
+	return &ProviderQuotaClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `providerquota.Hooks(f(g(h())))`.
+func (c *ProviderQuotaClient) Use(hooks ...Hook) {
+	c.hooks.ProviderQuota = append(c.hooks.ProviderQuota, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `providerquota.Intercept(f(g(h())))`.
+func (c *ProviderQuotaClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ProviderQuota = append(c.inters.ProviderQuota, interceptors...)
+}
+
+// Create returns a builder for creating a ProviderQuota entity.
+func (c *ProviderQuotaClient) Create() *ProviderQuotaCreate {
+	mutation := newProviderQuotaMutation(c.config, OpCreate)
+	return &ProviderQuotaCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProviderQuota entities.
+func (c *ProviderQuotaClient) CreateBulk(builders ...*ProviderQuotaCreate) *ProviderQuotaCreateBulk {
+	return &ProviderQuotaCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ProviderQuotaClient) MapCreateBulk(slice any, setFunc func(*ProviderQuotaCreate, int)) *ProviderQuotaCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ProviderQuotaCreateBulk{err: fmt.Errorf("calling to ProviderQuotaClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ProviderQuotaCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ProviderQuotaCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProviderQuota.
+func (c *ProviderQuotaClient) Update() *ProviderQuotaUpdate {
+	mutation := newProviderQuotaMutation(c.config, OpUpdate)
+	return &ProviderQuotaUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProviderQuotaClient) UpdateOne(_m *ProviderQuota) *ProviderQuotaUpdateOne {
+	mutation := newProviderQuotaMutation(c.config, OpUpdateOne, withProviderQuota(_m))
+	return &ProviderQuotaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProviderQuotaClient) UpdateOneID(id uuid.UUID) *ProviderQuotaUpdateOne {
+	mutation := newProviderQuotaMutation(c.config, OpUpdateOne, withProviderQuotaID(id))
+	return &ProviderQuotaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProviderQuota.
+func (c *ProviderQuotaClient) Delete() *ProviderQuotaDelete {
+	mutation := newProviderQuotaMutation(c.config, OpDelete)
+	return &ProviderQuotaDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProviderQuotaClient) DeleteOne(_m *ProviderQuota) *ProviderQuotaDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProviderQuotaClient) DeleteOneID(id uuid.UUID) *ProviderQuotaDeleteOne {
+	builder := c.Delete().Where(providerquota.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProviderQuotaDeleteOne{builder}
+}
+
+// Query returns a query builder for ProviderQuota.
+func (c *ProviderQuotaClient) Query() *ProviderQuotaQuery {
+	return &ProviderQuotaQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProviderQuota},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ProviderQuota entity by its id.
+func (c *ProviderQuotaClient) Get(ctx context.Context, id uuid.UUID) (*ProviderQuota, error) {
+	return c.Query().Where(providerquota.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProviderQuotaClient) GetX(ctx context.Context, id uuid.UUID) *ProviderQuota {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProvider queries the provider edge of a ProviderQuota.
+func (c *ProviderQuotaClient) QueryProvider(_m *ProviderQuota) *ProviderQuery {
+	query := (&ProviderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(providerquota.Table, providerquota.FieldID, id),
+			sqlgraph.To(provider.Table, provider.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, providerquota.ProviderTable, providerquota.ProviderColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProviderQuotaClient) Hooks() []Hook {
+	return c.hooks.ProviderQuota
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProviderQuotaClient) Interceptors() []Interceptor {
+	return c.inters.ProviderQuota
+}
+
+func (c *ProviderQuotaClient) mutate(ctx context.Context, m *ProviderQuotaMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProviderQuotaCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProviderQuotaUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProviderQuotaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProviderQuotaDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ProviderQuota mutation op: %q", m.Op())
 	}
 }
 
@@ -3008,12 +3181,13 @@ func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMu
 type (
 	hooks struct {
 		BandwidthLog, CacheConfig, FileNode, Permission, Provider, ProviderCredential,
-		Role, Session, SharedLink, TransferJob, TransferJobFile, UploadBatch,
-		UploadBatchFile, User, Workspace, WorkspaceMember []ent.Hook
+		ProviderQuota, Role, Session, SharedLink, TransferJob, TransferJobFile,
+		UploadBatch, UploadBatchFile, User, Workspace, WorkspaceMember []ent.Hook
 	}
 	inters struct {
 		BandwidthLog, CacheConfig, FileNode, Permission, Provider, ProviderCredential,
-		Role, Session, SharedLink, TransferJob, TransferJobFile, UploadBatch,
-		UploadBatchFile, User, Workspace, WorkspaceMember []ent.Interceptor
+		ProviderQuota, Role, Session, SharedLink, TransferJob, TransferJobFile,
+		UploadBatch, UploadBatchFile, User, Workspace,
+		WorkspaceMember []ent.Interceptor
 	}
 )

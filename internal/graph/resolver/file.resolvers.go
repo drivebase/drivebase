@@ -10,15 +10,251 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/drivebase/drivebase/internal/auth"
 	entfilenode "github.com/drivebase/drivebase/internal/ent/filenode"
 	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	entuploadbatch "github.com/drivebase/drivebase/internal/ent/uploadbatch"
-	"github.com/drivebase/drivebase/internal/auth"
-	"github.com/drivebase/drivebase/internal/cache"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
 	"github.com/google/uuid"
 )
+
+// CreateFolder is the resolver for the createFolder field.
+func (r *mutationResolver) CreateFolder(ctx context.Context, input graph.CreateFolderInput) (*graph.FileNode, error) {
+	prov, err := r.DB.Provider.Get(ctx, input.ProviderID)
+	if err != nil {
+		return nil, fmt.Errorf("provider not found")
+	}
+	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
+		return nil, err
+	}
+
+	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
+	if err != nil {
+		return nil, err
+	}
+
+	parentRemoteID := ""
+	var parentNodeID *uuid.UUID
+	if input.ParentRemoteID != nil {
+		parentRemoteID = *input.ParentRemoteID
+		fn, err := r.DB.FileNode.Query().
+			Where(entfilenode.ProviderID(input.ProviderID), entfilenode.RemoteID(parentRemoteID)).
+			Only(ctx)
+		if err == nil {
+			parentNodeID = &fn.ID
+		}
+	}
+
+	fi, err := sp.CreateFolder(ctx, parentRemoteID, input.Name)
+	if err != nil {
+		return nil, fmt.Errorf("create folder: %w", err)
+	}
+
+	q := r.DB.FileNode.Create().
+		SetProviderID(input.ProviderID).
+		SetRemoteID(fi.RemoteID).
+		SetName(fi.Name).
+		SetIsDir(true).
+		SetSize(0)
+	if parentNodeID != nil {
+		q = q.SetParentID(*parentNodeID)
+	}
+	if fi.ModifiedAt != (time.Time{}) {
+		q = q.SetRemoteModifiedAt(fi.ModifiedAt)
+	}
+	node, err := q.Save(ctx)
+	if err != nil {
+		return &graph.FileNode{
+			RemoteID:   fi.RemoteID,
+			Name:       fi.Name,
+			IsDir:      true,
+			ProviderID: input.ProviderID,
+			Size:       0,
+		}, nil
+	}
+
+	if r.FileCache != nil {
+		_ = r.FileCache.Invalidate(ctx, input.ProviderID, parentRemoteID)
+	}
+
+	return mapFileNode(node), nil
+}
+
+// DeleteFile is the resolver for the deleteFile field.
+func (r *mutationResolver) DeleteFile(ctx context.Context, input graph.DeleteFileInput) (bool, error) {
+	fn, err := r.DB.FileNode.Get(ctx, input.FileNodeID)
+	if err != nil {
+		return false, fmt.Errorf("file not found")
+	}
+	if fn.ProviderID != input.ProviderID {
+		return false, fmt.Errorf("file not found")
+	}
+
+	prov, err := r.DB.Provider.Get(ctx, input.ProviderID)
+	if err != nil {
+		return false, fmt.Errorf("provider not found")
+	}
+	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
+		return false, err
+	}
+
+	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
+	if err != nil {
+		return false, err
+	}
+
+	if err := sp.Delete(ctx, fn.RemoteID); err != nil {
+		if err != storage.ErrNotFound {
+			return false, fmt.Errorf("delete file: %w", err)
+		}
+	}
+
+	if err := r.DB.FileNode.DeleteOneID(input.FileNodeID).Exec(ctx); err != nil {
+		return false, fmt.Errorf("internal error")
+	}
+
+	if r.FileCache != nil {
+		parentRemoteID := ""
+		if fn.ParentID != nil {
+			if parent, err := r.DB.FileNode.Get(ctx, *fn.ParentID); err == nil {
+				parentRemoteID = parent.RemoteID
+			}
+		}
+		_ = r.FileCache.Invalidate(ctx, input.ProviderID, parentRemoteID)
+	}
+
+	return true, nil
+}
+
+// RenameFile is the resolver for the renameFile field.
+func (r *mutationResolver) RenameFile(ctx context.Context, input graph.RenameFileInput) (*graph.FileNode, error) {
+	fn, err := r.DB.FileNode.Get(ctx, input.FileNodeID)
+	if err != nil {
+		return nil, fmt.Errorf("file not found")
+	}
+	if fn.ProviderID != input.ProviderID {
+		return nil, fmt.Errorf("file not found")
+	}
+
+	prov, err := r.DB.Provider.Get(ctx, input.ProviderID)
+	if err != nil {
+		return nil, fmt.Errorf("provider not found")
+	}
+	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
+		return nil, err
+	}
+
+	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
+	if err != nil {
+		return nil, err
+	}
+
+	fi, err := sp.Rename(ctx, fn.RemoteID, input.NewName)
+	if err != nil {
+		return nil, fmt.Errorf("rename file: %w", err)
+	}
+
+	updated, err := r.DB.FileNode.UpdateOneID(input.FileNodeID).
+		SetName(fi.Name).
+		SetRemoteID(fi.RemoteID).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("internal error")
+	}
+
+	if r.FileCache != nil {
+		parentRemoteID := ""
+		if fn.ParentID != nil {
+			if parent, err := r.DB.FileNode.Get(ctx, *fn.ParentID); err == nil {
+				parentRemoteID = parent.RemoteID
+			}
+		}
+		_ = r.FileCache.Invalidate(ctx, input.ProviderID, parentRemoteID)
+	}
+
+	return mapFileNode(updated), nil
+}
+
+// MoveFile is the resolver for the moveFile field.
+func (r *mutationResolver) MoveFile(ctx context.Context, input graph.MoveFileInput) (*graph.FileNode, error) {
+	fn, err := r.DB.FileNode.Get(ctx, input.FileNodeID)
+	if err != nil {
+		return nil, fmt.Errorf("file not found")
+	}
+	if fn.ProviderID != input.ProviderID {
+		return nil, fmt.Errorf("file not found")
+	}
+
+	prov, err := r.DB.Provider.Get(ctx, input.ProviderID)
+	if err != nil {
+		return nil, fmt.Errorf("provider not found")
+	}
+	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
+		return nil, err
+	}
+
+	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
+	if err != nil {
+		return nil, err
+	}
+
+	fi, err := sp.Move(ctx, fn.RemoteID, input.NewParentRemoteID)
+	if err != nil {
+		return nil, fmt.Errorf("move file: %w", err)
+	}
+
+	var newParentNodeID *uuid.UUID
+	if input.NewParentRemoteID != "" {
+		newParent, err := r.DB.FileNode.Query().
+			Where(entfilenode.ProviderID(input.ProviderID), entfilenode.RemoteID(input.NewParentRemoteID)).
+			Only(ctx)
+		if err == nil {
+			newParentNodeID = &newParent.ID
+		}
+	}
+
+	q := r.DB.FileNode.UpdateOneID(input.FileNodeID).SetRemoteID(fi.RemoteID)
+	if newParentNodeID != nil {
+		q = q.SetParentID(*newParentNodeID)
+	} else {
+		q = q.ClearParentID()
+	}
+	updated, err := q.Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("internal error")
+	}
+
+	if r.FileCache != nil {
+		oldParentRemoteID := ""
+		if fn.ParentID != nil {
+			if parent, err := r.DB.FileNode.Get(ctx, *fn.ParentID); err == nil {
+				oldParentRemoteID = parent.RemoteID
+			}
+		}
+		_ = r.FileCache.Invalidate(ctx, input.ProviderID, oldParentRemoteID)
+		_ = r.FileCache.Invalidate(ctx, input.ProviderID, input.NewParentRemoteID)
+	}
+
+	return mapFileNode(updated), nil
+}
+
+// SyncProvider is the resolver for the syncProvider field.
+func (r *mutationResolver) SyncProvider(ctx context.Context, providerID uuid.UUID) (bool, error) {
+	prov, err := r.DB.Provider.Get(ctx, providerID)
+	if err != nil {
+		return false, fmt.Errorf("provider not found")
+	}
+	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
+		return false, err
+	}
+
+	if r.FileCache != nil {
+		_ = r.FileCache.InvalidateProvider(ctx, providerID)
+	}
+
+	return true, nil
+}
 
 // ListFiles is the resolver for the listFiles field.
 func (r *queryResolver) ListFiles(ctx context.Context, input graph.ListFilesInput) (*graph.ListFilesResult, error) {
@@ -31,7 +267,6 @@ func (r *queryResolver) ListFiles(ctx context.Context, input graph.ListFilesInpu
 		return nil, err
 	}
 
-	// Determine parent remote ID for cache key
 	parentRemoteID := ""
 	if input.ParentID != nil {
 		fn, err := r.DB.FileNode.Get(ctx, *input.ParentID)
@@ -41,14 +276,12 @@ func (r *queryResolver) ListFiles(ctx context.Context, input graph.ListFilesInpu
 		parentRemoteID = fn.RemoteID
 	}
 
-	// Try cache (only for first page, no page token)
 	if r.FileCache != nil && (input.PageToken == nil || *input.PageToken == "") {
 		if listing, err := r.FileCache.Get(ctx, input.ProviderID, parentRemoteID); err == nil && listing != nil {
 			return cachedListingToResult(listing), nil
 		}
 	}
 
-	// Fetch from provider
 	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
 	if err != nil {
 		return nil, err
@@ -67,10 +300,8 @@ func (r *queryResolver) ListFiles(ctx context.Context, input graph.ListFilesInpu
 		return nil, fmt.Errorf("list files: %w", err)
 	}
 
-	// Upsert into DB (background sync of file tree)
 	go r.upsertFileNodes(context.Background(), input.ProviderID, parentRemoteID, input.ParentID, result.Files)
 
-	// Cache the listing
 	if r.FileCache != nil && (input.PageToken == nil || *input.PageToken == "") {
 		listing := filesToCachedListing(result)
 		_ = r.FileCache.Set(ctx, input.ProviderID, parentRemoteID, listing)
@@ -131,365 +362,4 @@ func (r *queryResolver) MyUploadBatches(ctx context.Context, workspaceID uuid.UU
 		out[i] = mapUploadBatch(b)
 	}
 	return out, nil
-}
-
-// CreateFolder is the resolver for the createFolder field.
-func (r *mutationResolver) CreateFolder(ctx context.Context, input graph.CreateFolderInput) (*graph.FileNode, error) {
-	prov, err := r.DB.Provider.Get(ctx, input.ProviderID)
-	if err != nil {
-		return nil, fmt.Errorf("provider not found")
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
-	}
-
-	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
-	if err != nil {
-		return nil, err
-	}
-
-	parentRemoteID := ""
-	var parentNodeID *uuid.UUID
-	if input.ParentRemoteID != nil {
-		parentRemoteID = *input.ParentRemoteID
-		// Look up parent node
-		fn, err := r.DB.FileNode.Query().
-			Where(entfilenode.ProviderID(input.ProviderID), entfilenode.RemoteID(parentRemoteID)).
-			Only(ctx)
-		if err == nil {
-			parentNodeID = &fn.ID
-		}
-	}
-
-	fi, err := sp.CreateFolder(ctx, parentRemoteID, input.Name)
-	if err != nil {
-		return nil, fmt.Errorf("create folder: %w", err)
-	}
-
-	// Persist to DB
-	q := r.DB.FileNode.Create().
-		SetProviderID(input.ProviderID).
-		SetRemoteID(fi.RemoteID).
-		SetName(fi.Name).
-		SetIsDir(true).
-		SetSize(0)
-	if parentNodeID != nil {
-		q = q.SetParentID(*parentNodeID)
-	}
-	if fi.ModifiedAt != (time.Time{}) {
-		q = q.SetRemoteModifiedAt(fi.ModifiedAt)
-	}
-	node, err := q.Save(ctx)
-	if err != nil {
-		// May already exist — return what provider gave us as best effort
-		return &graph.FileNode{
-			RemoteID:   fi.RemoteID,
-			Name:       fi.Name,
-			IsDir:      true,
-			ProviderID: input.ProviderID,
-			Size:       0,
-		}, nil
-	}
-
-	// Invalidate cache for parent directory
-	if r.FileCache != nil {
-		_ = r.FileCache.Invalidate(ctx, input.ProviderID, parentRemoteID)
-	}
-
-	return mapFileNode(node), nil
-}
-
-// DeleteFile is the resolver for the deleteFile field.
-func (r *mutationResolver) DeleteFile(ctx context.Context, input graph.DeleteFileInput) (bool, error) {
-	fn, err := r.DB.FileNode.Get(ctx, input.FileNodeID)
-	if err != nil {
-		return false, fmt.Errorf("file not found")
-	}
-	if fn.ProviderID != input.ProviderID {
-		return false, fmt.Errorf("file not found")
-	}
-
-	prov, err := r.DB.Provider.Get(ctx, input.ProviderID)
-	if err != nil {
-		return false, fmt.Errorf("provider not found")
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return false, err
-	}
-
-	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
-	if err != nil {
-		return false, err
-	}
-
-	if err := sp.Delete(ctx, fn.RemoteID); err != nil {
-		if err == storage.ErrNotFound {
-			// Already gone on provider — still remove from DB
-		} else {
-			return false, fmt.Errorf("delete file: %w", err)
-		}
-	}
-
-	// Remove from DB
-	if err := r.DB.FileNode.DeleteOneID(input.FileNodeID).Exec(ctx); err != nil {
-		return false, fmt.Errorf("internal error")
-	}
-
-	// Invalidate cache
-	if r.FileCache != nil {
-		parentRemoteID := ""
-		if fn.ParentID != nil {
-			if parent, err := r.DB.FileNode.Get(ctx, *fn.ParentID); err == nil {
-				parentRemoteID = parent.RemoteID
-			}
-		}
-		_ = r.FileCache.Invalidate(ctx, input.ProviderID, parentRemoteID)
-	}
-
-	return true, nil
-}
-
-// RenameFile is the resolver for the renameFile field.
-func (r *mutationResolver) RenameFile(ctx context.Context, input graph.RenameFileInput) (*graph.FileNode, error) {
-	fn, err := r.DB.FileNode.Get(ctx, input.FileNodeID)
-	if err != nil {
-		return nil, fmt.Errorf("file not found")
-	}
-	if fn.ProviderID != input.ProviderID {
-		return nil, fmt.Errorf("file not found")
-	}
-
-	prov, err := r.DB.Provider.Get(ctx, input.ProviderID)
-	if err != nil {
-		return nil, fmt.Errorf("provider not found")
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
-	}
-
-	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
-	if err != nil {
-		return nil, err
-	}
-
-	fi, err := sp.Rename(ctx, fn.RemoteID, input.NewName)
-	if err != nil {
-		return nil, fmt.Errorf("rename file: %w", err)
-	}
-
-	// Update DB
-	updated, err := r.DB.FileNode.UpdateOneID(input.FileNodeID).
-		SetName(fi.Name).
-		SetRemoteID(fi.RemoteID).
-		Save(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("internal error")
-	}
-
-	// Invalidate cache for parent
-	if r.FileCache != nil {
-		parentRemoteID := ""
-		if fn.ParentID != nil {
-			if parent, err := r.DB.FileNode.Get(ctx, *fn.ParentID); err == nil {
-				parentRemoteID = parent.RemoteID
-			}
-		}
-		_ = r.FileCache.Invalidate(ctx, input.ProviderID, parentRemoteID)
-	}
-
-	return mapFileNode(updated), nil
-}
-
-// MoveFile is the resolver for the moveFile field.
-func (r *mutationResolver) MoveFile(ctx context.Context, input graph.MoveFileInput) (*graph.FileNode, error) {
-	fn, err := r.DB.FileNode.Get(ctx, input.FileNodeID)
-	if err != nil {
-		return nil, fmt.Errorf("file not found")
-	}
-	if fn.ProviderID != input.ProviderID {
-		return nil, fmt.Errorf("file not found")
-	}
-
-	prov, err := r.DB.Provider.Get(ctx, input.ProviderID)
-	if err != nil {
-		return nil, fmt.Errorf("provider not found")
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
-	}
-
-	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
-	if err != nil {
-		return nil, err
-	}
-
-	fi, err := sp.Move(ctx, fn.RemoteID, input.NewParentRemoteID)
-	if err != nil {
-		return nil, fmt.Errorf("move file: %w", err)
-	}
-
-	// Find new parent node ID
-	var newParentNodeID *uuid.UUID
-	if input.NewParentRemoteID != "" {
-		newParent, err := r.DB.FileNode.Query().
-			Where(entfilenode.ProviderID(input.ProviderID), entfilenode.RemoteID(input.NewParentRemoteID)).
-			Only(ctx)
-		if err == nil {
-			newParentNodeID = &newParent.ID
-		}
-	}
-
-	// Update DB
-	q := r.DB.FileNode.UpdateOneID(input.FileNodeID).SetRemoteID(fi.RemoteID)
-	if newParentNodeID != nil {
-		q = q.SetParentID(*newParentNodeID)
-	} else {
-		q = q.ClearParentID()
-	}
-	updated, err := q.Save(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("internal error")
-	}
-
-	// Invalidate old and new parent caches
-	if r.FileCache != nil {
-		oldParentRemoteID := ""
-		if fn.ParentID != nil {
-			if parent, err := r.DB.FileNode.Get(ctx, *fn.ParentID); err == nil {
-				oldParentRemoteID = parent.RemoteID
-			}
-		}
-		_ = r.FileCache.Invalidate(ctx, input.ProviderID, oldParentRemoteID)
-		_ = r.FileCache.Invalidate(ctx, input.ProviderID, input.NewParentRemoteID)
-	}
-
-	return mapFileNode(updated), nil
-}
-
-// SyncProvider is the resolver for the syncProvider field.
-func (r *mutationResolver) SyncProvider(ctx context.Context, providerID uuid.UUID) (bool, error) {
-	prov, err := r.DB.Provider.Get(ctx, providerID)
-	if err != nil {
-		return false, fmt.Errorf("provider not found")
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return false, err
-	}
-
-	// Invalidate all cached listings for this provider
-	if r.FileCache != nil {
-		_ = r.FileCache.InvalidateProvider(ctx, providerID)
-	}
-
-	return true, nil
-}
-
-// --- helpers ---
-
-// upsertFileNodes syncs provider file list into DB (fire-and-forget).
-func (r *Resolver) upsertFileNodes(ctx context.Context, providerID uuid.UUID, parentRemoteID string, parentNodeID *uuid.UUID, files []storage.FileInfo) {
-	for _, fi := range files {
-		q := r.DB.FileNode.Create().
-			SetProviderID(providerID).
-			SetRemoteID(fi.RemoteID).
-			SetName(fi.Name).
-			SetIsDir(fi.IsDir).
-			SetSize(fi.Size).
-			SetMimeType(fi.MimeType).
-			SetChecksum(fi.Checksum)
-
-		if parentNodeID != nil {
-			q = q.SetParentID(*parentNodeID)
-		}
-		if !fi.ModifiedAt.IsZero() {
-			q = q.SetRemoteModifiedAt(fi.ModifiedAt)
-		}
-
-		// Try to create; if it already exists (unique constraint), update it
-		node, err := q.Save(ctx)
-		if err != nil {
-			// Already exists — update name/size/mime_type
-			_ = r.DB.FileNode.Update().
-				Where(entfilenode.ProviderID(providerID), entfilenode.RemoteID(fi.RemoteID)).
-				SetName(fi.Name).
-				SetSize(fi.Size).
-				SetMimeType(fi.MimeType).
-				SetChecksum(fi.Checksum).
-				Exec(ctx)
-		} else {
-			_ = node
-		}
-	}
-}
-
-func cachedListingToResult(listing *cache.CachedListing) *graph.ListFilesResult {
-	files := make([]*graph.FileNode, len(listing.Files))
-	for i, f := range listing.Files {
-		files[i] = &graph.FileNode{
-			RemoteID: f.RemoteID,
-			Name:     f.Name,
-			IsDir:    f.IsDir,
-			Size:     int(f.Size),
-			MimeType: strPtr(f.MimeType),
-			Checksum: strPtr(f.Checksum),
-		}
-		if !f.ModifiedAt.IsZero() {
-			files[i].RemoteModifiedAt = &f.ModifiedAt
-		}
-	}
-	result := &graph.ListFilesResult{Files: files}
-	if listing.NextPageToken != "" {
-		result.NextPageToken = &listing.NextPageToken
-	}
-	return result
-}
-
-func filesToCachedListing(result *storage.ListResult) *cache.CachedListing {
-	files := make([]cache.CachedFile, len(result.Files))
-	for i, f := range result.Files {
-		files[i] = cache.CachedFile{
-			RemoteID:   f.RemoteID,
-			Name:       f.Name,
-			IsDir:      f.IsDir,
-			Size:       f.Size,
-			MimeType:   f.MimeType,
-			Checksum:   f.Checksum,
-			ModifiedAt: f.ModifiedAt,
-			ParentID:   f.ParentID,
-		}
-	}
-	return &cache.CachedListing{
-		Files:         files,
-		NextPageToken: result.NextPageToken,
-	}
-}
-
-func fileResultToGraphQL(result *storage.ListResult) *graph.ListFilesResult {
-	files := make([]*graph.FileNode, len(result.Files))
-	for i, f := range result.Files {
-		gf := &graph.FileNode{
-			RemoteID: f.RemoteID,
-			Name:     f.Name,
-			IsDir:    f.IsDir,
-			Size:     int(f.Size),
-			MimeType: strPtr(f.MimeType),
-			Checksum: strPtr(f.Checksum),
-		}
-		if !f.ModifiedAt.IsZero() {
-			gf.RemoteModifiedAt = &f.ModifiedAt
-		}
-		files[i] = gf
-	}
-	out := &graph.ListFilesResult{Files: files}
-	if result.NextPageToken != "" {
-		out.NextPageToken = &result.NextPageToken
-	}
-	return out
-}
-
-func strPtr(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
 }
