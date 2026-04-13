@@ -1,0 +1,60 @@
+extend type Query {
+  providers(workspaceId: UUID!): [Provider!]!
+  provider(id: UUID!): Provider!
+}
+
+extend type Mutation {
+  connectProvider(input: ConnectProviderInput!): Provider!
+  disconnectProvider(id: UUID!): Boolean!
+  updateProvider(id: UUID!, input: UpdateProviderInput!): Provider!
+  validateProvider(id: UUID!): ProviderValidationResult!
+}
+
+type Provider {
+  id: UUID!
+  workspaceId: UUID!
+  name: String!
+  type: ProviderType!
+  authType: AuthType!
+  status: ProviderStatus!
+  createdAt: Time!
+}
+
+type ProviderValidationResult {
+  ok: Boolean!
+  error: String
+}
+
+enum ProviderType {
+  google_drive
+  s3
+  local
+}
+
+enum AuthType {
+  oauth
+  api_key
+  credential
+  none
+}
+
+enum ProviderStatus {
+  active
+  disconnected
+  error
+}
+
+input ConnectProviderInput {
+  workspaceId: UUID!
+  name: String!
+  type: ProviderType!
+  # credentials: provider-specific JSON string (will be encrypted server-side)
+  # Google Drive: {"client_id","client_secret","access_token","refresh_token","expiry"}
+  # S3/MinIO:     {"endpoint","region","bucket","access_key","secret_key","use_path_style"}
+  # Local:        {"base_path"}
+  credentials: String!
+}
+
+input UpdateProviderInput {
+  name: String
+}

@@ -44,23 +44,44 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateWorkspace  func(childComplexity int, input CreateWorkspaceInput) int
-		DeleteWorkspace  func(childComplexity int, id uuid.UUID) int
-		InviteMember     func(childComplexity int, workspaceID uuid.UUID, email string, roleID uuid.UUID) int
-		RefreshToken     func(childComplexity int, token string) int
-		RemoveMember     func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID) int
-		RevokeSession    func(childComplexity int, sessionID uuid.UUID) int
-		SignIn           func(childComplexity int, input SignInInput) int
-		SignOut          func(childComplexity int) int
-		SignUp           func(childComplexity int, input SignUpInput) int
-		UpdateMemberRole func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID, roleID uuid.UUID) int
-		UpdateWorkspace  func(childComplexity int, id uuid.UUID, input UpdateWorkspaceInput) int
+		ConnectProvider    func(childComplexity int, input ConnectProviderInput) int
+		CreateWorkspace    func(childComplexity int, input CreateWorkspaceInput) int
+		DeleteWorkspace    func(childComplexity int, id uuid.UUID) int
+		DisconnectProvider func(childComplexity int, id uuid.UUID) int
+		InviteMember       func(childComplexity int, workspaceID uuid.UUID, email string, roleID uuid.UUID) int
+		RefreshToken       func(childComplexity int, token string) int
+		RemoveMember       func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID) int
+		RevokeSession      func(childComplexity int, sessionID uuid.UUID) int
+		SignIn             func(childComplexity int, input SignInInput) int
+		SignOut            func(childComplexity int) int
+		SignUp             func(childComplexity int, input SignUpInput) int
+		UpdateMemberRole   func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID, roleID uuid.UUID) int
+		UpdateProvider     func(childComplexity int, id uuid.UUID, input UpdateProviderInput) int
+		UpdateWorkspace    func(childComplexity int, id uuid.UUID, input UpdateWorkspaceInput) int
+		ValidateProvider   func(childComplexity int, id uuid.UUID) int
+	}
+
+	Provider struct {
+		AuthType    func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Status      func(childComplexity int) int
+		Type        func(childComplexity int) int
+		WorkspaceID func(childComplexity int) int
+	}
+
+	ProviderValidationResult struct {
+		Error func(childComplexity int) int
+		Ok    func(childComplexity int) int
 	}
 
 	Query struct {
 		Me             func(childComplexity int) int
 		MySessions     func(childComplexity int) int
 		MyWorkspaces   func(childComplexity int) int
+		Provider       func(childComplexity int, id uuid.UUID) int
+		Providers      func(childComplexity int, workspaceID uuid.UUID) int
 		Workspace      func(childComplexity int, id uuid.UUID) int
 		WorkspaceRoles func(childComplexity int, workspaceID uuid.UUID) int
 	}
@@ -109,6 +130,10 @@ type MutationResolver interface {
 	RefreshToken(ctx context.Context, token string) (*AuthPayload, error)
 	SignOut(ctx context.Context) (bool, error)
 	RevokeSession(ctx context.Context, sessionID uuid.UUID) (bool, error)
+	ConnectProvider(ctx context.Context, input ConnectProviderInput) (*Provider, error)
+	DisconnectProvider(ctx context.Context, id uuid.UUID) (bool, error)
+	UpdateProvider(ctx context.Context, id uuid.UUID, input UpdateProviderInput) (*Provider, error)
+	ValidateProvider(ctx context.Context, id uuid.UUID) (*ProviderValidationResult, error)
 	CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*Workspace, error)
 	UpdateWorkspace(ctx context.Context, id uuid.UUID, input UpdateWorkspaceInput) (*Workspace, error)
 	DeleteWorkspace(ctx context.Context, id uuid.UUID) (bool, error)
@@ -119,6 +144,8 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Me(ctx context.Context) (*User, error)
 	MySessions(ctx context.Context) ([]*Session, error)
+	Providers(ctx context.Context, workspaceID uuid.UUID) ([]*Provider, error)
+	Provider(ctx context.Context, id uuid.UUID) (*Provider, error)
 	Workspace(ctx context.Context, id uuid.UUID) (*Workspace, error)
 	MyWorkspaces(ctx context.Context) ([]*Workspace, error)
 	WorkspaceRoles(ctx context.Context, workspaceID uuid.UUID) ([]*Role, error)
@@ -157,6 +184,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.AuthPayload.User(childComplexity), true
 
+	case "Mutation.connectProvider":
+		if e.ComplexityRoot.Mutation.ConnectProvider == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_connectProvider_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ConnectProvider(childComplexity, args["input"].(ConnectProviderInput)), true
 	case "Mutation.createWorkspace":
 		if e.ComplexityRoot.Mutation.CreateWorkspace == nil {
 			break
@@ -179,6 +217,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteWorkspace(childComplexity, args["id"].(uuid.UUID)), true
+	case "Mutation.disconnectProvider":
+		if e.ComplexityRoot.Mutation.DisconnectProvider == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_disconnectProvider_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DisconnectProvider(childComplexity, args["id"].(uuid.UUID)), true
 	case "Mutation.inviteMember":
 		if e.ComplexityRoot.Mutation.InviteMember == nil {
 			break
@@ -262,6 +311,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateMemberRole(childComplexity, args["workspaceId"].(uuid.UUID), args["userId"].(uuid.UUID), args["roleId"].(uuid.UUID)), true
+	case "Mutation.updateProvider":
+		if e.ComplexityRoot.Mutation.UpdateProvider == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateProvider_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateProvider(childComplexity, args["id"].(uuid.UUID), args["input"].(UpdateProviderInput)), true
 	case "Mutation.updateWorkspace":
 		if e.ComplexityRoot.Mutation.UpdateWorkspace == nil {
 			break
@@ -273,6 +333,73 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateWorkspace(childComplexity, args["id"].(uuid.UUID), args["input"].(UpdateWorkspaceInput)), true
+	case "Mutation.validateProvider":
+		if e.ComplexityRoot.Mutation.ValidateProvider == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_validateProvider_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ValidateProvider(childComplexity, args["id"].(uuid.UUID)), true
+
+	case "Provider.authType":
+		if e.ComplexityRoot.Provider.AuthType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Provider.AuthType(childComplexity), true
+	case "Provider.createdAt":
+		if e.ComplexityRoot.Provider.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Provider.CreatedAt(childComplexity), true
+	case "Provider.id":
+		if e.ComplexityRoot.Provider.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Provider.ID(childComplexity), true
+	case "Provider.name":
+		if e.ComplexityRoot.Provider.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Provider.Name(childComplexity), true
+	case "Provider.status":
+		if e.ComplexityRoot.Provider.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Provider.Status(childComplexity), true
+	case "Provider.type":
+		if e.ComplexityRoot.Provider.Type == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Provider.Type(childComplexity), true
+	case "Provider.workspaceId":
+		if e.ComplexityRoot.Provider.WorkspaceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Provider.WorkspaceID(childComplexity), true
+
+	case "ProviderValidationResult.error":
+		if e.ComplexityRoot.ProviderValidationResult.Error == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ProviderValidationResult.Error(childComplexity), true
+	case "ProviderValidationResult.ok":
+		if e.ComplexityRoot.ProviderValidationResult.Ok == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ProviderValidationResult.Ok(childComplexity), true
 
 	case "Query.me":
 		if e.ComplexityRoot.Query.Me == nil {
@@ -292,6 +419,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.MyWorkspaces(childComplexity), true
+	case "Query.provider":
+		if e.ComplexityRoot.Query.Provider == nil {
+			break
+		}
+
+		args, err := ec.field_Query_provider_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Provider(childComplexity, args["id"].(uuid.UUID)), true
+	case "Query.providers":
+		if e.ComplexityRoot.Query.Providers == nil {
+			break
+		}
+
+		args, err := ec.field_Query_providers_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Providers(childComplexity, args["workspaceId"].(uuid.UUID)), true
 	case "Query.workspace":
 		if e.ComplexityRoot.Query.Workspace == nil {
 			break
@@ -460,9 +609,11 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputConnectProviderInput,
 		ec.unmarshalInputCreateWorkspaceInput,
 		ec.unmarshalInputSignInInput,
 		ec.unmarshalInputSignUpInput,
+		ec.unmarshalInputUpdateProviderInput,
 		ec.unmarshalInputUpdateWorkspaceInput,
 	)
 	first := true
@@ -538,7 +689,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/auth.graphqls" "schema/schema.graphqls" "schema/workspace.graphqls"
+//go:embed "schema/auth.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/workspace.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -551,6 +702,7 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "schema/auth.graphqls", Input: sourceData("schema/auth.graphqls"), BuiltIn: false},
+	{Name: "schema/provider.graphqls", Input: sourceData("schema/provider.graphqls"), BuiltIn: false},
 	{Name: "schema/schema.graphqls", Input: sourceData("schema/schema.graphqls"), BuiltIn: false},
 	{Name: "schema/workspace.graphqls", Input: sourceData("schema/workspace.graphqls"), BuiltIn: false},
 }
@@ -559,6 +711,17 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_connectProvider_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNConnectProviderInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐConnectProviderInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createWorkspace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -572,6 +735,17 @@ func (ec *executionContext) field_Mutation_createWorkspace_args(ctx context.Cont
 }
 
 func (ec *executionContext) field_Mutation_deleteWorkspace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_disconnectProvider_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
@@ -684,6 +858,22 @@ func (ec *executionContext) field_Mutation_updateMemberRole_args(ctx context.Con
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updateProvider_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNUpdateProviderInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐUpdateProviderInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateWorkspace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -700,6 +890,17 @@ func (ec *executionContext) field_Mutation_updateWorkspace_args(ctx context.Cont
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_validateProvider_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -708,6 +909,28 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_provider_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_providers_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["workspaceId"] = arg0
 	return args, nil
 }
 
@@ -1099,6 +1322,208 @@ func (ec *executionContext) fieldContext_Mutation_revokeSession(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_connectProvider(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_connectProvider,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().ConnectProvider(ctx, fc.Args["input"].(ConnectProviderInput))
+		},
+		nil,
+		ec.marshalNProvider2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProvider,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_connectProvider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Provider_id(ctx, field)
+			case "workspaceId":
+				return ec.fieldContext_Provider_workspaceId(ctx, field)
+			case "name":
+				return ec.fieldContext_Provider_name(ctx, field)
+			case "type":
+				return ec.fieldContext_Provider_type(ctx, field)
+			case "authType":
+				return ec.fieldContext_Provider_authType(ctx, field)
+			case "status":
+				return ec.fieldContext_Provider_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Provider_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Provider", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_connectProvider_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_disconnectProvider(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_disconnectProvider,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().DisconnectProvider(ctx, fc.Args["id"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_disconnectProvider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_disconnectProvider_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateProvider(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_updateProvider,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdateProvider(ctx, fc.Args["id"].(uuid.UUID), fc.Args["input"].(UpdateProviderInput))
+		},
+		nil,
+		ec.marshalNProvider2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProvider,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateProvider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Provider_id(ctx, field)
+			case "workspaceId":
+				return ec.fieldContext_Provider_workspaceId(ctx, field)
+			case "name":
+				return ec.fieldContext_Provider_name(ctx, field)
+			case "type":
+				return ec.fieldContext_Provider_type(ctx, field)
+			case "authType":
+				return ec.fieldContext_Provider_authType(ctx, field)
+			case "status":
+				return ec.fieldContext_Provider_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Provider_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Provider", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateProvider_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_validateProvider(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_validateProvider,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().ValidateProvider(ctx, fc.Args["id"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNProviderValidationResult2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderValidationResult,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_validateProvider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ok":
+				return ec.fieldContext_ProviderValidationResult_ok(ctx, field)
+			case "error":
+				return ec.fieldContext_ProviderValidationResult_error(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ProviderValidationResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_validateProvider_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createWorkspace(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1393,6 +1818,267 @@ func (ec *executionContext) fieldContext_Mutation_updateMemberRole(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _Provider_id(ctx context.Context, field graphql.CollectedField, obj *Provider) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Provider_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Provider_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Provider",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Provider_workspaceId(ctx context.Context, field graphql.CollectedField, obj *Provider) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Provider_workspaceId,
+		func(ctx context.Context) (any, error) {
+			return obj.WorkspaceID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Provider_workspaceId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Provider",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Provider_name(ctx context.Context, field graphql.CollectedField, obj *Provider) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Provider_name,
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Provider_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Provider",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Provider_type(ctx context.Context, field graphql.CollectedField, obj *Provider) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Provider_type,
+		func(ctx context.Context) (any, error) {
+			return obj.Type, nil
+		},
+		nil,
+		ec.marshalNProviderType2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderType,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Provider_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Provider",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ProviderType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Provider_authType(ctx context.Context, field graphql.CollectedField, obj *Provider) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Provider_authType,
+		func(ctx context.Context) (any, error) {
+			return obj.AuthType, nil
+		},
+		nil,
+		ec.marshalNAuthType2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAuthType,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Provider_authType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Provider",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AuthType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Provider_status(ctx context.Context, field graphql.CollectedField, obj *Provider) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Provider_status,
+		func(ctx context.Context) (any, error) {
+			return obj.Status, nil
+		},
+		nil,
+		ec.marshalNProviderStatus2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderStatus,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Provider_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Provider",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ProviderStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Provider_createdAt(ctx context.Context, field graphql.CollectedField, obj *Provider) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Provider_createdAt,
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		ec.marshalNTime2timeᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Provider_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Provider",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProviderValidationResult_ok(ctx context.Context, field graphql.CollectedField, obj *ProviderValidationResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProviderValidationResult_ok,
+		func(ctx context.Context) (any, error) {
+			return obj.Ok, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProviderValidationResult_ok(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProviderValidationResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProviderValidationResult_error(ctx context.Context, field graphql.CollectedField, obj *ProviderValidationResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProviderValidationResult_error,
+		func(ctx context.Context) (any, error) {
+			return obj.Error, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProviderValidationResult_error(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProviderValidationResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1469,6 +2155,120 @@ func (ec *executionContext) fieldContext_Query_mySessions(_ context.Context, fie
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Session", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_providers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_providers,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Providers(ctx, fc.Args["workspaceId"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNProvider2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_providers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Provider_id(ctx, field)
+			case "workspaceId":
+				return ec.fieldContext_Provider_workspaceId(ctx, field)
+			case "name":
+				return ec.fieldContext_Provider_name(ctx, field)
+			case "type":
+				return ec.fieldContext_Provider_type(ctx, field)
+			case "authType":
+				return ec.fieldContext_Provider_authType(ctx, field)
+			case "status":
+				return ec.fieldContext_Provider_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Provider_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Provider", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_providers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_provider(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_provider,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Provider(ctx, fc.Args["id"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNProvider2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProvider,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_provider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Provider_id(ctx, field)
+			case "workspaceId":
+				return ec.fieldContext_Provider_workspaceId(ctx, field)
+			case "name":
+				return ec.fieldContext_Provider_name(ctx, field)
+			case "type":
+				return ec.fieldContext_Provider_type(ctx, field)
+			case "authType":
+				return ec.fieldContext_Provider_authType(ctx, field)
+			case "status":
+				return ec.fieldContext_Provider_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Provider_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Provider", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_provider_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -3848,6 +4648,57 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputConnectProviderInput(ctx context.Context, obj any) (ConnectProviderInput, error) {
+	var it ConnectProviderInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"workspaceId", "name", "type", "credentials"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "workspaceId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("workspaceId"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WorkspaceID = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalNProviderType2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "credentials":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credentials"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Credentials = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateWorkspaceInput(ctx context.Context, obj any) (CreateWorkspaceInput, error) {
 	var it CreateWorkspaceInput
 	if obj == nil {
@@ -3968,6 +4819,36 @@ func (ec *executionContext) unmarshalInputSignUpInput(ctx context.Context, obj a
 				return it, err
 			}
 			it.Password = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateProviderInput(ctx context.Context, obj any) (UpdateProviderInput, error) {
+	var it UpdateProviderInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
 		}
 	}
 	return it, nil
@@ -4114,6 +4995,34 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "connectProvider":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_connectProvider(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "disconnectProvider":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_disconnectProvider(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateProvider":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateProvider(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "validateProvider":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_validateProvider(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createWorkspace":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createWorkspace(ctx, field)
@@ -4156,6 +5065,116 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var providerImplementors = []string{"Provider"}
+
+func (ec *executionContext) _Provider(ctx context.Context, sel ast.SelectionSet, obj *Provider) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, providerImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Provider")
+		case "id":
+			out.Values[i] = ec._Provider_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "workspaceId":
+			out.Values[i] = ec._Provider_workspaceId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Provider_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "type":
+			out.Values[i] = ec._Provider_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "authType":
+			out.Values[i] = ec._Provider_authType(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "status":
+			out.Values[i] = ec._Provider_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._Provider_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var providerValidationResultImplementors = []string{"ProviderValidationResult"}
+
+func (ec *executionContext) _ProviderValidationResult(ctx context.Context, sel ast.SelectionSet, obj *ProviderValidationResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, providerValidationResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ProviderValidationResult")
+		case "ok":
+			out.Values[i] = ec._ProviderValidationResult_ok(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "error":
+			out.Values[i] = ec._ProviderValidationResult_error(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4230,6 +5249,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_mySessions(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "providers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_providers(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "provider":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_provider(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4962,6 +6025,16 @@ func (ec *executionContext) marshalNAuthPayload2ᚖgithubᚗcomᚋdrivebaseᚋdr
 	return ec._AuthPayload(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNAuthType2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAuthType(ctx context.Context, v any) (AuthType, error) {
+	var res AuthType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAuthType2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAuthType(ctx context.Context, sel ast.SelectionSet, v AuthType) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4978,9 +6051,78 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNConnectProviderInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐConnectProviderInput(ctx context.Context, v any) (ConnectProviderInput, error) {
+	res, err := ec.unmarshalInputConnectProviderInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateWorkspaceInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateWorkspaceInput(ctx context.Context, v any) (CreateWorkspaceInput, error) {
 	res, err := ec.unmarshalInputCreateWorkspaceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNProvider2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProvider(ctx context.Context, sel ast.SelectionSet, v Provider) graphql.Marshaler {
+	return ec._Provider(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNProvider2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderᚄ(ctx context.Context, sel ast.SelectionSet, v []*Provider) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNProvider2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProvider(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNProvider2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProvider(ctx context.Context, sel ast.SelectionSet, v *Provider) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Provider(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNProviderStatus2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderStatus(ctx context.Context, v any) (ProviderStatus, error) {
+	var res ProviderStatus
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNProviderStatus2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderStatus(ctx context.Context, sel ast.SelectionSet, v ProviderStatus) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNProviderType2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderType(ctx context.Context, v any) (ProviderType, error) {
+	var res ProviderType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNProviderType2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderType(ctx context.Context, sel ast.SelectionSet, v ProviderType) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNProviderValidationResult2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderValidationResult(ctx context.Context, sel ast.SelectionSet, v ProviderValidationResult) graphql.Marshaler {
+	return ec._ProviderValidationResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNProviderValidationResult2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderValidationResult(ctx context.Context, sel ast.SelectionSet, v *ProviderValidationResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ProviderValidationResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNRole2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐRoleᚄ(ctx context.Context, sel ast.SelectionSet, v []*Role) graphql.Marshaler {
@@ -5077,6 +6219,11 @@ func (ec *executionContext) unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(c
 
 func (ec *executionContext) marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
 	return ec._UUID(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNUpdateProviderInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐUpdateProviderInput(ctx context.Context, v any) (UpdateProviderInput, error) {
+	res, err := ec.unmarshalInputUpdateProviderInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNUpdateWorkspaceInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐUpdateWorkspaceInput(ctx context.Context, v any) (UpdateWorkspaceInput, error) {

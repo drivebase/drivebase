@@ -7,9 +7,7 @@ package resolver
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/drivebase/drivebase/internal/auth"
 	"github.com/drivebase/drivebase/internal/ent"
@@ -159,52 +157,3 @@ func (r *queryResolver) MySessions(ctx context.Context) ([]*graph.Session, error
 	}
 	return out, nil
 }
-
-// issueTokens creates a new session and returns a fresh AuthPayload.
-func (r *mutationResolver) issueTokens(ctx context.Context, u *ent.User, workspaceID uuid.UUID) (*graph.AuthPayload, error) {
-	accessToken, err := auth.IssueAccessToken(
-		r.Config.Auth.JWTSecret,
-		r.Config.Auth.AccessTokenTTL,
-		u.ID,
-		workspaceID,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("internal error")
-	}
-
-	refreshToken, err := auth.IssueRefreshToken(
-		r.Config.Auth.JWTSecret,
-		r.Config.Auth.RefreshTokenTTL,
-		u.ID,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("internal error")
-	}
-
-	// Extract IP and User-Agent from HTTP request in context
-	ip, ua := "", ""
-	if req, ok := ctx.Value(httpRequestKey{}).(*http.Request); ok {
-		ip = req.RemoteAddr
-		ua = req.Header.Get("User-Agent")
-	}
-
-	if _, err := auth.CreateSession(ctx, r.DB, u.ID, refreshToken, ip, ua, r.Config.Auth.RefreshTokenTTL); err != nil {
-		return nil, fmt.Errorf("internal error")
-	}
-
-	return &graph.AuthPayload{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		User:         mapUser(u),
-	}, nil
-}
-
-// httpRequestKey is the context key for the HTTP request (injected by middleware).
-type httpRequestKey struct{}
-
-// WithHTTPRequest stores the HTTP request in context for resolvers to access metadata.
-func WithHTTPRequest(ctx context.Context, r *http.Request) context.Context {
-	return context.WithValue(ctx, httpRequestKey{}, r)
-}
-
-var _ = errors.New // suppress unused import if needed

@@ -3,6 +3,10 @@
 package graph
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,12 +18,34 @@ type AuthPayload struct {
 	User         *User  `json:"user"`
 }
 
+type ConnectProviderInput struct {
+	WorkspaceID uuid.UUID    `json:"workspaceId"`
+	Name        string       `json:"name"`
+	Type        ProviderType `json:"type"`
+	Credentials string       `json:"credentials"`
+}
+
 type CreateWorkspaceInput struct {
 	Name string `json:"name"`
 	Slug string `json:"slug"`
 }
 
 type Mutation struct {
+}
+
+type Provider struct {
+	ID          uuid.UUID      `json:"id"`
+	WorkspaceID uuid.UUID      `json:"workspaceId"`
+	Name        string         `json:"name"`
+	Type        ProviderType   `json:"type"`
+	AuthType    AuthType       `json:"authType"`
+	Status      ProviderStatus `json:"status"`
+	CreatedAt   time.Time      `json:"createdAt"`
+}
+
+type ProviderValidationResult struct {
+	Ok    bool    `json:"ok"`
+	Error *string `json:"error,omitempty"`
 }
 
 type Query struct {
@@ -51,6 +77,10 @@ type SignUpInput struct {
 	Password string `json:"password"`
 }
 
+type UpdateProviderInput struct {
+	Name *string `json:"name,omitempty"`
+}
+
 type UpdateWorkspaceInput struct {
 	Name *string `json:"name,omitempty"`
 }
@@ -76,4 +106,177 @@ type WorkspaceMember struct {
 	User     *User     `json:"user"`
 	Role     *Role     `json:"role"`
 	JoinedAt time.Time `json:"joinedAt"`
+}
+
+type AuthType string
+
+const (
+	AuthTypeOauth      AuthType = "oauth"
+	AuthTypeAPIKey     AuthType = "api_key"
+	AuthTypeCredential AuthType = "credential"
+	AuthTypeNone       AuthType = "none"
+)
+
+var AllAuthType = []AuthType{
+	AuthTypeOauth,
+	AuthTypeAPIKey,
+	AuthTypeCredential,
+	AuthTypeNone,
+}
+
+func (e AuthType) IsValid() bool {
+	switch e {
+	case AuthTypeOauth, AuthTypeAPIKey, AuthTypeCredential, AuthTypeNone:
+		return true
+	}
+	return false
+}
+
+func (e AuthType) String() string {
+	return string(e)
+}
+
+func (e *AuthType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AuthType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AuthType", str)
+	}
+	return nil
+}
+
+func (e AuthType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *AuthType) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e AuthType) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type ProviderStatus string
+
+const (
+	ProviderStatusActive       ProviderStatus = "active"
+	ProviderStatusDisconnected ProviderStatus = "disconnected"
+	ProviderStatusError        ProviderStatus = "error"
+)
+
+var AllProviderStatus = []ProviderStatus{
+	ProviderStatusActive,
+	ProviderStatusDisconnected,
+	ProviderStatusError,
+}
+
+func (e ProviderStatus) IsValid() bool {
+	switch e {
+	case ProviderStatusActive, ProviderStatusDisconnected, ProviderStatusError:
+		return true
+	}
+	return false
+}
+
+func (e ProviderStatus) String() string {
+	return string(e)
+}
+
+func (e *ProviderStatus) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ProviderStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ProviderStatus", str)
+	}
+	return nil
+}
+
+func (e ProviderStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ProviderStatus) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ProviderStatus) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type ProviderType string
+
+const (
+	ProviderTypeGoogleDrive ProviderType = "google_drive"
+	ProviderTypeS3          ProviderType = "s3"
+	ProviderTypeLocal       ProviderType = "local"
+)
+
+var AllProviderType = []ProviderType{
+	ProviderTypeGoogleDrive,
+	ProviderTypeS3,
+	ProviderTypeLocal,
+}
+
+func (e ProviderType) IsValid() bool {
+	switch e {
+	case ProviderTypeGoogleDrive, ProviderTypeS3, ProviderTypeLocal:
+		return true
+	}
+	return false
+}
+
+func (e ProviderType) String() string {
+	return string(e)
+}
+
+func (e *ProviderType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ProviderType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ProviderType", str)
+	}
+	return nil
+}
+
+func (e ProviderType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ProviderType) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ProviderType) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

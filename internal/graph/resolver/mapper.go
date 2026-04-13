@@ -30,14 +30,12 @@ func mapSession(s *ent.Session) *graph.Session {
 }
 
 func mapWorkspace(w *ent.Workspace) *graph.Workspace {
-	gw := &graph.Workspace{
+	return &graph.Workspace{
 		ID:        w.ID,
 		Name:      w.Name,
 		Slug:      w.Slug,
 		CreatedAt: w.CreatedAt,
 	}
-	// Edges are resolved lazily by field resolvers
-	return gw
 }
 
 func mapRole(r *ent.Role) *graph.Role {
@@ -45,6 +43,18 @@ func mapRole(r *ent.Role) *graph.Role {
 		ID:       r.ID,
 		Name:     r.Name,
 		IsSystem: r.IsSystem,
+	}
+}
+
+func mapProvider(p *ent.Provider) *graph.Provider {
+	return &graph.Provider{
+		ID:          p.ID,
+		WorkspaceID: p.WorkspaceID,
+		Name:        p.Name,
+		Type:        graph.ProviderType(p.Type),
+		AuthType:    graph.AuthType(p.AuthType),
+		Status:      graph.ProviderStatus(p.Status),
+		CreatedAt:   p.CreatedAt,
 	}
 }
 

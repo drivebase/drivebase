@@ -281,22 +281,3 @@ func (r *queryResolver) WorkspaceRoles(ctx context.Context, workspaceID uuid.UUI
 	}
 	return out, nil
 }
-
-// withTx runs fn inside a database transaction.
-func withTx(ctx context.Context, client *ent.Client, fn func(tx *ent.Tx) error) error {
-	tx, err := client.Tx(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if v := recover(); v != nil {
-			_ = tx.Rollback()
-			panic(v)
-		}
-	}()
-	if err := fn(tx); err != nil {
-		_ = tx.Rollback()
-		return err
-	}
-	return tx.Commit()
-}
