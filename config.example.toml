@@ -1,0 +1,38 @@
+# Drivebase configuration
+# Copy to config.toml and fill in required values.
+# All values can also be set via environment variables with the
+# DRIVEBASE_ prefix (e.g. DRIVEBASE_AUTH_JWTSECRET).
+# Environment variables take precedence over this file.
+
+[server]
+host = "0.0.0.0"
+port = 8080
+env  = "development"  # "development" | "production"
+
+[database]
+dsn = "postgres://drivebase:drivebase@localhost:5432/drivebase?sslmode=disable"
+
+[redis]
+url = "redis://localhost:6379/0"
+
+[auth]
+# REQUIRED — generate with: openssl rand -base64 64
+jwt_secret         = ""
+access_token_ttl   = "15m"
+refresh_token_ttl  = "168h"  # 7 days
+
+[crypto]
+# REQUIRED — must be at least 32 characters
+# Generate with: openssl rand -base64 32
+encryption_key = ""
+
+[cache]
+disk_path   = "/tmp/drivebase/cache"
+default_ttl = "5m"
+
+[worker]
+concurrency = 10
+
+[log]
+level  = "info"   # debug | info | warn | error
+format = "text"   # text | json
