@@ -10,10 +10,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"github.com/drivebase/drivebase/internal/cache"
 	"github.com/drivebase/drivebase/internal/config"
 	"github.com/drivebase/drivebase/internal/ent"
 	"github.com/drivebase/drivebase/internal/server"
+	"github.com/drivebase/drivebase/internal/worker"
 
 	"entgo.io/ent/dialect"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -37,7 +40,9 @@ func main() {
 	}
 	slog.SetDefault(slog.New(logHandler))
 
-	// Database
+	ctx := context.Background()
+
+	// Ent client (uses pgx stdlib driver)
 	client, err := ent.Open(dialect.Postgres, cfg.Database.DSN)
 	if err != nil {
 		slog.Error("failed to connect to database", "error", err)
@@ -46,26 +51,52 @@ func main() {
 	defer client.Close()
 
 	// Auto-migrate (dev mode — switch to Atlas versioned migrations before prod)
-	ctx := context.Background()
 	if err := client.Schema.Create(ctx); err != nil {
 		slog.Error("failed to run auto-migration", "error", err)
 		os.Exit(1)
 	}
 	slog.Info("database schema up to date")
 
-	// Redis (optional — file tree cache disabled if Redis unavailable)
+	// Redis (optional — cache/bandwidth disabled if Redis unavailable)
 	rdb, err := cache.NewRedisClient(cfg.Redis)
 	if err != nil {
-		slog.Warn("redis unavailable — file tree cache disabled", "error", err)
+		slog.Warn("redis unavailable — file tree cache and bandwidth tracking disabled", "error", err)
 		rdb = nil
 	} else {
 		slog.Info("redis connected")
 	}
 
+	// pgxpool for River (River requires a pgxpool, not the stdlib driver)
+	pgPool, err := pgxpool.New(ctx, cfg.Database.DSN)
+	if err != nil {
+		slog.Error("failed to create pgx pool for River", "error", err)
+		os.Exit(1)
+	}
+	defer pgPool.Close()
+
+	// Build bandwidth counter (nil-safe if Redis is unavailable)
+	var bwCounter *cache.BandwidthCounter
+	if rdb != nil {
+		bwCounter = cache.NewBandwidthCounter(rdb)
+	}
+
+	// River worker pool — also returns the wired transfer.Engine
+	workerPool, transferEngine, err := worker.New(ctx, pgPool, client, cfg.Crypto.EncryptionKey, bwCounter)
+	if err != nil {
+		slog.Error("failed to create River worker pool", "error", err)
+		os.Exit(1)
+	}
+
+	if err := workerPool.Start(ctx); err != nil {
+		slog.Error("failed to start River worker pool", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("River worker pool started")
+
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	srv := &http.Server{
 		Addr:         addr,
-		Handler:      server.New(cfg, client, rdb),
+		Handler:      server.New(cfg, client, rdb, transferEngine),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 60 * time.Second,
 		IdleTimeout:  120 * time.Second,
@@ -88,8 +119,12 @@ func main() {
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
+
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		slog.Error("shutdown error", "error", err)
+	}
+	if err := workerPool.Stop(shutdownCtx); err != nil {
+		slog.Error("worker pool stop error", "error", err)
 	}
 }
 

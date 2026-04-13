@@ -16,10 +16,17 @@ import (
 	"github.com/google/uuid"
 )
 
+// JobDispatcher enqueues a River sync job by transfer job ID.
+// Set on Engine when the River worker pool is running; nil = goroutine fallback.
+type JobDispatcher interface {
+	InsertSyncJob(ctx context.Context, jobID uuid.UUID) error
+}
+
 // Engine executes cross-provider transfers and syncs.
 type Engine struct {
-	DB     *ent.Client
-	EncKey string
+	DB         *ent.Client
+	EncKey     string
+	Dispatcher JobDispatcher // optional; nil → goroutine
 }
 
 // SyncOptions describes a folder-to-folder sync between two providers.
@@ -49,9 +56,34 @@ func (e *Engine) StartSync(ctx context.Context, opts SyncOptions) (*ent.Transfer
 		return nil, fmt.Errorf("transfer: create job: %w", err)
 	}
 
-	// Run async — Phase 7 will move this to a River job
-	go e.runSync(context.Background(), job.ID, opts)
+	// Dispatch via River when available; fall back to goroutine for tests
+	if e.Dispatcher != nil {
+		if err := e.Dispatcher.InsertSyncJob(ctx, job.ID); err != nil {
+			return nil, fmt.Errorf("transfer: enqueue job: %w", err)
+		}
+		return job, nil
+	}
+	go e.RunSync(context.Background(), job.ID)
 	return job, nil
+}
+
+// RunSync executes the sync for an existing TransferJob record.
+// Options are re-hydrated from the DB so the River worker only needs the jobID.
+func (e *Engine) RunSync(ctx context.Context, jobID uuid.UUID) {
+	job, err := e.DB.TransferJob.Get(ctx, jobID)
+	if err != nil {
+		slog.Error("transfer: load job", "job_id", jobID, "error", err)
+		return
+	}
+	opts := SyncOptions{
+		WorkspaceID:          job.WorkspaceID,
+		SourceProviderID:     job.SourceProviderID,
+		DestProviderID:       job.DestProviderID,
+		SourceFolderRemoteID: job.SourceFolderRemoteID,
+		DestFolderRemoteID:   job.DestFolderRemoteID,
+		ConflictStrategy:     entschema.ConflictStrategy(job.ConflictStrategy),
+	}
+	e.runSync(ctx, jobID, opts)
 }
 
 // runSync executes the sync and updates the job record throughout.
