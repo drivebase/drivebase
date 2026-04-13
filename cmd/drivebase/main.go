@@ -12,6 +12,7 @@ import (
 
 	"github.com/drivebase/drivebase/internal/config"
 	"github.com/drivebase/drivebase/internal/ent"
+	"github.com/drivebase/drivebase/internal/server"
 
 	"entgo.io/ent/dialect"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -51,12 +52,10 @@ func main() {
 	}
 	slog.Info("database schema up to date")
 
-	// TODO: wire up Redis, storage registry, River worker, GraphQL server
-	// (subsequent phases)
-
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	srv := &http.Server{
 		Addr:         addr,
+		Handler:      server.New(cfg, client),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 60 * time.Second,
 		IdleTimeout:  120 * time.Second,

@@ -1,0 +1,46 @@
+extend type Query {
+  me: User!
+  mySessions: [Session!]!
+}
+
+extend type Mutation {
+  signUp(input: SignUpInput!): AuthPayload!
+  signIn(input: SignInInput!): AuthPayload!
+  refreshToken(token: String!): AuthPayload!
+  signOut: Boolean!
+  revokeSession(sessionId: UUID!): Boolean!
+}
+
+type AuthPayload {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+}
+
+type User {
+  id: UUID!
+  email: String!
+  name: String!
+  createdAt: Time!
+}
+
+type Session {
+  id: UUID!
+  ipAddress: String
+  userAgent: String
+  createdAt: Time!
+  expiresAt: Time!
+}
+
+input SignUpInput {
+  email: String!
+  name: String!
+  password: String!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+  # workspaceSlug is optional — if provided, the access token is scoped to that workspace
+  workspaceSlug: String
+}

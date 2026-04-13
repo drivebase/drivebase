@@ -1,0 +1,5 @@
+scalar UUID
+scalar Time
+
+type Query
+type Mutation
