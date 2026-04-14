@@ -74,7 +74,11 @@ func (p *localProvider) Validate(_ context.Context) error {
 	info, err := os.Stat(p.basePath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("local: base_path %q does not exist", p.basePath)
+			// Auto-create the directory on first connect
+			if mkErr := os.MkdirAll(p.basePath, 0755); mkErr != nil {
+				return fmt.Errorf("local: could not create base_path %q: %w", p.basePath, mkErr)
+			}
+			return nil
 		}
 		return fmt.Errorf("local: %w", err)
 	}
