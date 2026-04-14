@@ -1,8 +1,11 @@
 package server
 
 import (
+	"context"
+	"log/slog"
 	"net/http"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
@@ -10,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/cors"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 
 	"github.com/drivebase/drivebase/internal/auth"
 	"github.com/drivebase/drivebase/internal/cache"
@@ -106,6 +110,17 @@ func newGQLServer(cfg *config.Config, db *ent.Client, rdb *redis.Client, transfe
 	if cfg.Server.Env != "production" {
 		srv.Use(extension.Introspection{})
 	}
+
+	// Log resolver errors server-side (they're silently swallowed by default)
+	srv.SetErrorPresenter(func(ctx context.Context, err error) *gqlerror.Error {
+		gqlErr := graphql.DefaultErrorPresenter(ctx, err)
+		oc := graphql.GetOperationContext(ctx)
+		slog.Error("graphql error",
+			"op", oc.OperationName,
+			"error", err.Error(),
+		)
+		return gqlErr
+	})
 
 	return srv
 }
