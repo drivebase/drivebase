@@ -11,6 +11,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/filenode"
 	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/oauthstate"
+	"github.com/drivebase/drivebase/internal/ent/passwordreset"
 	"github.com/drivebase/drivebase/internal/ent/permission"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
@@ -173,6 +174,24 @@ func init() {
 	oauthstateDescID := oauthstateFields[0].Descriptor()
 	// oauthstate.DefaultID holds the default value on creation for the id field.
 	oauthstate.DefaultID = oauthstateDescID.Default.(func() uuid.UUID)
+	passwordresetFields := schema.PasswordReset{}.Fields()
+	_ = passwordresetFields
+	// passwordresetDescEmail is the schema descriptor for email field.
+	passwordresetDescEmail := passwordresetFields[1].Descriptor()
+	// passwordreset.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	passwordreset.EmailValidator = passwordresetDescEmail.Validators[0].(func(string) error)
+	// passwordresetDescOtp is the schema descriptor for otp field.
+	passwordresetDescOtp := passwordresetFields[2].Descriptor()
+	// passwordreset.OtpValidator is a validator for the "otp" field. It is called by the builders before save.
+	passwordreset.OtpValidator = passwordresetDescOtp.Validators[0].(func(string) error)
+	// passwordresetDescCreatedAt is the schema descriptor for created_at field.
+	passwordresetDescCreatedAt := passwordresetFields[5].Descriptor()
+	// passwordreset.DefaultCreatedAt holds the default value on creation for the created_at field.
+	passwordreset.DefaultCreatedAt = passwordresetDescCreatedAt.Default.(func() time.Time)
+	// passwordresetDescID is the schema descriptor for id field.
+	passwordresetDescID := passwordresetFields[0].Descriptor()
+	// passwordreset.DefaultID holds the default value on creation for the id field.
+	passwordreset.DefaultID = passwordresetDescID.Default.(func() uuid.UUID)
 	permissionFields := schema.Permission{}.Fields()
 	_ = permissionFields
 	// permissionDescResourceType is the schema descriptor for resource_type field.

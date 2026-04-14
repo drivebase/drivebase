@@ -156,6 +156,16 @@ func (r *mutationResolver) RevokeSession(ctx context.Context, sessionID uuid.UUI
 	return true, nil
 }
 
+// RequestPasswordReset is the resolver for the requestPasswordReset field.
+func (r *mutationResolver) RequestPasswordReset(ctx context.Context, email string) (bool, error) {
+	return r.requestPasswordReset(ctx, email)
+}
+
+// ResetPassword is the resolver for the resetPassword field.
+func (r *mutationResolver) ResetPassword(ctx context.Context, email string, otp string, newPassword string) (bool, error) {
+	return r.resetPassword(ctx, email, otp, newPassword)
+}
+
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*graph.User, error) {
 	u, err := auth.UserFromCtx(ctx)

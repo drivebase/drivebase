@@ -24,6 +24,8 @@ type Tx struct {
 	OAuthApp *OAuthAppClient
 	// OAuthState is the client for interacting with the OAuthState builders.
 	OAuthState *OAuthStateClient
+	// PasswordReset is the client for interacting with the PasswordReset builders.
+	PasswordReset *PasswordResetClient
 	// Permission is the client for interacting with the Permission builders.
 	Permission *PermissionClient
 	// Provider is the client for interacting with the Provider builders.
@@ -189,6 +191,7 @@ func (tx *Tx) init() {
 	tx.FileNode = NewFileNodeClient(tx.config)
 	tx.OAuthApp = NewOAuthAppClient(tx.config)
 	tx.OAuthState = NewOAuthStateClient(tx.config)
+	tx.PasswordReset = NewPasswordResetClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Provider = NewProviderClient(tx.config)
 	tx.ProviderCredential = NewProviderCredentialClient(tx.config)

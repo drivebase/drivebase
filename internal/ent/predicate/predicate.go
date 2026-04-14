@@ -24,6 +24,9 @@ type OAuthApp func(*sql.Selector)
 // OAuthState is the predicate function for oauthstate builders.
 type OAuthState func(*sql.Selector)
 
+// PasswordReset is the predicate function for passwordreset builders.
+type PasswordReset func(*sql.Selector)
+
 // Permission is the predicate function for permission builders.
 type Permission func(*sql.Selector)
 

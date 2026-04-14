@@ -81,6 +81,18 @@ func (f OAuthStateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OAuthStateMutation", m)
 }
 
+// The PasswordResetFunc type is an adapter to allow the use of ordinary
+// function as PasswordReset mutator.
+type PasswordResetFunc func(context.Context, *ent.PasswordResetMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PasswordResetFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PasswordResetMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PasswordResetMutation", m)
+}
+
 // The PermissionFunc type is an adapter to allow the use of ordinary
 // function as Permission mutator.
 type PermissionFunc func(context.Context, *ent.PermissionMutation) (ent.Value, error)

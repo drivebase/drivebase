@@ -10,6 +10,8 @@ extend type Mutation {
   switchWorkspace(workspaceID: UUID!): SwitchWorkspacePayload!
   signOut: Boolean!
   revokeSession(sessionId: UUID!): Boolean!
+  requestPasswordReset(email: String!): Boolean!
+  resetPassword(email: String!, otp: String!, newPassword: String!): Boolean!
 }
 
 # switchWorkspace returns a new workspace-scoped access token without re-authentication.

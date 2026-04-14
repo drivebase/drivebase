@@ -217,6 +217,28 @@ var (
 			},
 		},
 	}
+	// PasswordResetsColumns holds the columns for the "password_resets" table.
+	PasswordResetsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "email", Type: field.TypeString},
+		{Name: "otp", Type: field.TypeString},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// PasswordResetsTable holds the schema information for the "password_resets" table.
+	PasswordResetsTable = &schema.Table{
+		Name:       "password_resets",
+		Columns:    PasswordResetsColumns,
+		PrimaryKey: []*schema.Column{PasswordResetsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "passwordreset_email",
+				Unique:  false,
+				Columns: []*schema.Column{PasswordResetsColumns[1]},
+			},
+		},
+	}
 	// PermissionsColumns holds the columns for the "permissions" table.
 	PermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -664,6 +686,7 @@ var (
 		FileNodesTable,
 		OauthAppsTable,
 		OauthStatesTable,
+		PasswordResetsTable,
 		PermissionsTable,
 		ProvidersTable,
 		ProviderCredentialsTable,
