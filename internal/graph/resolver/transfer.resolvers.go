@@ -19,7 +19,11 @@ import (
 
 // StartFolderSync is the resolver for the startFolderSync field.
 func (r *mutationResolver) StartFolderSync(ctx context.Context, input graph.StartFolderSyncInput) (*graph.TransferJob, error) {
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), input.WorkspaceID, string(entschema.ActionWrite)); err != nil {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
+	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionWrite)); err != nil {
 		return nil, err
 	}
 
@@ -29,7 +33,7 @@ func (r *mutationResolver) StartFolderSync(ctx context.Context, input graph.Star
 		if err != nil {
 			return nil, fmt.Errorf("provider %s not found", provID)
 		}
-		if p.WorkspaceID != input.WorkspaceID {
+		if p.WorkspaceID != workspaceID {
 			return nil, fmt.Errorf("provider %s does not belong to this workspace", provID)
 		}
 	}
@@ -49,7 +53,7 @@ func (r *mutationResolver) StartFolderSync(ctx context.Context, input graph.Star
 	}
 
 	job, err := r.Transfer.StartSync(ctx, transfer.SyncOptions{
-		WorkspaceID:          input.WorkspaceID,
+		WorkspaceID:          workspaceID,
 		SourceProviderID:     input.SourceProviderID,
 		SourceFolderRemoteID: sourceFolderID,
 		DestProviderID:       input.DestProviderID,
@@ -93,7 +97,11 @@ func (r *queryResolver) TransferJob(ctx context.Context, id uuid.UUID) (*graph.T
 }
 
 // MyTransferJobs is the resolver for the myTransferJobs field.
-func (r *queryResolver) MyTransferJobs(ctx context.Context, workspaceID uuid.UUID) ([]*graph.TransferJob, error) {
+func (r *queryResolver) MyTransferJobs(ctx context.Context) ([]*graph.TransferJob, error) {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
 	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
 		return nil, err
 	}

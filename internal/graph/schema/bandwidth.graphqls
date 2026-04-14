@@ -9,7 +9,6 @@ type BandwidthSummary {
 extend type Query {
     # Returns aggregated bandwidth usage. Optionally filter by provider and time range.
     bandwidthUsage(
-        workspaceID: UUID!
         providerID: UUID
         from: Time
         to: Time

@@ -1,16 +1,16 @@
 extend type Query {
   workspace(id: UUID!): Workspace!
   myWorkspaces: [Workspace!]!
-  workspaceRoles(workspaceId: UUID!): [Role!]!
+  workspaceRoles: [Role!]!
 }
 
 extend type Mutation {
   createWorkspace(input: CreateWorkspaceInput!): Workspace!
   updateWorkspace(id: UUID!, input: UpdateWorkspaceInput!): Workspace!
   deleteWorkspace(id: UUID!): Boolean!
-  inviteMember(workspaceId: UUID!, email: String!, roleId: UUID!): WorkspaceMember!
-  removeMember(workspaceId: UUID!, userId: UUID!): Boolean!
-  updateMemberRole(workspaceId: UUID!, userId: UUID!, roleId: UUID!): WorkspaceMember!
+  inviteMember(email: String!, roleId: UUID!): WorkspaceMember!
+  removeMember(userId: UUID!): Boolean!
+  updateMemberRole(userId: UUID!, roleId: UUID!): WorkspaceMember!
 }
 
 type Workspace {

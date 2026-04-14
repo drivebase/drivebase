@@ -366,7 +366,11 @@ func (r *queryResolver) UploadBatch(ctx context.Context, id uuid.UUID) (*graph.U
 }
 
 // MyUploadBatches is the resolver for the myUploadBatches field.
-func (r *queryResolver) MyUploadBatches(ctx context.Context, workspaceID uuid.UUID) ([]*graph.UploadBatch, error) {
+func (r *queryResolver) MyUploadBatches(ctx context.Context) ([]*graph.UploadBatch, error) {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
 	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
 		return nil, err
 	}

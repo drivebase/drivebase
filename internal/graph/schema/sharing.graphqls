@@ -21,7 +21,6 @@ type SharedLinkPermissions {
 }
 
 input CreateSharedLinkInput {
-    workspaceID: UUID!
     fileNodeID: UUID!
     password: String
     expiresAt: Time
@@ -44,7 +43,7 @@ extend type Mutation {
 }
 
 extend type Query {
-    sharedLinks(workspaceID: UUID!): [SharedLink!]!
+    sharedLinks: [SharedLink!]!
     # Public query — no auth required, used to display share page metadata.
     sharedLinkByToken(token: String!): SharedLink
 }

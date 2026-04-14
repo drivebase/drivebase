@@ -27,7 +27,6 @@ type BandwidthSummary struct {
 }
 
 type ConnectProviderInput struct {
-	WorkspaceID uuid.UUID    `json:"workspaceId"`
 	Name        string       `json:"name"`
 	Type        ProviderType `json:"type"`
 	Credentials string       `json:"credentials"`
@@ -40,7 +39,6 @@ type CreateFolderInput struct {
 }
 
 type CreateSharedLinkInput struct {
-	WorkspaceID uuid.UUID                   `json:"workspaceID"`
 	FileNodeID  uuid.UUID                   `json:"fileNodeID"`
 	Password    *string                     `json:"password,omitempty"`
 	ExpiresAt   *time.Time                  `json:"expiresAt,omitempty"`
@@ -188,7 +186,6 @@ type SignUpInput struct {
 }
 
 type StartFolderSyncInput struct {
-	WorkspaceID          uuid.UUID         `json:"workspaceID"`
 	SourceProviderID     uuid.UUID         `json:"sourceProviderID"`
 	SourceFolderRemoteID *string           `json:"sourceFolderRemoteID,omitempty"`
 	DestProviderID       uuid.UUID         `json:"destProviderID"`

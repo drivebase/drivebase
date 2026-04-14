@@ -41,7 +41,11 @@ func (r *mutationResolver) GenerateTempLink(ctx context.Context, fileNodeID uuid
 }
 
 // BandwidthUsage is the resolver for the bandwidthUsage field.
-func (r *queryResolver) BandwidthUsage(ctx context.Context, workspaceID uuid.UUID, providerID *uuid.UUID, from *time.Time, to *time.Time) ([]*graph.BandwidthSummary, error) {
+func (r *queryResolver) BandwidthUsage(ctx context.Context, providerID *uuid.UUID, from *time.Time, to *time.Time) ([]*graph.BandwidthSummary, error) {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
 	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
 		return nil, err
 	}

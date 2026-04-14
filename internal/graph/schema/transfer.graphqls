@@ -25,7 +25,6 @@ type TransferJob {
 }
 
 input StartFolderSyncInput {
-  workspaceID: UUID!
   sourceProviderID: UUID!
   # Use "" or "." for root.
   sourceFolderRemoteID: String
@@ -42,5 +41,5 @@ extend type Mutation {
 
 extend type Query {
   transferJob(id: UUID!): TransferJob!
-  myTransferJobs(workspaceID: UUID!): [TransferJob!]!
+  myTransferJobs: [TransferJob!]!
 }

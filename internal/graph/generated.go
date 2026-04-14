@@ -81,11 +81,11 @@ type ComplexityRoot struct {
 		DeleteWorkspace      func(childComplexity int, id uuid.UUID) int
 		DisconnectProvider   func(childComplexity int, id uuid.UUID) int
 		GenerateTempLink     func(childComplexity int, fileNodeID uuid.UUID, ttlSeconds *int) int
-		InviteMember         func(childComplexity int, workspaceID uuid.UUID, email string, roleID uuid.UUID) int
+		InviteMember         func(childComplexity int, email string, roleID uuid.UUID) int
 		MoveFile             func(childComplexity int, input MoveFileInput) int
 		RefreshProviderQuota func(childComplexity int, providerID uuid.UUID) int
 		RefreshToken         func(childComplexity int, token string) int
-		RemoveMember         func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID) int
+		RemoveMember         func(childComplexity int, userID uuid.UUID) int
 		RenameFile           func(childComplexity int, input RenameFileInput) int
 		RevokeSession        func(childComplexity int, sessionID uuid.UUID) int
 		RevokeSharedLink     func(childComplexity int, id uuid.UUID) int
@@ -95,7 +95,7 @@ type ComplexityRoot struct {
 		StartFolderSync      func(childComplexity int, input StartFolderSyncInput) int
 		SwitchWorkspace      func(childComplexity int, workspaceID uuid.UUID) int
 		SyncProvider         func(childComplexity int, providerID uuid.UUID) int
-		UpdateMemberRole     func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID, roleID uuid.UUID) int
+		UpdateMemberRole     func(childComplexity int, userID uuid.UUID, roleID uuid.UUID) int
 		UpdateProvider       func(childComplexity int, id uuid.UUID, input UpdateProviderInput) int
 		UpdateWorkspace      func(childComplexity int, id uuid.UUID, input UpdateWorkspaceInput) int
 		ValidateProvider     func(childComplexity int, id uuid.UUID) int
@@ -129,23 +129,23 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		BandwidthUsage    func(childComplexity int, workspaceID uuid.UUID, providerID *uuid.UUID, from *time.Time, to *time.Time) int
+		BandwidthUsage    func(childComplexity int, providerID *uuid.UUID, from *time.Time, to *time.Time) int
 		GetFile           func(childComplexity int, providerID uuid.UUID, fileNodeID uuid.UUID) int
 		ListFiles         func(childComplexity int, input ListFilesInput) int
 		Me                func(childComplexity int) int
 		MySessions        func(childComplexity int) int
-		MyTransferJobs    func(childComplexity int, workspaceID uuid.UUID) int
-		MyUploadBatches   func(childComplexity int, workspaceID uuid.UUID) int
+		MyTransferJobs    func(childComplexity int) int
+		MyUploadBatches   func(childComplexity int) int
 		MyWorkspaces      func(childComplexity int) int
 		Provider          func(childComplexity int, id uuid.UUID) int
 		ProviderQuota     func(childComplexity int, providerID uuid.UUID) int
-		Providers         func(childComplexity int, workspaceID uuid.UUID) int
+		Providers         func(childComplexity int) int
 		SharedLinkByToken func(childComplexity int, token string) int
-		SharedLinks       func(childComplexity int, workspaceID uuid.UUID) int
+		SharedLinks       func(childComplexity int) int
 		TransferJob       func(childComplexity int, id uuid.UUID) int
 		UploadBatch       func(childComplexity int, id uuid.UUID) int
 		Workspace         func(childComplexity int, id uuid.UUID) int
-		WorkspaceRoles    func(childComplexity int, workspaceID uuid.UUID) int
+		WorkspaceRoles    func(childComplexity int) int
 	}
 
 	Role struct {
@@ -272,28 +272,28 @@ type MutationResolver interface {
 	CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*Workspace, error)
 	UpdateWorkspace(ctx context.Context, id uuid.UUID, input UpdateWorkspaceInput) (*Workspace, error)
 	DeleteWorkspace(ctx context.Context, id uuid.UUID) (bool, error)
-	InviteMember(ctx context.Context, workspaceID uuid.UUID, email string, roleID uuid.UUID) (*WorkspaceMember, error)
-	RemoveMember(ctx context.Context, workspaceID uuid.UUID, userID uuid.UUID) (bool, error)
-	UpdateMemberRole(ctx context.Context, workspaceID uuid.UUID, userID uuid.UUID, roleID uuid.UUID) (*WorkspaceMember, error)
+	InviteMember(ctx context.Context, email string, roleID uuid.UUID) (*WorkspaceMember, error)
+	RemoveMember(ctx context.Context, userID uuid.UUID) (bool, error)
+	UpdateMemberRole(ctx context.Context, userID uuid.UUID, roleID uuid.UUID) (*WorkspaceMember, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*User, error)
 	MySessions(ctx context.Context) ([]*Session, error)
-	BandwidthUsage(ctx context.Context, workspaceID uuid.UUID, providerID *uuid.UUID, from *time.Time, to *time.Time) ([]*BandwidthSummary, error)
+	BandwidthUsage(ctx context.Context, providerID *uuid.UUID, from *time.Time, to *time.Time) ([]*BandwidthSummary, error)
 	ListFiles(ctx context.Context, input ListFilesInput) (*ListFilesResult, error)
 	GetFile(ctx context.Context, providerID uuid.UUID, fileNodeID uuid.UUID) (*FileNode, error)
 	UploadBatch(ctx context.Context, id uuid.UUID) (*UploadBatch, error)
-	MyUploadBatches(ctx context.Context, workspaceID uuid.UUID) ([]*UploadBatch, error)
-	Providers(ctx context.Context, workspaceID uuid.UUID) ([]*Provider, error)
+	MyUploadBatches(ctx context.Context) ([]*UploadBatch, error)
+	Providers(ctx context.Context) ([]*Provider, error)
 	Provider(ctx context.Context, id uuid.UUID) (*Provider, error)
 	ProviderQuota(ctx context.Context, providerID uuid.UUID) (*ProviderQuota, error)
-	SharedLinks(ctx context.Context, workspaceID uuid.UUID) ([]*SharedLink, error)
+	SharedLinks(ctx context.Context) ([]*SharedLink, error)
 	SharedLinkByToken(ctx context.Context, token string) (*SharedLink, error)
 	TransferJob(ctx context.Context, id uuid.UUID) (*TransferJob, error)
-	MyTransferJobs(ctx context.Context, workspaceID uuid.UUID) ([]*TransferJob, error)
+	MyTransferJobs(ctx context.Context) ([]*TransferJob, error)
 	Workspace(ctx context.Context, id uuid.UUID) (*Workspace, error)
 	MyWorkspaces(ctx context.Context) ([]*Workspace, error)
-	WorkspaceRoles(ctx context.Context, workspaceID uuid.UUID) ([]*Role, error)
+	WorkspaceRoles(ctx context.Context) ([]*Role, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -555,7 +555,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.InviteMember(childComplexity, args["workspaceId"].(uuid.UUID), args["email"].(string), args["roleId"].(uuid.UUID)), true
+		return e.ComplexityRoot.Mutation.InviteMember(childComplexity, args["email"].(string), args["roleId"].(uuid.UUID)), true
 	case "Mutation.moveFile":
 		if e.ComplexityRoot.Mutation.MoveFile == nil {
 			break
@@ -599,7 +599,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.RemoveMember(childComplexity, args["workspaceId"].(uuid.UUID), args["userId"].(uuid.UUID)), true
+		return e.ComplexityRoot.Mutation.RemoveMember(childComplexity, args["userId"].(uuid.UUID)), true
 	case "Mutation.renameFile":
 		if e.ComplexityRoot.Mutation.RenameFile == nil {
 			break
@@ -704,7 +704,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.UpdateMemberRole(childComplexity, args["workspaceId"].(uuid.UUID), args["userId"].(uuid.UUID), args["roleId"].(uuid.UUID)), true
+		return e.ComplexityRoot.Mutation.UpdateMemberRole(childComplexity, args["userId"].(uuid.UUID), args["roleId"].(uuid.UUID)), true
 	case "Mutation.updateProvider":
 		if e.ComplexityRoot.Mutation.UpdateProvider == nil {
 			break
@@ -860,7 +860,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Query.BandwidthUsage(childComplexity, args["workspaceID"].(uuid.UUID), args["providerID"].(*uuid.UUID), args["from"].(*time.Time), args["to"].(*time.Time)), true
+		return e.ComplexityRoot.Query.BandwidthUsage(childComplexity, args["providerID"].(*uuid.UUID), args["from"].(*time.Time), args["to"].(*time.Time)), true
 	case "Query.getFile":
 		if e.ComplexityRoot.Query.GetFile == nil {
 			break
@@ -901,23 +901,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		args, err := ec.field_Query_myTransferJobs_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Query.MyTransferJobs(childComplexity, args["workspaceID"].(uuid.UUID)), true
+		return e.ComplexityRoot.Query.MyTransferJobs(childComplexity), true
 	case "Query.myUploadBatches":
 		if e.ComplexityRoot.Query.MyUploadBatches == nil {
 			break
 		}
 
-		args, err := ec.field_Query_myUploadBatches_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Query.MyUploadBatches(childComplexity, args["workspaceID"].(uuid.UUID)), true
+		return e.ComplexityRoot.Query.MyUploadBatches(childComplexity), true
 	case "Query.myWorkspaces":
 		if e.ComplexityRoot.Query.MyWorkspaces == nil {
 			break
@@ -951,12 +941,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		args, err := ec.field_Query_providers_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Query.Providers(childComplexity, args["workspaceId"].(uuid.UUID)), true
+		return e.ComplexityRoot.Query.Providers(childComplexity), true
 	case "Query.sharedLinkByToken":
 		if e.ComplexityRoot.Query.SharedLinkByToken == nil {
 			break
@@ -973,12 +958,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		args, err := ec.field_Query_sharedLinks_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Query.SharedLinks(childComplexity, args["workspaceID"].(uuid.UUID)), true
+		return e.ComplexityRoot.Query.SharedLinks(childComplexity), true
 	case "Query.transferJob":
 		if e.ComplexityRoot.Query.TransferJob == nil {
 			break
@@ -1017,12 +997,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		args, err := ec.field_Query_workspaceRoles_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Query.WorkspaceRoles(childComplexity, args["workspaceId"].(uuid.UUID)), true
+		return e.ComplexityRoot.Query.WorkspaceRoles(childComplexity), true
 
 	case "Role.id":
 		if e.ComplexityRoot.Role.ID == nil {
@@ -1672,21 +1647,16 @@ func (ec *executionContext) field_Mutation_generateTempLink_args(ctx context.Con
 func (ec *executionContext) field_Mutation_inviteMember_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "email", ec.unmarshalNString2string)
 	if err != nil {
 		return nil, err
 	}
-	args["workspaceId"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "email", ec.unmarshalNString2string)
+	args["email"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "roleId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
 	if err != nil {
 		return nil, err
 	}
-	args["email"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "roleId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["roleId"] = arg2
+	args["roleId"] = arg1
 	return args, nil
 }
 
@@ -1726,16 +1696,11 @@ func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context
 func (ec *executionContext) field_Mutation_removeMember_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "userId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
 	if err != nil {
 		return nil, err
 	}
-	args["workspaceId"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "userId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["userId"] = arg1
+	args["userId"] = arg0
 	return args, nil
 }
 
@@ -1830,21 +1795,16 @@ func (ec *executionContext) field_Mutation_syncProvider_args(ctx context.Context
 func (ec *executionContext) field_Mutation_updateMemberRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "userId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
 	if err != nil {
 		return nil, err
 	}
-	args["workspaceId"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "userId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	args["userId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "roleId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
 	if err != nil {
 		return nil, err
 	}
-	args["userId"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "roleId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["roleId"] = arg2
+	args["roleId"] = arg1
 	return args, nil
 }
 
@@ -1905,26 +1865,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_bandwidthUsage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "providerID", ec.unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID)
 	if err != nil {
 		return nil, err
 	}
-	args["workspaceID"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "providerID", ec.unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID)
+	args["providerID"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "from", ec.unmarshalOTime2ᚖtimeᚐTime)
 	if err != nil {
 		return nil, err
 	}
-	args["providerID"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "from", ec.unmarshalOTime2ᚖtimeᚐTime)
+	args["from"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "to", ec.unmarshalOTime2ᚖtimeᚐTime)
 	if err != nil {
 		return nil, err
 	}
-	args["from"] = arg2
-	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "to", ec.unmarshalOTime2ᚖtimeᚐTime)
-	if err != nil {
-		return nil, err
-	}
-	args["to"] = arg3
+	args["to"] = arg2
 	return args, nil
 }
 
@@ -1955,28 +1910,6 @@ func (ec *executionContext) field_Query_listFiles_args(ctx context.Context, rawA
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_myTransferJobs_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["workspaceID"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_myUploadBatches_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["workspaceID"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Query_providerQuota_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1999,17 +1932,6 @@ func (ec *executionContext) field_Query_provider_args(ctx context.Context, rawAr
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_providers_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["workspaceId"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Query_sharedLinkByToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -2018,17 +1940,6 @@ func (ec *executionContext) field_Query_sharedLinkByToken_args(ctx context.Conte
 		return nil, err
 	}
 	args["token"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_sharedLinks_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["workspaceID"] = arg0
 	return args, nil
 }
 
@@ -2051,17 +1962,6 @@ func (ec *executionContext) field_Query_uploadBatch_args(ctx context.Context, ra
 		return nil, err
 	}
 	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_workspaceRoles_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["workspaceId"] = arg0
 	return args, nil
 }
 
@@ -4034,7 +3934,7 @@ func (ec *executionContext) _Mutation_inviteMember(ctx context.Context, field gr
 		ec.fieldContext_Mutation_inviteMember,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().InviteMember(ctx, fc.Args["workspaceId"].(uuid.UUID), fc.Args["email"].(string), fc.Args["roleId"].(uuid.UUID))
+			return ec.Resolvers.Mutation().InviteMember(ctx, fc.Args["email"].(string), fc.Args["roleId"].(uuid.UUID))
 		},
 		nil,
 		ec.marshalNWorkspaceMember2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceMember,
@@ -4085,7 +3985,7 @@ func (ec *executionContext) _Mutation_removeMember(ctx context.Context, field gr
 		ec.fieldContext_Mutation_removeMember,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().RemoveMember(ctx, fc.Args["workspaceId"].(uuid.UUID), fc.Args["userId"].(uuid.UUID))
+			return ec.Resolvers.Mutation().RemoveMember(ctx, fc.Args["userId"].(uuid.UUID))
 		},
 		nil,
 		ec.marshalNBoolean2bool,
@@ -4126,7 +4026,7 @@ func (ec *executionContext) _Mutation_updateMemberRole(ctx context.Context, fiel
 		ec.fieldContext_Mutation_updateMemberRole,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().UpdateMemberRole(ctx, fc.Args["workspaceId"].(uuid.UUID), fc.Args["userId"].(uuid.UUID), fc.Args["roleId"].(uuid.UUID))
+			return ec.Resolvers.Mutation().UpdateMemberRole(ctx, fc.Args["userId"].(uuid.UUID), fc.Args["roleId"].(uuid.UUID))
 		},
 		nil,
 		ec.marshalNWorkspaceMember2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceMember,
@@ -4797,7 +4697,7 @@ func (ec *executionContext) _Query_bandwidthUsage(ctx context.Context, field gra
 		ec.fieldContext_Query_bandwidthUsage,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().BandwidthUsage(ctx, fc.Args["workspaceID"].(uuid.UUID), fc.Args["providerID"].(*uuid.UUID), fc.Args["from"].(*time.Time), fc.Args["to"].(*time.Time))
+			return ec.Resolvers.Query().BandwidthUsage(ctx, fc.Args["providerID"].(*uuid.UUID), fc.Args["from"].(*time.Time), fc.Args["to"].(*time.Time))
 		},
 		nil,
 		ec.marshalNBandwidthSummary2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐBandwidthSummaryᚄ,
@@ -5030,8 +4930,7 @@ func (ec *executionContext) _Query_myUploadBatches(ctx context.Context, field gr
 		field,
 		ec.fieldContext_Query_myUploadBatches,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().MyUploadBatches(ctx, fc.Args["workspaceID"].(uuid.UUID))
+			return ec.Resolvers.Query().MyUploadBatches(ctx)
 		},
 		nil,
 		ec.marshalNUploadBatch2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐUploadBatchᚄ,
@@ -5040,7 +4939,7 @@ func (ec *executionContext) _Query_myUploadBatches(ctx context.Context, field gr
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_myUploadBatches(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_myUploadBatches(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -5076,17 +4975,6 @@ func (ec *executionContext) fieldContext_Query_myUploadBatches(ctx context.Conte
 			return nil, fmt.Errorf("no field named %q was found under type UploadBatch", field.Name)
 		},
 	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_myUploadBatches_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
 	return fc, nil
 }
 
@@ -5097,8 +4985,7 @@ func (ec *executionContext) _Query_providers(ctx context.Context, field graphql.
 		field,
 		ec.fieldContext_Query_providers,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().Providers(ctx, fc.Args["workspaceId"].(uuid.UUID))
+			return ec.Resolvers.Query().Providers(ctx)
 		},
 		nil,
 		ec.marshalNProvider2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderᚄ,
@@ -5107,7 +4994,7 @@ func (ec *executionContext) _Query_providers(ctx context.Context, field graphql.
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_providers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_providers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -5134,17 +5021,6 @@ func (ec *executionContext) fieldContext_Query_providers(ctx context.Context, fi
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Provider", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_providers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -5274,8 +5150,7 @@ func (ec *executionContext) _Query_sharedLinks(ctx context.Context, field graphq
 		field,
 		ec.fieldContext_Query_sharedLinks,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().SharedLinks(ctx, fc.Args["workspaceID"].(uuid.UUID))
+			return ec.Resolvers.Query().SharedLinks(ctx)
 		},
 		nil,
 		ec.marshalNSharedLink2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSharedLinkᚄ,
@@ -5284,7 +5159,7 @@ func (ec *executionContext) _Query_sharedLinks(ctx context.Context, field graphq
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_sharedLinks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_sharedLinks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -5315,17 +5190,6 @@ func (ec *executionContext) fieldContext_Query_sharedLinks(ctx context.Context, 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SharedLink", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_sharedLinks_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -5477,8 +5341,7 @@ func (ec *executionContext) _Query_myTransferJobs(ctx context.Context, field gra
 		field,
 		ec.fieldContext_Query_myTransferJobs,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().MyTransferJobs(ctx, fc.Args["workspaceID"].(uuid.UUID))
+			return ec.Resolvers.Query().MyTransferJobs(ctx)
 		},
 		nil,
 		ec.marshalNTransferJob2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐTransferJobᚄ,
@@ -5487,7 +5350,7 @@ func (ec *executionContext) _Query_myTransferJobs(ctx context.Context, field gra
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_myTransferJobs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_myTransferJobs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -5532,17 +5395,6 @@ func (ec *executionContext) fieldContext_Query_myTransferJobs(ctx context.Contex
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TransferJob", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_myTransferJobs_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -5652,8 +5504,7 @@ func (ec *executionContext) _Query_workspaceRoles(ctx context.Context, field gra
 		field,
 		ec.fieldContext_Query_workspaceRoles,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().WorkspaceRoles(ctx, fc.Args["workspaceId"].(uuid.UUID))
+			return ec.Resolvers.Query().WorkspaceRoles(ctx)
 		},
 		nil,
 		ec.marshalNRole2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐRoleᚄ,
@@ -5662,7 +5513,7 @@ func (ec *executionContext) _Query_workspaceRoles(ctx context.Context, field gra
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_workspaceRoles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_workspaceRoles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -5679,17 +5530,6 @@ func (ec *executionContext) fieldContext_Query_workspaceRoles(ctx context.Contex
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_workspaceRoles_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -9281,20 +9121,13 @@ func (ec *executionContext) unmarshalInputConnectProviderInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"workspaceId", "name", "type", "credentials"}
+	fieldsInOrder := [...]string{"name", "type", "credentials"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "workspaceId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("workspaceId"))
-			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.WorkspaceID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -9376,20 +9209,13 @@ func (ec *executionContext) unmarshalInputCreateSharedLinkInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"workspaceID", "fileNodeID", "password", "expiresAt", "maxUploads", "permissions"}
+	fieldsInOrder := [...]string{"fileNodeID", "password", "expiresAt", "maxUploads", "permissions"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "workspaceID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("workspaceID"))
-			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.WorkspaceID = data
 		case "fileNodeID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fileNodeID"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -9807,20 +9633,13 @@ func (ec *executionContext) unmarshalInputStartFolderSyncInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"workspaceID", "sourceProviderID", "sourceFolderRemoteID", "destProviderID", "destFolderRemoteID", "conflictStrategy"}
+	fieldsInOrder := [...]string{"sourceProviderID", "sourceFolderRemoteID", "destProviderID", "destFolderRemoteID", "conflictStrategy"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "workspaceID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("workspaceID"))
-			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.WorkspaceID = data
 		case "sourceProviderID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sourceProviderID"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)

@@ -18,7 +18,11 @@ import (
 
 // CreateSharedLink is the resolver for the createSharedLink field.
 func (r *mutationResolver) CreateSharedLink(ctx context.Context, input graph.CreateSharedLinkInput) (*graph.SharedLink, error) {
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), input.WorkspaceID, string(entschema.ActionWrite)); err != nil {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
+	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionWrite)); err != nil {
 		return nil, err
 	}
 
@@ -33,7 +37,7 @@ func (r *mutationResolver) CreateSharedLink(ctx context.Context, input graph.Cre
 	}
 
 	in := sharing.CreateInput{
-		WorkspaceID: input.WorkspaceID,
+		WorkspaceID: workspaceID,
 		FileNodeID:  input.FileNodeID,
 		Permissions: perms,
 	}
@@ -71,7 +75,11 @@ func (r *mutationResolver) RevokeSharedLink(ctx context.Context, id uuid.UUID) (
 }
 
 // SharedLinks is the resolver for the sharedLinks field.
-func (r *queryResolver) SharedLinks(ctx context.Context, workspaceID uuid.UUID) ([]*graph.SharedLink, error) {
+func (r *queryResolver) SharedLinks(ctx context.Context) ([]*graph.SharedLink, error) {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
 	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
 		return nil, err
 	}

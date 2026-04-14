@@ -128,7 +128,11 @@ func (r *mutationResolver) DeleteWorkspace(ctx context.Context, id uuid.UUID) (b
 }
 
 // InviteMember is the resolver for the inviteMember field.
-func (r *mutationResolver) InviteMember(ctx context.Context, workspaceID uuid.UUID, email string, roleID uuid.UUID) (*graph.WorkspaceMember, error) {
+func (r *mutationResolver) InviteMember(ctx context.Context, email string, roleID uuid.UUID) (*graph.WorkspaceMember, error) {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
 	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionAdmin)); err != nil {
 		return nil, err
 	}
@@ -162,7 +166,11 @@ func (r *mutationResolver) InviteMember(ctx context.Context, workspaceID uuid.UU
 }
 
 // RemoveMember is the resolver for the removeMember field.
-func (r *mutationResolver) RemoveMember(ctx context.Context, workspaceID uuid.UUID, userID uuid.UUID) (bool, error) {
+func (r *mutationResolver) RemoveMember(ctx context.Context, userID uuid.UUID) (bool, error) {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return false, auth.ErrUnauthenticated
+	}
 	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionAdmin)); err != nil {
 		return false, err
 	}
@@ -187,7 +195,11 @@ func (r *mutationResolver) RemoveMember(ctx context.Context, workspaceID uuid.UU
 }
 
 // UpdateMemberRole is the resolver for the updateMemberRole field.
-func (r *mutationResolver) UpdateMemberRole(ctx context.Context, workspaceID uuid.UUID, userID uuid.UUID, roleID uuid.UUID) (*graph.WorkspaceMember, error) {
+func (r *mutationResolver) UpdateMemberRole(ctx context.Context, userID uuid.UUID, roleID uuid.UUID) (*graph.WorkspaceMember, error) {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
 	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionAdmin)); err != nil {
 		return nil, err
 	}
@@ -262,7 +274,11 @@ func (r *queryResolver) MyWorkspaces(ctx context.Context) ([]*graph.Workspace, e
 }
 
 // WorkspaceRoles is the resolver for the workspaceRoles field.
-func (r *queryResolver) WorkspaceRoles(ctx context.Context, workspaceID uuid.UUID) ([]*graph.Role, error) {
+func (r *queryResolver) WorkspaceRoles(ctx context.Context) ([]*graph.Role, error) {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
 	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
 		return nil, err
 	}

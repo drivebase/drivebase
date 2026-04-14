@@ -23,7 +23,11 @@ import (
 
 // ConnectProvider is the resolver for the connectProvider field.
 func (r *mutationResolver) ConnectProvider(ctx context.Context, input graph.ConnectProviderInput) (*graph.Provider, error) {
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), input.WorkspaceID, string(entschema.ActionWrite)); err != nil {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
+	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionWrite)); err != nil {
 		return nil, err
 	}
 
@@ -50,7 +54,7 @@ func (r *mutationResolver) ConnectProvider(ctx context.Context, input graph.Conn
 	var gp *graph.Provider
 	if err := withTx(ctx, r.DB, func(tx *ent.Tx) error {
 		p, err := tx.Provider.Create().
-			SetWorkspaceID(input.WorkspaceID).
+			SetWorkspaceID(workspaceID).
 			SetType(string(providerType)).
 			SetName(input.Name).
 			SetAuthType(string(authType)).
@@ -158,7 +162,11 @@ func (r *mutationResolver) RefreshProviderQuota(ctx context.Context, providerID 
 }
 
 // Providers is the resolver for the providers field.
-func (r *queryResolver) Providers(ctx context.Context, workspaceID uuid.UUID) ([]*graph.Provider, error) {
+func (r *queryResolver) Providers(ctx context.Context) ([]*graph.Provider, error) {
+	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
+	if !ok {
+		return nil, auth.ErrUnauthenticated
+	}
 	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
 		return nil, err
 	}

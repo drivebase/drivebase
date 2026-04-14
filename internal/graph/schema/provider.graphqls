@@ -1,5 +1,5 @@
 extend type Query {
-  providers(workspaceId: UUID!): [Provider!]!
+  providers: [Provider!]!
   provider(id: UUID!): Provider!
   providerQuota(providerID: UUID!): ProviderQuota
 }
@@ -60,7 +60,6 @@ enum ProviderStatus {
 }
 
 input ConnectProviderInput {
-  workspaceId: UUID!
   name: String!
   type: ProviderType!
   # credentials: provider-specific JSON string (will be encrypted server-side)

@@ -67,7 +67,7 @@ extend type Query {
   listFiles(input: ListFilesInput!): ListFilesResult!
   getFile(providerID: UUID!, fileNodeID: UUID!): FileNode!
   uploadBatch(id: UUID!): UploadBatch!
-  myUploadBatches(workspaceID: UUID!): [UploadBatch!]!
+  myUploadBatches: [UploadBatch!]!
 }
 
 extend type Mutation {
