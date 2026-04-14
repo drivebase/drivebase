@@ -41,9 +41,9 @@ type ProviderValidationResult {
 }
 
 enum ProviderType {
-  google_drive
+  GOOGLE_DRIVE
   S3
-  local
+  LOCAL
 }
 
 enum AuthType {

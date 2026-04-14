@@ -451,9 +451,9 @@ func (e ProviderStatus) MarshalJSON() ([]byte, error) {
 type ProviderType string
 
 const (
-	ProviderTypeGoogleDrive ProviderType = "google_drive"
+	ProviderTypeGoogleDrive ProviderType = "GOOGLE_DRIVE"
 	ProviderTypeS3          ProviderType = "S3"
-	ProviderTypeLocal       ProviderType = "local"
+	ProviderTypeLocal       ProviderType = "LOCAL"
 )
 
 var AllProviderType = []ProviderType{
