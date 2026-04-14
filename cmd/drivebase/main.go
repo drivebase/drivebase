@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	charmlog "github.com/charmbracelet/log"
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -38,12 +39,16 @@ func main() {
 	level := parseLogLevel(cfg.Log.Level)
 	opts := &slog.HandlerOptions{Level: level}
 
-	// Console handler: JSON in production/json mode, text otherwise
+	// Console handler: JSON in production, colorized text in development
 	var consoleHandler slog.Handler
 	if cfg.Log.Format == "json" || cfg.Server.Env == "production" {
 		consoleHandler = slog.NewJSONHandler(os.Stdout, opts)
 	} else {
-		consoleHandler = slog.NewTextHandler(os.Stdout, opts)
+		charmLogger := charmlog.New(os.Stdout)
+		charmLogger.SetLevel(charmlog.Level(level))
+		charmLogger.SetReportTimestamp(true)
+		charmLogger.SetTimeFormat("15:04:05")
+		consoleHandler = charmLogger
 	}
 
 	// File handler: always JSON, with rotation via lumberjack
