@@ -10,6 +10,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/cors"
@@ -110,6 +111,22 @@ func newGQLServer(cfg *config.Config, db *ent.Client, rdb *redis.Client, transfe
 	if cfg.Server.Env != "production" {
 		srv.Use(extension.Introspection{})
 	}
+
+	// Log mutations and errors (queries are too noisy to log by default)
+	srv.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
+		oc := graphql.GetOperationContext(ctx)
+		if oc.Operation != nil && oc.Operation.Operation == "mutation" {
+			name := oc.OperationName
+			if name == "" && len(oc.Operation.SelectionSet) > 0 {
+				// Unnamed operation — use the first field name instead
+				if f, ok := oc.Operation.SelectionSet[0].(*ast.Field); ok {
+					name = f.Name
+				}
+			}
+			slog.Info("mutation", "op", name)
+		}
+		return next(ctx)
+	})
 
 	// Log resolver errors server-side (they're silently swallowed by default)
 	srv.SetErrorPresenter(func(ctx context.Context, err error) *gqlerror.Error {
