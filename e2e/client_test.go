@@ -189,7 +189,7 @@ type provider struct {
 	Type string `json:"type"`
 }
 
-func (s *suite) connectProvider(t *testing.T, token, workspaceID, name, provType, credsJSON string) provider {
+func (s *suite) connectProvider(t *testing.T, token, name, provType, credsJSON string) provider {
 	t.Helper()
 	var data struct {
 		ConnectProvider provider `json:"connectProvider"`
@@ -198,7 +198,6 @@ func (s *suite) connectProvider(t *testing.T, token, workspaceID, name, provType
 		connectProvider(input: $input) { id name type }
 	}`, map[string]any{
 		"input": map[string]any{
-			"workspaceId": workspaceID,
 			"name":        name,
 			"type":        provType,
 			"credentials": credsJSON,
@@ -237,7 +236,7 @@ type sharedLink struct {
 	Active     bool   `json:"active"`
 }
 
-func (s *suite) createSharedLink(t *testing.T, token, workspaceID, fileNodeID string) sharedLink {
+func (s *suite) createSharedLink(t *testing.T, token, fileNodeID string) sharedLink {
 	t.Helper()
 	var data struct {
 		CreateSharedLink sharedLink `json:"createSharedLink"`
@@ -246,8 +245,7 @@ func (s *suite) createSharedLink(t *testing.T, token, workspaceID, fileNodeID st
 		createSharedLink(input: $input) { id token fileNodeID active }
 	}`, map[string]any{
 		"input": map[string]any{
-			"workspaceID": workspaceID,
-			"fileNodeID":  fileNodeID,
+			"fileNodeID": fileNodeID,
 		},
 	}, token, &data)
 	return data.CreateSharedLink

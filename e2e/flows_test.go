@@ -61,7 +61,7 @@ func TestE2E_WorkspaceAndProvider(t *testing.T) {
 	assert.NotEmpty(t, scoped.AccessToken)
 
 	// Connect S3 (MinIO) provider
-	prov := s.connectProvider(t, scoped.AccessToken, ws.ID, "Test MinIO", "S3", s.s3CredsJSON())
+	prov := s.connectProvider(t, scoped.AccessToken, "Test MinIO", "S3", s.s3CredsJSON())
 	assert.NotEmpty(t, prov.ID)
 	assert.Equal(t, "S3", prov.Type)
 
@@ -69,9 +69,7 @@ func TestE2E_WorkspaceAndProvider(t *testing.T) {
 	var listData struct {
 		Providers []provider `json:"providers"`
 	}
-	s.gql(t, `query Providers($wid: UUID!) {
-		providers(workspaceId: $wid) { id name type }
-	}`, map[string]any{"wid": ws.ID}, scoped.AccessToken, &listData)
+	s.gql(t, `query { providers { id name type } }`, nil, scoped.AccessToken, &listData)
 	require.Len(t, listData.Providers, 1)
 	assert.Equal(t, prov.ID, listData.Providers[0].ID)
 }
@@ -81,9 +79,9 @@ func TestE2E_UploadAndDownload(t *testing.T) {
 	s := setupSuite(t)
 
 	auth := s.signUp(t, "upload@test.com", "Upload User", "password123")
-	ws := s.createWorkspace(t, auth.AccessToken, "Upload WS", "upload-ws")
+	_ = s.createWorkspace(t, auth.AccessToken, "Upload WS", "upload-ws")
 	scoped := s.signIn(t, "upload@test.com", "password123", strPtr("upload-ws"))
-	prov := s.connectProvider(t, scoped.AccessToken, ws.ID, "MinIO", "S3", s.s3CredsJSON())
+	prov := s.connectProvider(t, scoped.AccessToken, "MinIO", "S3", s.s3CredsJSON())
 
 	content := []byte("hello drivebase e2e!")
 	s.restUpload(t, scoped.AccessToken, prov.ID, "hello.txt", content)
@@ -117,9 +115,9 @@ func TestE2E_SharedLink(t *testing.T) {
 	s := setupSuite(t)
 
 	auth := s.signUp(t, "share@test.com", "Share User", "password123")
-	ws := s.createWorkspace(t, auth.AccessToken, "Share WS", "share-ws")
+	_ = s.createWorkspace(t, auth.AccessToken, "Share WS", "share-ws")
 	scoped := s.signIn(t, "share@test.com", "password123", strPtr("share-ws"))
-	prov := s.connectProvider(t, scoped.AccessToken, ws.ID, "MinIO", "S3", s.s3CredsJSON())
+	prov := s.connectProvider(t, scoped.AccessToken, "MinIO", "S3", s.s3CredsJSON())
 
 	content := []byte("shared file content")
 	s.restUpload(t, scoped.AccessToken, prov.ID, "shared.txt", content)
@@ -138,7 +136,7 @@ func TestE2E_SharedLink(t *testing.T) {
 	}, 10*time.Second, 500*time.Millisecond, "shared.txt never appeared")
 
 	// Create a shared link
-	link := s.createSharedLink(t, scoped.AccessToken, ws.ID, fileID)
+	link := s.createSharedLink(t, scoped.AccessToken, fileID)
 	assert.NotEmpty(t, link.Token)
 	assert.True(t, link.Active)
 
@@ -173,9 +171,9 @@ func TestE2E_TempLink(t *testing.T) {
 	s := setupSuite(t)
 
 	auth := s.signUp(t, "temp@test.com", "Temp User", "password123")
-	ws := s.createWorkspace(t, auth.AccessToken, "Temp WS", "temp-ws")
+	_ = s.createWorkspace(t, auth.AccessToken, "Temp WS", "temp-ws")
 	scoped := s.signIn(t, "temp@test.com", "password123", strPtr("temp-ws"))
-	prov := s.connectProvider(t, scoped.AccessToken, ws.ID, "MinIO", "S3", s.s3CredsJSON())
+	prov := s.connectProvider(t, scoped.AccessToken, "MinIO", "S3", s.s3CredsJSON())
 
 	content := []byte("temp link content")
 	s.restUpload(t, scoped.AccessToken, prov.ID, "temp.txt", content)
@@ -223,7 +221,7 @@ func TestE2E_FolderSync(t *testing.T) {
 	s := setupSuite(t)
 
 	auth := s.signUp(t, "sync@test.com", "Sync User", "password123")
-	ws := s.createWorkspace(t, auth.AccessToken, "Sync WS", "sync-ws")
+	_ = s.createWorkspace(t, auth.AccessToken, "Sync WS", "sync-ws")
 	scoped := s.signIn(t, "sync@test.com", "password123", strPtr("sync-ws"))
 
 	// Use two separate buckets as source and destination
@@ -234,8 +232,8 @@ func TestE2E_FolderSync(t *testing.T) {
 	// since file names don't collide in this test)
 	dstCreds := srcCreds // same bucket — sync copies files into same namespace
 
-	src := s.connectProvider(t, scoped.AccessToken, ws.ID, "Source", "S3", srcCreds)
-	dst := s.connectProvider(t, scoped.AccessToken, ws.ID, "Dest", "S3", dstCreds)
+	src := s.connectProvider(t, scoped.AccessToken, "Source", "S3", srcCreds)
+	dst := s.connectProvider(t, scoped.AccessToken, "Dest", "S3", dstCreds)
 
 	// Upload a file to source
 	s.restUpload(t, scoped.AccessToken, src.ID, "syncme.txt", []byte("sync content"))
@@ -262,7 +260,6 @@ func TestE2E_FolderSync(t *testing.T) {
 		startFolderSync(input: $input) { id status }
 	}`, map[string]any{
 		"input": map[string]any{
-			"workspaceID":      ws.ID,
 			"sourceProviderID": src.ID,
 			"destProviderID":   dst.ID,
 			"conflictStrategy": "SKIP",
