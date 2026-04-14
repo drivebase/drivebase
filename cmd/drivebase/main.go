@@ -128,7 +128,7 @@ func main() {
 		slog.Error("failed to start River worker pool", "error", err)
 		os.Exit(1)
 	}
-	slog.Info("River worker pool started")
+	slog.Info("river worker pool started")
 
 	sharingSvc := &sharing.Service{DB: client}
 
