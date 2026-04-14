@@ -9,57 +9,57 @@ import (
 )
 
 type Config struct {
-	Server    ServerConfig
-	Database  DatabaseConfig
-	Redis     RedisConfig
-	Auth      AuthConfig
-	Crypto    CryptoConfig
-	Cache     CacheConfig
-	Worker    WorkerConfig
-	Log       LogConfig
+	Server   ServerConfig
+	Database DatabaseConfig
+	Redis    RedisConfig
+	Auth     AuthConfig
+	Crypto   CryptoConfig
+	Cache    CacheConfig
+	Worker   WorkerConfig
+	Log      LogConfig
 }
 
 type ServerConfig struct {
-	Host string
-	Port int
-	Env  string // "development" | "production"
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
+	Env  string `mapstructure:"env"`
 }
 
 type DatabaseConfig struct {
-	DSN string
+	DSN string `mapstructure:"dsn"`
 }
 
 type RedisConfig struct {
-	URL string
+	URL string `mapstructure:"url"`
 }
 
 type AuthConfig struct {
-	JWTSecret          string
-	AccessTokenTTL     time.Duration
-	RefreshTokenTTL    time.Duration
+	JWTSecret       string        `mapstructure:"jwt_secret"`
+	AccessTokenTTL  time.Duration `mapstructure:"access_token_ttl"`
+	RefreshTokenTTL time.Duration `mapstructure:"refresh_token_ttl"`
 }
 
 type CryptoConfig struct {
-	EncryptionKey string // 32-char key for AES-256-GCM
+	EncryptionKey string `mapstructure:"encryption_key"`
 }
 
 type CacheConfig struct {
-	DiskPath     string
-	DefaultTTL   time.Duration
-	FileCacheTTL time.Duration
+	DiskPath     string        `mapstructure:"disk_path"`
+	DefaultTTL   time.Duration `mapstructure:"default_ttl"`
+	FileCacheTTL time.Duration `mapstructure:"file_cache_ttl"`
 }
 
 type WorkerConfig struct {
-	Concurrency int
+	Concurrency int `mapstructure:"concurrency"`
 }
 
 type LogConfig struct {
-	Level      string // "debug" | "info" | "warn" | "error"
-	Format     string // "text" | "json"
-	File       string // path to log file; empty = file logging disabled
-	MaxSizeMB  int    // max size in MB before rotation
-	MaxBackups int    // number of old log files to keep
-	MaxAgeDays int    // max age in days before deletion
+	Level      string `mapstructure:"level"`
+	Format     string `mapstructure:"format"`
+	File       string `mapstructure:"file"`
+	MaxSizeMB  int    `mapstructure:"max_size_mb"`
+	MaxBackups int    `mapstructure:"max_backups"`
+	MaxAgeDays int    `mapstructure:"max_age_days"`
 }
 
 func Load() (*Config, error) {
@@ -73,7 +73,7 @@ func Load() (*Config, error) {
 	v.SetDefault("redis.url", "redis://localhost:6379/0")
 	v.SetDefault("auth.access_token_ttl", "15m")
 	v.SetDefault("auth.refresh_token_ttl", "168h") // 7 days
-	v.SetDefault("cache.disk_path", "/tmp/drivebase/cache")
+	v.SetDefault("cache.disk_path", "./data/cache")
 	v.SetDefault("cache.default_ttl", "5m")
 	v.SetDefault("worker.concurrency", 10)
 	v.SetDefault("log.level", "info")
