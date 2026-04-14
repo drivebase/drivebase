@@ -26,20 +26,7 @@ import (
 	"github.com/drivebase/drivebase/internal/storage"
 )
 
-// ─── oauthConfigForType ──────────────────────────────────────────────────────
-
-func TestOAuthConfigForType_googleDrive(t *testing.T) {
-	cfg := oauthConfigForType(storage.ProviderTypeGoogleDrive, "cid", "cs", "http://localhost/cb")
-	require.NotNil(t, cfg)
-	assert.Equal(t, "cid", cfg.ClientID)
-	assert.Equal(t, "cs", cfg.ClientSecret)
-	assert.Equal(t, "http://localhost/cb", cfg.RedirectURL)
-}
-
-func TestOAuthConfigForType_unknown(t *testing.T) {
-	cfg := oauthConfigForType(storage.ProviderType("dropbox"), "cid", "cs", "http://cb")
-	assert.Nil(t, cfg)
-}
+// oauthConfigForType is tested via storage.BuildOAuthConfig in internal/storage tests.
 
 // ─── mapOAuthApp ─────────────────────────────────────────────────────────────
 

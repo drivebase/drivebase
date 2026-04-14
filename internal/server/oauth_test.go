@@ -13,10 +13,10 @@ import (
 	googledrivescope "google.golang.org/api/drive/v3"
 )
 
-// ─── buildOAuthConfig ────────────────────────────────────────────────────────
+// ─── storage.BuildOAuthConfig ────────────────────────────────────────────────
 
 func TestBuildOAuthConfig_googleDrive(t *testing.T) {
-	cfg := buildOAuthConfig(storage.ProviderTypeGoogleDrive, "client-id", "client-secret", "http://localhost/callback")
+	cfg := storage.BuildOAuthConfig(storage.ProviderTypeGoogleDrive, "client-id", "client-secret", "http://localhost/callback")
 	require.NotNil(t, cfg)
 	assert.Equal(t, "client-id", cfg.ClientID)
 	assert.Equal(t, "client-secret", cfg.ClientSecret)
@@ -26,7 +26,7 @@ func TestBuildOAuthConfig_googleDrive(t *testing.T) {
 }
 
 func TestBuildOAuthConfig_unsupportedProvider(t *testing.T) {
-	cfg := buildOAuthConfig(storage.ProviderType("unknown"), "cid", "cs", "http://cb")
+	cfg := storage.BuildOAuthConfig(storage.ProviderType("unknown"), "cid", "cs", "http://cb")
 	assert.Nil(t, cfg)
 }
 
