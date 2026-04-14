@@ -21,9 +21,9 @@ test:
 e2e:
 	go test ./e2e/... -count=1 -timeout 120s
 
-# Start local dev stack
+# Start local dev stack (infra only — run the app with: make run)
 up:
-	docker compose up -d
+	docker compose up -d postgres redis minio
 	@echo "Waiting for services..."
 	@docker compose exec postgres pg_isready -U drivebase -t 30 > /dev/null 2>&1 || true
 	@echo "Dev stack ready."
