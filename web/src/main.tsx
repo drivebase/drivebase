@@ -1,4 +1,7 @@
 import { createRouter, RouterProvider } from "@tanstack/react-router";
+
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+document.documentElement.classList.toggle("dark", prefersDark);
 import ReactDOM from "react-dom/client";
 import { Provider as UrqlProvider } from "urql";
 import { gqlClient } from "./lib/gql-client";

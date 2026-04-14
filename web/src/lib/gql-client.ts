@@ -27,7 +27,11 @@ export const gqlClient = createClient({
 		}),
 	],
 	fetchOptions: () => {
-		const token = localStorage.getItem("token");
+		const { token } = (
+			JSON.parse(localStorage.getItem("auth") ?? "{}") as {
+				state?: { token?: string };
+			}
+		).state ?? {};
 		return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 	},
 });
