@@ -1,3 +1,4 @@
+import { authExchange } from "@urql/exchange-auth";
 import { createClient as createSSEClient } from "graphql-sse";
 import {
 	cacheExchange,
@@ -5,15 +6,62 @@ import {
 	fetchExchange,
 	subscriptionExchange,
 } from "urql";
+import { useAuthStore } from "@/store/auth";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080/graphql";
 
 const sseClient = createSSEClient({ url: API_URL });
 
+const RefreshTokenMutation = `
+  mutation RefreshToken($token: String!) {
+    refreshToken(token: $token) {
+      accessToken
+      refreshToken
+      user { id email name }
+    }
+  }
+`;
+
 export const gqlClient = createClient({
 	url: API_URL,
 	exchanges: [
 		cacheExchange,
+		authExchange(async (utils) => ({
+			addAuthToOperation(operation) {
+				const { token } = useAuthStore.getState();
+				if (!token) return operation;
+				return utils.appendHeaders(operation, {
+					Authorization: `Bearer ${token}`,
+				});
+			},
+			willAuthError() {
+				return !useAuthStore.getState().token;
+			},
+			didAuthError(error) {
+				return error.graphQLErrors.some(
+					(e) => e.extensions?.code === "UNAUTHENTICATED",
+				);
+			},
+			async refreshAuth() {
+				const { refreshToken, clearAuth, setAuth } = useAuthStore.getState();
+				if (!refreshToken) {
+					clearAuth();
+					return;
+				}
+
+				const result = await utils.mutate(RefreshTokenMutation, {
+					token: refreshToken,
+				});
+
+				if (result.data?.refreshToken) {
+					const { accessToken, refreshToken: newRefresh, user } =
+						result.data.refreshToken;
+					setAuth(accessToken, newRefresh, user);
+				} else {
+					clearAuth();
+				}
+			},
+		})),
 		fetchExchange,
 		subscriptionExchange({
 			forwardSubscription: (req) => ({
@@ -26,12 +74,4 @@ export const gqlClient = createClient({
 			}),
 		}),
 	],
-	fetchOptions: () => {
-		const { token } = (
-			JSON.parse(localStorage.getItem("auth") ?? "{}") as {
-				state?: { token?: string };
-			}
-		).state ?? {};
-		return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-	},
 });

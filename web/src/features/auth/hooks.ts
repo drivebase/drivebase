@@ -2,6 +2,7 @@ import { parseError } from "@/lib/errors";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useMutation } from "urql";
 import { SignInMutation, SignOutMutation, SignUpMutation } from "./mutations";
 
@@ -9,13 +10,14 @@ export function useSignIn() {
 	const navigate = useNavigate();
 	const setAuth = useAuthStore((s) => s.setAuth);
 	const [{ fetching }, signIn] = useMutation(SignInMutation);
+	const [error, setError] = useState<string | null>(null);
 
 	async function submit(email: string, password: string) {
+		setError(null);
 		const result = await signIn({ input: { email, password } });
 
 		if (result.error || !result.data) {
-			const { message } = parseError(result.error);
-			toast.danger(message);
+			setError(parseError(result.error).message);
 			return;
 		}
 
@@ -25,20 +27,21 @@ export function useSignIn() {
 		navigate({ to: "/" });
 	}
 
-	return { submit, fetching };
+	return { submit, fetching, error };
 }
 
 export function useSignUp() {
 	const navigate = useNavigate();
 	const setAuth = useAuthStore((s) => s.setAuth);
 	const [{ fetching }, signUp] = useMutation(SignUpMutation);
+	const [error, setError] = useState<string | null>(null);
 
 	async function submit(name: string, email: string, password: string) {
+		setError(null);
 		const result = await signUp({ input: { name, email, password } });
 
 		if (result.error || !result.data) {
-			const { message } = parseError(result.error);
-			toast.danger(message);
+			setError(parseError(result.error).message);
 			return;
 		}
 
@@ -48,7 +51,7 @@ export function useSignUp() {
 		navigate({ to: "/" });
 	}
 
-	return { submit, fetching };
+	return { submit, fetching, error };
 }
 
 export function useSignOut() {
@@ -60,8 +63,7 @@ export function useSignOut() {
 		const result = await signOut({});
 
 		if (result.error) {
-			const { message } = parseError(result.error);
-			toast.danger(message);
+			toast.danger(parseError(result.error).message);
 			return;
 		}
 

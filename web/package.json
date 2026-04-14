@@ -24,6 +24,7 @@
     "@tanstack/react-router": "latest",
     "@tanstack/react-router-devtools": "latest",
     "@tanstack/router-plugin": "^1.132.0",
+    "@urql/exchange-auth": "^3.0.0",
     "graphql": "^16.13.2",
     "graphql-sse": "^2.6.0",
     "lucide-react": "^0.545.0",

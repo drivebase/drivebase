@@ -5,6 +5,10 @@ export interface AppError {
 	code?: string;
 }
 
+function fmt(msg: string): string {
+	return msg.charAt(0).toUpperCase() + msg.slice(1);
+}
+
 export function parseError(error: CombinedError | Error | unknown): AppError {
 	if (!error) return { message: "Something went wrong" };
 
@@ -13,7 +17,7 @@ export function parseError(error: CombinedError | Error | unknown): AppError {
 	if (combined.graphQLErrors?.length) {
 		const gqlError = combined.graphQLErrors[0];
 		return {
-			message: gqlError.message,
+			message: fmt(gqlError.message),
 			code: (gqlError.extensions?.code as string) ?? undefined,
 		};
 	}

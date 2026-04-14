@@ -1,4 +1,5 @@
 import {
+	Alert,
 	Button,
 	FieldError,
 	Form,
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/auth/signup")({
 });
 
 function SignupPage() {
-	const { submit, fetching } = useSignUp();
+	const { submit, fetching, error } = useSignUp();
 	const [showPassword, setShowPassword] = useState(false);
 
 	function onSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
@@ -33,6 +34,14 @@ function SignupPage() {
 			</div>
 
 			<Form onSubmit={onSubmit} className="space-y-4">
+				{error && (
+					<Alert status="danger">
+						<Alert.Indicator />
+						<Alert.Content>
+							<Alert.Title>{error}</Alert.Title>
+						</Alert.Content>
+					</Alert>
+				)}
 				<TextField
 					isRequired
 					name="name"

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>logo512</title>
+    <defs>
+        <path d="M0,0 L512,0 L512,512 L0,512 L0,0 Z" id="path-1"></path>
+    </defs>
+    <g id="logo512" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd">
+        <use fill="color(display-p3 1.000 1.000 1.000)" xlink:href="#path-1"></use>
+        <path d="M359,95 L359,307 C359,368.303607 309.303607,418 248,418 C186.696393,418 137,368.303607 137,307 C137,245.696393 186.696393,196 248,196 C260.601462,196 272.712471,198.099881 284.002195,201.968812 L284,146 C284,117.833478 306.833478,95 335,95 L359,95 Z M248,261 C222.594902,261 202,281.594902 202,307 C202,332.405098 222.594902,353 248,353 C273.405098,353 294,332.405098 294,307 C294,281.594902 273.405098,261 248,261 Z" id="d-shape" fill="color(display-p3 0.145 0.141 0.141)"></path>
+    </g>
+</svg>
