@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
+	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/role"
@@ -175,6 +176,21 @@ func (_u *WorkspaceUpdate) AddBandwidthLogs(v ...*BandwidthLog) *WorkspaceUpdate
 	return _u.AddBandwidthLogIDs(ids...)
 }
 
+// AddOauthAppIDs adds the "oauth_apps" edge to the OAuthApp entity by IDs.
+func (_u *WorkspaceUpdate) AddOauthAppIDs(ids ...uuid.UUID) *WorkspaceUpdate {
+	_u.mutation.AddOauthAppIDs(ids...)
+	return _u
+}
+
+// AddOauthApps adds the "oauth_apps" edges to the OAuthApp entity.
+func (_u *WorkspaceUpdate) AddOauthApps(v ...*OAuthApp) *WorkspaceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOauthAppIDs(ids...)
+}
+
 // Mutation returns the WorkspaceMutation object of the builder.
 func (_u *WorkspaceUpdate) Mutation() *WorkspaceMutation {
 	return _u.mutation
@@ -325,6 +341,27 @@ func (_u *WorkspaceUpdate) RemoveBandwidthLogs(v ...*BandwidthLog) *WorkspaceUpd
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveBandwidthLogIDs(ids...)
+}
+
+// ClearOauthApps clears all "oauth_apps" edges to the OAuthApp entity.
+func (_u *WorkspaceUpdate) ClearOauthApps() *WorkspaceUpdate {
+	_u.mutation.ClearOauthApps()
+	return _u
+}
+
+// RemoveOauthAppIDs removes the "oauth_apps" edge to OAuthApp entities by IDs.
+func (_u *WorkspaceUpdate) RemoveOauthAppIDs(ids ...uuid.UUID) *WorkspaceUpdate {
+	_u.mutation.RemoveOauthAppIDs(ids...)
+	return _u
+}
+
+// RemoveOauthApps removes "oauth_apps" edges to OAuthApp entities.
+func (_u *WorkspaceUpdate) RemoveOauthApps(v ...*OAuthApp) *WorkspaceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOauthAppIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -714,6 +751,51 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.OauthAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.OauthAppsTable,
+			Columns: []string{workspace.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOauthAppsIDs(); len(nodes) > 0 && !_u.mutation.OauthAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.OauthAppsTable,
+			Columns: []string{workspace.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OauthAppsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.OauthAppsTable,
+			Columns: []string{workspace.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{workspace.Label}
@@ -873,6 +955,21 @@ func (_u *WorkspaceUpdateOne) AddBandwidthLogs(v ...*BandwidthLog) *WorkspaceUpd
 	return _u.AddBandwidthLogIDs(ids...)
 }
 
+// AddOauthAppIDs adds the "oauth_apps" edge to the OAuthApp entity by IDs.
+func (_u *WorkspaceUpdateOne) AddOauthAppIDs(ids ...uuid.UUID) *WorkspaceUpdateOne {
+	_u.mutation.AddOauthAppIDs(ids...)
+	return _u
+}
+
+// AddOauthApps adds the "oauth_apps" edges to the OAuthApp entity.
+func (_u *WorkspaceUpdateOne) AddOauthApps(v ...*OAuthApp) *WorkspaceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOauthAppIDs(ids...)
+}
+
 // Mutation returns the WorkspaceMutation object of the builder.
 func (_u *WorkspaceUpdateOne) Mutation() *WorkspaceMutation {
 	return _u.mutation
@@ -1023,6 +1120,27 @@ func (_u *WorkspaceUpdateOne) RemoveBandwidthLogs(v ...*BandwidthLog) *Workspace
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveBandwidthLogIDs(ids...)
+}
+
+// ClearOauthApps clears all "oauth_apps" edges to the OAuthApp entity.
+func (_u *WorkspaceUpdateOne) ClearOauthApps() *WorkspaceUpdateOne {
+	_u.mutation.ClearOauthApps()
+	return _u
+}
+
+// RemoveOauthAppIDs removes the "oauth_apps" edge to OAuthApp entities by IDs.
+func (_u *WorkspaceUpdateOne) RemoveOauthAppIDs(ids ...uuid.UUID) *WorkspaceUpdateOne {
+	_u.mutation.RemoveOauthAppIDs(ids...)
+	return _u
+}
+
+// RemoveOauthApps removes "oauth_apps" edges to OAuthApp entities.
+func (_u *WorkspaceUpdateOne) RemoveOauthApps(v ...*OAuthApp) *WorkspaceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOauthAppIDs(ids...)
 }
 
 // Where appends a list predicates to the WorkspaceUpdate builder.
@@ -1435,6 +1553,51 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(bandwidthlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OauthAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.OauthAppsTable,
+			Columns: []string{workspace.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOauthAppsIDs(); len(nodes) > 0 && !_u.mutation.OauthAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.OauthAppsTable,
+			Columns: []string{workspace.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OauthAppsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.OauthAppsTable,
+			Columns: []string{workspace.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

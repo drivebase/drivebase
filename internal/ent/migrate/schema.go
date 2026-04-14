@@ -116,6 +116,61 @@ var (
 			},
 		},
 	}
+	// OauthAppsColumns holds the columns for the "oauth_apps" table.
+	OauthAppsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "provider_type", Type: field.TypeString},
+		{Name: "client_id", Type: field.TypeString},
+		{Name: "encrypted_client_secret", Type: field.TypeBytes},
+		{Name: "alias", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "workspace_id", Type: field.TypeUUID},
+	}
+	// OauthAppsTable holds the schema information for the "oauth_apps" table.
+	OauthAppsTable = &schema.Table{
+		Name:       "oauth_apps",
+		Columns:    OauthAppsColumns,
+		PrimaryKey: []*schema.Column{OauthAppsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oauth_apps_workspaces_oauth_apps",
+				Columns:    []*schema.Column{OauthAppsColumns[7]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthapp_workspace_id_provider_type",
+				Unique:  true,
+				Columns: []*schema.Column{OauthAppsColumns[7], OauthAppsColumns[1]},
+			},
+		},
+	}
+	// OauthStatesColumns holds the columns for the "oauth_states" table.
+	OauthStatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "workspace_id", Type: field.TypeUUID},
+		{Name: "oauth_app_id", Type: field.TypeUUID},
+		{Name: "provider_type", Type: field.TypeString},
+		{Name: "provider_name", Type: field.TypeString},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// OauthStatesTable holds the schema information for the "oauth_states" table.
+	OauthStatesTable = &schema.Table{
+		Name:       "oauth_states",
+		Columns:    OauthStatesColumns,
+		PrimaryKey: []*schema.Column{OauthStatesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthstate_workspace_id",
+				Unique:  false,
+				Columns: []*schema.Column{OauthStatesColumns[1]},
+			},
+		},
+	}
 	// PermissionsColumns holds the columns for the "permissions" table.
 	PermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -560,6 +615,8 @@ var (
 		BandwidthLogsTable,
 		CacheConfigsTable,
 		FileNodesTable,
+		OauthAppsTable,
+		OauthStatesTable,
 		PermissionsTable,
 		ProvidersTable,
 		ProviderCredentialsTable,
@@ -582,6 +639,7 @@ func init() {
 	CacheConfigsTable.ForeignKeys[0].RefTable = ProvidersTable
 	FileNodesTable.ForeignKeys[0].RefTable = FileNodesTable
 	FileNodesTable.ForeignKeys[1].RefTable = ProvidersTable
+	OauthAppsTable.ForeignKeys[0].RefTable = WorkspacesTable
 	PermissionsTable.ForeignKeys[0].RefTable = RolesTable
 	ProvidersTable.ForeignKeys[0].RefTable = WorkspacesTable
 	ProviderCredentialsTable.ForeignKeys[0].RefTable = ProvidersTable

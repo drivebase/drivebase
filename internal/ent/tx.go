@@ -18,6 +18,10 @@ type Tx struct {
 	CacheConfig *CacheConfigClient
 	// FileNode is the client for interacting with the FileNode builders.
 	FileNode *FileNodeClient
+	// OAuthApp is the client for interacting with the OAuthApp builders.
+	OAuthApp *OAuthAppClient
+	// OAuthState is the client for interacting with the OAuthState builders.
+	OAuthState *OAuthStateClient
 	// Permission is the client for interacting with the Permission builders.
 	Permission *PermissionClient
 	// Provider is the client for interacting with the Provider builders.
@@ -180,6 +184,8 @@ func (tx *Tx) init() {
 	tx.BandwidthLog = NewBandwidthLogClient(tx.config)
 	tx.CacheConfig = NewCacheConfigClient(tx.config)
 	tx.FileNode = NewFileNodeClient(tx.config)
+	tx.OAuthApp = NewOAuthAppClient(tx.config)
+	tx.OAuthState = NewOAuthStateClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Provider = NewProviderClient(tx.config)
 	tx.ProviderCredential = NewProviderCredentialClient(tx.config)

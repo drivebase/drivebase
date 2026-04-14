@@ -5,6 +5,7 @@ import (
 
 	"github.com/drivebase/drivebase/internal/ent"
 	"github.com/drivebase/drivebase/internal/graph"
+	"github.com/drivebase/drivebase/internal/storage"
 )
 
 func mapUser(u *ent.User) *graph.User {
@@ -179,6 +180,18 @@ func mapSharedLink(l *ent.SharedLink) *graph.SharedLink {
 		gl.MaxUploads = l.MaxUploads
 	}
 	return gl
+}
+
+func mapOAuthApp(a *ent.OAuthApp) *graph.OAuthApp {
+	out := &graph.OAuthApp{
+		ProviderType: graph.ProviderType(storage.ProviderType(a.ProviderType)),
+		ClientID:     a.ClientID,
+		CreatedAt:    a.CreatedAt,
+	}
+	if a.Alias != "" {
+		out.Alias = &a.Alias
+	}
+	return out
 }
 
 func mapWorkspaceMember(m *ent.WorkspaceMember) *graph.WorkspaceMember {

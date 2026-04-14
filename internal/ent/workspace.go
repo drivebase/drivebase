@@ -48,9 +48,11 @@ type WorkspaceEdges struct {
 	SharedLinks []*SharedLink `json:"shared_links,omitempty"`
 	// BandwidthLogs holds the value of the bandwidth_logs edge.
 	BandwidthLogs []*BandwidthLog `json:"bandwidth_logs,omitempty"`
+	// OauthApps holds the value of the oauth_apps edge.
+	OauthApps []*OAuthApp `json:"oauth_apps,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // MembersOrErr returns the Members value or an error if the edge
@@ -114,6 +116,15 @@ func (e WorkspaceEdges) BandwidthLogsOrErr() ([]*BandwidthLog, error) {
 		return e.BandwidthLogs, nil
 	}
 	return nil, &NotLoadedError{edge: "bandwidth_logs"}
+}
+
+// OauthAppsOrErr returns the OauthApps value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkspaceEdges) OauthAppsOrErr() ([]*OAuthApp, error) {
+	if e.loadedTypes[7] {
+		return e.OauthApps, nil
+	}
+	return nil, &NotLoadedError{edge: "oauth_apps"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -218,6 +229,11 @@ func (_m *Workspace) QuerySharedLinks() *SharedLinkQuery {
 // QueryBandwidthLogs queries the "bandwidth_logs" edge of the Workspace entity.
 func (_m *Workspace) QueryBandwidthLogs() *BandwidthLogQuery {
 	return NewWorkspaceClient(_m.config).QueryBandwidthLogs(_m)
+}
+
+// QueryOauthApps queries the "oauth_apps" edge of the Workspace entity.
+func (_m *Workspace) QueryOauthApps() *OAuthAppQuery {
+	return NewWorkspaceClient(_m.config).QueryOauthApps(_m)
 }
 
 // Update returns a builder for updating this Workspace.

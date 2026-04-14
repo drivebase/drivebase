@@ -447,6 +447,29 @@ func HasBandwidthLogsWith(preds ...predicate.BandwidthLog) predicate.Workspace {
 	})
 }
 
+// HasOauthApps applies the HasEdge predicate on the "oauth_apps" edge.
+func HasOauthApps() predicate.Workspace {
+	return predicate.Workspace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OauthAppsTable, OauthAppsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOauthAppsWith applies the HasEdge predicate on the "oauth_apps" edge with a given conditions (other predicates).
+func HasOauthAppsWith(preds ...predicate.OAuthApp) predicate.Workspace {
+	return predicate.Workspace(func(s *sql.Selector) {
+		step := newOauthAppsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Workspace) predicate.Workspace {
 	return predicate.Workspace(sql.AndPredicates(predicates...))

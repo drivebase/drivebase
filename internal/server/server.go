@@ -81,6 +81,10 @@ func New(cfg *config.Config, db *ent.Client, rdb *redis.Client, transferEngine *
 	r.Get("/api/v1/download/{fileNodeID}", h.download)
 	r.Get("/api/v1/templink/{fileNodeID}", h.tempLink)
 
+	// OAuth callback
+	oh := &oauthHandler{cfg: cfg, db: db}
+	r.Get("/api/v1/oauth/callback", oh.callback)
+
 	return r
 }
 

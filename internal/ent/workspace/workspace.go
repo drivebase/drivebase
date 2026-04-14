@@ -37,6 +37,8 @@ const (
 	EdgeSharedLinks = "shared_links"
 	// EdgeBandwidthLogs holds the string denoting the bandwidth_logs edge name in mutations.
 	EdgeBandwidthLogs = "bandwidth_logs"
+	// EdgeOauthApps holds the string denoting the oauth_apps edge name in mutations.
+	EdgeOauthApps = "oauth_apps"
 	// Table holds the table name of the workspace in the database.
 	Table = "workspaces"
 	// MembersTable is the table that holds the members relation/edge.
@@ -88,6 +90,13 @@ const (
 	BandwidthLogsInverseTable = "bandwidth_logs"
 	// BandwidthLogsColumn is the table column denoting the bandwidth_logs relation/edge.
 	BandwidthLogsColumn = "workspace_id"
+	// OauthAppsTable is the table that holds the oauth_apps relation/edge.
+	OauthAppsTable = "oauth_apps"
+	// OauthAppsInverseTable is the table name for the OAuthApp entity.
+	// It exists in this package in order to avoid circular dependency with the "oauthapp" package.
+	OauthAppsInverseTable = "oauth_apps"
+	// OauthAppsColumn is the table column denoting the oauth_apps relation/edge.
+	OauthAppsColumn = "workspace_id"
 )
 
 // Columns holds all SQL columns for workspace fields.
@@ -249,6 +258,20 @@ func ByBandwidthLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newBandwidthLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByOauthAppsCount orders the results by oauth_apps count.
+func ByOauthAppsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOauthAppsStep(), opts...)
+	}
+}
+
+// ByOauthApps orders the results by oauth_apps terms.
+func ByOauthApps(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOauthAppsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newMembersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -296,5 +319,12 @@ func newBandwidthLogsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BandwidthLogsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, BandwidthLogsTable, BandwidthLogsColumn),
+	)
+}
+func newOauthAppsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OauthAppsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OauthAppsTable, OauthAppsColumn),
 	)
 }

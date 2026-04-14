@@ -15,6 +15,12 @@ type CacheConfig func(*sql.Selector)
 // FileNode is the predicate function for filenode builders.
 type FileNode func(*sql.Selector)
 
+// OAuthApp is the predicate function for oauthapp builders.
+type OAuthApp func(*sql.Selector)
+
+// OAuthState is the predicate function for oauthstate builders.
+type OAuthState func(*sql.Selector)
+
 // Permission is the predicate function for permission builders.
 type Permission func(*sql.Selector)
 

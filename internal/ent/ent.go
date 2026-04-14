@@ -15,6 +15,8 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
 	"github.com/drivebase/drivebase/internal/ent/cacheconfig"
 	"github.com/drivebase/drivebase/internal/ent/filenode"
+	"github.com/drivebase/drivebase/internal/ent/oauthapp"
+	"github.com/drivebase/drivebase/internal/ent/oauthstate"
 	"github.com/drivebase/drivebase/internal/ent/permission"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
@@ -92,6 +94,8 @@ func checkColumn(t, c string) error {
 			bandwidthlog.Table:       bandwidthlog.ValidColumn,
 			cacheconfig.Table:        cacheconfig.ValidColumn,
 			filenode.Table:           filenode.ValidColumn,
+			oauthapp.Table:           oauthapp.ValidColumn,
+			oauthstate.Table:         oauthstate.ValidColumn,
 			permission.Table:         permission.ValidColumn,
 			provider.Table:           provider.ValidColumn,
 			providercredential.Table: providercredential.ValidColumn,

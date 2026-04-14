@@ -92,6 +92,13 @@ type MoveFileInput struct {
 type Mutation struct {
 }
 
+type OAuthApp struct {
+	ProviderType ProviderType `json:"providerType"`
+	ClientID     string       `json:"clientID"`
+	Alias        *string      `json:"alias,omitempty"`
+	CreatedAt    time.Time    `json:"createdAt"`
+}
+
 type Provider struct {
 	ID          uuid.UUID      `json:"id"`
 	WorkspaceID uuid.UUID      `json:"workspaceId"`
@@ -132,6 +139,13 @@ type Role struct {
 	ID       uuid.UUID `json:"id"`
 	Name     string    `json:"name"`
 	IsSystem bool      `json:"isSystem"`
+}
+
+type SaveOAuthAppInput struct {
+	ProviderType ProviderType `json:"providerType"`
+	ClientID     string       `json:"clientID"`
+	ClientSecret string       `json:"clientSecret"`
+	Alias        *string      `json:"alias,omitempty"`
 }
 
 type Session struct {

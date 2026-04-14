@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
+	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/role"
@@ -38,6 +39,7 @@ type WorkspaceQuery struct {
 	withTransferJobs  *TransferJobQuery
 	withSharedLinks   *SharedLinkQuery
 	withBandwidthLogs *BandwidthLogQuery
+	withOauthApps     *OAuthAppQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -221,6 +223,28 @@ func (_q *WorkspaceQuery) QueryBandwidthLogs() *BandwidthLogQuery {
 			sqlgraph.From(workspace.Table, workspace.FieldID, selector),
 			sqlgraph.To(bandwidthlog.Table, bandwidthlog.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, workspace.BandwidthLogsTable, workspace.BandwidthLogsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOauthApps chains the current query on the "oauth_apps" edge.
+func (_q *WorkspaceQuery) QueryOauthApps() *OAuthAppQuery {
+	query := (&OAuthAppClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workspace.Table, workspace.FieldID, selector),
+			sqlgraph.To(oauthapp.Table, oauthapp.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workspace.OauthAppsTable, workspace.OauthAppsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -427,6 +451,7 @@ func (_q *WorkspaceQuery) Clone() *WorkspaceQuery {
 		withTransferJobs:  _q.withTransferJobs.Clone(),
 		withSharedLinks:   _q.withSharedLinks.Clone(),
 		withBandwidthLogs: _q.withBandwidthLogs.Clone(),
+		withOauthApps:     _q.withOauthApps.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -510,6 +535,17 @@ func (_q *WorkspaceQuery) WithBandwidthLogs(opts ...func(*BandwidthLogQuery)) *W
 	return _q
 }
 
+// WithOauthApps tells the query-builder to eager-load the nodes that are connected to
+// the "oauth_apps" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *WorkspaceQuery) WithOauthApps(opts ...func(*OAuthAppQuery)) *WorkspaceQuery {
+	query := (&OAuthAppClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOauthApps = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -588,7 +624,7 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 	var (
 		nodes       = []*Workspace{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			_q.withMembers != nil,
 			_q.withProviders != nil,
 			_q.withRoles != nil,
@@ -596,6 +632,7 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 			_q.withTransferJobs != nil,
 			_q.withSharedLinks != nil,
 			_q.withBandwidthLogs != nil,
+			_q.withOauthApps != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -662,6 +699,13 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 		if err := _q.loadBandwidthLogs(ctx, query, nodes,
 			func(n *Workspace) { n.Edges.BandwidthLogs = []*BandwidthLog{} },
 			func(n *Workspace, e *BandwidthLog) { n.Edges.BandwidthLogs = append(n.Edges.BandwidthLogs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOauthApps; query != nil {
+		if err := _q.loadOauthApps(ctx, query, nodes,
+			func(n *Workspace) { n.Edges.OauthApps = []*OAuthApp{} },
+			func(n *Workspace, e *OAuthApp) { n.Edges.OauthApps = append(n.Edges.OauthApps, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -863,6 +907,36 @@ func (_q *WorkspaceQuery) loadBandwidthLogs(ctx context.Context, query *Bandwidt
 	}
 	query.Where(predicate.BandwidthLog(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(workspace.BandwidthLogsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.WorkspaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "workspace_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *WorkspaceQuery) loadOauthApps(ctx context.Context, query *OAuthAppQuery, nodes []*Workspace, init func(*Workspace), assign func(*Workspace, *OAuthApp)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workspace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(oauthapp.FieldWorkspaceID)
+	}
+	query.Where(predicate.OAuthApp(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(workspace.OauthAppsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

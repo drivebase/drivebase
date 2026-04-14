@@ -8,6 +8,8 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
 	"github.com/drivebase/drivebase/internal/ent/cacheconfig"
 	"github.com/drivebase/drivebase/internal/ent/filenode"
+	"github.com/drivebase/drivebase/internal/ent/oauthapp"
+	"github.com/drivebase/drivebase/internal/ent/oauthstate"
 	"github.com/drivebase/drivebase/internal/ent/permission"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
@@ -106,6 +108,48 @@ func init() {
 	filenodeDescID := filenodeFields[0].Descriptor()
 	// filenode.DefaultID holds the default value on creation for the id field.
 	filenode.DefaultID = filenodeDescID.Default.(func() uuid.UUID)
+	oauthappFields := schema.OAuthApp{}.Fields()
+	_ = oauthappFields
+	// oauthappDescProviderType is the schema descriptor for provider_type field.
+	oauthappDescProviderType := oauthappFields[2].Descriptor()
+	// oauthapp.ProviderTypeValidator is a validator for the "provider_type" field. It is called by the builders before save.
+	oauthapp.ProviderTypeValidator = oauthappDescProviderType.Validators[0].(func(string) error)
+	// oauthappDescClientID is the schema descriptor for client_id field.
+	oauthappDescClientID := oauthappFields[3].Descriptor()
+	// oauthapp.ClientIDValidator is a validator for the "client_id" field. It is called by the builders before save.
+	oauthapp.ClientIDValidator = oauthappDescClientID.Validators[0].(func(string) error)
+	// oauthappDescCreatedAt is the schema descriptor for created_at field.
+	oauthappDescCreatedAt := oauthappFields[6].Descriptor()
+	// oauthapp.DefaultCreatedAt holds the default value on creation for the created_at field.
+	oauthapp.DefaultCreatedAt = oauthappDescCreatedAt.Default.(func() time.Time)
+	// oauthappDescUpdatedAt is the schema descriptor for updated_at field.
+	oauthappDescUpdatedAt := oauthappFields[7].Descriptor()
+	// oauthapp.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	oauthapp.DefaultUpdatedAt = oauthappDescUpdatedAt.Default.(func() time.Time)
+	// oauthapp.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	oauthapp.UpdateDefaultUpdatedAt = oauthappDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// oauthappDescID is the schema descriptor for id field.
+	oauthappDescID := oauthappFields[0].Descriptor()
+	// oauthapp.DefaultID holds the default value on creation for the id field.
+	oauthapp.DefaultID = oauthappDescID.Default.(func() uuid.UUID)
+	oauthstateFields := schema.OAuthState{}.Fields()
+	_ = oauthstateFields
+	// oauthstateDescProviderType is the schema descriptor for provider_type field.
+	oauthstateDescProviderType := oauthstateFields[3].Descriptor()
+	// oauthstate.ProviderTypeValidator is a validator for the "provider_type" field. It is called by the builders before save.
+	oauthstate.ProviderTypeValidator = oauthstateDescProviderType.Validators[0].(func(string) error)
+	// oauthstateDescProviderName is the schema descriptor for provider_name field.
+	oauthstateDescProviderName := oauthstateFields[4].Descriptor()
+	// oauthstate.ProviderNameValidator is a validator for the "provider_name" field. It is called by the builders before save.
+	oauthstate.ProviderNameValidator = oauthstateDescProviderName.Validators[0].(func(string) error)
+	// oauthstateDescCreatedAt is the schema descriptor for created_at field.
+	oauthstateDescCreatedAt := oauthstateFields[6].Descriptor()
+	// oauthstate.DefaultCreatedAt holds the default value on creation for the created_at field.
+	oauthstate.DefaultCreatedAt = oauthstateDescCreatedAt.Default.(func() time.Time)
+	// oauthstateDescID is the schema descriptor for id field.
+	oauthstateDescID := oauthstateFields[0].Descriptor()
+	// oauthstate.DefaultID holds the default value on creation for the id field.
+	oauthstate.DefaultID = oauthstateDescID.Default.(func() uuid.UUID)
 	permissionFields := schema.Permission{}.Fields()
 	_ = permissionFields
 	// permissionDescResourceType is the schema descriptor for resource_type field.

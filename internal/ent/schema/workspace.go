@@ -33,6 +33,7 @@ func (Workspace) Edges() []ent.Edge {
 		edge.To("transfer_jobs", TransferJob.Type),
 		edge.To("shared_links", SharedLink.Type),
 		edge.To("bandwidth_logs", BandwidthLog.Type),
+		edge.To("oauth_apps", OAuthApp.Type),
 	}
 }
 

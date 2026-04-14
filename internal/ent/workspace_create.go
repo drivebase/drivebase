@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
+	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/role"
 	"github.com/drivebase/drivebase/internal/ent/sharedlink"
@@ -185,6 +186,21 @@ func (_c *WorkspaceCreate) AddBandwidthLogs(v ...*BandwidthLog) *WorkspaceCreate
 		ids[i] = v[i].ID
 	}
 	return _c.AddBandwidthLogIDs(ids...)
+}
+
+// AddOauthAppIDs adds the "oauth_apps" edge to the OAuthApp entity by IDs.
+func (_c *WorkspaceCreate) AddOauthAppIDs(ids ...uuid.UUID) *WorkspaceCreate {
+	_c.mutation.AddOauthAppIDs(ids...)
+	return _c
+}
+
+// AddOauthApps adds the "oauth_apps" edges to the OAuthApp entity.
+func (_c *WorkspaceCreate) AddOauthApps(v ...*OAuthApp) *WorkspaceCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddOauthAppIDs(ids...)
 }
 
 // Mutation returns the WorkspaceMutation object of the builder.
@@ -416,6 +432,22 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(bandwidthlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OauthAppsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.OauthAppsTable,
+			Columns: []string{workspace.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -20,9 +20,10 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
-	Env  string `mapstructure:"env"`
+	Host             string `mapstructure:"host"`
+	Port             int    `mapstructure:"port"`
+	Env              string `mapstructure:"env"`
+	OAuthCallbackURL string `mapstructure:"oauth_callback_url"`
 }
 
 type DatabaseConfig struct {
@@ -69,6 +70,7 @@ func Load() (*Config, error) {
 	v.SetDefault("server.host", "0.0.0.0")
 	v.SetDefault("server.port", 8080)
 	v.SetDefault("server.env", "development")
+	v.SetDefault("server.oauth_callback_url", "http://localhost:8080/api/v1/oauth/callback")
 	v.SetDefault("database.dsn", "postgres://drivebase:drivebase@localhost:5432/drivebase?sslmode=disable")
 	v.SetDefault("redis.url", "redis://localhost:6379/0")
 	v.SetDefault("auth.access_token_ttl", "15m")

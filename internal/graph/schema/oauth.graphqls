@@ -1,0 +1,26 @@
+type OAuthApp {
+  providerType: ProviderType!
+  clientID: String!
+  alias: String
+  createdAt: Time!
+}
+
+input SaveOAuthAppInput {
+  providerType: ProviderType!
+  clientID: String!
+  clientSecret: String!
+  alias: String
+}
+
+extend type Query {
+  oauthApp(providerType: ProviderType!): OAuthApp
+  oauthApps: [OAuthApp!]!
+}
+
+extend type Mutation {
+  saveOAuthApp(input: SaveOAuthAppInput!): OAuthApp!
+  deleteOAuthApp(providerType: ProviderType!): Boolean!
+  # Returns the Google authorization URL. User visits it to grant access.
+  # After granting, Google redirects to /api/v1/oauth/callback which completes the flow.
+  initiateOAuth(providerType: ProviderType!, providerName: String!): String!
+}
