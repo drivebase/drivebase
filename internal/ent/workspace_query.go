@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
 	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
@@ -40,6 +41,7 @@ type WorkspaceQuery struct {
 	withSharedLinks   *SharedLinkQuery
 	withBandwidthLogs *BandwidthLogQuery
 	withOauthApps     *OAuthAppQuery
+	withAPITokens     *ApiTokenQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -252,6 +254,28 @@ func (_q *WorkspaceQuery) QueryOauthApps() *OAuthAppQuery {
 	return query
 }
 
+// QueryAPITokens chains the current query on the "api_tokens" edge.
+func (_q *WorkspaceQuery) QueryAPITokens() *ApiTokenQuery {
+	query := (&ApiTokenClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workspace.Table, workspace.FieldID, selector),
+			sqlgraph.To(entapitoken.Table, entapitoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workspace.APITokensTable, workspace.APITokensColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Workspace entity from the query.
 // Returns a *NotFoundError when no Workspace was found.
 func (_q *WorkspaceQuery) First(ctx context.Context) (*Workspace, error) {
@@ -452,6 +476,7 @@ func (_q *WorkspaceQuery) Clone() *WorkspaceQuery {
 		withSharedLinks:   _q.withSharedLinks.Clone(),
 		withBandwidthLogs: _q.withBandwidthLogs.Clone(),
 		withOauthApps:     _q.withOauthApps.Clone(),
+		withAPITokens:     _q.withAPITokens.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -546,6 +571,17 @@ func (_q *WorkspaceQuery) WithOauthApps(opts ...func(*OAuthAppQuery)) *Workspace
 	return _q
 }
 
+// WithAPITokens tells the query-builder to eager-load the nodes that are connected to
+// the "api_tokens" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *WorkspaceQuery) WithAPITokens(opts ...func(*ApiTokenQuery)) *WorkspaceQuery {
+	query := (&ApiTokenClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAPITokens = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -624,7 +660,7 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 	var (
 		nodes       = []*Workspace{}
 		_spec       = _q.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
 			_q.withMembers != nil,
 			_q.withProviders != nil,
 			_q.withRoles != nil,
@@ -633,6 +669,7 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 			_q.withSharedLinks != nil,
 			_q.withBandwidthLogs != nil,
 			_q.withOauthApps != nil,
+			_q.withAPITokens != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -706,6 +743,13 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 		if err := _q.loadOauthApps(ctx, query, nodes,
 			func(n *Workspace) { n.Edges.OauthApps = []*OAuthApp{} },
 			func(n *Workspace, e *OAuthApp) { n.Edges.OauthApps = append(n.Edges.OauthApps, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAPITokens; query != nil {
+		if err := _q.loadAPITokens(ctx, query, nodes,
+			func(n *Workspace) { n.Edges.APITokens = []*ApiToken{} },
+			func(n *Workspace, e *ApiToken) { n.Edges.APITokens = append(n.Edges.APITokens, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -937,6 +981,36 @@ func (_q *WorkspaceQuery) loadOauthApps(ctx context.Context, query *OAuthAppQuer
 	}
 	query.Where(predicate.OAuthApp(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(workspace.OauthAppsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.WorkspaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "workspace_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *WorkspaceQuery) loadAPITokens(ctx context.Context, query *ApiTokenQuery, nodes []*Workspace, init func(*Workspace), assign func(*Workspace, *ApiToken)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Workspace)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(entapitoken.FieldWorkspaceID)
+	}
+	query.Where(predicate.ApiToken(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(workspace.APITokensColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

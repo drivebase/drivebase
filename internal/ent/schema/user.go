@@ -29,6 +29,7 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("memberships", WorkspaceMember.Type),
 		edge.To("sessions", Session.Type),
+		edge.To("api_tokens", ApiToken.Type),
 	}
 }
 

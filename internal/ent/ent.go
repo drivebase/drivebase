@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+
+	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
 	"github.com/drivebase/drivebase/internal/ent/cacheconfig"
 	"github.com/drivebase/drivebase/internal/ent/filenode"
@@ -91,6 +93,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			entapitoken.Table:        entapitoken.ValidColumn,
 			bandwidthlog.Table:       bandwidthlog.ValidColumn,
 			cacheconfig.Table:        cacheconfig.ValidColumn,
 			filenode.Table:           filenode.ValidColumn,

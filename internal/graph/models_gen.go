@@ -12,6 +12,27 @@ import (
 	"github.com/google/uuid"
 )
 
+type APIToken struct {
+	ID             uuid.UUID                `json:"id"`
+	Name           string                   `json:"name"`
+	DisplayToken   string                   `json:"displayToken"`
+	Scopes         []string                 `json:"scopes"`
+	ProviderScopes []*APITokenProviderScope `json:"providerScopes,omitempty"`
+	LastUsedAt     *time.Time               `json:"lastUsedAt,omitempty"`
+	ExpiresAt      *time.Time               `json:"expiresAt,omitempty"`
+	CreatedAt      time.Time                `json:"createdAt"`
+}
+
+type APITokenProviderScope struct {
+	ProviderID uuid.UUID   `json:"providerID"`
+	FolderIDs  []uuid.UUID `json:"folderIDs"`
+}
+
+type APITokenProviderScopeInput struct {
+	ProviderID uuid.UUID   `json:"providerID"`
+	FolderIDs  []uuid.UUID `json:"folderIDs,omitempty"`
+}
+
 type AuthPayload struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
@@ -30,6 +51,18 @@ type ConnectProviderInput struct {
 	Name        string       `json:"name"`
 	Type        ProviderType `json:"type"`
 	Credentials string       `json:"credentials"`
+}
+
+type CreateAPITokenInput struct {
+	Name           string                        `json:"name"`
+	Scopes         []string                      `json:"scopes"`
+	ExpiresAt      *time.Time                    `json:"expiresAt,omitempty"`
+	ProviderScopes []*APITokenProviderScopeInput `json:"providerScopes,omitempty"`
+}
+
+type CreateAPITokenPayload struct {
+	Token    *APIToken `json:"token"`
+	RawToken string    `json:"rawToken"`
 }
 
 type CreateFolderInput struct {

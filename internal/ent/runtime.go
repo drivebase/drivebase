@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
 	"github.com/drivebase/drivebase/internal/ent/cacheconfig"
 	"github.com/drivebase/drivebase/internal/ent/filenode"
@@ -32,6 +33,28 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	entapitokenFields := schema.ApiToken{}.Fields()
+	_ = entapitokenFields
+	// entapitokenDescName is the schema descriptor for name field.
+	entapitokenDescName := entapitokenFields[3].Descriptor()
+	// entapitoken.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	entapitoken.NameValidator = entapitokenDescName.Validators[0].(func(string) error)
+	// entapitokenDescTokenHash is the schema descriptor for token_hash field.
+	entapitokenDescTokenHash := entapitokenFields[4].Descriptor()
+	// entapitoken.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
+	entapitoken.TokenHashValidator = entapitokenDescTokenHash.Validators[0].(func(string) error)
+	// entapitokenDescDisplayToken is the schema descriptor for display_token field.
+	entapitokenDescDisplayToken := entapitokenFields[5].Descriptor()
+	// entapitoken.DisplayTokenValidator is a validator for the "display_token" field. It is called by the builders before save.
+	entapitoken.DisplayTokenValidator = entapitokenDescDisplayToken.Validators[0].(func(string) error)
+	// entapitokenDescCreatedAt is the schema descriptor for created_at field.
+	entapitokenDescCreatedAt := entapitokenFields[10].Descriptor()
+	// entapitoken.DefaultCreatedAt holds the default value on creation for the created_at field.
+	entapitoken.DefaultCreatedAt = entapitokenDescCreatedAt.Default.(func() time.Time)
+	// entapitokenDescID is the schema descriptor for id field.
+	entapitokenDescID := entapitokenFields[0].Descriptor()
+	// entapitoken.DefaultID holds the default value on creation for the id field.
+	entapitoken.DefaultID = entapitokenDescID.Default.(func() uuid.UUID)
 	bandwidthlogFields := schema.BandwidthLog{}.Fields()
 	_ = bandwidthlogFields
 	// bandwidthlogDescDirection is the schema descriptor for direction field.

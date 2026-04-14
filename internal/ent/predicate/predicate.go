@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// ApiToken is the predicate function for entapitoken builders.
+type ApiToken func(*sql.Selector)
+
 // BandwidthLog is the predicate function for bandwidthlog builders.
 type BandwidthLog func(*sql.Selector)
 

@@ -40,9 +40,11 @@ type UserEdges struct {
 	Memberships []*WorkspaceMember `json:"memberships,omitempty"`
 	// Sessions holds the value of the sessions edge.
 	Sessions []*Session `json:"sessions,omitempty"`
+	// APITokens holds the value of the api_tokens edge.
+	APITokens []*ApiToken `json:"api_tokens,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // MembershipsOrErr returns the Memberships value or an error if the edge
@@ -61,6 +63,15 @@ func (e UserEdges) SessionsOrErr() ([]*Session, error) {
 		return e.Sessions, nil
 	}
 	return nil, &NotLoadedError{edge: "sessions"}
+}
+
+// APITokensOrErr returns the APITokens value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) APITokensOrErr() ([]*ApiToken, error) {
+	if e.loadedTypes[2] {
+		return e.APITokens, nil
+	}
+	return nil, &NotLoadedError{edge: "api_tokens"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -146,6 +157,11 @@ func (_m *User) QueryMemberships() *WorkspaceMemberQuery {
 // QuerySessions queries the "sessions" edge of the User entity.
 func (_m *User) QuerySessions() *SessionQuery {
 	return NewUserClient(_m.config).QuerySessions(_m)
+}
+
+// QueryAPITokens queries the "api_tokens" edge of the User entity.
+func (_m *User) QueryAPITokens() *ApiTokenQuery {
+	return NewUserClient(_m.config).QueryAPITokens(_m)
 }
 
 // Update returns a builder for updating this User.

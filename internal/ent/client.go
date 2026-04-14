@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
 	"github.com/drivebase/drivebase/internal/ent/cacheconfig"
 	"github.com/drivebase/drivebase/internal/ent/filenode"
@@ -42,6 +43,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// ApiToken is the client for interacting with the ApiToken builders.
+	ApiToken *ApiTokenClient
 	// BandwidthLog is the client for interacting with the BandwidthLog builders.
 	BandwidthLog *BandwidthLogClient
 	// CacheConfig is the client for interacting with the CacheConfig builders.
@@ -91,6 +94,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.ApiToken = NewApiTokenClient(c.config)
 	c.BandwidthLog = NewBandwidthLogClient(c.config)
 	c.CacheConfig = NewCacheConfigClient(c.config)
 	c.FileNode = NewFileNodeClient(c.config)
@@ -202,6 +206,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:                ctx,
 		config:             cfg,
+		ApiToken:           NewApiTokenClient(cfg),
 		BandwidthLog:       NewBandwidthLogClient(cfg),
 		CacheConfig:        NewCacheConfigClient(cfg),
 		FileNode:           NewFileNodeClient(cfg),
@@ -240,6 +245,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:                ctx,
 		config:             cfg,
+		ApiToken:           NewApiTokenClient(cfg),
 		BandwidthLog:       NewBandwidthLogClient(cfg),
 		CacheConfig:        NewCacheConfigClient(cfg),
 		FileNode:           NewFileNodeClient(cfg),
@@ -265,7 +271,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		BandwidthLog.
+//		ApiToken.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -288,7 +294,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.BandwidthLog, c.CacheConfig, c.FileNode, c.OAuthApp, c.OAuthState,
+		c.ApiToken, c.BandwidthLog, c.CacheConfig, c.FileNode, c.OAuthApp, c.OAuthState,
 		c.Permission, c.Provider, c.ProviderCredential, c.ProviderQuota, c.Role,
 		c.Session, c.SharedLink, c.TransferJob, c.TransferJobFile, c.UploadBatch,
 		c.UploadBatchFile, c.User, c.Workspace, c.WorkspaceMember,
@@ -301,7 +307,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.BandwidthLog, c.CacheConfig, c.FileNode, c.OAuthApp, c.OAuthState,
+		c.ApiToken, c.BandwidthLog, c.CacheConfig, c.FileNode, c.OAuthApp, c.OAuthState,
 		c.Permission, c.Provider, c.ProviderCredential, c.ProviderQuota, c.Role,
 		c.Session, c.SharedLink, c.TransferJob, c.TransferJobFile, c.UploadBatch,
 		c.UploadBatchFile, c.User, c.Workspace, c.WorkspaceMember,
@@ -313,6 +319,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *ApiTokenMutation:
+		return c.ApiToken.mutate(ctx, m)
 	case *BandwidthLogMutation:
 		return c.BandwidthLog.mutate(ctx, m)
 	case *CacheConfigMutation:
@@ -353,6 +361,171 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.WorkspaceMember.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// ApiTokenClient is a client for the ApiToken schema.
+type ApiTokenClient struct {
+	config
+}
+
+// NewApiTokenClient returns a client for the ApiToken from the given config.
+func NewApiTokenClient(c config) *ApiTokenClient {
+	return &ApiTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `entapitoken.Hooks(f(g(h())))`.
+func (c *ApiTokenClient) Use(hooks ...Hook) {
+	c.hooks.ApiToken = append(c.hooks.ApiToken, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `entapitoken.Intercept(f(g(h())))`.
+func (c *ApiTokenClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ApiToken = append(c.inters.ApiToken, interceptors...)
+}
+
+// Create returns a builder for creating a ApiToken entity.
+func (c *ApiTokenClient) Create() *ApiTokenCreate {
+	mutation := newApiTokenMutation(c.config, OpCreate)
+	return &ApiTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ApiToken entities.
+func (c *ApiTokenClient) CreateBulk(builders ...*ApiTokenCreate) *ApiTokenCreateBulk {
+	return &ApiTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ApiTokenClient) MapCreateBulk(slice any, setFunc func(*ApiTokenCreate, int)) *ApiTokenCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ApiTokenCreateBulk{err: fmt.Errorf("calling to ApiTokenClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ApiTokenCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ApiTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ApiToken.
+func (c *ApiTokenClient) Update() *ApiTokenUpdate {
+	mutation := newApiTokenMutation(c.config, OpUpdate)
+	return &ApiTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ApiTokenClient) UpdateOne(_m *ApiToken) *ApiTokenUpdateOne {
+	mutation := newApiTokenMutation(c.config, OpUpdateOne, withApiToken(_m))
+	return &ApiTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ApiTokenClient) UpdateOneID(id uuid.UUID) *ApiTokenUpdateOne {
+	mutation := newApiTokenMutation(c.config, OpUpdateOne, withApiTokenID(id))
+	return &ApiTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ApiToken.
+func (c *ApiTokenClient) Delete() *ApiTokenDelete {
+	mutation := newApiTokenMutation(c.config, OpDelete)
+	return &ApiTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ApiTokenClient) DeleteOne(_m *ApiToken) *ApiTokenDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ApiTokenClient) DeleteOneID(id uuid.UUID) *ApiTokenDeleteOne {
+	builder := c.Delete().Where(entapitoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ApiTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for ApiToken.
+func (c *ApiTokenClient) Query() *ApiTokenQuery {
+	return &ApiTokenQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeApiToken},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ApiToken entity by its id.
+func (c *ApiTokenClient) Get(ctx context.Context, id uuid.UUID) (*ApiToken, error) {
+	return c.Query().Where(entapitoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ApiTokenClient) GetX(ctx context.Context, id uuid.UUID) *ApiToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryWorkspace queries the workspace edge of a ApiToken.
+func (c *ApiTokenClient) QueryWorkspace(_m *ApiToken) *WorkspaceQuery {
+	query := (&WorkspaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(entapitoken.Table, entapitoken.FieldID, id),
+			sqlgraph.To(workspace.Table, workspace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, entapitoken.WorkspaceTable, entapitoken.WorkspaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a ApiToken.
+func (c *ApiTokenClient) QueryUser(_m *ApiToken) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(entapitoken.Table, entapitoken.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, entapitoken.UserTable, entapitoken.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ApiTokenClient) Hooks() []Hook {
+	return c.hooks.ApiToken
+}
+
+// Interceptors returns the client interceptors.
+func (c *ApiTokenClient) Interceptors() []Interceptor {
+	return c.inters.ApiToken
+}
+
+func (c *ApiTokenClient) mutate(ctx context.Context, m *ApiTokenMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ApiTokenCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ApiTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ApiTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ApiTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ApiToken mutation op: %q", m.Op())
 	}
 }
 
@@ -3024,6 +3197,22 @@ func (c *UserClient) QuerySessions(_m *User) *SessionQuery {
 	return query
 }
 
+// QueryAPITokens queries the api_tokens edge of a User.
+func (c *UserClient) QueryAPITokens(_m *User) *ApiTokenQuery {
+	query := (&ApiTokenClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(entapitoken.Table, entapitoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.APITokensTable, user.APITokensColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -3285,6 +3474,22 @@ func (c *WorkspaceClient) QueryOauthApps(_m *Workspace) *OAuthAppQuery {
 	return query
 }
 
+// QueryAPITokens queries the api_tokens edge of a Workspace.
+func (c *WorkspaceClient) QueryAPITokens(_m *Workspace) *ApiTokenQuery {
+	query := (&ApiTokenClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workspace.Table, workspace.FieldID, id),
+			sqlgraph.To(entapitoken.Table, entapitoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workspace.APITokensTable, workspace.APITokensColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *WorkspaceClient) Hooks() []Hook {
 	return c.hooks.Workspace
@@ -3494,15 +3699,15 @@ func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		BandwidthLog, CacheConfig, FileNode, OAuthApp, OAuthState, Permission, Provider,
-		ProviderCredential, ProviderQuota, Role, Session, SharedLink, TransferJob,
-		TransferJobFile, UploadBatch, UploadBatchFile, User, Workspace,
+		ApiToken, BandwidthLog, CacheConfig, FileNode, OAuthApp, OAuthState, Permission,
+		Provider, ProviderCredential, ProviderQuota, Role, Session, SharedLink,
+		TransferJob, TransferJobFile, UploadBatch, UploadBatchFile, User, Workspace,
 		WorkspaceMember []ent.Hook
 	}
 	inters struct {
-		BandwidthLog, CacheConfig, FileNode, OAuthApp, OAuthState, Permission, Provider,
-		ProviderCredential, ProviderQuota, Role, Session, SharedLink, TransferJob,
-		TransferJobFile, UploadBatch, UploadBatchFile, User, Workspace,
+		ApiToken, BandwidthLog, CacheConfig, FileNode, OAuthApp, OAuthState, Permission,
+		Provider, ProviderCredential, ProviderQuota, Role, Session, SharedLink,
+		TransferJob, TransferJobFile, UploadBatch, UploadBatchFile, User, Workspace,
 		WorkspaceMember []ent.Interceptor
 	}
 )

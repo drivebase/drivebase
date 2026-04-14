@@ -39,6 +39,8 @@ const (
 	EdgeBandwidthLogs = "bandwidth_logs"
 	// EdgeOauthApps holds the string denoting the oauth_apps edge name in mutations.
 	EdgeOauthApps = "oauth_apps"
+	// EdgeAPITokens holds the string denoting the api_tokens edge name in mutations.
+	EdgeAPITokens = "api_tokens"
 	// Table holds the table name of the workspace in the database.
 	Table = "workspaces"
 	// MembersTable is the table that holds the members relation/edge.
@@ -97,6 +99,13 @@ const (
 	OauthAppsInverseTable = "oauth_apps"
 	// OauthAppsColumn is the table column denoting the oauth_apps relation/edge.
 	OauthAppsColumn = "workspace_id"
+	// APITokensTable is the table that holds the api_tokens relation/edge.
+	APITokensTable = "api_tokens"
+	// APITokensInverseTable is the table name for the ApiToken entity.
+	// It exists in this package in order to avoid circular dependency with the "entapitoken" package.
+	APITokensInverseTable = "api_tokens"
+	// APITokensColumn is the table column denoting the api_tokens relation/edge.
+	APITokensColumn = "workspace_id"
 )
 
 // Columns holds all SQL columns for workspace fields.
@@ -272,6 +281,20 @@ func ByOauthApps(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newOauthAppsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAPITokensCount orders the results by api_tokens count.
+func ByAPITokensCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAPITokensStep(), opts...)
+	}
+}
+
+// ByAPITokens orders the results by api_tokens terms.
+func ByAPITokens(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAPITokensStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newMembersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -326,5 +349,12 @@ func newOauthAppsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OauthAppsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, OauthAppsTable, OauthAppsColumn),
+	)
+}
+func newAPITokensStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(APITokensInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, APITokensTable, APITokensColumn),
 	)
 }

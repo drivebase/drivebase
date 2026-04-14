@@ -8,6 +8,52 @@ import (
 )
 
 var (
+	// APITokensColumns holds the columns for the "api_tokens" table.
+	APITokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "token_hash", Type: field.TypeString, Unique: true},
+		{Name: "display_token", Type: field.TypeString},
+		{Name: "scopes", Type: field.TypeJSON},
+		{Name: "provider_scopes", Type: field.TypeJSON, Nullable: true},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "workspace_id", Type: field.TypeUUID},
+	}
+	// APITokensTable holds the schema information for the "api_tokens" table.
+	APITokensTable = &schema.Table{
+		Name:       "api_tokens",
+		Columns:    APITokensColumns,
+		PrimaryKey: []*schema.Column{APITokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "api_tokens_users_api_tokens",
+				Columns:    []*schema.Column{APITokensColumns[9]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "api_tokens_workspaces_api_tokens",
+				Columns:    []*schema.Column{APITokensColumns[10]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "apitoken_token_hash",
+				Unique:  false,
+				Columns: []*schema.Column{APITokensColumns[2]},
+			},
+			{
+				Name:    "apitoken_workspace_id",
+				Unique:  false,
+				Columns: []*schema.Column{APITokensColumns[10]},
+			},
+		},
+	}
 	// BandwidthLogsColumns holds the columns for the "bandwidth_logs" table.
 	BandwidthLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -612,6 +658,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		APITokensTable,
 		BandwidthLogsTable,
 		CacheConfigsTable,
 		FileNodesTable,
@@ -635,6 +682,8 @@ var (
 )
 
 func init() {
+	APITokensTable.ForeignKeys[0].RefTable = UsersTable
+	APITokensTable.ForeignKeys[1].RefTable = WorkspacesTable
 	BandwidthLogsTable.ForeignKeys[0].RefTable = WorkspacesTable
 	CacheConfigsTable.ForeignKeys[0].RefTable = ProvidersTable
 	FileNodesTable.ForeignKeys[0].RefTable = FileNodesTable

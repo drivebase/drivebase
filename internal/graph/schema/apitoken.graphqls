@@ -1,0 +1,47 @@
+type ApiToken {
+  id: UUID!
+  name: String!
+  # e.g. "drv_abc12345...wx9z" — safe to display, never the full token
+  displayToken: String!
+  scopes: [String!]!
+  # nil = unrestricted access to all providers
+  providerScopes: [ApiTokenProviderScope!]
+  lastUsedAt: Time
+  expiresAt: Time
+  createdAt: Time!
+}
+
+type ApiTokenProviderScope {
+  providerID: UUID!
+  # empty = all folders in this provider
+  folderIDs: [UUID!]!
+}
+
+# Returned only on creation — rawToken is shown once and never stored.
+type CreateApiTokenPayload {
+  token: ApiToken!
+  rawToken: String!
+}
+
+input CreateApiTokenInput {
+  name: String!
+  scopes: [String!]!
+  expiresAt: Time
+  # nil = access to all providers
+  providerScopes: [ApiTokenProviderScopeInput!]
+}
+
+input ApiTokenProviderScopeInput {
+  providerID: UUID!
+  # empty = all folders in this provider
+  folderIDs: [UUID!]
+}
+
+extend type Query {
+  apiTokens: [ApiToken!]!
+}
+
+extend type Mutation {
+  createApiToken(input: CreateApiTokenInput!): CreateApiTokenPayload!
+  revokeApiToken(id: UUID!): Boolean!
+}

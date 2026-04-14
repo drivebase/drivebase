@@ -34,6 +34,7 @@ func (Workspace) Edges() []ent.Edge {
 		edge.To("shared_links", SharedLink.Type),
 		edge.To("bandwidth_logs", BandwidthLog.Type),
 		edge.To("oauth_apps", OAuthApp.Type),
+		edge.To("api_tokens", ApiToken.Type),
 	}
 }
 

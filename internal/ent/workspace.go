@@ -50,9 +50,11 @@ type WorkspaceEdges struct {
 	BandwidthLogs []*BandwidthLog `json:"bandwidth_logs,omitempty"`
 	// OauthApps holds the value of the oauth_apps edge.
 	OauthApps []*OAuthApp `json:"oauth_apps,omitempty"`
+	// APITokens holds the value of the api_tokens edge.
+	APITokens []*ApiToken `json:"api_tokens,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // MembersOrErr returns the Members value or an error if the edge
@@ -125,6 +127,15 @@ func (e WorkspaceEdges) OauthAppsOrErr() ([]*OAuthApp, error) {
 		return e.OauthApps, nil
 	}
 	return nil, &NotLoadedError{edge: "oauth_apps"}
+}
+
+// APITokensOrErr returns the APITokens value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkspaceEdges) APITokensOrErr() ([]*ApiToken, error) {
+	if e.loadedTypes[8] {
+		return e.APITokens, nil
+	}
+	return nil, &NotLoadedError{edge: "api_tokens"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -234,6 +245,11 @@ func (_m *Workspace) QueryBandwidthLogs() *BandwidthLogQuery {
 // QueryOauthApps queries the "oauth_apps" edge of the Workspace entity.
 func (_m *Workspace) QueryOauthApps() *OAuthAppQuery {
 	return NewWorkspaceClient(_m.config).QueryOauthApps(_m)
+}
+
+// QueryAPITokens queries the "api_tokens" edge of the Workspace entity.
+func (_m *Workspace) QueryAPITokens() *ApiTokenQuery {
+	return NewWorkspaceClient(_m.config).QueryAPITokens(_m)
 }
 
 // Update returns a builder for updating this Workspace.

@@ -4,13 +4,16 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
+	"github.com/drivebase/drivebase/internal/apitoken"
 	"github.com/drivebase/drivebase/internal/ent"
+	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/google/uuid"
 )
 
 // Extractor is HTTP middleware that reads the Authorization header,
-// validates the JWT, and injects the user into the request context.
+// validates the JWT or API token, and injects the user into the request context.
 //
 // It does NOT reject unauthenticated requests — resolvers/handlers
 // call RequireAuth(ctx) themselves. This allows public endpoints to
@@ -24,13 +27,17 @@ func Extractor(secret string, db *ent.Client) func(http.Handler) http.Handler {
 				return
 			}
 
-			claims, err := ParseToken(secret, token)
-			if err != nil {
-				// Token present but invalid — still pass through; handler will reject
-				next.ServeHTTP(w, r)
+			if apitoken.IsAPIToken(token) {
+				handleAPIToken(r, w, next, db, token)
 				return
 			}
 
+			// JWT path
+			claims, err := ParseToken(secret, token)
+			if err != nil {
+				next.ServeHTTP(w, r)
+				return
+			}
 			if claims.TokenType != TokenTypeAccess {
 				next.ServeHTTP(w, r)
 				return
@@ -44,13 +51,9 @@ func Extractor(secret string, db *ent.Client) func(http.Handler) http.Handler {
 			}
 
 			ctx := WithUser(r.Context(), user)
-
-			// If a workspace ID was in the token, inject it too
 			if claims.WorkspaceID != uuid.Nil {
 				ctx = WithWorkspaceID(ctx, claims.WorkspaceID)
 			}
-
-			// Allow override via X-Workspace-ID header (user switching workspace context)
 			if wsHeader := r.Header.Get("X-Workspace-ID"); wsHeader != "" {
 				if wsID, err := uuid.Parse(wsHeader); err == nil {
 					ctx = WithWorkspaceID(ctx, wsID)
@@ -60,6 +63,49 @@ func Extractor(secret string, db *ent.Client) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func handleAPIToken(r *http.Request, w http.ResponseWriter, next http.Handler, db *ent.Client, raw string) {
+	hash := apitoken.Hash(raw)
+
+	tok, err := db.ApiToken.Query().
+		Where(entapitoken.TokenHash(hash)).
+		WithUser().
+		WithWorkspace().
+		Only(r.Context())
+	if err != nil {
+		slog.Debug("api token not found", "hash_prefix", hash[:8])
+		next.ServeHTTP(w, r)
+		return
+	}
+
+	// Check expiry
+	if tok.ExpiresAt != nil && time.Now().After(*tok.ExpiresAt) {
+		slog.Debug("api token expired", "id", tok.ID)
+		next.ServeHTTP(w, r)
+		return
+	}
+
+	// Update last_used_at async — don't block the request
+	go func() {
+		now := time.Now()
+		_ = db.ApiToken.UpdateOneID(tok.ID).SetLastUsedAt(now).Exec(r.Context())
+	}()
+
+	user := tok.Edges.User
+	if user == nil {
+		next.ServeHTTP(w, r)
+		return
+	}
+
+	ctx := WithUser(r.Context(), user)
+	ctx = WithWorkspaceID(ctx, tok.WorkspaceID)
+	ctx = WithTokenScopes(ctx, tok.Scopes)
+	if len(tok.ProviderScopes) > 0 {
+		ctx = WithProviderScopes(ctx, tok.ProviderScopes)
+	}
+
+	next.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // RequireAuth is a helper for handlers/resolvers to enforce authentication.

@@ -37,6 +37,22 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	ApiToken struct {
+		CreatedAt      func(childComplexity int) int
+		DisplayToken   func(childComplexity int) int
+		ExpiresAt      func(childComplexity int) int
+		ID             func(childComplexity int) int
+		LastUsedAt     func(childComplexity int) int
+		Name           func(childComplexity int) int
+		ProviderScopes func(childComplexity int) int
+		Scopes         func(childComplexity int) int
+	}
+
+	ApiTokenProviderScope struct {
+		FolderIDs  func(childComplexity int) int
+		ProviderID func(childComplexity int) int
+	}
+
 	AuthPayload struct {
 		AccessToken  func(childComplexity int) int
 		RefreshToken func(childComplexity int) int
@@ -49,6 +65,11 @@ type ComplexityRoot struct {
 		PeriodStart func(childComplexity int) int
 		ProviderID  func(childComplexity int) int
 		TotalBytes  func(childComplexity int) int
+	}
+
+	CreateApiTokenPayload struct {
+		RawToken func(childComplexity int) int
+		Token    func(childComplexity int) int
 	}
 
 	FileNode struct {
@@ -74,6 +95,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CancelTransferJob    func(childComplexity int, id uuid.UUID) int
 		ConnectProvider      func(childComplexity int, input ConnectProviderInput) int
+		CreateAPIToken       func(childComplexity int, input CreateAPITokenInput) int
 		CreateFolder         func(childComplexity int, input CreateFolderInput) int
 		CreateSharedLink     func(childComplexity int, input CreateSharedLinkInput) int
 		CreateWorkspace      func(childComplexity int, input CreateWorkspaceInput) int
@@ -89,6 +111,7 @@ type ComplexityRoot struct {
 		RefreshToken         func(childComplexity int, token string) int
 		RemoveMember         func(childComplexity int, userID uuid.UUID) int
 		RenameFile           func(childComplexity int, input RenameFileInput) int
+		RevokeAPIToken       func(childComplexity int, id uuid.UUID) int
 		RevokeSession        func(childComplexity int, sessionID uuid.UUID) int
 		RevokeSharedLink     func(childComplexity int, id uuid.UUID) int
 		SaveOAuthApp         func(childComplexity int, input SaveOAuthAppInput) int
@@ -139,6 +162,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		APITokens         func(childComplexity int) int
 		BandwidthUsage    func(childComplexity int, providerID *uuid.UUID, from *time.Time, to *time.Time) int
 		GetFile           func(childComplexity int, providerID uuid.UUID, fileNodeID uuid.UUID) int
 		ListFiles         func(childComplexity int, input ListFilesInput) int
@@ -260,6 +284,8 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
+	CreateAPIToken(ctx context.Context, input CreateAPITokenInput) (*CreateAPITokenPayload, error)
+	RevokeAPIToken(ctx context.Context, id uuid.UUID) (bool, error)
 	SignUp(ctx context.Context, input SignUpInput) (*AuthPayload, error)
 	SignIn(ctx context.Context, input SignInInput) (*AuthPayload, error)
 	RefreshToken(ctx context.Context, token string) (*AuthPayload, error)
@@ -292,6 +318,7 @@ type MutationResolver interface {
 	UpdateMemberRole(ctx context.Context, userID uuid.UUID, roleID uuid.UUID) (*WorkspaceMember, error)
 }
 type QueryResolver interface {
+	APITokens(ctx context.Context) ([]*APIToken, error)
 	Me(ctx context.Context) (*User, error)
 	MySessions(ctx context.Context) ([]*Session, error)
 	BandwidthUsage(ctx context.Context, providerID *uuid.UUID, from *time.Time, to *time.Time) ([]*BandwidthSummary, error)
@@ -326,6 +353,68 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	ec := newExecutionContext(nil, e, nil)
 	_ = ec
 	switch typeName + "." + field {
+
+	case "ApiToken.createdAt":
+		if e.ComplexityRoot.ApiToken.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApiToken.CreatedAt(childComplexity), true
+	case "ApiToken.displayToken":
+		if e.ComplexityRoot.ApiToken.DisplayToken == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApiToken.DisplayToken(childComplexity), true
+	case "ApiToken.expiresAt":
+		if e.ComplexityRoot.ApiToken.ExpiresAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApiToken.ExpiresAt(childComplexity), true
+	case "ApiToken.id":
+		if e.ComplexityRoot.ApiToken.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApiToken.ID(childComplexity), true
+	case "ApiToken.lastUsedAt":
+		if e.ComplexityRoot.ApiToken.LastUsedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApiToken.LastUsedAt(childComplexity), true
+	case "ApiToken.name":
+		if e.ComplexityRoot.ApiToken.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApiToken.Name(childComplexity), true
+	case "ApiToken.providerScopes":
+		if e.ComplexityRoot.ApiToken.ProviderScopes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApiToken.ProviderScopes(childComplexity), true
+	case "ApiToken.scopes":
+		if e.ComplexityRoot.ApiToken.Scopes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApiToken.Scopes(childComplexity), true
+
+	case "ApiTokenProviderScope.folderIDs":
+		if e.ComplexityRoot.ApiTokenProviderScope.FolderIDs == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApiTokenProviderScope.FolderIDs(childComplexity), true
+	case "ApiTokenProviderScope.providerID":
+		if e.ComplexityRoot.ApiTokenProviderScope.ProviderID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApiTokenProviderScope.ProviderID(childComplexity), true
 
 	case "AuthPayload.accessToken":
 		if e.ComplexityRoot.AuthPayload.AccessToken == nil {
@@ -376,6 +465,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.BandwidthSummary.TotalBytes(childComplexity), true
+
+	case "CreateApiTokenPayload.rawToken":
+		if e.ComplexityRoot.CreateApiTokenPayload.RawToken == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateApiTokenPayload.RawToken(childComplexity), true
+	case "CreateApiTokenPayload.token":
+		if e.ComplexityRoot.CreateApiTokenPayload.Token == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateApiTokenPayload.Token(childComplexity), true
 
 	case "FileNode.checksum":
 		if e.ComplexityRoot.FileNode.Checksum == nil {
@@ -485,6 +587,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ConnectProvider(childComplexity, args["input"].(ConnectProviderInput)), true
+	case "Mutation.createApiToken":
+		if e.ComplexityRoot.Mutation.CreateAPIToken == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createApiToken_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateAPIToken(childComplexity, args["input"].(CreateAPITokenInput)), true
 	case "Mutation.createFolder":
 		if e.ComplexityRoot.Mutation.CreateFolder == nil {
 			break
@@ -650,6 +763,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RenameFile(childComplexity, args["input"].(RenameFileInput)), true
+	case "Mutation.revokeApiToken":
+		if e.ComplexityRoot.Mutation.RevokeAPIToken == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_revokeApiToken_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RevokeAPIToken(childComplexity, args["id"].(uuid.UUID)), true
 	case "Mutation.revokeSession":
 		if e.ComplexityRoot.Mutation.RevokeSession == nil {
 			break
@@ -925,6 +1049,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ProviderValidationResult.Ok(childComplexity), true
 
+	case "Query.apiTokens":
+		if e.ComplexityRoot.Query.APITokens == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.APITokens(childComplexity), true
 	case "Query.bandwidthUsage":
 		if e.ComplexityRoot.Query.BandwidthUsage == nil {
 			break
@@ -1517,7 +1647,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputApiTokenProviderScopeInput,
 		ec.unmarshalInputConnectProviderInput,
+		ec.unmarshalInputCreateApiTokenInput,
 		ec.unmarshalInputCreateFolderInput,
 		ec.unmarshalInputCreateSharedLinkInput,
 		ec.unmarshalInputCreateWorkspaceInput,
@@ -1606,7 +1738,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/auth.graphqls" "schema/bandwidth.graphqls" "schema/file.graphqls" "schema/oauth.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/sharing.graphqls" "schema/transfer.graphqls" "schema/workspace.graphqls"
+//go:embed "schema/apitoken.graphqls" "schema/auth.graphqls" "schema/bandwidth.graphqls" "schema/file.graphqls" "schema/oauth.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/sharing.graphqls" "schema/transfer.graphqls" "schema/workspace.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -1618,6 +1750,7 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
+	{Name: "schema/apitoken.graphqls", Input: sourceData("schema/apitoken.graphqls"), BuiltIn: false},
 	{Name: "schema/auth.graphqls", Input: sourceData("schema/auth.graphqls"), BuiltIn: false},
 	{Name: "schema/bandwidth.graphqls", Input: sourceData("schema/bandwidth.graphqls"), BuiltIn: false},
 	{Name: "schema/file.graphqls", Input: sourceData("schema/file.graphqls"), BuiltIn: false},
@@ -1649,6 +1782,17 @@ func (ec *executionContext) field_Mutation_connectProvider_args(ctx context.Cont
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNConnectProviderInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐConnectProviderInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createApiToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNCreateApiTokenInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateAPITokenInput)
 	if err != nil {
 		return nil, err
 	}
@@ -1833,6 +1977,17 @@ func (ec *executionContext) field_Mutation_renameFile_args(ctx context.Context, 
 		return nil, err
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_revokeApiToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -2171,6 +2326,302 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _ApiToken_id(ctx context.Context, field graphql.CollectedField, obj *APIToken) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ApiToken_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ApiToken_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApiToken",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ApiToken_name(ctx context.Context, field graphql.CollectedField, obj *APIToken) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ApiToken_name,
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ApiToken_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApiToken",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ApiToken_displayToken(ctx context.Context, field graphql.CollectedField, obj *APIToken) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ApiToken_displayToken,
+		func(ctx context.Context) (any, error) {
+			return obj.DisplayToken, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ApiToken_displayToken(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApiToken",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ApiToken_scopes(ctx context.Context, field graphql.CollectedField, obj *APIToken) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ApiToken_scopes,
+		func(ctx context.Context) (any, error) {
+			return obj.Scopes, nil
+		},
+		nil,
+		ec.marshalNString2ᚕstringᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ApiToken_scopes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApiToken",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ApiToken_providerScopes(ctx context.Context, field graphql.CollectedField, obj *APIToken) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ApiToken_providerScopes,
+		func(ctx context.Context) (any, error) {
+			return obj.ProviderScopes, nil
+		},
+		nil,
+		ec.marshalOApiTokenProviderScope2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPITokenProviderScopeᚄ,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ApiToken_providerScopes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApiToken",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "providerID":
+				return ec.fieldContext_ApiTokenProviderScope_providerID(ctx, field)
+			case "folderIDs":
+				return ec.fieldContext_ApiTokenProviderScope_folderIDs(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ApiTokenProviderScope", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ApiToken_lastUsedAt(ctx context.Context, field graphql.CollectedField, obj *APIToken) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ApiToken_lastUsedAt,
+		func(ctx context.Context) (any, error) {
+			return obj.LastUsedAt, nil
+		},
+		nil,
+		ec.marshalOTime2ᚖtimeᚐTime,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ApiToken_lastUsedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApiToken",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ApiToken_expiresAt(ctx context.Context, field graphql.CollectedField, obj *APIToken) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ApiToken_expiresAt,
+		func(ctx context.Context) (any, error) {
+			return obj.ExpiresAt, nil
+		},
+		nil,
+		ec.marshalOTime2ᚖtimeᚐTime,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ApiToken_expiresAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApiToken",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ApiToken_createdAt(ctx context.Context, field graphql.CollectedField, obj *APIToken) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ApiToken_createdAt,
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		ec.marshalNTime2timeᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ApiToken_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApiToken",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ApiTokenProviderScope_providerID(ctx context.Context, field graphql.CollectedField, obj *APITokenProviderScope) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ApiTokenProviderScope_providerID,
+		func(ctx context.Context) (any, error) {
+			return obj.ProviderID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ApiTokenProviderScope_providerID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApiTokenProviderScope",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ApiTokenProviderScope_folderIDs(ctx context.Context, field graphql.CollectedField, obj *APITokenProviderScope) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ApiTokenProviderScope_folderIDs,
+		func(ctx context.Context) (any, error) {
+			return obj.FolderIDs, nil
+		},
+		nil,
+		ec.marshalNUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ApiTokenProviderScope_folderIDs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApiTokenProviderScope",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _AuthPayload_accessToken(ctx context.Context, field graphql.CollectedField, obj *AuthPayload) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2408,6 +2859,82 @@ func (ec *executionContext) fieldContext_BandwidthSummary_periodEnd(_ context.Co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateApiTokenPayload_token(ctx context.Context, field graphql.CollectedField, obj *CreateAPITokenPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CreateApiTokenPayload_token,
+		func(ctx context.Context) (any, error) {
+			return obj.Token, nil
+		},
+		nil,
+		ec.marshalNApiToken2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPIToken,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CreateApiTokenPayload_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateApiTokenPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ApiToken_id(ctx, field)
+			case "name":
+				return ec.fieldContext_ApiToken_name(ctx, field)
+			case "displayToken":
+				return ec.fieldContext_ApiToken_displayToken(ctx, field)
+			case "scopes":
+				return ec.fieldContext_ApiToken_scopes(ctx, field)
+			case "providerScopes":
+				return ec.fieldContext_ApiToken_providerScopes(ctx, field)
+			case "lastUsedAt":
+				return ec.fieldContext_ApiToken_lastUsedAt(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_ApiToken_expiresAt(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_ApiToken_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ApiToken", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateApiTokenPayload_rawToken(ctx context.Context, field graphql.CollectedField, obj *CreateAPITokenPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CreateApiTokenPayload_rawToken,
+		func(ctx context.Context) (any, error) {
+			return obj.RawToken, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CreateApiTokenPayload_rawToken(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateApiTokenPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2841,6 +3368,94 @@ func (ec *executionContext) fieldContext_ListFilesResult_nextPageToken(_ context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createApiToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_createApiToken,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreateAPIToken(ctx, fc.Args["input"].(CreateAPITokenInput))
+		},
+		nil,
+		ec.marshalNCreateApiTokenPayload2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateAPITokenPayload,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createApiToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "token":
+				return ec.fieldContext_CreateApiTokenPayload_token(ctx, field)
+			case "rawToken":
+				return ec.fieldContext_CreateApiTokenPayload_rawToken(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CreateApiTokenPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createApiToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_revokeApiToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_revokeApiToken,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RevokeAPIToken(ctx, fc.Args["id"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_revokeApiToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_revokeApiToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -4996,6 +5611,53 @@ func (ec *executionContext) fieldContext_ProviderValidationResult_error(_ contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_apiTokens(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_apiTokens,
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().APITokens(ctx)
+		},
+		nil,
+		ec.marshalNApiToken2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPITokenᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_apiTokens(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ApiToken_id(ctx, field)
+			case "name":
+				return ec.fieldContext_ApiToken_name(ctx, field)
+			case "displayToken":
+				return ec.fieldContext_ApiToken_displayToken(ctx, field)
+			case "scopes":
+				return ec.fieldContext_ApiToken_scopes(ctx, field)
+			case "providerScopes":
+				return ec.fieldContext_ApiToken_providerScopes(ctx, field)
+			case "lastUsedAt":
+				return ec.fieldContext_ApiToken_lastUsedAt(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_ApiToken_expiresAt(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_ApiToken_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ApiToken", field.Name)
 		},
 	}
 	return fc, nil
@@ -9592,6 +10254,43 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputApiTokenProviderScopeInput(ctx context.Context, obj any) (APITokenProviderScopeInput, error) {
+	var it APITokenProviderScopeInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"providerID", "folderIDs"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "providerID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("providerID"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProviderID = data
+		case "folderIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("folderIDs"))
+			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FolderIDs = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputConnectProviderInput(ctx context.Context, obj any) (ConnectProviderInput, error) {
 	var it ConnectProviderInput
 	if obj == nil {
@@ -9631,6 +10330,57 @@ func (ec *executionContext) unmarshalInputConnectProviderInput(ctx context.Conte
 				return it, err
 			}
 			it.Credentials = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateApiTokenInput(ctx context.Context, obj any) (CreateAPITokenInput, error) {
+	var it CreateAPITokenInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "scopes", "expiresAt", "providerScopes"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "scopes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scopes"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Scopes = data
+		case "expiresAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expiresAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExpiresAt = data
+		case "providerScopes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("providerScopes"))
+			data, err := ec.unmarshalOApiTokenProviderScopeInput2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPITokenProviderScopeInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProviderScopes = data
 		}
 	}
 	return it, nil
@@ -10281,6 +11031,115 @@ func (ec *executionContext) unmarshalInputUpdateWorkspaceInput(ctx context.Conte
 
 // region    **************************** object.gotpl ****************************
 
+var apiTokenImplementors = []string{"ApiToken"}
+
+func (ec *executionContext) _ApiToken(ctx context.Context, sel ast.SelectionSet, obj *APIToken) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, apiTokenImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ApiToken")
+		case "id":
+			out.Values[i] = ec._ApiToken_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._ApiToken_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "displayToken":
+			out.Values[i] = ec._ApiToken_displayToken(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "scopes":
+			out.Values[i] = ec._ApiToken_scopes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "providerScopes":
+			out.Values[i] = ec._ApiToken_providerScopes(ctx, field, obj)
+		case "lastUsedAt":
+			out.Values[i] = ec._ApiToken_lastUsedAt(ctx, field, obj)
+		case "expiresAt":
+			out.Values[i] = ec._ApiToken_expiresAt(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._ApiToken_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var apiTokenProviderScopeImplementors = []string{"ApiTokenProviderScope"}
+
+func (ec *executionContext) _ApiTokenProviderScope(ctx context.Context, sel ast.SelectionSet, obj *APITokenProviderScope) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, apiTokenProviderScopeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ApiTokenProviderScope")
+		case "providerID":
+			out.Values[i] = ec._ApiTokenProviderScope_providerID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "folderIDs":
+			out.Values[i] = ec._ApiTokenProviderScope_folderIDs(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var authPayloadImplementors = []string{"AuthPayload"}
 
 func (ec *executionContext) _AuthPayload(ctx context.Context, sel ast.SelectionSet, obj *AuthPayload) graphql.Marshaler {
@@ -10363,6 +11222,50 @@ func (ec *executionContext) _BandwidthSummary(ctx context.Context, sel ast.Selec
 			}
 		case "periodEnd":
 			out.Values[i] = ec._BandwidthSummary_periodEnd(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var createApiTokenPayloadImplementors = []string{"CreateApiTokenPayload"}
+
+func (ec *executionContext) _CreateApiTokenPayload(ctx context.Context, sel ast.SelectionSet, obj *CreateAPITokenPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createApiTokenPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreateApiTokenPayload")
+		case "token":
+			out.Values[i] = ec._CreateApiTokenPayload_token(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "rawToken":
+			out.Values[i] = ec._CreateApiTokenPayload_rawToken(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -10531,6 +11434,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "createApiToken":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createApiToken(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "revokeApiToken":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_revokeApiToken(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "signUp":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_signUp(ctx, field)
@@ -11014,6 +11931,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "apiTokens":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_apiTokens(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "me":
 			field := field
 
@@ -12445,6 +13384,47 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNApiToken2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPITokenᚄ(ctx context.Context, sel ast.SelectionSet, v []*APIToken) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNApiToken2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPIToken(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNApiToken2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPIToken(ctx context.Context, sel ast.SelectionSet, v *APIToken) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ApiToken(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNApiTokenProviderScope2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPITokenProviderScope(ctx context.Context, sel ast.SelectionSet, v *APITokenProviderScope) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ApiTokenProviderScope(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNApiTokenProviderScopeInput2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPITokenProviderScopeInput(ctx context.Context, v any) (*APITokenProviderScopeInput, error) {
+	res, err := ec.unmarshalInputApiTokenProviderScopeInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNAuthPayload2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAuthPayload(ctx context.Context, sel ast.SelectionSet, v AuthPayload) graphql.Marshaler {
 	return ec._AuthPayload(ctx, sel, &v)
 }
@@ -12514,6 +13494,25 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 func (ec *executionContext) unmarshalNConnectProviderInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐConnectProviderInput(ctx context.Context, v any) (ConnectProviderInput, error) {
 	res, err := ec.unmarshalInputConnectProviderInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateApiTokenInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateAPITokenInput(ctx context.Context, v any) (CreateAPITokenInput, error) {
+	res, err := ec.unmarshalInputCreateApiTokenInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCreateApiTokenPayload2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateAPITokenPayload(ctx context.Context, sel ast.SelectionSet, v CreateAPITokenPayload) graphql.Marshaler {
+	return ec._CreateApiTokenPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCreateApiTokenPayload2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateAPITokenPayload(ctx context.Context, sel ast.SelectionSet, v *CreateAPITokenPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CreateApiTokenPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNCreateFolderInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateFolderInput(ctx context.Context, v any) (CreateFolderInput, error) {
@@ -12847,6 +13846,36 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNSwitchWorkspacePayload2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSwitchWorkspacePayload(ctx context.Context, sel ast.SelectionSet, v SwitchWorkspacePayload) graphql.Marshaler {
 	return ec._SwitchWorkspacePayload(ctx, sel, &v)
 }
@@ -12907,6 +13936,36 @@ func (ec *executionContext) unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(c
 
 func (ec *executionContext) marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
 	return ec._UUID(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, v any) ([]uuid.UUID, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]uuid.UUID, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, sel ast.SelectionSet, v []uuid.UUID) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNUpdateProviderInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐUpdateProviderInput(ctx context.Context, v any) (UpdateProviderInput, error) {
@@ -13164,6 +14223,43 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) marshalOApiTokenProviderScope2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPITokenProviderScopeᚄ(ctx context.Context, sel ast.SelectionSet, v []*APITokenProviderScope) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNApiTokenProviderScope2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPITokenProviderScope(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOApiTokenProviderScopeInput2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPITokenProviderScopeInputᚄ(ctx context.Context, v any) ([]*APITokenProviderScopeInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*APITokenProviderScopeInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNApiTokenProviderScopeInput2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐAPITokenProviderScopeInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -13288,6 +14384,42 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 		return graphql.Null
 	}
 	return ec._Time(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, v any) ([]uuid.UUID, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]uuid.UUID, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, sel ast.SelectionSet, v []uuid.UUID) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v any) (*uuid.UUID, error) {

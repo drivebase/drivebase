@@ -470,6 +470,29 @@ func HasOauthAppsWith(preds ...predicate.OAuthApp) predicate.Workspace {
 	})
 }
 
+// HasAPITokens applies the HasEdge predicate on the "api_tokens" edge.
+func HasAPITokens() predicate.Workspace {
+	return predicate.Workspace(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, APITokensTable, APITokensColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAPITokensWith applies the HasEdge predicate on the "api_tokens" edge with a given conditions (other predicates).
+func HasAPITokensWith(preds ...predicate.ApiToken) predicate.Workspace {
+	return predicate.Workspace(func(s *sql.Selector) {
+		step := newAPITokensStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Workspace) predicate.Workspace {
 	return predicate.Workspace(sql.AndPredicates(predicates...))

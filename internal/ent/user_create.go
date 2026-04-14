@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/drivebase/drivebase/internal/ent/session"
 	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/drivebase/drivebase/internal/ent/workspacemember"
@@ -111,6 +112,21 @@ func (_c *UserCreate) AddSessions(v ...*Session) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddSessionIDs(ids...)
+}
+
+// AddAPITokenIDs adds the "api_tokens" edge to the ApiToken entity by IDs.
+func (_c *UserCreate) AddAPITokenIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddAPITokenIDs(ids...)
+	return _c
+}
+
+// AddAPITokens adds the "api_tokens" edges to the ApiToken entity.
+func (_c *UserCreate) AddAPITokens(v ...*ApiToken) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAPITokenIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -269,6 +285,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.APITokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.APITokensTable,
+			Columns: []string{user.APITokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(entapitoken.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

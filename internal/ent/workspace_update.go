@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
 	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
@@ -191,6 +192,21 @@ func (_u *WorkspaceUpdate) AddOauthApps(v ...*OAuthApp) *WorkspaceUpdate {
 	return _u.AddOauthAppIDs(ids...)
 }
 
+// AddAPITokenIDs adds the "api_tokens" edge to the ApiToken entity by IDs.
+func (_u *WorkspaceUpdate) AddAPITokenIDs(ids ...uuid.UUID) *WorkspaceUpdate {
+	_u.mutation.AddAPITokenIDs(ids...)
+	return _u
+}
+
+// AddAPITokens adds the "api_tokens" edges to the ApiToken entity.
+func (_u *WorkspaceUpdate) AddAPITokens(v ...*ApiToken) *WorkspaceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAPITokenIDs(ids...)
+}
+
 // Mutation returns the WorkspaceMutation object of the builder.
 func (_u *WorkspaceUpdate) Mutation() *WorkspaceMutation {
 	return _u.mutation
@@ -362,6 +378,27 @@ func (_u *WorkspaceUpdate) RemoveOauthApps(v ...*OAuthApp) *WorkspaceUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveOauthAppIDs(ids...)
+}
+
+// ClearAPITokens clears all "api_tokens" edges to the ApiToken entity.
+func (_u *WorkspaceUpdate) ClearAPITokens() *WorkspaceUpdate {
+	_u.mutation.ClearAPITokens()
+	return _u
+}
+
+// RemoveAPITokenIDs removes the "api_tokens" edge to ApiToken entities by IDs.
+func (_u *WorkspaceUpdate) RemoveAPITokenIDs(ids ...uuid.UUID) *WorkspaceUpdate {
+	_u.mutation.RemoveAPITokenIDs(ids...)
+	return _u
+}
+
+// RemoveAPITokens removes "api_tokens" edges to ApiToken entities.
+func (_u *WorkspaceUpdate) RemoveAPITokens(v ...*ApiToken) *WorkspaceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAPITokenIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -796,6 +833,51 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.APITokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.APITokensTable,
+			Columns: []string{workspace.APITokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(entapitoken.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAPITokensIDs(); len(nodes) > 0 && !_u.mutation.APITokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.APITokensTable,
+			Columns: []string{workspace.APITokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(entapitoken.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.APITokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.APITokensTable,
+			Columns: []string{workspace.APITokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(entapitoken.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{workspace.Label}
@@ -970,6 +1052,21 @@ func (_u *WorkspaceUpdateOne) AddOauthApps(v ...*OAuthApp) *WorkspaceUpdateOne {
 	return _u.AddOauthAppIDs(ids...)
 }
 
+// AddAPITokenIDs adds the "api_tokens" edge to the ApiToken entity by IDs.
+func (_u *WorkspaceUpdateOne) AddAPITokenIDs(ids ...uuid.UUID) *WorkspaceUpdateOne {
+	_u.mutation.AddAPITokenIDs(ids...)
+	return _u
+}
+
+// AddAPITokens adds the "api_tokens" edges to the ApiToken entity.
+func (_u *WorkspaceUpdateOne) AddAPITokens(v ...*ApiToken) *WorkspaceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAPITokenIDs(ids...)
+}
+
 // Mutation returns the WorkspaceMutation object of the builder.
 func (_u *WorkspaceUpdateOne) Mutation() *WorkspaceMutation {
 	return _u.mutation
@@ -1141,6 +1238,27 @@ func (_u *WorkspaceUpdateOne) RemoveOauthApps(v ...*OAuthApp) *WorkspaceUpdateOn
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveOauthAppIDs(ids...)
+}
+
+// ClearAPITokens clears all "api_tokens" edges to the ApiToken entity.
+func (_u *WorkspaceUpdateOne) ClearAPITokens() *WorkspaceUpdateOne {
+	_u.mutation.ClearAPITokens()
+	return _u
+}
+
+// RemoveAPITokenIDs removes the "api_tokens" edge to ApiToken entities by IDs.
+func (_u *WorkspaceUpdateOne) RemoveAPITokenIDs(ids ...uuid.UUID) *WorkspaceUpdateOne {
+	_u.mutation.RemoveAPITokenIDs(ids...)
+	return _u
+}
+
+// RemoveAPITokens removes "api_tokens" edges to ApiToken entities.
+func (_u *WorkspaceUpdateOne) RemoveAPITokens(v ...*ApiToken) *WorkspaceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAPITokenIDs(ids...)
 }
 
 // Where appends a list predicates to the WorkspaceUpdate builder.
@@ -1598,6 +1716,51 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.APITokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.APITokensTable,
+			Columns: []string{workspace.APITokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(entapitoken.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAPITokensIDs(); len(nodes) > 0 && !_u.mutation.APITokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.APITokensTable,
+			Columns: []string{workspace.APITokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(entapitoken.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.APITokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.APITokensTable,
+			Columns: []string{workspace.APITokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(entapitoken.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

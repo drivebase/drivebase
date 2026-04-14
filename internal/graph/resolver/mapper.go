@@ -6,6 +6,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
+	"github.com/google/uuid"
 )
 
 func mapUser(u *ent.User) *graph.User {
@@ -180,6 +181,31 @@ func mapSharedLink(l *ent.SharedLink) *graph.SharedLink {
 		gl.MaxUploads = l.MaxUploads
 	}
 	return gl
+}
+
+func mapAPIToken(t *ent.ApiToken) *graph.APIToken {
+	gt := &graph.APIToken{
+		ID:           t.ID,
+		Name:         t.Name,
+		DisplayToken: t.DisplayToken,
+		Scopes:       t.Scopes,
+		CreatedAt:    t.CreatedAt,
+		LastUsedAt:   t.LastUsedAt,
+		ExpiresAt:    t.ExpiresAt,
+	}
+	if len(t.ProviderScopes) > 0 {
+		gt.ProviderScopes = make([]*graph.APITokenProviderScope, len(t.ProviderScopes))
+		for i, ps := range t.ProviderScopes {
+			gt.ProviderScopes[i] = &graph.APITokenProviderScope{
+				ProviderID: ps.ProviderID,
+				FolderIDs:  ps.FolderIDs,
+			}
+			if gt.ProviderScopes[i].FolderIDs == nil {
+				gt.ProviderScopes[i].FolderIDs = []uuid.UUID{}
+			}
+		}
+	}
+	return gt
 }
 
 func mapOAuthApp(a *ent.OAuthApp) *graph.OAuthApp {
