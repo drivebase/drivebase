@@ -29,10 +29,14 @@ func TestValidate(t *testing.T) {
 }
 
 func TestValidate_missingDir(t *testing.T) {
-	creds, _ := json.Marshal(Credentials{BasePath: "/tmp/drivebase-nonexistent-dir-xyz"})
+	dir := filepath.Join(t.TempDir(), "auto-created")
+	creds, _ := json.Marshal(Credentials{BasePath: dir})
 	p, err := New(creds)
 	require.NoError(t, err)
-	require.Error(t, p.Validate(context.Background()))
+	// Validate should auto-create the directory rather than fail
+	require.NoError(t, p.Validate(context.Background()))
+	_, err = os.Stat(dir)
+	require.NoError(t, err, "directory should have been auto-created")
 }
 
 func TestList_empty(t *testing.T) {
