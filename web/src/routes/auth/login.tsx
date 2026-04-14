@@ -69,7 +69,12 @@ function LoginPage() {
 					className="w-full"
 					validate={(v) => (v.length < 1 ? "Password is required" : null)}
 				>
-					<Label>Password</Label>
+					<div className="flex items-center justify-between">
+						<Label>Password</Label>
+						<Link to="/auth/forgot-password" className="text-xs text-muted hover:text-foreground transition-colors">
+							Forgot password?
+						</Link>
+					</div>
 					<InputGroup>
 						<InputGroup.Input placeholder="••••••••" autoComplete="current-password" />
 						<InputGroup.Suffix>

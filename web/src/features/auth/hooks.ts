@@ -4,7 +4,13 @@ import { toast } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "urql";
-import { SignInMutation, SignOutMutation, SignUpMutation } from "./mutations";
+import {
+	RequestPasswordResetMutation,
+	ResetPasswordMutation,
+	SignInMutation,
+	SignOutMutation,
+	SignUpMutation,
+} from "./mutations";
 
 export function useSignIn() {
 	const navigate = useNavigate();
@@ -52,6 +58,51 @@ export function useSignUp() {
 	}
 
 	return { submit, fetching, error };
+}
+
+export function usePasswordReset() {
+	const navigate = useNavigate();
+	const [{ fetching: requesting }, requestReset] = useMutation(RequestPasswordResetMutation);
+	const [{ fetching: resetting }, resetPassword] = useMutation(ResetPasswordMutation);
+	const [error, setError] = useState<string | null>(null);
+	const [step, setStep] = useState<"email" | "otp">("email");
+	const [email, setEmail] = useState("");
+
+	async function requestOtp(emailValue: string) {
+		setError(null);
+		const result = await requestReset({ email: emailValue });
+
+		if (result.error || !result.data) {
+			setError(parseError(result.error).message);
+			return;
+		}
+
+		setEmail(emailValue);
+		setStep("otp");
+	}
+
+	async function submitReset(otp: string, newPassword: string) {
+		setError(null);
+		const result = await resetPassword({ email, otp, newPassword });
+
+		if (result.error || !result.data) {
+			setError(parseError(result.error).message);
+			return;
+		}
+
+		toast.success("Password reset successfully");
+		navigate({ to: "/auth/login" });
+	}
+
+	return {
+		step,
+		email,
+		error,
+		requesting,
+		resetting,
+		requestOtp,
+		submitReset,
+	};
 }
 
 export function useSignOut() {

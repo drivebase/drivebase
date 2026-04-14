@@ -34,6 +34,18 @@ export const SignOutMutation = graphql(`
   }
 `);
 
+export const RequestPasswordResetMutation = graphql(`
+  mutation RequestPasswordReset($email: String!) {
+    requestPasswordReset(email: $email)
+  }
+`);
+
+export const ResetPasswordMutation = graphql(`
+  mutation ResetPassword($email: String!, $otp: String!, $newPassword: String!) {
+    resetPassword(email: $email, otp: $otp, newPassword: $newPassword)
+  }
+`);
+
 export const MeQuery = graphql(`
   query Me {
     me {
