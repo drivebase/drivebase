@@ -2,22 +2,14 @@ package resolver
 
 import (
 	"context"
-	"database/sql"
 	"strings"
 	"testing"
 	"time"
 
-	"entgo.io/ent/dialect"
-	entsql "entgo.io/ent/dialect/sql"
-	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	tc "github.com/testcontainers/testcontainers-go"
-	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
-	"github.com/testcontainers/testcontainers-go/wait"
 
 	"github.com/drivebase/drivebase/internal/auth"
-	"github.com/drivebase/drivebase/internal/config"
 	"github.com/drivebase/drivebase/internal/crypto"
 	"github.com/drivebase/drivebase/internal/ent"
 	entoauthapp "github.com/drivebase/drivebase/internal/ent/oauthapp"
@@ -63,89 +55,46 @@ func TestMapOAuthApp_withoutAlias(t *testing.T) {
 
 const testEncryptionKey = "test-encryption-key-32-chars-xxx"
 
-// setupOAuthTest spins up a Postgres container and returns ready-to-use
-// resolvers + an auth context scoped to a workspace with admin permissions.
+// setupOAuthTest creates a fresh workspace in the shared DB and returns
+// ready-to-use resolvers + an auth context scoped to that workspace.
+// No container is started — TestMain starts one for the whole package.
 func setupOAuthTest(t *testing.T) (*mutationResolver, *queryResolver, context.Context) {
 	t.Helper()
-
 	ctx := context.Background()
 
-	pgCtr, err := tcpostgres.Run(ctx,
-		"postgres:17-alpine",
-		tcpostgres.WithDatabase("drivebase_test"),
-		tcpostgres.WithUsername("test"),
-		tcpostgres.WithPassword("test"),
-		tc.WithWaitStrategy(
-			wait.ForAll(
-				wait.ForLog("database system is ready to accept connections").
-					WithOccurrence(2).
-					WithStartupTimeout(60*time.Second),
-				wait.ForListeningPort("5432/tcp").
-					WithStartupTimeout(60*time.Second),
-			),
-		),
-	)
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = tc.TerminateContainer(pgCtr) })
+	// Use a unique slug per test to avoid conflicts with parallel runs
+	slug := "ws-" + t.Name()
 
-	dsn, err := pgCtr.ConnectionString(ctx, "sslmode=disable")
-	require.NoError(t, err)
-
-	sqlDB, err := sql.Open("pgx", dsn)
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = sqlDB.Close() })
-
-	db := ent.NewClient(ent.Driver(entsql.OpenDB(dialect.Postgres, sqlDB)))
-	t.Cleanup(func() { _ = db.Close() })
-	require.NoError(t, db.Schema.Create(ctx))
-
-	cfg := &config.Config{
-		Auth: config.AuthConfig{
-			JWTSecret:      "test-jwt-secret-at-least-32-chars-xx",
-			AccessTokenTTL: 15 * time.Minute,
-		},
-		Crypto: config.CryptoConfig{
-			EncryptionKey: testEncryptionKey,
-		},
-		Server: config.ServerConfig{
-			OAuthCallbackURL: "http://localhost:8080/api/v1/oauth/callback",
-		},
-	}
-
-	// Create user
 	hashedPw, err := auth.HashPassword("password")
 	require.NoError(t, err)
-	user, err := db.User.Create().
-		SetEmail("test@example.com").
+	user, err := sharedDB.User.Create().
+		SetEmail(t.Name()+"@example.com").
 		SetName("Test User").
 		SetPasswordHash(hashedPw).
 		Save(ctx)
 	require.NoError(t, err)
 
-	// Create workspace
-	ws, err := db.Workspace.Create().
+	ws, err := sharedDB.Workspace.Create().
 		SetName("Test Workspace").
-		SetSlug("test-workspace").
+		SetSlug(slug).
 		Save(ctx)
 	require.NoError(t, err)
 
-	// Create owner role with admin permission on workspace
-	role, err := db.Role.Create().
+	role, err := sharedDB.Role.Create().
 		SetWorkspaceID(ws.ID).
 		SetName("owner").
 		SetIsSystem(true).
 		Save(ctx)
 	require.NoError(t, err)
 
-	_, err = db.Permission.Create().
+	_, err = sharedDB.Permission.Create().
 		SetRoleID(role.ID).
 		SetResourceType(string(entschema.ResourceTypeWorkspace)).
 		SetActions([]string{string(entschema.ActionAdmin)}).
 		Save(ctx)
 	require.NoError(t, err)
 
-	// Create workspace member
-	_, err = db.WorkspaceMember.Create().
+	_, err = sharedDB.WorkspaceMember.Create().
 		SetUserID(user.ID).
 		SetWorkspaceID(ws.ID).
 		SetRoleID(role.ID).
@@ -155,7 +104,7 @@ func setupOAuthTest(t *testing.T) (*mutationResolver, *queryResolver, context.Co
 	authCtx := auth.WithUser(ctx, user)
 	authCtx = auth.WithWorkspaceID(authCtx, ws.ID)
 
-	r := &Resolver{DB: db, Config: cfg}
+	r := &Resolver{DB: sharedDB, Config: sharedCfg}
 	return &mutationResolver{r}, &queryResolver{r}, authCtx
 }
 
