@@ -14,6 +14,11 @@ func requestLogger(next http.Handler) http.Handler {
 		ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 		start := time.Now()
 
+		if r.Method == http.MethodOptions {
+			next.ServeHTTP(ww, r)
+			return
+		}
+
 		defer func() {
 			slog.Info("request",
 				"method", r.Method,
