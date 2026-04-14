@@ -13,9 +13,9 @@ build:
 run: build
 	./bin/drivebase
 
-# Unit tests
+# Unit tests (excludes e2e — use make e2e for those)
 test:
-	go test ./... -count=1 -race
+	go test ./internal/... -count=1 -race
 
 # E2E tests (requires running docker-compose stack)
 e2e:
