@@ -15,6 +15,10 @@ run: build
 
 # Unit tests (excludes e2e — use make e2e for those)
 test:
+	go test ./internal/... -count=1
+
+# Unit tests with race detector (slower — run before merging)
+test-race:
 	go test ./internal/... -count=1 -race
 
 # E2E tests (requires running docker-compose stack)
