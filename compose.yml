@@ -44,6 +44,33 @@ services:
       timeout: 10s
       retries: 5
 
+  drivebase:
+    image: drivebase:latest   # build with: make docker
+    ports:
+      - "8080:8080"
+    environment:
+      DRIVEBASE_DATABASE_DSN: "postgres://drivebase:drivebase@postgres:5432/drivebase?sslmode=disable"
+      DRIVEBASE_REDIS_URL: "redis://redis:6379/0"
+      DRIVEBASE_SERVER_ENV: "production"
+      DRIVEBASE_LOG_FORMAT: "json"
+      DRIVEBASE_LOG_FILE: "/app/data/logs/drivebase.log"
+      DRIVEBASE_LOG_MAX_SIZE_MB: "50"
+      DRIVEBASE_LOG_MAX_BACKUPS: "5"
+      DRIVEBASE_LOG_MAX_AGE_DAYS: "30"
+      DRIVEBASE_CACHE_DISK_PATH: "/app/data/cache"
+      # REQUIRED — set these before starting:
+      # DRIVEBASE_AUTH_JWTSECRET: ""
+      # DRIVEBASE_CRYPTO_ENCRYPTIONKEY: ""
+    volumes:
+      - ./data:/app/data   # all persistent runtime data (logs, cache, etc.)
+      - ./config.toml:/app/config.toml:ro   # optional config file mount
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:

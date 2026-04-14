@@ -27,7 +27,7 @@ refresh_token_ttl  = "168h"  # 7 days
 encryption_key = ""
 
 [cache]
-disk_path   = "/tmp/drivebase/cache"
+disk_path   = "./data/cache"
 default_ttl = "5m"
 
 [worker]
@@ -36,3 +36,11 @@ concurrency = 10
 [log]
 level  = "info"   # debug | info | warn | error
 format = "text"   # text | json
+
+# File logging — writes a rotating JSON log file in addition to stdout.
+# Leave file empty to disable. Rotated files are gzip-compressed.
+# When reporting bugs, share the contents of this file.
+file         = "./data/logs/drivebase.log"
+max_size_mb  = 50    # rotate after this many MB
+max_backups  = 5     # keep this many rotated files
+max_age_days = 30    # delete rotated files older than this

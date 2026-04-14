@@ -54,8 +54,12 @@ type WorkerConfig struct {
 }
 
 type LogConfig struct {
-	Level  string // "debug" | "info" | "warn" | "error"
-	Format string // "text" | "json"
+	Level      string // "debug" | "info" | "warn" | "error"
+	Format     string // "text" | "json"
+	File       string // path to log file; empty = file logging disabled
+	MaxSizeMB  int    // max size in MB before rotation
+	MaxBackups int    // number of old log files to keep
+	MaxAgeDays int    // max age in days before deletion
 }
 
 func Load() (*Config, error) {
@@ -74,6 +78,10 @@ func Load() (*Config, error) {
 	v.SetDefault("worker.concurrency", 10)
 	v.SetDefault("log.level", "info")
 	v.SetDefault("log.format", "text")
+	v.SetDefault("log.file", "")
+	v.SetDefault("log.max_size_mb", 50)
+	v.SetDefault("log.max_backups", 5)
+	v.SetDefault("log.max_age_days", 30)
 
 	// Config file: config.toml (optional, env vars take precedence)
 	v.SetConfigName("config")

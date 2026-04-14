@@ -30,3 +30,10 @@ minio_data/
 
 # Cache (runtime, not source)
 /tmp/
+
+# Runtime data (generated files — subdirs kept via .gitkeep)
+data/logs/*.log
+data/logs/*.gz
+data/cache/*
+!data/**/.gitkeep
+!data/.gitkeep

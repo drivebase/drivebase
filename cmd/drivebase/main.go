@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -10,11 +12,10 @@ import (
 	"syscall"
 	"time"
 
-	"database/sql"
-
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/drivebase/drivebase/internal/cache"
 	"github.com/drivebase/drivebase/internal/config"
@@ -34,15 +35,41 @@ func main() {
 	}
 
 	// Configure structured logging
-	var logHandler slog.Handler
 	level := parseLogLevel(cfg.Log.Level)
 	opts := &slog.HandlerOptions{Level: level}
+
+	// Console handler: JSON in production/json mode, text otherwise
+	var consoleHandler slog.Handler
 	if cfg.Log.Format == "json" || cfg.Server.Env == "production" {
-		logHandler = slog.NewJSONHandler(os.Stdout, opts)
+		consoleHandler = slog.NewJSONHandler(os.Stdout, opts)
 	} else {
-		logHandler = slog.NewTextHandler(os.Stdout, opts)
+		consoleHandler = slog.NewTextHandler(os.Stdout, opts)
 	}
+
+	// File handler: always JSON, with rotation via lumberjack
+	var logHandler slog.Handler
+	if cfg.Log.File != "" {
+		rotator := &lumberjack.Logger{
+			Filename:   cfg.Log.File,
+			MaxSize:    cfg.Log.MaxSizeMB,  // MB
+			MaxBackups: cfg.Log.MaxBackups,
+			MaxAge:     cfg.Log.MaxAgeDays, // days
+			Compress:   true,               // gzip rotated files
+		}
+		fileHandler := slog.NewJSONHandler(rotator, opts)
+		logHandler = &teeHandler{handlers: []slog.Handler{consoleHandler, fileHandler}}
+	} else {
+		logHandler = consoleHandler
+	}
+
 	slog.SetDefault(slog.New(logHandler))
+
+	if cfg.Log.File != "" {
+		slog.Info("file logging enabled", "path", cfg.Log.File,
+			"max_size_mb", cfg.Log.MaxSizeMB,
+			"max_backups", cfg.Log.MaxBackups,
+			"max_age_days", cfg.Log.MaxAgeDays)
+	}
 
 	ctx := context.Background()
 
@@ -147,3 +174,52 @@ func parseLogLevel(s string) slog.Level {
 		return slog.LevelInfo
 	}
 }
+
+// teeHandler fans out slog records to multiple handlers simultaneously.
+// Used to write to both stdout and a rotating log file.
+type teeHandler struct {
+	handlers []slog.Handler
+}
+
+func (t *teeHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	for _, h := range t.handlers {
+		if h.Enabled(ctx, level) {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *teeHandler) Handle(ctx context.Context, r slog.Record) error {
+	var last error
+	for _, h := range t.handlers {
+		if h.Enabled(ctx, r.Level) {
+			if err := h.Handle(ctx, r.Clone()); err != nil {
+				last = err
+			}
+		}
+	}
+	return last
+}
+
+func (t *teeHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	hs := make([]slog.Handler, len(t.handlers))
+	for i, h := range t.handlers {
+		hs[i] = h.WithAttrs(attrs)
+	}
+	return &teeHandler{handlers: hs}
+}
+
+func (t *teeHandler) WithGroup(name string) slog.Handler {
+	hs := make([]slog.Handler, len(t.handlers))
+	for i, h := range t.handlers {
+		hs[i] = h.WithGroup(name)
+	}
+	return &teeHandler{handlers: hs}
+}
+
+// ensure teeHandler satisfies slog.Handler at compile time
+var _ slog.Handler = (*teeHandler)(nil)
+
+// ensure lumberjack satisfies io.WriteCloser at compile time (documents intent)
+var _ io.WriteCloser = (*lumberjack.Logger)(nil)
