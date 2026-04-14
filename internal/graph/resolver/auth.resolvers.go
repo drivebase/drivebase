@@ -96,6 +96,32 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, token string) (*gra
 	return r.issueTokens(ctx, u, uuid.Nil)
 }
 
+// SwitchWorkspace is the resolver for the switchWorkspace field.
+func (r *mutationResolver) SwitchWorkspace(ctx context.Context, workspaceID uuid.UUID) (*graph.SwitchWorkspacePayload, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
+	// Verify the user is actually a member of the requested workspace
+	_, err = r.DB.WorkspaceMember.Query().
+		Where(
+			workspacemember.UserID(u.ID),
+			workspacemember.WorkspaceID(workspaceID),
+		).
+		Only(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("workspace not found or access denied")
+	}
+
+	token, err := r.issueAccessToken(u, workspaceID)
+	if err != nil {
+		return nil, fmt.Errorf("internal error")
+	}
+
+	return &graph.SwitchWorkspacePayload{AccessToken: token}, nil
+}
+
 // SignOut is the resolver for the signOut field.
 func (r *mutationResolver) SignOut(ctx context.Context) (bool, error) {
 	u, err := auth.UserFromCtx(ctx)

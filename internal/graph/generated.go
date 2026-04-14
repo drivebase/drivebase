@@ -93,6 +93,7 @@ type ComplexityRoot struct {
 		SignOut              func(childComplexity int) int
 		SignUp               func(childComplexity int, input SignUpInput) int
 		StartFolderSync      func(childComplexity int, input StartFolderSyncInput) int
+		SwitchWorkspace      func(childComplexity int, workspaceID uuid.UUID) int
 		SyncProvider         func(childComplexity int, providerID uuid.UUID) int
 		UpdateMemberRole     func(childComplexity int, workspaceID uuid.UUID, userID uuid.UUID, roleID uuid.UUID) int
 		UpdateProvider       func(childComplexity int, id uuid.UUID, input UpdateProviderInput) int
@@ -183,6 +184,10 @@ type ComplexityRoot struct {
 		Upload func(childComplexity int) int
 	}
 
+	SwitchWorkspacePayload struct {
+		AccessToken func(childComplexity int) int
+	}
+
 	TransferJob struct {
 		CompletedAt          func(childComplexity int) int
 		CompletedFiles       func(childComplexity int) int
@@ -246,6 +251,7 @@ type MutationResolver interface {
 	SignUp(ctx context.Context, input SignUpInput) (*AuthPayload, error)
 	SignIn(ctx context.Context, input SignInInput) (*AuthPayload, error)
 	RefreshToken(ctx context.Context, token string) (*AuthPayload, error)
+	SwitchWorkspace(ctx context.Context, workspaceID uuid.UUID) (*SwitchWorkspacePayload, error)
 	SignOut(ctx context.Context) (bool, error)
 	RevokeSession(ctx context.Context, sessionID uuid.UUID) (bool, error)
 	GenerateTempLink(ctx context.Context, fileNodeID uuid.UUID, ttlSeconds *int) (string, error)
@@ -666,6 +672,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.StartFolderSync(childComplexity, args["input"].(StartFolderSyncInput)), true
+	case "Mutation.switchWorkspace":
+		if e.ComplexityRoot.Mutation.SwitchWorkspace == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_switchWorkspace_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SwitchWorkspace(childComplexity, args["workspaceID"].(uuid.UUID)), true
 	case "Mutation.syncProvider":
 		if e.ComplexityRoot.Mutation.SyncProvider == nil {
 			break
@@ -1154,6 +1171,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.SharedLinkPermissions.Upload(childComplexity), true
+
+	case "SwitchWorkspacePayload.accessToken":
+		if e.ComplexityRoot.SwitchWorkspacePayload.AccessToken == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SwitchWorkspacePayload.AccessToken(childComplexity), true
 
 	case "TransferJob.completedAt":
 		if e.ComplexityRoot.TransferJob.CompletedAt == nil {
@@ -1778,6 +1802,17 @@ func (ec *executionContext) field_Mutation_startFolderSync_args(ctx context.Cont
 		return nil, err
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_switchWorkspace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
+	if err != nil {
+		return nil, err
+	}
+	args["workspaceID"] = arg0
 	return args, nil
 }
 
@@ -2908,6 +2943,51 @@ func (ec *executionContext) fieldContext_Mutation_refreshToken(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_refreshToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_switchWorkspace(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_switchWorkspace,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().SwitchWorkspace(ctx, fc.Args["workspaceID"].(uuid.UUID))
+		},
+		nil,
+		ec.marshalNSwitchWorkspacePayload2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSwitchWorkspacePayload,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_switchWorkspace(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "accessToken":
+				return ec.fieldContext_SwitchWorkspacePayload_accessToken(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SwitchWorkspacePayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_switchWorkspace_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6427,6 +6507,35 @@ func (ec *executionContext) fieldContext_SharedLinkPermissions_copy(_ context.Co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SwitchWorkspacePayload_accessToken(ctx context.Context, field graphql.CollectedField, obj *SwitchWorkspacePayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SwitchWorkspacePayload_accessToken,
+		func(ctx context.Context) (any, error) {
+			return obj.AccessToken, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_SwitchWorkspacePayload_accessToken(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SwitchWorkspacePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10091,6 +10200,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "switchWorkspace":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_switchWorkspace(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "signOut":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_signOut(ctx, field)
@@ -11091,6 +11207,45 @@ func (ec *executionContext) _SharedLinkPermissions(ctx context.Context, sel ast.
 			}
 		case "copy":
 			out.Values[i] = ec._SharedLinkPermissions_copy(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var switchWorkspacePayloadImplementors = []string{"SwitchWorkspacePayload"}
+
+func (ec *executionContext) _SwitchWorkspacePayload(ctx context.Context, sel ast.SelectionSet, obj *SwitchWorkspacePayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, switchWorkspacePayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SwitchWorkspacePayload")
+		case "accessToken":
+			out.Values[i] = ec._SwitchWorkspacePayload_accessToken(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -12190,6 +12345,20 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNSwitchWorkspacePayload2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSwitchWorkspacePayload(ctx context.Context, sel ast.SelectionSet, v SwitchWorkspacePayload) graphql.Marshaler {
+	return ec._SwitchWorkspacePayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSwitchWorkspacePayload2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSwitchWorkspacePayload(ctx context.Context, sel ast.SelectionSet, v *SwitchWorkspacePayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SwitchWorkspacePayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v any) (time.Time, error) {

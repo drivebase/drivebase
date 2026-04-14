@@ -7,8 +7,15 @@ extend type Mutation {
   signUp(input: SignUpInput!): AuthPayload!
   signIn(input: SignInInput!): AuthPayload!
   refreshToken(token: String!): AuthPayload!
+  switchWorkspace(workspaceID: UUID!): SwitchWorkspacePayload!
   signOut: Boolean!
   revokeSession(sessionId: UUID!): Boolean!
+}
+
+# switchWorkspace returns a new workspace-scoped access token without re-authentication.
+# The caller's existing refresh token is unchanged.
+type SwitchWorkspacePayload {
+  accessToken: String!
 }
 
 type AuthPayload {

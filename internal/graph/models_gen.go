@@ -196,6 +196,10 @@ type StartFolderSyncInput struct {
 	ConflictStrategy     *ConflictStrategy `json:"conflictStrategy,omitempty"`
 }
 
+type SwitchWorkspacePayload struct {
+	AccessToken string `json:"accessToken"`
+}
+
 type TransferJob struct {
 	ID                   uuid.UUID  `json:"id"`
 	WorkspaceID          uuid.UUID  `json:"workspaceID"`
