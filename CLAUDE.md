@@ -67,6 +67,17 @@ Two generators are in play. Run them separately, never together:
 
 Do not mock the database in tests — use real containers or in-memory equivalents (miniredis). Mocked DB tests have caused prod regressions in the past.
 
+## Web frontend rules (`web/`)
+
+- **One component per file** — never put multiple exported components in the same file. Page-level files (`routes/`) may contain one local helper component only if it is trivial and never reused.
+- **Feature folders** — components, queries, mutations, hooks, and utils for a feature live in `features/<feature>/`. Split by type: `queries.ts`, `mutations.ts`, `hooks.ts`, one file per component.
+- **GraphQL split** — queries go in `queries.ts`, mutations go in `mutations.ts`. Never mix them.
+- **Always run codegen** after adding new GraphQL documents: `cd web && bun run codegen`. New `graphql()` calls return `unknown` until codegen registers them.
+- **Null-safe data access** — always use `?? []` or `?? null` when destructuring query results. GraphQL fields can be `undefined` before the query resolves.
+- **Zustand stores** — one store per domain (`auth`, `workspace`). All stores use `persist` middleware. Keep store files in `store/`.
+- **Route guards** — use `beforeLoad` for sync checks (token, workspace). Use `loader` for async data fetching. Never fetch in `beforeLoad`.
+- **No inline styles** — use Tailwind classes only. No `style={{}}` except for dynamic values that cannot be expressed as classes (e.g. `width: \`${percent}%\``).
+
 ## Key invariants
 
 - `ListFiles` enriches the storage listing with database UUIDs by querying for existing `FileNode` records by `(providerID, remoteID)`. Without this, returned `FileNode.ID` fields would be zero UUIDs.
