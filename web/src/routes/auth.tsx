@@ -1,11 +1,15 @@
 import { AuthPanel } from "@/features/auth/components/AuthPanel";
 import { useAuthStore } from "@/store/auth";
+import { useWorkspaceStore } from "@/store/workspace";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auth")({
 	beforeLoad: () => {
 		const { token } = useAuthStore.getState();
-		if (token) throw redirect({ to: "/" });
+		if (token) {
+			const { workspace } = useWorkspaceStore.getState();
+			throw redirect({ to: workspace ? "/" : "/workspace" });
+		}
 	},
 	component: AuthLayout,
 });

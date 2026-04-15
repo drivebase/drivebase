@@ -1,5 +1,6 @@
 import { parseError } from "@/lib/errors";
 import { useAuthStore } from "@/store/auth";
+import { useWorkspaceStore } from "@/store/workspace";
 import { toast } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -30,7 +31,7 @@ export function useSignIn() {
 		const { accessToken, refreshToken, user } = result.data.signIn;
 		setAuth(accessToken, refreshToken, user);
 		toast.success(`Welcome back, ${user.name}`);
-		navigate({ to: "/" });
+		navigate({ to: "/workspaces" });
 	}
 
 	return { submit, fetching, error };
@@ -54,7 +55,7 @@ export function useSignUp() {
 		const { accessToken, refreshToken, user } = result.data.signUp;
 		setAuth(accessToken, refreshToken, user);
 		toast.success(`Welcome, ${user.name}`);
-		navigate({ to: "/" });
+		navigate({ to: "/workspaces" });
 	}
 
 	return { submit, fetching, error };
@@ -108,6 +109,7 @@ export function usePasswordReset() {
 export function useSignOut() {
 	const navigate = useNavigate();
 	const clearAuth = useAuthStore((s) => s.clearAuth);
+	const clearWorkspace = useWorkspaceStore((s) => s.clearWorkspace);
 	const [{ fetching }, signOut] = useMutation(SignOutMutation);
 
 	async function submit() {
@@ -119,6 +121,7 @@ export function useSignOut() {
 		}
 
 		clearAuth();
+		clearWorkspace();
 		navigate({ to: "/auth/login" });
 	}
 

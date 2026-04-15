@@ -2,6 +2,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { MeQuery } from "@/features/auth/mutations";
 import { gqlClient } from "@/lib/gql-client";
 import { useAuthStore } from "@/store/auth";
+import { useWorkspaceStore } from "@/store/workspace";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -12,6 +13,10 @@ export const Route = createFileRoute("/_authenticated")({
 				to: "/auth/login",
 				search: { redirect: location.href },
 			});
+		}
+		const { workspace } = useWorkspaceStore.getState();
+		if (!workspace) {
+			throw redirect({ to: "/workspaces" });
 		}
 	},
 	loader: async () => {

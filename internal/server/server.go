@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -140,6 +141,9 @@ func newGQLServer(cfg *config.Config, db *ent.Client, rdb *redis.Client, transfe
 			"op", oc.OperationName,
 			"error", err.Error(),
 		)
+		if errors.Is(err, auth.ErrUnauthenticated) {
+			gqlErr.Extensions = map[string]any{"code": "UNAUTHENTICATED"}
+		}
 		return gqlErr
 	})
 
