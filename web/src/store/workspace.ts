@@ -13,10 +13,19 @@ interface WorkspaceState {
 	clearWorkspace: () => void;
 }
 
+function getInitialWorkspace(): Workspace | null {
+	try {
+		const raw = localStorage.getItem("workspace");
+		return raw ? (JSON.parse(raw)?.state?.workspace ?? null) : null;
+	} catch {
+		return null;
+	}
+}
+
 export const useWorkspaceStore = create<WorkspaceState>()(
 	persist(
 		(set) => ({
-			workspace: null,
+			workspace: getInitialWorkspace(),
 			setWorkspace: (workspace) => set({ workspace }),
 			clearWorkspace: () => set({ workspace: null }),
 		}),
