@@ -1,4 +1,4 @@
-import { CreateWorkspaceMutation, SwitchWorkspaceMutation } from "@/features/workspaces/queries";
+import { CreateWorkspaceMutation, SwitchWorkspaceMutation } from "@/features/workspaces/mutations";
 import { useAuthStore } from "@/store/auth";
 import { useWorkspaceStore } from "@/store/workspace";
 import {

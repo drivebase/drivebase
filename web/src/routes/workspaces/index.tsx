@@ -1,4 +1,5 @@
-import { MyWorkspacesQuery, SwitchWorkspaceMutation } from "@/features/workspaces/queries";
+import { SwitchWorkspaceMutation } from "@/features/workspaces/mutations";
+import { MyWorkspacesQuery } from "@/features/workspaces/queries";
 import { gqlClient } from "@/lib/gql-client";
 import { useAuthStore } from "@/store/auth";
 import { useWorkspaceStore } from "@/store/workspace";
@@ -51,7 +52,6 @@ function WorkspacesPage() {
 					<ListBox
 						aria-label="Workspaces"
 						selectionMode="single"
-						isDisabled={selecting !== null}
 						onSelectionChange={(keys) => {
 							const id = [...keys][0] as string;
 							const ws = workspaces.find((w) => w.id === id);

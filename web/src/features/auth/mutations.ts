@@ -46,12 +46,3 @@ export const ResetPasswordMutation = graphql(`
   }
 `);
 
-export const MeQuery = graphql(`
-  query Me {
-    me {
-      id
-      email
-      name
-    }
-  }
-`);

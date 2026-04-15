@@ -1,4 +1,4 @@
-import { MeQuery } from "@/features/auth/mutations";
+import { MeQuery } from "@/features/auth/queries";
 import { gqlClient } from "@/lib/gql-client";
 import { useAuthStore } from "@/store/auth";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
