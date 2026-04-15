@@ -18,6 +18,11 @@ import { Route as WorkspacesCreateRouteImport } from './routes/workspaces/create
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
+import { Route as AuthenticatedTrashRouteImport } from './routes/_authenticated/trash'
+import { Route as AuthenticatedSharedRouteImport } from './routes/_authenticated/shared'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedPrivateRouteImport } from './routes/_authenticated/private'
+import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 
 const WorkspacesRoute = WorkspacesRouteImport.update({
   id: '/workspaces',
@@ -63,11 +68,41 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthenticatedTrashRoute = AuthenticatedTrashRouteImport.update({
+  id: '/trash',
+  path: '/trash',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSharedRoute = AuthenticatedSharedRouteImport.update({
+  id: '/shared',
+  path: '/shared',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPrivateRoute = AuthenticatedPrivateRouteImport.update({
+  id: '/private',
+  path: '/private',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
+  id: '/files',
+  path: '/files',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/workspaces': typeof WorkspacesRouteWithChildren
+  '/files': typeof AuthenticatedFilesRoute
+  '/private': typeof AuthenticatedPrivateRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/shared': typeof AuthenticatedSharedRoute
+  '/trash': typeof AuthenticatedTrashRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -76,6 +111,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
+  '/files': typeof AuthenticatedFilesRoute
+  '/private': typeof AuthenticatedPrivateRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/shared': typeof AuthenticatedSharedRoute
+  '/trash': typeof AuthenticatedTrashRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -88,6 +128,11 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/workspaces': typeof WorkspacesRouteWithChildren
+  '/_authenticated/files': typeof AuthenticatedFilesRoute
+  '/_authenticated/private': typeof AuthenticatedPrivateRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/shared': typeof AuthenticatedSharedRoute
+  '/_authenticated/trash': typeof AuthenticatedTrashRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -101,6 +146,11 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/workspaces'
+    | '/files'
+    | '/private'
+    | '/settings'
+    | '/shared'
+    | '/trash'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -109,6 +159,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/files'
+    | '/private'
+    | '/settings'
+    | '/shared'
+    | '/trash'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -120,6 +175,11 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/workspaces'
+    | '/_authenticated/files'
+    | '/_authenticated/private'
+    | '/_authenticated/settings'
+    | '/_authenticated/shared'
+    | '/_authenticated/trash'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -199,14 +259,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_authenticated/trash': {
+      id: '/_authenticated/trash'
+      path: '/trash'
+      fullPath: '/trash'
+      preLoaderRoute: typeof AuthenticatedTrashRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/shared': {
+      id: '/_authenticated/shared'
+      path: '/shared'
+      fullPath: '/shared'
+      preLoaderRoute: typeof AuthenticatedSharedRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/private': {
+      id: '/_authenticated/private'
+      path: '/private'
+      fullPath: '/private'
+      preLoaderRoute: typeof AuthenticatedPrivateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/files': {
+      id: '/_authenticated/files'
+      path: '/files'
+      fullPath: '/files'
+      preLoaderRoute: typeof AuthenticatedFilesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
+  AuthenticatedPrivateRoute: typeof AuthenticatedPrivateRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSharedRoute: typeof AuthenticatedSharedRoute
+  AuthenticatedTrashRoute: typeof AuthenticatedTrashRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedFilesRoute: AuthenticatedFilesRoute,
+  AuthenticatedPrivateRoute: AuthenticatedPrivateRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSharedRoute: AuthenticatedSharedRoute,
+  AuthenticatedTrashRoute: AuthenticatedTrashRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 

@@ -1,4 +1,5 @@
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { Sidebar } from "@/components/Sidebar";
 import { MeQuery } from "@/features/auth/queries";
 import { gqlClient } from "@/lib/gql-client";
 import { useAuthStore } from "@/store/auth";
@@ -36,5 +37,12 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthenticatedLayout() {
-	return <Outlet />;
+	return (
+		<div className="flex h-screen bg-surface overflow-hidden">
+			<Sidebar />
+			<main className="flex-1 overflow-auto bg-background m-2 rounded-xl">
+				<Outlet />
+			</main>
+		</div>
+	);
 }
