@@ -39,6 +39,14 @@ type AuthPayload struct {
 	User         *User  `json:"user"`
 }
 
+type AvailableProvider struct {
+	Type        ProviderType        `json:"type"`
+	Label       string              `json:"label"`
+	Description string              `json:"description"`
+	AuthType    AuthType            `json:"authType"`
+	Fields      []*ProviderFieldDef `json:"fields"`
+}
+
 type BandwidthSummary struct {
 	ProviderID  uuid.UUID `json:"providerID"`
 	Direction   string    `json:"direction"`
@@ -141,6 +149,16 @@ type Provider struct {
 	Status      ProviderStatus `json:"status"`
 	CreatedAt   time.Time      `json:"createdAt"`
 	Quota       *ProviderQuota `json:"quota,omitempty"`
+}
+
+type ProviderFieldDef struct {
+	Name        string    `json:"name"`
+	Label       string    `json:"label"`
+	Type        FieldType `json:"type"`
+	Required    bool      `json:"required"`
+	Placeholder *string   `json:"placeholder,omitempty"`
+	Description *string   `json:"description,omitempty"`
+	Secret      bool      `json:"secret"`
 }
 
 type ProviderQuota struct {
@@ -419,6 +437,65 @@ func (e *ConflictStrategy) UnmarshalJSON(b []byte) error {
 }
 
 func (e ConflictStrategy) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type FieldType string
+
+const (
+	FieldTypeText     FieldType = "TEXT"
+	FieldTypePassword FieldType = "PASSWORD"
+	FieldTypeBoolean  FieldType = "BOOLEAN"
+	FieldTypeURL      FieldType = "URL"
+)
+
+var AllFieldType = []FieldType{
+	FieldTypeText,
+	FieldTypePassword,
+	FieldTypeBoolean,
+	FieldTypeURL,
+}
+
+func (e FieldType) IsValid() bool {
+	switch e {
+	case FieldTypeText, FieldTypePassword, FieldTypeBoolean, FieldTypeURL:
+		return true
+	}
+	return false
+}
+
+func (e FieldType) String() string {
+	return string(e)
+}
+
+func (e *FieldType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FieldType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FieldType", str)
+	}
+	return nil
+}
+
+func (e FieldType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *FieldType) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e FieldType) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

@@ -1,0 +1,30 @@
+enum FieldType {
+  TEXT
+  PASSWORD
+  BOOLEAN
+  URL
+}
+
+type ProviderFieldDef {
+  name:        String!
+  label:       String!
+  type:        FieldType!
+  required:    Boolean!
+  placeholder: String
+  description: String
+  secret:      Boolean!
+}
+
+type AvailableProvider {
+  type:        ProviderType!
+  label:       String!
+  description: String!
+  authType:    AuthType!
+  # Fields required to connect this provider.
+  # Empty for OAuth providers — connection is initiated via initiateOAuth.
+  fields:      [ProviderFieldDef!]!
+}
+
+extend type Query {
+  availableProviders: [AvailableProvider!]!
+}
