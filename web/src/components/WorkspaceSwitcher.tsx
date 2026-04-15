@@ -23,6 +23,7 @@ export function WorkspaceSwitcher() {
 
     setToken(result.data.switchWorkspace.accessToken);
     setWorkspace({ id: ws.id, name: ws.name, slug: ws.slug });
+    window.location.href = "/";
   }
 
   return (

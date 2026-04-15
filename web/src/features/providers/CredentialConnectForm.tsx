@@ -60,7 +60,7 @@ export function CredentialConnectForm({
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit as any)} className="contents">
-			<Modal.Body className="space-y-4">
+			<Modal.Body className="space-y-4 pt-2">
 				{errors.root && <p className="text-sm text-danger">{errors.root.message}</p>}
 
 				<Controller
@@ -69,7 +69,7 @@ export function CredentialConnectForm({
 					render={({ field }) => (
 						<TextField isRequired isInvalid={!!errors.name} variant="secondary" className="w-full">
 							<Label>Display name</Label>
-							<Input {...field} placeholder={`My ${provider.label}`} />
+							<Input {...field} value={field.value as string ?? ""} className="focus:ring-inset" placeholder={`My ${provider.label}`} />
 							<FieldError>{(errors.name as any)?.message}</FieldError>
 						</TextField>
 					)}
@@ -89,7 +89,7 @@ export function CredentialConnectForm({
 								className="w-full"
 							>
 								<Label>{field.label}</Label>
-								<Input {...f} placeholder={field.placeholder ?? ""} />
+								<Input {...f} value={f.value as string ?? ""} className="focus:ring-inset" placeholder={field.placeholder ?? ""} />
 								{field.description && (
 									<p className="text-xs text-muted mt-1">{field.description}</p>
 								)}

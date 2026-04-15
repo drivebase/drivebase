@@ -65,7 +65,7 @@ export function OAuthConnectForm({
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="contents">
-			<Modal.Body className="space-y-4">
+			<Modal.Body className="space-y-4 pt-2">
 				{errors.root && <p className="text-sm text-danger">{errors.root.message}</p>}
 
 				<Controller
@@ -73,14 +73,15 @@ export function OAuthConnectForm({
 					name="appID"
 					render={({ field }) => (
 						<Select
-							className="w-full"
+							className="w-full max-w-full"
 							placeholder="Select OAuth app"
+							variant="secondary"
 							isInvalid={!!errors.appID}
 							value={field.value}
 							onChange={(key: Key | null) => field.onChange(key ?? "")}
 						>
-							<Select.Trigger>
-								<Select.Value />
+							<Select.Trigger className="overflow-hidden">
+								<Select.Value className="truncate" />
 								<Select.Indicator />
 							</Select.Trigger>
 							<Select.Popover>

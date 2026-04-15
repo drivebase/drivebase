@@ -48,7 +48,7 @@ export function AddOAuthAppForm({
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="contents">
-			<Modal.Body className="space-y-4">
+			<Modal.Body className="space-y-4 pt-2">
 				<p className="text-xs text-muted">
 					Create a {provider.label} OAuth app and paste the credentials below.
 				</p>
