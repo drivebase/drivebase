@@ -20,9 +20,10 @@ type Documents = {
     "\n  mutation RequestPasswordReset($email: String!) {\n    requestPasswordReset(email: $email)\n  }\n": typeof types.RequestPasswordResetDocument,
     "\n  mutation ResetPassword($email: String!, $otp: String!, $newPassword: String!) {\n    resetPassword(email: $email, otp: $otp, newPassword: $newPassword)\n  }\n": typeof types.ResetPasswordDocument,
     "\n  query Me {\n    me {\n      id\n      email\n      name\n    }\n  }\n": typeof types.MeDocument,
-    "\n  query MyWorkspaces {\n    myWorkspaces {\n      id\n      name\n      slug\n    }\n  }\n": typeof types.MyWorkspacesDocument,
+    "\n  query DashboardStats {\n    providers {\n      id\n      name\n      type\n      status\n      quota {\n        totalBytes\n        usedBytes\n        freeBytes\n      }\n    }\n    bandwidthUsage {\n      direction\n      totalBytes\n      periodStart\n      periodEnd\n    }\n    myUploadBatches {\n      id\n      status\n      totalFiles\n      completedFiles\n      failedFiles\n      totalBytes\n      transferredBytes\n      createdAt\n    }\n    myTransferJobs {\n      id\n      status\n      totalFiles\n      completedFiles\n      failedFiles\n      totalBytes\n      transferredBytes\n      createdAt\n    }\n  }\n": typeof types.DashboardStatsDocument,
     "\n  mutation SwitchWorkspace($workspaceID: UUID!) {\n    switchWorkspace(workspaceID: $workspaceID) {\n      accessToken\n    }\n  }\n": typeof types.SwitchWorkspaceDocument,
     "\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n      name\n      slug\n    }\n  }\n": typeof types.CreateWorkspaceDocument,
+    "\n  query MyWorkspaces {\n    myWorkspaces {\n      id\n      name\n      slug\n    }\n  }\n": typeof types.MyWorkspacesDocument,
 };
 const documents: Documents = {
     "\n  mutation SignIn($input: SignInInput!) {\n    signIn(input: $input) {\n      accessToken\n      refreshToken\n      user {\n        id\n        email\n        name\n      }\n    }\n  }\n": types.SignInDocument,
@@ -31,9 +32,10 @@ const documents: Documents = {
     "\n  mutation RequestPasswordReset($email: String!) {\n    requestPasswordReset(email: $email)\n  }\n": types.RequestPasswordResetDocument,
     "\n  mutation ResetPassword($email: String!, $otp: String!, $newPassword: String!) {\n    resetPassword(email: $email, otp: $otp, newPassword: $newPassword)\n  }\n": types.ResetPasswordDocument,
     "\n  query Me {\n    me {\n      id\n      email\n      name\n    }\n  }\n": types.MeDocument,
-    "\n  query MyWorkspaces {\n    myWorkspaces {\n      id\n      name\n      slug\n    }\n  }\n": types.MyWorkspacesDocument,
+    "\n  query DashboardStats {\n    providers {\n      id\n      name\n      type\n      status\n      quota {\n        totalBytes\n        usedBytes\n        freeBytes\n      }\n    }\n    bandwidthUsage {\n      direction\n      totalBytes\n      periodStart\n      periodEnd\n    }\n    myUploadBatches {\n      id\n      status\n      totalFiles\n      completedFiles\n      failedFiles\n      totalBytes\n      transferredBytes\n      createdAt\n    }\n    myTransferJobs {\n      id\n      status\n      totalFiles\n      completedFiles\n      failedFiles\n      totalBytes\n      transferredBytes\n      createdAt\n    }\n  }\n": types.DashboardStatsDocument,
     "\n  mutation SwitchWorkspace($workspaceID: UUID!) {\n    switchWorkspace(workspaceID: $workspaceID) {\n      accessToken\n    }\n  }\n": types.SwitchWorkspaceDocument,
     "\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n      name\n      slug\n    }\n  }\n": types.CreateWorkspaceDocument,
+    "\n  query MyWorkspaces {\n    myWorkspaces {\n      id\n      name\n      slug\n    }\n  }\n": types.MyWorkspacesDocument,
 };
 
 /**
@@ -77,7 +79,7 @@ export function graphql(source: "\n  query Me {\n    me {\n      id\n      email
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query MyWorkspaces {\n    myWorkspaces {\n      id\n      name\n      slug\n    }\n  }\n"): (typeof documents)["\n  query MyWorkspaces {\n    myWorkspaces {\n      id\n      name\n      slug\n    }\n  }\n"];
+export function graphql(source: "\n  query DashboardStats {\n    providers {\n      id\n      name\n      type\n      status\n      quota {\n        totalBytes\n        usedBytes\n        freeBytes\n      }\n    }\n    bandwidthUsage {\n      direction\n      totalBytes\n      periodStart\n      periodEnd\n    }\n    myUploadBatches {\n      id\n      status\n      totalFiles\n      completedFiles\n      failedFiles\n      totalBytes\n      transferredBytes\n      createdAt\n    }\n    myTransferJobs {\n      id\n      status\n      totalFiles\n      completedFiles\n      failedFiles\n      totalBytes\n      transferredBytes\n      createdAt\n    }\n  }\n"): (typeof documents)["\n  query DashboardStats {\n    providers {\n      id\n      name\n      type\n      status\n      quota {\n        totalBytes\n        usedBytes\n        freeBytes\n      }\n    }\n    bandwidthUsage {\n      direction\n      totalBytes\n      periodStart\n      periodEnd\n    }\n    myUploadBatches {\n      id\n      status\n      totalFiles\n      completedFiles\n      failedFiles\n      totalBytes\n      transferredBytes\n      createdAt\n    }\n    myTransferJobs {\n      id\n      status\n      totalFiles\n      completedFiles\n      failedFiles\n      totalBytes\n      transferredBytes\n      createdAt\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -86,6 +88,10 @@ export function graphql(source: "\n  mutation SwitchWorkspace($workspaceID: UUID
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n      name\n      slug\n    }\n  }\n"): (typeof documents)["\n  mutation CreateWorkspace($input: CreateWorkspaceInput!) {\n    createWorkspace(input: $input) {\n      id\n      name\n      slug\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query MyWorkspaces {\n    myWorkspaces {\n      id\n      name\n      slug\n    }\n  }\n"): (typeof documents)["\n  query MyWorkspaces {\n    myWorkspaces {\n      id\n      name\n      slug\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
