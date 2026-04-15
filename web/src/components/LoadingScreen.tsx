@@ -4,7 +4,7 @@ export function LoadingScreen() {
 			<img
 				src="/logo.svg"
 				alt="Drivebase"
-				className="w-10 h-10 animate-pulse"
+				className="w-10 h-10 animate-pulse rounded-xl"
 			/>
 		</div>
 	);
