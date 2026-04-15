@@ -1,4 +1,5 @@
-import type { TransferJob, UploadBatch } from "@/gql/graphql";
+type UploadBatch = { status: string };
+type TransferJob = { status: string };
 import { FolderSync } from "lucide-react";
 import { StatCard } from "./StatCard";
 

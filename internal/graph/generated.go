@@ -112,7 +112,7 @@ type ComplexityRoot struct {
 		DeleteWorkspace      func(childComplexity int, id uuid.UUID) int
 		DisconnectProvider   func(childComplexity int, id uuid.UUID) int
 		GenerateTempLink     func(childComplexity int, fileNodeID uuid.UUID, ttlSeconds *int) int
-		InitiateOAuth        func(childComplexity int, providerType ProviderType, providerName string) int
+		InitiateOAuth        func(childComplexity int, oauthAppID uuid.UUID, providerName string) int
 		InviteMember         func(childComplexity int, email string, roleID uuid.UUID) int
 		MoveFile             func(childComplexity int, input MoveFileInput) int
 		RefreshProviderQuota func(childComplexity int, providerID uuid.UUID) int
@@ -141,6 +141,7 @@ type ComplexityRoot struct {
 		Alias        func(childComplexity int) int
 		ClientID     func(childComplexity int) int
 		CreatedAt    func(childComplexity int) int
+		ID           func(childComplexity int) int
 		ProviderType func(childComplexity int) int
 	}
 
@@ -323,7 +324,7 @@ type MutationResolver interface {
 	SyncProvider(ctx context.Context, providerID uuid.UUID) (bool, error)
 	SaveOAuthApp(ctx context.Context, input SaveOAuthAppInput) (*OAuthApp, error)
 	DeleteOAuthApp(ctx context.Context, providerType ProviderType) (bool, error)
-	InitiateOAuth(ctx context.Context, providerType ProviderType, providerName string) (string, error)
+	InitiateOAuth(ctx context.Context, oauthAppID uuid.UUID, providerName string) (string, error)
 	ConnectProvider(ctx context.Context, input ConnectProviderInput) (*Provider, error)
 	DisconnectProvider(ctx context.Context, id uuid.UUID) (bool, error)
 	UpdateProvider(ctx context.Context, id uuid.UUID, input UpdateProviderInput) (*Provider, error)
@@ -751,7 +752,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.InitiateOAuth(childComplexity, args["providerType"].(ProviderType), args["providerName"].(string)), true
+		return e.ComplexityRoot.Mutation.InitiateOAuth(childComplexity, args["oauthAppID"].(uuid.UUID), args["providerName"].(string)), true
 	case "Mutation.inviteMember":
 		if e.ComplexityRoot.Mutation.InviteMember == nil {
 			break
@@ -1008,6 +1009,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.OAuthApp.CreatedAt(childComplexity), true
+	case "OAuthApp.id":
+		if e.ComplexityRoot.OAuthApp.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OAuthApp.ID(childComplexity), true
 	case "OAuthApp.providerType":
 		if e.ComplexityRoot.OAuthApp.ProviderType == nil {
 			break
@@ -2023,11 +2030,11 @@ func (ec *executionContext) field_Mutation_generateTempLink_args(ctx context.Con
 func (ec *executionContext) field_Mutation_initiateOAuth_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "providerType", ec.unmarshalNProviderType2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐProviderType)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "oauthAppID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
 	if err != nil {
 		return nil, err
 	}
-	args["providerType"] = arg0
+	args["oauthAppID"] = arg0
 	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "providerName", ec.unmarshalNString2string)
 	if err != nil {
 		return nil, err
@@ -4473,6 +4480,8 @@ func (ec *executionContext) fieldContext_Mutation_saveOAuthApp(ctx context.Conte
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "id":
+				return ec.fieldContext_OAuthApp_id(ctx, field)
 			case "providerType":
 				return ec.fieldContext_OAuthApp_providerType(ctx, field)
 			case "clientID":
@@ -4548,7 +4557,7 @@ func (ec *executionContext) _Mutation_initiateOAuth(ctx context.Context, field g
 		ec.fieldContext_Mutation_initiateOAuth,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().InitiateOAuth(ctx, fc.Args["providerType"].(ProviderType), fc.Args["providerName"].(string))
+			return ec.Resolvers.Mutation().InitiateOAuth(ctx, fc.Args["oauthAppID"].(uuid.UUID), fc.Args["providerName"].(string))
 		},
 		nil,
 		ec.marshalNString2string,
@@ -5358,6 +5367,35 @@ func (ec *executionContext) fieldContext_Mutation_updateMemberRole(ctx context.C
 	if fc.Args, err = ec.field_Mutation_updateMemberRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OAuthApp_id(ctx context.Context, field graphql.CollectedField, obj *OAuthApp) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_OAuthApp_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_OAuthApp_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OAuthApp",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -6703,6 +6741,8 @@ func (ec *executionContext) fieldContext_Query_oauthApp(ctx context.Context, fie
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "id":
+				return ec.fieldContext_OAuthApp_id(ctx, field)
 			case "providerType":
 				return ec.fieldContext_OAuthApp_providerType(ctx, field)
 			case "clientID":
@@ -6753,6 +6793,8 @@ func (ec *executionContext) fieldContext_Query_oauthApps(_ context.Context, fiel
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "id":
+				return ec.fieldContext_OAuthApp_id(ctx, field)
 			case "providerType":
 				return ec.fieldContext_OAuthApp_providerType(ctx, field)
 			case "clientID":
@@ -12411,6 +12453,11 @@ func (ec *executionContext) _OAuthApp(ctx context.Context, sel ast.SelectionSet,
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("OAuthApp")
+		case "id":
+			out.Values[i] = ec._OAuthApp_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "providerType":
 			out.Values[i] = ec._OAuthApp_providerType(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

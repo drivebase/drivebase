@@ -210,6 +210,7 @@ func mapAPIToken(t *ent.ApiToken) *graph.APIToken {
 
 func mapOAuthApp(a *ent.OAuthApp) *graph.OAuthApp {
 	out := &graph.OAuthApp{
+		ID:           a.ID,
 		ProviderType: graph.ProviderType(storage.ProviderType(a.ProviderType)),
 		ClientID:     a.ClientID,
 		CreatedAt:    a.CreatedAt,

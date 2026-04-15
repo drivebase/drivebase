@@ -12,7 +12,7 @@ export const Route = createRootRoute({
 function RootComponent() {
 	return (
 		<>
-			<ToastProvider placement="bottom-end" />
+			<ToastProvider placement="bottom end" />
 			<Outlet />
 			<TanStackDevtools
 				config={{

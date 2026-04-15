@@ -16,6 +16,7 @@ import (
 	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
+	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 )
 
@@ -93,7 +94,7 @@ func (r *mutationResolver) DeleteOAuthApp(ctx context.Context, providerType grap
 }
 
 // InitiateOAuth is the resolver for the initiateOAuth field.
-func (r *mutationResolver) InitiateOAuth(ctx context.Context, providerType graph.ProviderType, providerName string) (string, error) {
+func (r *mutationResolver) InitiateOAuth(ctx context.Context, oauthAppID uuid.UUID, providerName string) (string, error) {
 	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
 	if !ok {
 		return "", auth.ErrUnauthenticated
@@ -103,10 +104,10 @@ func (r *mutationResolver) InitiateOAuth(ctx context.Context, providerType graph
 	}
 
 	app, err := r.DB.OAuthApp.Query().
-		Where(entoauthapp.WorkspaceID(workspaceID), entoauthapp.ProviderType(string(providerType))).
+		Where(entoauthapp.WorkspaceID(workspaceID), entoauthapp.ID(oauthAppID)).
 		Only(ctx)
 	if err != nil {
-		return "", fmt.Errorf("no OAuth app configured for %s — call saveOAuthApp first", providerType)
+		return "", fmt.Errorf("OAuth app not found")
 	}
 
 	clientSecret, err := crypto.Decrypt(app.EncryptedClientSecret, r.Config.Crypto.EncryptionKey)
@@ -114,16 +115,16 @@ func (r *mutationResolver) InitiateOAuth(ctx context.Context, providerType graph
 		return "", fmt.Errorf("internal error decrypting client secret")
 	}
 
-	oauthCfg := oauthConfigForType(storage.ProviderType(providerType), app.ClientID, string(clientSecret), r.Config.Server.OAuthCallbackURL)
+	oauthCfg := oauthConfigForType(storage.ProviderType(app.ProviderType), app.ClientID, string(clientSecret), r.Config.Server.OAuthCallbackURL)
 	if oauthCfg == nil {
-		return "", fmt.Errorf("provider type %s does not support OAuth", providerType)
+		return "", fmt.Errorf("provider type %s does not support OAuth", app.ProviderType)
 	}
 
 	// Store state for CSRF protection and to recover context in callback
 	state, err := r.DB.OAuthState.Create().
 		SetWorkspaceID(workspaceID).
 		SetOauthAppID(app.ID).
-		SetProviderType(string(providerType)).
+		SetProviderType(app.ProviderType).
 		SetProviderName(providerName).
 		SetExpiresAt(time.Now().Add(10 * time.Minute)).
 		Save(ctx)

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -231,14 +232,14 @@ func TestOauthApps_listed(t *testing.T) {
 func TestInitiateOAuth_returnsAuthURL(t *testing.T) {
 	mut, _, ctx := setupOAuthTest(t)
 
-	_, err := mut.SaveOAuthApp(ctx, graph.SaveOAuthAppInput{
+	app, err := mut.SaveOAuthApp(ctx, graph.SaveOAuthAppInput{
 		ProviderType: graph.ProviderType(storage.ProviderTypeGoogleDrive),
 		ClientID:     "my-client-id",
 		ClientSecret: "my-client-secret",
 	})
 	require.NoError(t, err)
 
-	authURL, err := mut.InitiateOAuth(ctx, graph.ProviderType(storage.ProviderTypeGoogleDrive), "My Drive")
+	authURL, err := mut.InitiateOAuth(ctx, app.ID, "My Drive")
 	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(authURL, "https://accounts.google.com/o/oauth2/auth"),
 		"expected Google OAuth URL, got: %s", authURL)
@@ -249,7 +250,7 @@ func TestInitiateOAuth_returnsAuthURL(t *testing.T) {
 func TestInitiateOAuth_missingApp(t *testing.T) {
 	mut, _, ctx := setupOAuthTest(t)
 
-	_, err := mut.InitiateOAuth(ctx, graph.ProviderType(storage.ProviderTypeGoogleDrive), "My Drive")
+	_, err := mut.InitiateOAuth(ctx, uuid.New(), "My Drive")
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "no OAuth app configured")
+	assert.Contains(t, err.Error(), "OAuth app not found")
 }

@@ -1,9 +1,10 @@
-import type { Provider } from "@/gql/graphql";
 import { HardDrive } from "lucide-react";
 import { StatCard } from "./StatCard";
 import { formatBytes } from "./utils";
 
-export function StorageCard({ providers, loading }: { providers: Provider[]; loading: boolean }) {
+type ProviderWithQuota = { quota?: { totalBytes: number; usedBytes: number } | null };
+
+export function StorageCard({ providers, loading }: { providers: ProviderWithQuota[]; loading: boolean }) {
 	const totalStorage = providers.reduce((s, p) => s + (p.quota?.totalBytes ?? 0), 0);
 	const usedStorage = providers.reduce((s, p) => s + (p.quota?.usedBytes ?? 0), 0);
 	const storagePercent = totalStorage > 0 ? Math.round((usedStorage / totalStorage) * 100) : 0;

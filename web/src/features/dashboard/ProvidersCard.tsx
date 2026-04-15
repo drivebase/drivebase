@@ -1,10 +1,11 @@
-import { ProviderStatus, type Provider } from "@/gql/graphql";
 import { Database } from "lucide-react";
 import { StatCard } from "./StatCard";
 
-export function ProvidersCard({ providers, loading }: { providers: Provider[]; loading: boolean }) {
-	const active = providers.filter((p) => p.status === ProviderStatus.Active).length;
-	const errors = providers.filter((p) => p.status === ProviderStatus.Error).length;
+type ProviderStatus = { status: string };
+
+export function ProvidersCard({ providers, loading }: { providers: ProviderStatus[]; loading: boolean }) {
+	const active = providers.filter((p) => p.status === "active").length;
+	const errors = providers.filter((p) => p.status === "error").length;
 
 	return (
 		<StatCard icon={<Database size={18} />} label="Providers" loading={loading}>

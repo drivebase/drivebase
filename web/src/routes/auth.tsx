@@ -8,7 +8,7 @@ export const Route = createFileRoute("/auth")({
 		const { token } = useAuthStore.getState();
 		if (token) {
 			const { workspace } = useWorkspaceStore.getState();
-			throw redirect({ to: workspace ? "/" : "/workspace" });
+			throw redirect({ to: workspace ? "/" : "/workspaces" });
 		}
 	},
 	component: AuthLayout,

@@ -1,4 +1,4 @@
-import type { BandwidthSummary } from "@/gql/graphql";
+type BandwidthSummary = { direction: string; totalBytes: number };
 import { ArrowDownToLine, ArrowUpFromLine, Wifi } from "lucide-react";
 import { StatCard } from "./StatCard";
 import { formatBytes } from "./utils";

@@ -1,4 +1,5 @@
 type OAuthApp {
+  id: UUID!
   providerType: ProviderType!
   clientID: String!
   alias: String
@@ -22,5 +23,5 @@ extend type Mutation {
   deleteOAuthApp(providerType: ProviderType!): Boolean!
   # Returns the Google authorization URL. User visits it to grant access.
   # After granting, Google redirects to /api/v1/oauth/callback which completes the flow.
-  initiateOAuth(providerType: ProviderType!, providerName: String!): String!
+  initiateOAuth(oauthAppID: UUID!, providerName: String!): String!
 }

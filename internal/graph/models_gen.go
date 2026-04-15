@@ -134,6 +134,7 @@ type Mutation struct {
 }
 
 type OAuthApp struct {
+	ID           uuid.UUID    `json:"id"`
 	ProviderType ProviderType `json:"providerType"`
 	ClientID     string       `json:"clientID"`
 	Alias        *string      `json:"alias,omitempty"`
