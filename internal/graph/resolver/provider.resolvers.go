@@ -102,7 +102,7 @@ func (r *mutationResolver) DisconnectProvider(ctx context.Context, id uuid.UUID)
 	}
 
 	if err := r.DB.Provider.DeleteOneID(id).Exec(ctx); err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 	return true, nil
 }
@@ -124,7 +124,7 @@ func (r *mutationResolver) UpdateProvider(ctx context.Context, id uuid.UUID, inp
 	}
 	updated, err := q.Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 	return mapProvider(updated), nil
 }
@@ -176,7 +176,7 @@ func (r *queryResolver) Providers(ctx context.Context) ([]*graph.Provider, error
 		WithQuota().
 		All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	out := make([]*graph.Provider, len(providers))

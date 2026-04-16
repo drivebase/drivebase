@@ -64,7 +64,7 @@ func (r *queryResolver) BandwidthUsage(ctx context.Context, providerID *uuid.UUI
 
 	logs, err := q.All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	// Aggregate by (providerID, direction)

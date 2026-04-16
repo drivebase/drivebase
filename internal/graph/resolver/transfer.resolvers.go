@@ -79,7 +79,7 @@ func (r *mutationResolver) CancelTransferJob(ctx context.Context, id uuid.UUID) 
 		SetStatus(string(entschema.BatchStatusCancelled)).
 		Save(ctx)
 	if err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 	return true, nil
 }
@@ -111,7 +111,7 @@ func (r *queryResolver) MyTransferJobs(ctx context.Context) ([]*graph.TransferJo
 		Order(enttransferjob.ByCreatedAt()).
 		All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	out := make([]*graph.TransferJob, len(jobs))

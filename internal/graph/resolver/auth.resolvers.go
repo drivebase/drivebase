@@ -25,7 +25,7 @@ func (r *mutationResolver) SignUp(ctx context.Context, input graph.SignUpInput) 
 
 	hash, err := auth.HashPassword(input.Password)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	u, err := r.DB.User.Create().
@@ -37,7 +37,7 @@ func (r *mutationResolver) SignUp(ctx context.Context, input graph.SignUpInput) 
 		if ent.IsConstraintError(err) {
 			return nil, fmt.Errorf("email already registered")
 		}
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	return r.issueTokens(ctx, u, uuid.Nil)
@@ -85,12 +85,12 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, token string) (*gra
 
 	u := sess.Edges.User
 	if u == nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	// Rotate: revoke old session, issue new one
 	if err := auth.RevokeSession(ctx, r.DB, sess.ID); err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	return r.issueTokens(ctx, u, uuid.Nil)
@@ -116,7 +116,7 @@ func (r *mutationResolver) SwitchWorkspace(ctx context.Context, workspaceID uuid
 
 	token, err := r.issueAccessToken(u, workspaceID)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	return &graph.SwitchWorkspacePayload{AccessToken: token}, nil
@@ -129,7 +129,7 @@ func (r *mutationResolver) SignOut(ctx context.Context) (bool, error) {
 		return false, auth.ErrUnauthenticated
 	}
 	if err := auth.RevokeAllUserSessions(ctx, r.DB, u.ID); err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 	return true, nil
 }
@@ -151,7 +151,7 @@ func (r *mutationResolver) RevokeSession(ctx context.Context, sessionID uuid.UUI
 	}
 
 	if err := auth.RevokeSession(ctx, r.DB, sessionID); err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 	return true, nil
 }
@@ -184,7 +184,7 @@ func (r *queryResolver) MySessions(ctx context.Context) ([]*graph.Session, error
 
 	sessions, err := auth.ListActiveSessions(ctx, r.DB, u.ID)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	out := make([]*graph.Session, len(sessions))

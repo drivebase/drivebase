@@ -45,7 +45,7 @@ func (r *mutationResolver) issueTokens(ctx context.Context, u *ent.User, workspa
 		workspaceID,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	refreshToken, err := auth.IssueRefreshToken(
@@ -54,7 +54,7 @@ func (r *mutationResolver) issueTokens(ctx context.Context, u *ent.User, workspa
 		u.ID,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	ip, ua := "", ""
@@ -64,7 +64,7 @@ func (r *mutationResolver) issueTokens(ctx context.Context, u *ent.User, workspa
 	}
 
 	if _, err := auth.CreateSession(ctx, r.DB, u.ID, refreshToken, ip, ua, r.Config.Auth.RefreshTokenTTL); err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	return &graph.AuthPayload{

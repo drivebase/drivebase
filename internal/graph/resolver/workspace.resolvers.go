@@ -43,7 +43,7 @@ func (r *mutationResolver) CreateWorkspace(ctx context.Context, input graph.Crea
 			if ent.IsConstraintError(err) {
 				return fmt.Errorf("workspace slug already taken")
 			}
-			return fmt.Errorf("internal error")
+			return fmt.Errorf("internal error: %w", err)
 		}
 
 		// Create system roles
@@ -109,7 +109,7 @@ func (r *mutationResolver) UpdateWorkspace(ctx context.Context, id uuid.UUID, in
 	}
 	ws, err := q.Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 	return mapWorkspace(ws), nil
 }
@@ -122,7 +122,7 @@ func (r *mutationResolver) DeleteWorkspace(ctx context.Context, id uuid.UUID) (b
 	}
 
 	if err := r.DB.Workspace.DeleteOneID(id).Exec(ctx); err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 	return true, nil
 }
@@ -157,7 +157,7 @@ func (r *mutationResolver) InviteMember(ctx context.Context, email string, roleI
 		if ent.IsConstraintError(err) {
 			return nil, fmt.Errorf("user is already a member of this workspace")
 		}
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	member.Edges.User = invitee
@@ -189,7 +189,7 @@ func (r *mutationResolver) RemoveMember(ctx context.Context, userID uuid.UUID) (
 		).
 		Exec(ctx)
 	if err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 	return true, nil
 }
@@ -225,7 +225,7 @@ func (r *mutationResolver) UpdateMemberRole(ctx context.Context, userID uuid.UUI
 		SetRoleID(roleID).
 		Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	updated.Edges.User = member.Edges.User
@@ -244,7 +244,7 @@ func (r *queryResolver) Workspace(ctx context.Context, id uuid.UUID) (*graph.Wor
 		if ent.IsNotFound(err) {
 			return nil, fmt.Errorf("workspace not found")
 		}
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 	return mapWorkspace(ws), nil
 }
@@ -261,7 +261,7 @@ func (r *queryResolver) MyWorkspaces(ctx context.Context) ([]*graph.Workspace, e
 		WithWorkspace().
 		All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	out := make([]*graph.Workspace, 0, len(members))
@@ -288,7 +288,7 @@ func (r *queryResolver) WorkspaceRoles(ctx context.Context) ([]*graph.Role, erro
 		QueryRoles().
 		All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	out := make([]*graph.Role, len(roles))

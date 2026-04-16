@@ -69,7 +69,7 @@ func (r *mutationResolver) RevokeSharedLink(ctx context.Context, id uuid.UUID) (
 		return false, err
 	}
 	if err := r.Sharing.Revoke(ctx, id); err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 	return true, nil
 }
@@ -85,7 +85,7 @@ func (r *queryResolver) SharedLinks(ctx context.Context) ([]*graph.SharedLink, e
 	}
 	links, err := r.Sharing.List(ctx, workspaceID)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 	out := make([]*graph.SharedLink, len(links))
 	for i, l := range links {

@@ -153,7 +153,11 @@ func (h *oauthHandler) callback(w http.ResponseWriter, r *http.Request) {
 		"provider_name", state.ProviderName,
 	)
 
-	http.Redirect(w, r, "/?oauth=success", http.StatusFound)
+	frontendURL := h.cfg.Server.FrontendURL
+	if frontendURL == "" {
+		frontendURL = "http://localhost:3000"
+	}
+	http.Redirect(w, r, frontendURL+"/providers", http.StatusFound)
 }
 
 func buildProviderCredentials(provType storage.ProviderType, clientID, clientSecret string, token *oauth2.Token) any {

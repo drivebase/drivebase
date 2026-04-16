@@ -53,7 +53,7 @@ func (r *mutationResolver) SaveOAuthApp(ctx context.Context, input graph.SaveOAu
 		}
 		updated, err := q.Save(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("internal error")
+			return nil, fmt.Errorf("internal error: %w", err)
 		}
 		return mapOAuthApp(updated), nil
 	}
@@ -69,7 +69,7 @@ func (r *mutationResolver) SaveOAuthApp(ctx context.Context, input graph.SaveOAu
 	}
 	app, err := q.Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 	return mapOAuthApp(app), nil
 }
@@ -88,7 +88,7 @@ func (r *mutationResolver) DeleteOAuthApp(ctx context.Context, providerType grap
 		Where(entoauthapp.WorkspaceID(workspaceID), entoauthapp.ProviderType(string(providerType))).
 		Exec(ctx)
 	if err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 	return true, nil
 }
@@ -169,7 +169,7 @@ func (r *queryResolver) OauthApps(ctx context.Context) ([]*graph.OAuthApp, error
 		Where(entoauthapp.WorkspaceID(workspaceID)).
 		All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	out := make([]*graph.OAuthApp, len(apps))

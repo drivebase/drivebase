@@ -68,7 +68,7 @@ func (r *mutationResolver) CreateAPIToken(ctx context.Context, input graph.Creat
 	}
 	tok, err := q.Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	return &graph.CreateAPITokenPayload{
@@ -91,7 +91,7 @@ func (r *mutationResolver) RevokeAPIToken(ctx context.Context, id uuid.UUID) (bo
 		Where(entapitoken.ID(id), entapitoken.WorkspaceID(workspaceID)).
 		Exec(ctx)
 	if err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 	if n == 0 {
 		return false, fmt.Errorf("token not found")
@@ -114,7 +114,7 @@ func (r *queryResolver) APITokens(ctx context.Context) ([]*graph.APIToken, error
 		Order(entapitoken.ByCreatedAt()).
 		All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	out := make([]*graph.APIToken, len(tokens))

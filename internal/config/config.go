@@ -24,6 +24,7 @@ type ServerConfig struct {
 	Port             int    `mapstructure:"port"`
 	Env              string `mapstructure:"env"`
 	OAuthCallbackURL string `mapstructure:"oauth_callback_url"`
+	FrontendURL      string `mapstructure:"frontend_url"`
 }
 
 type DatabaseConfig struct {

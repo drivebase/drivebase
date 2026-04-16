@@ -111,7 +111,7 @@ func (r *mutationResolver) DeleteFile(ctx context.Context, input graph.DeleteFil
 	}
 
 	if err := r.DB.FileNode.DeleteOneID(input.FileNodeID).Exec(ctx); err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 
 	if r.FileCache != nil {
@@ -160,7 +160,7 @@ func (r *mutationResolver) RenameFile(ctx context.Context, input graph.RenameFil
 		SetRemoteID(fi.RemoteID).
 		Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	if r.FileCache != nil {
@@ -222,7 +222,7 @@ func (r *mutationResolver) MoveFile(ctx context.Context, input graph.MoveFileInp
 	}
 	updated, err := q.Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	if r.FileCache != nil {
@@ -380,7 +380,7 @@ func (r *queryResolver) MyUploadBatches(ctx context.Context) ([]*graph.UploadBat
 		Order(entuploadbatch.ByCreatedAt()).
 		All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("internal error")
+		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
 	out := make([]*graph.UploadBatch, len(batches))

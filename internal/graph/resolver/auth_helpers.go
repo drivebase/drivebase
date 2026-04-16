@@ -18,7 +18,7 @@ func (r *mutationResolver) requestPasswordReset(ctx context.Context, email strin
 	// Always return true to avoid user enumeration
 	exists, err := r.DB.User.Query().Where(entuser.Email(email)).Exist(ctx)
 	if err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 	if !exists {
 		return true, nil
@@ -32,7 +32,7 @@ func (r *mutationResolver) requestPasswordReset(ctx context.Context, email strin
 		SetExpiresAt(time.Now().Add(otpTTL)).
 		Save(ctx)
 	if err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 
 	slog.Info("password reset OTP", "email", email, "otp", otp)
@@ -60,19 +60,19 @@ func (r *mutationResolver) resetPassword(ctx context.Context, email, otp, newPas
 
 	hash, err := auth.HashPassword(newPassword)
 	if err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 
 	now := time.Now()
 	if err := r.DB.PasswordReset.UpdateOne(reset).SetUsedAt(now).Exec(ctx); err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 
 	if err := r.DB.User.Update().
 		Where(entuser.Email(email)).
 		SetPasswordHash(hash).
 		Exec(ctx); err != nil {
-		return false, fmt.Errorf("internal error")
+		return false, fmt.Errorf("internal error: %w", err)
 	}
 
 	return true, nil

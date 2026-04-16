@@ -139,7 +139,7 @@ func newGQLServer(cfg *config.Config, db *ent.Client, rdb *redis.Client, transfe
 		oc := graphql.GetOperationContext(ctx)
 		slog.Error("graphql error",
 			"op", oc.OperationName,
-			"error", err.Error(),
+			"error", err,
 		)
 		if errors.Is(err, auth.ErrUnauthenticated) {
 			gqlErr.Extensions = map[string]any{"code": "UNAUTHENTICATED"}
