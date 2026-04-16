@@ -2,6 +2,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { ToastProvider } from "@heroui/react";
+import { ConfirmationDialog } from "@/lib/confirmation";
 
 import "../styles.css";
 
@@ -13,6 +14,7 @@ function RootComponent() {
 	return (
 		<>
 			<ToastProvider placement="bottom end" />
+			<ConfirmationDialog />
 			<Outlet />
 			<TanStackDevtools
 				config={{

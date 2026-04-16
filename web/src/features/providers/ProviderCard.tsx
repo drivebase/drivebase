@@ -8,6 +8,7 @@ type Provider = {
 	status: ProviderStatus;
 	quota?: { totalBytes: number; usedBytes: number; freeBytes: number } | null;
 };
+import { askConfirmation } from "@/lib/confirmation";
 import { Button } from "@heroui/react";
 import { AlertCircle, CheckCircle2, RefreshCw, Trash2, WifiOff } from "lucide-react";
 import { useMutation } from "urql";
@@ -42,6 +43,12 @@ export function ProviderCard({
 	}
 
 	async function handleDisconnect() {
+		const confirmed = await askConfirmation(
+			"Disconnect provider",
+			`Are you sure you want to disconnect "${provider.name}"? This action cannot be undone.`,
+			{ confirmLabel: "Disconnect" },
+		);
+		if (!confirmed) return;
 		await disconnect({ id: provider.id });
 		onRefetch();
 	}
