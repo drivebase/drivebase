@@ -17,6 +17,10 @@ export function WorkspaceSwitcher() {
   const [, switchWorkspace] = useMutation(SwitchWorkspaceMutation);
 
   async function handleChange(id: Key) {
+    if (id === "__create__") {
+      navigate({ to: "/workspaces/create" });
+      return;
+    }
     const ws = data?.myWorkspaces.find((w) => w.id === id);
     if (!ws || ws.id === workspace?.id) return;
 
@@ -58,18 +62,14 @@ export function WorkspaceSwitcher() {
               <ListBox.ItemIndicator />
             </ListBox.Item>
           ))}
+          <Separator />
+          <ListBox.Item id="__create__" textValue="New workspace">
+            <div className="flex items-center gap-2 text-muted">
+              <Plus size={14} />
+              New workspace
+            </div>
+          </ListBox.Item>
         </ListBox>
-        <Separator />
-        <div className="p-1">
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/workspaces/create" })}
-            className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-muted rounded hover:bg-default transition-colors"
-          >
-            <Plus size={14} />
-            New workspace
-          </button>
-        </div>
       </Select.Popover>
     </Select>
   );

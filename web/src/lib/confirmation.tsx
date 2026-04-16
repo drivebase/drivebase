@@ -55,7 +55,7 @@ export function ConfirmationDialog() {
       <AlertDialog.Backdrop>
         <AlertDialog.Container>
           <AlertDialog.Dialog className="sm:max-w-[400px]">
-            <AlertDialog.CloseTrigger />
+            <AlertDialog.CloseTrigger onPress={handleCancel} />
             <AlertDialog.Header>
               <AlertDialog.Icon status={request?.variant ?? "danger"} />
               <AlertDialog.Heading>{request?.title}</AlertDialog.Heading>
@@ -64,11 +64,10 @@ export function ConfirmationDialog() {
               <p>{request?.description}</p>
             </AlertDialog.Body>
             <AlertDialog.Footer>
-              <Button slot="close" variant="tertiary" onPress={handleCancel}>
+              <Button variant="tertiary" onPress={handleCancel}>
                 {request?.cancelLabel ?? "Cancel"}
               </Button>
               <Button
-                slot="close"
                 variant={request?.variant ?? "danger"}
                 onPress={handleConfirm}
               >
