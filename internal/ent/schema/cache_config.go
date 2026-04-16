@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/dialect/entsql"
 	"github.com/google/uuid"
 )
 
@@ -30,6 +31,6 @@ func (CacheConfig) Fields() []ent.Field {
 
 func (CacheConfig) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("provider", Provider.Type).Ref("cache_config").Field("provider_id").Unique().Required(),
+		edge.From("provider", Provider.Type).Ref("cache_config").Field("provider_id").Unique().Required().Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }

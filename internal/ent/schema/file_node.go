@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -37,7 +38,7 @@ func (FileNode) Fields() []ent.Field {
 
 func (FileNode) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("provider", Provider.Type).Ref("file_nodes").Field("provider_id").Unique().Required(),
+		edge.From("provider", Provider.Type).Ref("file_nodes").Field("provider_id").Unique().Required().Annotations(entsql.OnDelete(entsql.Cascade)),
 		// Self-referential parent-child tree
 		edge.To("children", FileNode.Type).From("parent").Field("parent_id").Unique(),
 	}

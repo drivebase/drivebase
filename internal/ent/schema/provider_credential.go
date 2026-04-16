@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/dialect/entsql"
 	"github.com/google/uuid"
 )
 
@@ -31,6 +32,6 @@ func (ProviderCredential) Fields() []ent.Field {
 
 func (ProviderCredential) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("provider", Provider.Type).Ref("credential").Field("provider_id").Unique().Required(),
+		edge.From("provider", Provider.Type).Ref("credential").Field("provider_id").Unique().Required().Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }
