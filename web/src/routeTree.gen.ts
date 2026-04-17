@@ -9,20 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WorkspacesRouteImport } from './routes/workspaces'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as WorkspacesIndexRouteImport } from './routes/workspaces/index'
-import { Route as WorkspacesCreateRouteImport } from './routes/workspaces/create'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 
-const WorkspacesRoute = WorkspacesRouteImport.update({
-  id: '/workspaces',
-  path: '/workspaces',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -31,16 +23,6 @@ const AuthRoute = AuthRouteImport.update({
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
-} as any)
-const WorkspacesIndexRoute = WorkspacesIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => WorkspacesRoute,
-} as any)
-const WorkspacesCreateRoute = WorkspacesCreateRouteImport.update({
-  id: '/create',
-  path: '/create',
-  getParentRoute: () => WorkspacesRoute,
 } as any)
 const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/signup',
@@ -61,12 +43,9 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedRoute
   '/auth': typeof AuthRouteWithChildren
-  '/workspaces': typeof WorkspacesRouteWithChildren
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/workspaces/create': typeof WorkspacesCreateRoute
-  '/workspaces/': typeof WorkspacesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedRoute
@@ -74,67 +53,41 @@ export interface FileRoutesByTo {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/workspaces/create': typeof WorkspacesCreateRoute
-  '/workspaces': typeof WorkspacesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRoute
   '/auth': typeof AuthRouteWithChildren
-  '/workspaces': typeof WorkspacesRouteWithChildren
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/workspaces/create': typeof WorkspacesCreateRoute
-  '/workspaces/': typeof WorkspacesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/workspaces'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
-    | '/workspaces/create'
-    | '/workspaces/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/auth'
-    | '/auth/forgot-password'
-    | '/auth/login'
-    | '/auth/signup'
-    | '/workspaces/create'
-    | '/workspaces'
+  to: '/' | '/auth' | '/auth/forgot-password' | '/auth/login' | '/auth/signup'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
-    | '/workspaces'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
-    | '/workspaces/create'
-    | '/workspaces/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRoute
   AuthRoute: typeof AuthRouteWithChildren
-  WorkspacesRoute: typeof WorkspacesRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/workspaces': {
-      id: '/workspaces'
-      path: '/workspaces'
-      fullPath: '/workspaces'
-      preLoaderRoute: typeof WorkspacesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -148,20 +101,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/workspaces/': {
-      id: '/workspaces/'
-      path: '/'
-      fullPath: '/workspaces/'
-      preLoaderRoute: typeof WorkspacesIndexRouteImport
-      parentRoute: typeof WorkspacesRoute
-    }
-    '/workspaces/create': {
-      id: '/workspaces/create'
-      path: '/create'
-      fullPath: '/workspaces/create'
-      preLoaderRoute: typeof WorkspacesCreateRouteImport
-      parentRoute: typeof WorkspacesRoute
     }
     '/auth/signup': {
       id: '/auth/signup'
@@ -201,24 +140,9 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
-interface WorkspacesRouteChildren {
-  WorkspacesCreateRoute: typeof WorkspacesCreateRoute
-  WorkspacesIndexRoute: typeof WorkspacesIndexRoute
-}
-
-const WorkspacesRouteChildren: WorkspacesRouteChildren = {
-  WorkspacesCreateRoute: WorkspacesCreateRoute,
-  WorkspacesIndexRoute: WorkspacesIndexRoute,
-}
-
-const WorkspacesRouteWithChildren = WorkspacesRoute._addFileChildren(
-  WorkspacesRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRoute,
   AuthRoute: AuthRouteWithChildren,
-  WorkspacesRoute: WorkspacesRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

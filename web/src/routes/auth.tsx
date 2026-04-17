@@ -1,14 +1,11 @@
-import { AuthPanel } from "@/features/auth/components/AuthPanel";
 import { useAuthStore } from "@/store/auth";
-import { useWorkspaceStore } from "@/store/workspace";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auth")({
 	beforeLoad: () => {
 		const { token } = useAuthStore.getState();
 		if (token) {
-			const { workspace } = useWorkspaceStore.getState();
-			throw redirect({ to: workspace ? "/" : "/workspaces" });
+			throw redirect({ to: "/" });
 		}
 	},
 	component: AuthLayout,
@@ -16,11 +13,12 @@ export const Route = createFileRoute("/auth")({
 
 function AuthLayout() {
 	return (
-		<div className="min-h-screen grid lg:grid-cols-2">
-			<AuthPanel />
-			<div className="flex items-center justify-center p-8 bg-background">
-				<Outlet />
+		<div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-950 via-slate-900 to-indigo-950">
+			<div className="pointer-events-none absolute inset-0">
+				<div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
+				<div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl" />
 			</div>
+			<Outlet />
 		</div>
 	);
 }

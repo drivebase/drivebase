@@ -1,15 +1,9 @@
-import {
-	Alert,
-	Button,
-	FieldError,
-	Form,
-	InputGroup,
-	Label,
-	TextField,
-} from "@heroui/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, HardDrive } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useSignIn } from "@/features/auth/hooks";
 
 export const Route = createFileRoute("/auth/login")({
@@ -20,84 +14,89 @@ function LoginPage() {
 	const { submit, fetching, error } = useSignIn();
 	const [showPassword, setShowPassword] = useState(false);
 
-	function onSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+	function onSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		const data = Object.fromEntries(new FormData(e.currentTarget));
 		submit(data.email as string, data.password as string);
 	}
 
 	return (
-		<div className="w-full max-w-xs space-y-6">
-			<div className="space-y-1">
-				<h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
-				<p className="text-sm text-muted">Sign in to your account to continue</p>
+		<div className="w-full max-w-sm">
+			{/* Logo */}
+			<div className="mb-8 flex flex-col items-center gap-3">
+				<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur-sm">
+					<HardDrive size={32} className="text-white" />
+				</div>
+				<div className="text-center">
+					<h1 className="text-xl font-semibold text-white">Drivebase</h1>
+					<p className="text-sm text-white/50">Sign in to your account</p>
+				</div>
 			</div>
 
-			<Form onSubmit={onSubmit} className="space-y-4">
+			{/* Card */}
+			<div className="rounded-2xl bg-white/8 p-8 ring-1 ring-white/10 backdrop-blur-2xl">
 				{error && (
-					<Alert status="danger">
-						<Alert.Indicator />
-						<Alert.Content>
-							<Alert.Title>{error}</Alert.Title>
-						</Alert.Content>
-					</Alert>
-				)}
-				<TextField
-					isRequired
-					name="email"
-					type="email"
-					variant="secondary"
-					className="w-full"
-					validate={(v) =>
-						/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(v)
-							? null
-							: "Please enter a valid email address"
-					}
-				>
-					<Label>Email</Label>
-					<InputGroup>
-						<InputGroup.Input placeholder="you@example.com" autoComplete="email" />
-					</InputGroup>
-					<FieldError />
-				</TextField>
-
-				<TextField
-					isRequired
-					name="password"
-					type={showPassword ? "text" : "password"}
-					variant="secondary"
-					className="w-full"
-					validate={(v) => (v.length < 1 ? "Password is required" : null)}
-				>
-					<div className="flex items-center justify-between">
-						<Label>Password</Label>
-						<Link to="/auth/forgot-password" className="text-xs text-muted hover:text-foreground transition-colors">
-							Forgot password?
-						</Link>
+					<div className="mb-5 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400 ring-1 ring-red-500/20">
+						{error}
 					</div>
-					<InputGroup>
-						<InputGroup.Input placeholder="••••••••" autoComplete="current-password" />
-						<InputGroup.Suffix>
+				)}
+
+				<form onSubmit={onSubmit} className="space-y-5">
+					<div className="space-y-1.5">
+						<Label className="text-white/70 text-xs font-medium">Email</Label>
+						<Input
+							name="email"
+							type="email"
+							required
+							autoComplete="email"
+							placeholder="you@example.com"
+							className="border-white/10 bg-white/5 text-white placeholder:text-white/25 focus-visible:ring-white/20 focus-visible:border-white/25"
+						/>
+					</div>
+
+					<div className="space-y-1.5">
+						<div className="flex items-center justify-between">
+							<Label className="text-white/70 text-xs font-medium">Password</Label>
+							<Link
+								to="/auth/forgot-password"
+								className="text-xs text-white/40 hover:text-white/70 transition-colors"
+							>
+								Forgot password?
+							</Link>
+						</div>
+						<div className="relative">
+							<Input
+								name="password"
+								type={showPassword ? "text" : "password"}
+								required
+								autoComplete="current-password"
+								placeholder="••••••••"
+								className="border-white/10 bg-white/5 text-white placeholder:text-white/25 focus-visible:ring-white/20 focus-visible:border-white/25 pr-10"
+							/>
 							<button
 								type="button"
-								className="text-muted hover:text-foreground transition-colors"
+								tabIndex={-1}
 								onClick={() => setShowPassword((v) => !v)}
+								className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
 							>
-								{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+								{showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
 							</button>
-						</InputGroup.Suffix>
-					</InputGroup>
-					<FieldError />
-				</TextField>
+						</div>
+					</div>
 
-				<Button type="submit" className="w-full" isPending={fetching}>
-					Sign in
-				</Button>
-			</Form>
+					<Button
+						type="submit"
+						disabled={fetching}
+						className="w-full bg-white text-slate-900 hover:bg-white/90 font-medium"
+					>
+						{fetching ? "Signing in…" : "Sign in"}
+					</Button>
+				</form>
+			</div>
 
-			<p className="text-center text-sm text-muted">
+			<p className="mt-6 text-center text-sm text-white/30">
 				Don't have an account?{" "}
-				<Link to="/auth/signup" className="text-foreground font-medium hover:underline">
+				<Link to="/auth/signup" className="text-white/60 hover:text-white transition-colors">
 					Sign up
 				</Link>
 			</p>

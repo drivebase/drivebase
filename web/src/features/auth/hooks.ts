@@ -1,6 +1,5 @@
 import { parseError } from "@/lib/errors";
 import { useAuthStore } from "@/store/auth";
-import { useWorkspaceStore } from "@/store/workspace";
 import { toast } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -31,7 +30,7 @@ export function useSignIn() {
 		const { accessToken, refreshToken, user } = result.data.signIn;
 		setAuth(accessToken, refreshToken, user);
 		toast.success(`Welcome back, ${user.name}`);
-		navigate({ to: "/workspaces" });
+		navigate({ to: "/" });
 	}
 
 	return { submit, fetching, error };
@@ -55,7 +54,7 @@ export function useSignUp() {
 		const { accessToken, refreshToken, user } = result.data.signUp;
 		setAuth(accessToken, refreshToken, user);
 		toast.success(`Welcome, ${user.name}`);
-		navigate({ to: "/workspaces" });
+		navigate({ to: "/" });
 	}
 
 	return { submit, fetching, error };
