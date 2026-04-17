@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { getApp } from "@/features/desktop/app-registry";
+import type { WindowLaunchAnimation } from "@/features/desktop/window-animation";
 
 type WindowId = string;
 
@@ -14,6 +15,7 @@ interface WindowState {
 	state: "normal" | "maximized" | "minimized";
 	zIndex: number;
 	appState: Record<string, unknown>;
+	launchAnimation: WindowLaunchAnimation | null;
 }
 
 interface WindowManagerStore {
@@ -23,7 +25,9 @@ interface WindowManagerStore {
 
 	openWindow: (
 		appId: string,
-		opts?: Partial<Pick<WindowState, "position" | "size" | "appState">>,
+		opts?: Partial<
+			Pick<WindowState, "position" | "size" | "appState" | "launchAnimation">
+		> & { reuseExisting?: boolean },
 	) => void;
 	closeWindow: (id: WindowId) => void;
 	focusWindow: (id: WindowId) => void;
@@ -36,6 +40,7 @@ interface WindowManagerStore {
 		size: { width: number; height: number },
 	) => void;
 	updateAppState: (id: WindowId, state: Record<string, unknown>) => void;
+	clearLaunchAnimation: (id: WindowId) => void;
 }
 
 let cascadeOffset = 0;
@@ -54,12 +59,17 @@ export const useWindowManagerStore = create<WindowManagerStore>()((set, get) => 
 
 	openWindow: (appId, opts) => {
 		const state = get();
+		const app = getApp(appId);
+		if (!app) return;
+		const reuseExisting = opts?.reuseExisting ?? app.singleton;
 
-		// Singleton check: if a window for this appId already exists, focus it
-		const existing = Object.values(state.windows).find(
-			(w) => w.appId === appId,
-		);
+		const existing = reuseExisting
+			? Object.values(state.windows).find((w) => w.appId === appId)
+			: undefined;
 		if (existing) {
+			if (opts?.appState) {
+				get().updateAppState(existing.id, opts.appState);
+			}
 			if (existing.state === "minimized") {
 				get().restoreWindow(existing.id);
 			} else {
@@ -67,9 +77,6 @@ export const useWindowManagerStore = create<WindowManagerStore>()((set, get) => 
 			}
 			return;
 		}
-
-		const app = getApp(appId);
-		if (!app) return;
 
 		const windowId = `${appId}-${Date.now()}`;
 		const position = opts?.position ?? getNextCascadePosition();
@@ -86,6 +93,7 @@ export const useWindowManagerStore = create<WindowManagerStore>()((set, get) => 
 			state: "normal",
 			zIndex: state.nextZIndex,
 			appState: opts?.appState ?? {},
+			launchAnimation: opts?.launchAnimation ?? null,
 		};
 
 		set({
@@ -228,6 +236,21 @@ export const useWindowManagerStore = create<WindowManagerStore>()((set, get) => 
 				[id]: {
 					...state.windows[id],
 					appState: { ...state.windows[id].appState, ...appState },
+				},
+			},
+		});
+	},
+
+	clearLaunchAnimation: (id) => {
+		const state = get();
+		if (!state.windows[id]?.launchAnimation) return;
+
+		set({
+			windows: {
+				...state.windows,
+				[id]: {
+					...state.windows[id],
+					launchAnimation: null,
 				},
 			},
 		});

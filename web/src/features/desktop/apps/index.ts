@@ -11,6 +11,7 @@ import { DashboardApp } from "./DashboardApp";
 import { ProvidersApp } from "./ProvidersApp";
 import { SettingsApp } from "./SettingsApp";
 import { TrashApp } from "./TrashApp";
+import "./file-manager/context-menu";
 
 registerApp({
 	id: "file-manager",

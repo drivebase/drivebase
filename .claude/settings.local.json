@@ -9,7 +9,8 @@
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(find /Users/monawwar/Projects/drivebase/web/src/routes/_authenticated* -type f)",
-      "Bash(bun add:*)"
+      "Bash(bun add:*)",
+      "Bash(bun run:*)"
     ]
   }
 }

@@ -1,36 +1,42 @@
 import { useState, useRef, useCallback } from "react";
-import { useWindowManagerStore } from "@/store/window-manager";
+import { useDesktop } from "./hooks/use-desktop";
 import type { AppDefinition } from "./app-registry";
+import type { LaunchSourceRect } from "./window-animation";
 
 interface DockItemProps {
 	app: AppDefinition;
 }
 
 export function DockItem({ app }: DockItemProps) {
-	const { windows, openWindow, focusWindow, restoreWindow } =
-		useWindowManagerStore();
+	const { windows, openApp, focusApp, restoreApp } = useDesktop();
 	const [isBouncing, setIsBouncing] = useState(false);
 	const bounceTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
-	const hasWindow = Object.values(windows).some((w) => w.appId === app.id);
-	const isMinimized = Object.values(windows).some(
-		(w) => w.appId === app.id && w.state === "minimized",
-	);
+	const appWindows = Object.values(windows).filter((w) => w.appId === app.id);
+	const hasWindow = appWindows.length > 0;
+	const isMinimized = appWindows.some((w) => w.state === "minimized");
+	const activeWindow = appWindows[0];
 
-	const handleClick = useCallback(() => {
+	const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+		const rect = event.currentTarget.getBoundingClientRect();
+		const launchSourceRect: LaunchSourceRect = {
+			left: rect.left,
+			top: rect.top,
+			width: rect.width,
+			height: rect.height,
+		};
+
 		if (!hasWindow) {
 			setIsBouncing(true);
 			if (bounceTimer.current) clearTimeout(bounceTimer.current);
 			bounceTimer.current = setTimeout(() => setIsBouncing(false), 600);
-			openWindow(app.id);
-		} else if (isMinimized) {
-			const win = Object.values(windows).find((w) => w.appId === app.id);
-			if (win) restoreWindow(win.id);
-		} else {
-			const win = Object.values(windows).find((w) => w.appId === app.id);
-			if (win) focusWindow(win.id);
+			openApp(app.id, { launchSourceRect });
+		} else if (isMinimized && activeWindow) {
+			restoreApp(activeWindow.id);
+		} else if (activeWindow) {
+			focusApp(activeWindow.id);
 		}
-	}, [hasWindow, isMinimized, windows, app.id, openWindow, focusWindow, restoreWindow]);
+	}, [hasWindow, isMinimized, activeWindow, app.id, openApp, focusApp, restoreApp]);
 
 	const Icon = app.icon;
 
@@ -40,12 +46,9 @@ export function DockItem({ app }: DockItemProps) {
 			onClick={handleClick}
 			className="relative flex flex-col items-center group"
 		>
-			{/* Tooltip */}
 			<span className="absolute -top-8 px-2 py-1 bg-black/80 text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
 				{app.label}
 			</span>
-
-			{/* Icon */}
 			<div
 				className={`w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors ${
 					isBouncing ? "animate-dock-bounce" : ""
@@ -53,14 +56,8 @@ export function DockItem({ app }: DockItemProps) {
 			>
 				<Icon size={20} />
 			</div>
-
-			{/* Indicator dot */}
 			{hasWindow && (
-				<div
-					className={`absolute -bottom-1.5 w-1 h-1 rounded-full ${
-						isMinimized ? "bg-white/40" : "bg-white/80"
-					}`}
-				/>
+				<div className={`absolute -bottom-1.5 w-1 h-1 rounded-full ${isMinimized ? "bg-white/40" : "bg-white/80"}`} />
 			)}
 		</button>
 	);

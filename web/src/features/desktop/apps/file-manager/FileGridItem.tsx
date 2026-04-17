@@ -8,13 +8,17 @@ interface FileGridItemProps {
 
 export function FileGridItem({ file, onClick }: FileGridItemProps) {
 	return (
-		<button
-			type="button"
+		<div
+			data-context-type="file"
+			data-context-data={JSON.stringify({ id: file.name, name: file.name, kind: file.kind })}
+			role="button"
+			tabIndex={0}
 			onClick={onClick}
-			className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-muted transition-colors text-center"
+			onKeyDown={(e) => e.key === "Enter" && onClick?.()}
+			className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-muted transition-colors text-center cursor-default"
 		>
 			<FileIcon type={file.icon} size="lg" />
 			<span className="text-xs text-foreground truncate w-full">{file.name}</span>
-		</button>
+		</div>
 	);
 }

@@ -1,4 +1,4 @@
-import { LayoutGrid, List, Columns2, ChevronDown, Check } from "lucide-react";
+import { LayoutGrid, List, ChevronDown, Check } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	DropdownMenu,
@@ -35,7 +35,6 @@ export function FileManagerToolbar({ view, onViewChange, sortBy, onSortChange }:
 				<TabsList>
 					<TabsTrigger value="grid"><LayoutGrid size={14} /></TabsTrigger>
 					<TabsTrigger value="list"><List size={14} /></TabsTrigger>
-					<TabsTrigger value="columns"><Columns2 size={14} /></TabsTrigger>
 				</TabsList>
 			</Tabs>
 

@@ -1,5 +1,6 @@
 import { FolderOpen, Cloud, HardDrive, Clock, Share2, Star } from "lucide-react";
-import type { SidebarSource } from "./types";
+import type { FileManagerLocation, SidebarSource } from "./types";
+import type { AppContextTargetData } from "@/features/desktop/app-context-menu-registry";
 
 const SOURCE_ICON_MAP = {
 	files: FolderOpen,
@@ -16,12 +17,22 @@ const VIEW_ITEMS = [
 ] as const;
 
 interface FileManagerSidebarProps {
+	windowId: string;
 	sources: SidebarSource[];
-	activeId: string;
-	onSelect: (id: string) => void;
+	activeId: FileManagerLocation;
+	onSelect: (id: FileManagerLocation) => void;
 }
 
-export function FileManagerSidebar({ sources, activeId, onSelect }: FileManagerSidebarProps) {
+function getContextData(data: AppContextTargetData): string {
+	return JSON.stringify(data);
+}
+
+export function FileManagerSidebar({
+	windowId,
+	sources,
+	activeId,
+	onSelect,
+}: FileManagerSidebarProps) {
 	return (
 		<div className="flex flex-col h-full w-48 border-r border-border bg-muted/30 py-3 shrink-0">
 			<div className="px-3 pb-1">
@@ -34,6 +45,19 @@ export function FileManagerSidebar({ sources, activeId, onSelect }: FileManagerS
 					<button
 						key={id}
 						type="button"
+						data-context-type="app"
+						data-context-data={getContextData({
+							appId: "file-manager",
+							windowId,
+							entityType: "sidebar-item",
+							entityId: id,
+							label,
+							metadata: {
+								locationId: id,
+								capabilities: ["open", "open-new-window", "get-info"],
+								category: "view",
+							},
+						})}
 						onClick={() => onSelect(id)}
 						className={`flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-lg text-sm transition-colors ${
 							activeId === id
@@ -59,6 +83,25 @@ export function FileManagerSidebar({ sources, activeId, onSelect }: FileManagerS
 						<button
 							key={source.id}
 							type="button"
+							data-context-type="app"
+							data-context-data={getContextData({
+								appId: "file-manager",
+								windowId,
+								entityType: "sidebar-item",
+								entityId: source.id,
+								label: source.label,
+								metadata: {
+									locationId: source.id,
+									sourceId: source.id,
+									capabilities: [
+										"open",
+										"open-new-window",
+										"get-info",
+										...(source.id !== "local" ? ["disconnect"] : []),
+									],
+									category: "source",
+								},
+							})}
 							onClick={() => onSelect(source.id)}
 							className={`flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-lg text-sm transition-colors ${
 								activeId === source.id

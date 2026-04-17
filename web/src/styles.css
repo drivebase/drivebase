@@ -128,3 +128,9 @@
     @apply font-sans;
     }
 }
+
+/* Ensure Radix portals always render above windows */
+[data-radix-popper-content-wrapper],
+[data-radix-portal] {
+  z-index: 99999 !important;
+}

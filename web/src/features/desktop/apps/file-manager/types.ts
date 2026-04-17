@@ -22,3 +22,4 @@ export interface SidebarSource {
 }
 
 export type FileViewTab = "recent" | "shared" | "starred";
+export type FileManagerLocation = SidebarSource["id"] | FileViewTab;

@@ -11,7 +11,7 @@ export function WindowLayer() {
 	const focusedId = focusOrder.length > 0 ? focusOrder[focusOrder.length - 1] : null;
 
 	return (
-		<div className="absolute inset-0">
+		<div className="absolute inset-0 pointer-events-none">
 			{visibleWindows.map((win) => (
 				<Window
 					key={win.id}
