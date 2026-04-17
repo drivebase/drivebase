@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatch"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -19,8 +19,8 @@ type UploadBatch struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// WorkspaceID holds the value of the "workspace_id" field.
-	WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// ProviderID holds the value of the "provider_id" field.
 	ProviderID uuid.UUID `json:"provider_id,omitempty"`
 	// ParentRemoteID holds the value of the "parent_remote_id" field.
@@ -49,8 +49,8 @@ type UploadBatch struct {
 
 // UploadBatchEdges holds the relations/edges for other nodes in the graph.
 type UploadBatchEdges struct {
-	// Workspace holds the value of the workspace edge.
-	Workspace *Workspace `json:"workspace,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// Files holds the value of the files edge.
 	Files []*UploadBatchFile `json:"files,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -58,15 +58,15 @@ type UploadBatchEdges struct {
 	loadedTypes [2]bool
 }
 
-// WorkspaceOrErr returns the Workspace value or an error if the edge
+// UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e UploadBatchEdges) WorkspaceOrErr() (*Workspace, error) {
-	if e.Workspace != nil {
-		return e.Workspace, nil
+func (e UploadBatchEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: workspace.Label}
+		return nil, &NotFoundError{label: user.Label}
 	}
-	return nil, &NotLoadedError{edge: "workspace"}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // FilesOrErr returns the Files value or an error if the edge
@@ -89,7 +89,7 @@ func (*UploadBatch) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case uploadbatch.FieldCreatedAt, uploadbatch.FieldCompletedAt:
 			values[i] = new(sql.NullTime)
-		case uploadbatch.FieldID, uploadbatch.FieldWorkspaceID, uploadbatch.FieldProviderID:
+		case uploadbatch.FieldID, uploadbatch.FieldUserID, uploadbatch.FieldProviderID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -112,11 +112,11 @@ func (_m *UploadBatch) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case uploadbatch.FieldWorkspaceID:
+		case uploadbatch.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				_m.WorkspaceID = *value
+				_m.UserID = *value
 			}
 		case uploadbatch.FieldProviderID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -192,9 +192,9 @@ func (_m *UploadBatch) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryWorkspace queries the "workspace" edge of the UploadBatch entity.
-func (_m *UploadBatch) QueryWorkspace() *WorkspaceQuery {
-	return NewUploadBatchClient(_m.config).QueryWorkspace(_m)
+// QueryUser queries the "user" edge of the UploadBatch entity.
+func (_m *UploadBatch) QueryUser() *UserQuery {
+	return NewUploadBatchClient(_m.config).QueryUser(_m)
 }
 
 // QueryFiles queries the "files" edge of the UploadBatch entity.
@@ -225,8 +225,8 @@ func (_m *UploadBatch) String() string {
 	var builder strings.Builder
 	builder.WriteString("UploadBatch(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("workspace_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.WorkspaceID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ProviderID))

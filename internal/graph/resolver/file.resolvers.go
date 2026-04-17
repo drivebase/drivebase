@@ -12,7 +12,6 @@ import (
 
 	"github.com/drivebase/drivebase/internal/auth"
 	entfilenode "github.com/drivebase/drivebase/internal/ent/filenode"
-	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	entuploadbatch "github.com/drivebase/drivebase/internal/ent/uploadbatch"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
@@ -21,12 +20,17 @@ import (
 
 // CreateFolder is the resolver for the createFolder field.
 func (r *mutationResolver) CreateFolder(ctx context.Context, input graph.CreateFolderInput) (*graph.FileNode, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	prov, err := r.DB.Provider.Get(ctx, input.ProviderID)
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
+	if prov.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 
 	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
@@ -83,6 +87,11 @@ func (r *mutationResolver) CreateFolder(ctx context.Context, input graph.CreateF
 
 // DeleteFile is the resolver for the deleteFile field.
 func (r *mutationResolver) DeleteFile(ctx context.Context, input graph.DeleteFileInput) (bool, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return false, auth.ErrUnauthenticated
+	}
+
 	fn, err := r.DB.FileNode.Get(ctx, input.FileNodeID)
 	if err != nil {
 		return false, fmt.Errorf("file not found")
@@ -95,8 +104,8 @@ func (r *mutationResolver) DeleteFile(ctx context.Context, input graph.DeleteFil
 	if err != nil {
 		return false, fmt.Errorf("provider not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return false, err
+	if prov.UserID != u.ID {
+		return false, fmt.Errorf("forbidden")
 	}
 
 	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
@@ -129,6 +138,11 @@ func (r *mutationResolver) DeleteFile(ctx context.Context, input graph.DeleteFil
 
 // RenameFile is the resolver for the renameFile field.
 func (r *mutationResolver) RenameFile(ctx context.Context, input graph.RenameFileInput) (*graph.FileNode, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	fn, err := r.DB.FileNode.Get(ctx, input.FileNodeID)
 	if err != nil {
 		return nil, fmt.Errorf("file not found")
@@ -141,8 +155,8 @@ func (r *mutationResolver) RenameFile(ctx context.Context, input graph.RenameFil
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
+	if prov.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 
 	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
@@ -178,6 +192,11 @@ func (r *mutationResolver) RenameFile(ctx context.Context, input graph.RenameFil
 
 // MoveFile is the resolver for the moveFile field.
 func (r *mutationResolver) MoveFile(ctx context.Context, input graph.MoveFileInput) (*graph.FileNode, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	fn, err := r.DB.FileNode.Get(ctx, input.FileNodeID)
 	if err != nil {
 		return nil, fmt.Errorf("file not found")
@@ -190,8 +209,8 @@ func (r *mutationResolver) MoveFile(ctx context.Context, input graph.MoveFileInp
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
+	if prov.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 
 	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, input.ProviderID)
@@ -241,12 +260,17 @@ func (r *mutationResolver) MoveFile(ctx context.Context, input graph.MoveFileInp
 
 // SyncProvider is the resolver for the syncProvider field.
 func (r *mutationResolver) SyncProvider(ctx context.Context, providerID uuid.UUID) (bool, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return false, auth.ErrUnauthenticated
+	}
+
 	prov, err := r.DB.Provider.Get(ctx, providerID)
 	if err != nil {
 		return false, fmt.Errorf("provider not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return false, err
+	if prov.UserID != u.ID {
+		return false, fmt.Errorf("forbidden")
 	}
 
 	if r.FileCache != nil {
@@ -258,13 +282,17 @@ func (r *mutationResolver) SyncProvider(ctx context.Context, providerID uuid.UUI
 
 // ListFiles is the resolver for the listFiles field.
 func (r *queryResolver) ListFiles(ctx context.Context, input graph.ListFilesInput) (*graph.ListFilesResult, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	prov, err := r.DB.Provider.Get(ctx, input.ProviderID)
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
 	}
-
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
+	if prov.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 
 	parentRemoteID := ""
@@ -309,7 +337,6 @@ func (r *queryResolver) ListFiles(ctx context.Context, input graph.ListFilesInpu
 
 	graphResult := fileResultToGraphQL(result)
 
-	// Enrich with DB UUIDs so callers can use the stable database ID.
 	remoteIDs := make([]string, len(result.Files))
 	for i, f := range result.Files {
 		remoteIDs[i] = f.RemoteID
@@ -334,6 +361,11 @@ func (r *queryResolver) ListFiles(ctx context.Context, input graph.ListFilesInpu
 
 // GetFile is the resolver for the getFile field.
 func (r *queryResolver) GetFile(ctx context.Context, providerID uuid.UUID, fileNodeID uuid.UUID) (*graph.FileNode, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	fn, err := r.DB.FileNode.Get(ctx, fileNodeID)
 	if err != nil {
 		return nil, fmt.Errorf("file not found")
@@ -346,8 +378,8 @@ func (r *queryResolver) GetFile(ctx context.Context, providerID uuid.UUID, fileN
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
+	if prov.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 
 	return mapFileNode(fn), nil
@@ -355,28 +387,30 @@ func (r *queryResolver) GetFile(ctx context.Context, providerID uuid.UUID, fileN
 
 // UploadBatch is the resolver for the uploadBatch field.
 func (r *queryResolver) UploadBatch(ctx context.Context, id uuid.UUID) (*graph.UploadBatch, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	b, err := r.DB.UploadBatch.Get(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("batch not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), b.WorkspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
+	if b.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 	return mapUploadBatch(b), nil
 }
 
 // MyUploadBatches is the resolver for the myUploadBatches field.
 func (r *queryResolver) MyUploadBatches(ctx context.Context) ([]*graph.UploadBatch, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
 	}
 
 	batches, err := r.DB.UploadBatch.Query().
-		Where(entuploadbatch.WorkspaceID(workspaceID)).
+		Where(entuploadbatch.UserID(u.ID)).
 		Order(entuploadbatch.ByCreatedAt()).
 		All(ctx)
 	if err != nil {

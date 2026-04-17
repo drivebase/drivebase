@@ -106,18 +106,14 @@ type ComplexityRoot struct {
 		CreateAPIToken       func(childComplexity int, input CreateAPITokenInput) int
 		CreateFolder         func(childComplexity int, input CreateFolderInput) int
 		CreateSharedLink     func(childComplexity int, input CreateSharedLinkInput) int
-		CreateWorkspace      func(childComplexity int, input CreateWorkspaceInput) int
 		DeleteFile           func(childComplexity int, input DeleteFileInput) int
 		DeleteOAuthApp       func(childComplexity int, providerType ProviderType) int
-		DeleteWorkspace      func(childComplexity int, id uuid.UUID) int
 		DisconnectProvider   func(childComplexity int, id uuid.UUID) int
 		GenerateTempLink     func(childComplexity int, fileNodeID uuid.UUID, ttlSeconds *int) int
 		InitiateOAuth        func(childComplexity int, oauthAppID uuid.UUID, providerName string) int
-		InviteMember         func(childComplexity int, email string, roleID uuid.UUID) int
 		MoveFile             func(childComplexity int, input MoveFileInput) int
 		RefreshProviderQuota func(childComplexity int, providerID uuid.UUID) int
 		RefreshToken         func(childComplexity int, token string) int
-		RemoveMember         func(childComplexity int, userID uuid.UUID) int
 		RenameFile           func(childComplexity int, input RenameFileInput) int
 		RequestPasswordReset func(childComplexity int, email string) int
 		ResetPassword        func(childComplexity int, email string, otp string, newPassword string) int
@@ -129,11 +125,8 @@ type ComplexityRoot struct {
 		SignOut              func(childComplexity int) int
 		SignUp               func(childComplexity int, input SignUpInput) int
 		StartFolderSync      func(childComplexity int, input StartFolderSyncInput) int
-		SwitchWorkspace      func(childComplexity int, workspaceID uuid.UUID) int
 		SyncProvider         func(childComplexity int, providerID uuid.UUID) int
-		UpdateMemberRole     func(childComplexity int, userID uuid.UUID, roleID uuid.UUID) int
 		UpdateProvider       func(childComplexity int, id uuid.UUID, input UpdateProviderInput) int
-		UpdateWorkspace      func(childComplexity int, id uuid.UUID, input UpdateWorkspaceInput) int
 		ValidateProvider     func(childComplexity int, id uuid.UUID) int
 	}
 
@@ -146,14 +139,14 @@ type ComplexityRoot struct {
 	}
 
 	Provider struct {
-		AuthType    func(childComplexity int) int
-		CreatedAt   func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Name        func(childComplexity int) int
-		Quota       func(childComplexity int) int
-		Status      func(childComplexity int) int
-		Type        func(childComplexity int) int
-		WorkspaceID func(childComplexity int) int
+		AuthType  func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
+		Quota     func(childComplexity int) int
+		Status    func(childComplexity int) int
+		Type      func(childComplexity int) int
+		UserID    func(childComplexity int) int
 	}
 
 	ProviderFieldDef struct {
@@ -192,7 +185,6 @@ type ComplexityRoot struct {
 		MySessions         func(childComplexity int) int
 		MyTransferJobs     func(childComplexity int) int
 		MyUploadBatches    func(childComplexity int) int
-		MyWorkspaces       func(childComplexity int) int
 		OauthApp           func(childComplexity int, providerType ProviderType) int
 		OauthApps          func(childComplexity int) int
 		Provider           func(childComplexity int, id uuid.UUID) int
@@ -202,14 +194,6 @@ type ComplexityRoot struct {
 		SharedLinks        func(childComplexity int) int
 		TransferJob        func(childComplexity int, id uuid.UUID) int
 		UploadBatch        func(childComplexity int, id uuid.UUID) int
-		Workspace          func(childComplexity int, id uuid.UUID) int
-		WorkspaceRoles     func(childComplexity int) int
-	}
-
-	Role struct {
-		ID       func(childComplexity int) int
-		IsSystem func(childComplexity int) int
-		Name     func(childComplexity int) int
 	}
 
 	Session struct {
@@ -230,7 +214,7 @@ type ComplexityRoot struct {
 		Permissions func(childComplexity int) int
 		Token       func(childComplexity int) int
 		UploadCount func(childComplexity int) int
-		WorkspaceID func(childComplexity int) int
+		UserID      func(childComplexity int) int
 	}
 
 	SharedLinkPermissions struct {
@@ -240,10 +224,6 @@ type ComplexityRoot struct {
 		Move   func(childComplexity int) int
 		Rename func(childComplexity int) int
 		Upload func(childComplexity int) int
-	}
-
-	SwitchWorkspacePayload struct {
-		AccessToken func(childComplexity int) int
 	}
 
 	TransferJob struct {
@@ -263,7 +243,7 @@ type ComplexityRoot struct {
 		TotalBytes           func(childComplexity int) int
 		TotalFiles           func(childComplexity int) int
 		TransferredBytes     func(childComplexity int) int
-		WorkspaceID          func(childComplexity int) int
+		UserID               func(childComplexity int) int
 	}
 
 	UploadBatch struct {
@@ -278,7 +258,7 @@ type ComplexityRoot struct {
 		TotalBytes       func(childComplexity int) int
 		TotalFiles       func(childComplexity int) int
 		TransferredBytes func(childComplexity int) int
-		WorkspaceID      func(childComplexity int) int
+		UserID           func(childComplexity int) int
 	}
 
 	User struct {
@@ -286,22 +266,6 @@ type ComplexityRoot struct {
 		Email     func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Name      func(childComplexity int) int
-	}
-
-	Workspace struct {
-		CreatedAt func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Members   func(childComplexity int) int
-		Name      func(childComplexity int) int
-		Roles     func(childComplexity int) int
-		Slug      func(childComplexity int) int
-	}
-
-	WorkspaceMember struct {
-		ID       func(childComplexity int) int
-		JoinedAt func(childComplexity int) int
-		Role     func(childComplexity int) int
-		User     func(childComplexity int) int
 	}
 }
 
@@ -311,7 +275,6 @@ type MutationResolver interface {
 	SignUp(ctx context.Context, input SignUpInput) (*AuthPayload, error)
 	SignIn(ctx context.Context, input SignInInput) (*AuthPayload, error)
 	RefreshToken(ctx context.Context, token string) (*AuthPayload, error)
-	SwitchWorkspace(ctx context.Context, workspaceID uuid.UUID) (*SwitchWorkspacePayload, error)
 	SignOut(ctx context.Context) (bool, error)
 	RevokeSession(ctx context.Context, sessionID uuid.UUID) (bool, error)
 	RequestPasswordReset(ctx context.Context, email string) (bool, error)
@@ -334,12 +297,6 @@ type MutationResolver interface {
 	RevokeSharedLink(ctx context.Context, id uuid.UUID) (bool, error)
 	StartFolderSync(ctx context.Context, input StartFolderSyncInput) (*TransferJob, error)
 	CancelTransferJob(ctx context.Context, id uuid.UUID) (bool, error)
-	CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*Workspace, error)
-	UpdateWorkspace(ctx context.Context, id uuid.UUID, input UpdateWorkspaceInput) (*Workspace, error)
-	DeleteWorkspace(ctx context.Context, id uuid.UUID) (bool, error)
-	InviteMember(ctx context.Context, email string, roleID uuid.UUID) (*WorkspaceMember, error)
-	RemoveMember(ctx context.Context, userID uuid.UUID) (bool, error)
-	UpdateMemberRole(ctx context.Context, userID uuid.UUID, roleID uuid.UUID) (*WorkspaceMember, error)
 }
 type QueryResolver interface {
 	APITokens(ctx context.Context) ([]*APIToken, error)
@@ -360,9 +317,6 @@ type QueryResolver interface {
 	SharedLinkByToken(ctx context.Context, token string) (*SharedLink, error)
 	TransferJob(ctx context.Context, id uuid.UUID) (*TransferJob, error)
 	MyTransferJobs(ctx context.Context) ([]*TransferJob, error)
-	Workspace(ctx context.Context, id uuid.UUID) (*Workspace, error)
-	MyWorkspaces(ctx context.Context) ([]*Workspace, error)
-	WorkspaceRoles(ctx context.Context) ([]*Role, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -676,17 +630,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.CreateSharedLink(childComplexity, args["input"].(CreateSharedLinkInput)), true
-	case "Mutation.createWorkspace":
-		if e.ComplexityRoot.Mutation.CreateWorkspace == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createWorkspace_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Mutation.CreateWorkspace(childComplexity, args["input"].(CreateWorkspaceInput)), true
 	case "Mutation.deleteFile":
 		if e.ComplexityRoot.Mutation.DeleteFile == nil {
 			break
@@ -709,17 +652,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteOAuthApp(childComplexity, args["providerType"].(ProviderType)), true
-	case "Mutation.deleteWorkspace":
-		if e.ComplexityRoot.Mutation.DeleteWorkspace == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_deleteWorkspace_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Mutation.DeleteWorkspace(childComplexity, args["id"].(uuid.UUID)), true
 	case "Mutation.disconnectProvider":
 		if e.ComplexityRoot.Mutation.DisconnectProvider == nil {
 			break
@@ -753,17 +685,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.InitiateOAuth(childComplexity, args["oauthAppID"].(uuid.UUID), args["providerName"].(string)), true
-	case "Mutation.inviteMember":
-		if e.ComplexityRoot.Mutation.InviteMember == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_inviteMember_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Mutation.InviteMember(childComplexity, args["email"].(string), args["roleId"].(uuid.UUID)), true
 	case "Mutation.moveFile":
 		if e.ComplexityRoot.Mutation.MoveFile == nil {
 			break
@@ -797,17 +718,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RefreshToken(childComplexity, args["token"].(string)), true
-	case "Mutation.removeMember":
-		if e.ComplexityRoot.Mutation.RemoveMember == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_removeMember_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Mutation.RemoveMember(childComplexity, args["userId"].(uuid.UUID)), true
 	case "Mutation.renameFile":
 		if e.ComplexityRoot.Mutation.RenameFile == nil {
 			break
@@ -924,17 +834,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.StartFolderSync(childComplexity, args["input"].(StartFolderSyncInput)), true
-	case "Mutation.switchWorkspace":
-		if e.ComplexityRoot.Mutation.SwitchWorkspace == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_switchWorkspace_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Mutation.SwitchWorkspace(childComplexity, args["workspaceID"].(uuid.UUID)), true
 	case "Mutation.syncProvider":
 		if e.ComplexityRoot.Mutation.SyncProvider == nil {
 			break
@@ -946,17 +845,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.SyncProvider(childComplexity, args["providerID"].(uuid.UUID)), true
-	case "Mutation.updateMemberRole":
-		if e.ComplexityRoot.Mutation.UpdateMemberRole == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateMemberRole_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Mutation.UpdateMemberRole(childComplexity, args["userId"].(uuid.UUID), args["roleId"].(uuid.UUID)), true
 	case "Mutation.updateProvider":
 		if e.ComplexityRoot.Mutation.UpdateProvider == nil {
 			break
@@ -968,17 +856,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateProvider(childComplexity, args["id"].(uuid.UUID), args["input"].(UpdateProviderInput)), true
-	case "Mutation.updateWorkspace":
-		if e.ComplexityRoot.Mutation.UpdateWorkspace == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateWorkspace_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Mutation.UpdateWorkspace(childComplexity, args["id"].(uuid.UUID), args["input"].(UpdateWorkspaceInput)), true
 	case "Mutation.validateProvider":
 		if e.ComplexityRoot.Mutation.ValidateProvider == nil {
 			break
@@ -1064,12 +941,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Provider.Type(childComplexity), true
-	case "Provider.workspaceId":
-		if e.ComplexityRoot.Provider.WorkspaceID == nil {
+	case "Provider.userID":
+		if e.ComplexityRoot.Provider.UserID == nil {
 			break
 		}
 
-		return e.ComplexityRoot.Provider.WorkspaceID(childComplexity), true
+		return e.ComplexityRoot.Provider.UserID(childComplexity), true
 
 	case "ProviderFieldDef.description":
 		if e.ComplexityRoot.ProviderFieldDef.Description == nil {
@@ -1246,12 +1123,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.MyUploadBatches(childComplexity), true
-	case "Query.myWorkspaces":
-		if e.ComplexityRoot.Query.MyWorkspaces == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Query.MyWorkspaces(childComplexity), true
 	case "Query.oauthApp":
 		if e.ComplexityRoot.Query.OauthApp == nil {
 			break
@@ -1336,42 +1207,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.UploadBatch(childComplexity, args["id"].(uuid.UUID)), true
-	case "Query.workspace":
-		if e.ComplexityRoot.Query.Workspace == nil {
-			break
-		}
-
-		args, err := ec.field_Query_workspace_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Query.Workspace(childComplexity, args["id"].(uuid.UUID)), true
-	case "Query.workspaceRoles":
-		if e.ComplexityRoot.Query.WorkspaceRoles == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Query.WorkspaceRoles(childComplexity), true
-
-	case "Role.id":
-		if e.ComplexityRoot.Role.ID == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Role.ID(childComplexity), true
-	case "Role.isSystem":
-		if e.ComplexityRoot.Role.IsSystem == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Role.IsSystem(childComplexity), true
-	case "Role.name":
-		if e.ComplexityRoot.Role.Name == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Role.Name(childComplexity), true
 
 	case "Session.createdAt":
 		if e.ComplexityRoot.Session.CreatedAt == nil {
@@ -1458,12 +1293,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.SharedLink.UploadCount(childComplexity), true
-	case "SharedLink.workspaceID":
-		if e.ComplexityRoot.SharedLink.WorkspaceID == nil {
+	case "SharedLink.userID":
+		if e.ComplexityRoot.SharedLink.UserID == nil {
 			break
 		}
 
-		return e.ComplexityRoot.SharedLink.WorkspaceID(childComplexity), true
+		return e.ComplexityRoot.SharedLink.UserID(childComplexity), true
 
 	case "SharedLinkPermissions.copy":
 		if e.ComplexityRoot.SharedLinkPermissions.Copy == nil {
@@ -1501,13 +1336,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.SharedLinkPermissions.Upload(childComplexity), true
-
-	case "SwitchWorkspacePayload.accessToken":
-		if e.ComplexityRoot.SwitchWorkspacePayload.AccessToken == nil {
-			break
-		}
-
-		return e.ComplexityRoot.SwitchWorkspacePayload.AccessToken(childComplexity), true
 
 	case "TransferJob.completedAt":
 		if e.ComplexityRoot.TransferJob.CompletedAt == nil {
@@ -1605,12 +1433,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.TransferJob.TransferredBytes(childComplexity), true
-	case "TransferJob.workspaceID":
-		if e.ComplexityRoot.TransferJob.WorkspaceID == nil {
+	case "TransferJob.userID":
+		if e.ComplexityRoot.TransferJob.UserID == nil {
 			break
 		}
 
-		return e.ComplexityRoot.TransferJob.WorkspaceID(childComplexity), true
+		return e.ComplexityRoot.TransferJob.UserID(childComplexity), true
 
 	case "UploadBatch.completedAt":
 		if e.ComplexityRoot.UploadBatch.CompletedAt == nil {
@@ -1678,12 +1506,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.UploadBatch.TransferredBytes(childComplexity), true
-	case "UploadBatch.workspaceID":
-		if e.ComplexityRoot.UploadBatch.WorkspaceID == nil {
+	case "UploadBatch.userID":
+		if e.ComplexityRoot.UploadBatch.UserID == nil {
 			break
 		}
 
-		return e.ComplexityRoot.UploadBatch.WorkspaceID(childComplexity), true
+		return e.ComplexityRoot.UploadBatch.UserID(childComplexity), true
 
 	case "User.createdAt":
 		if e.ComplexityRoot.User.CreatedAt == nil {
@@ -1710,68 +1538,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.User.Name(childComplexity), true
 
-	case "Workspace.createdAt":
-		if e.ComplexityRoot.Workspace.CreatedAt == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Workspace.CreatedAt(childComplexity), true
-	case "Workspace.id":
-		if e.ComplexityRoot.Workspace.ID == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Workspace.ID(childComplexity), true
-	case "Workspace.members":
-		if e.ComplexityRoot.Workspace.Members == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Workspace.Members(childComplexity), true
-	case "Workspace.name":
-		if e.ComplexityRoot.Workspace.Name == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Workspace.Name(childComplexity), true
-	case "Workspace.roles":
-		if e.ComplexityRoot.Workspace.Roles == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Workspace.Roles(childComplexity), true
-	case "Workspace.slug":
-		if e.ComplexityRoot.Workspace.Slug == nil {
-			break
-		}
-
-		return e.ComplexityRoot.Workspace.Slug(childComplexity), true
-
-	case "WorkspaceMember.id":
-		if e.ComplexityRoot.WorkspaceMember.ID == nil {
-			break
-		}
-
-		return e.ComplexityRoot.WorkspaceMember.ID(childComplexity), true
-	case "WorkspaceMember.joinedAt":
-		if e.ComplexityRoot.WorkspaceMember.JoinedAt == nil {
-			break
-		}
-
-		return e.ComplexityRoot.WorkspaceMember.JoinedAt(childComplexity), true
-	case "WorkspaceMember.role":
-		if e.ComplexityRoot.WorkspaceMember.Role == nil {
-			break
-		}
-
-		return e.ComplexityRoot.WorkspaceMember.Role(childComplexity), true
-	case "WorkspaceMember.user":
-		if e.ComplexityRoot.WorkspaceMember.User == nil {
-			break
-		}
-
-		return e.ComplexityRoot.WorkspaceMember.User(childComplexity), true
-
 	}
 	return 0, false
 }
@@ -1785,7 +1551,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateApiTokenInput,
 		ec.unmarshalInputCreateFolderInput,
 		ec.unmarshalInputCreateSharedLinkInput,
-		ec.unmarshalInputCreateWorkspaceInput,
 		ec.unmarshalInputDeleteFileInput,
 		ec.unmarshalInputListFilesInput,
 		ec.unmarshalInputMoveFileInput,
@@ -1796,7 +1561,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputSignUpInput,
 		ec.unmarshalInputStartFolderSyncInput,
 		ec.unmarshalInputUpdateProviderInput,
-		ec.unmarshalInputUpdateWorkspaceInput,
 	)
 	first := true
 
@@ -1871,7 +1635,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema/apitoken.graphqls" "schema/auth.graphqls" "schema/available_providers.graphqls" "schema/bandwidth.graphqls" "schema/file.graphqls" "schema/oauth.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/sharing.graphqls" "schema/transfer.graphqls" "schema/workspace.graphqls"
+//go:embed "schema/apitoken.graphqls" "schema/auth.graphqls" "schema/available_providers.graphqls" "schema/bandwidth.graphqls" "schema/file.graphqls" "schema/oauth.graphqls" "schema/provider.graphqls" "schema/schema.graphqls" "schema/sharing.graphqls" "schema/transfer.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -1893,7 +1657,6 @@ var sources = []*ast.Source{
 	{Name: "schema/schema.graphqls", Input: sourceData("schema/schema.graphqls"), BuiltIn: false},
 	{Name: "schema/sharing.graphqls", Input: sourceData("schema/sharing.graphqls"), BuiltIn: false},
 	{Name: "schema/transfer.graphqls", Input: sourceData("schema/transfer.graphqls"), BuiltIn: false},
-	{Name: "schema/workspace.graphqls", Input: sourceData("schema/workspace.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -1956,17 +1719,6 @@ func (ec *executionContext) field_Mutation_createSharedLink_args(ctx context.Con
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_createWorkspace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNCreateWorkspaceInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateWorkspaceInput)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_deleteFile_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1986,17 +1738,6 @@ func (ec *executionContext) field_Mutation_deleteOAuthApp_args(ctx context.Conte
 		return nil, err
 	}
 	args["providerType"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteWorkspace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
 	return args, nil
 }
 
@@ -2043,22 +1784,6 @@ func (ec *executionContext) field_Mutation_initiateOAuth_args(ctx context.Contex
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_inviteMember_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "email", ec.unmarshalNString2string)
-	if err != nil {
-		return nil, err
-	}
-	args["email"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "roleId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["roleId"] = arg1
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_moveFile_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -2089,17 +1814,6 @@ func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context
 		return nil, err
 	}
 	args["token"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_removeMember_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "userId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["userId"] = arg0
 	return args, nil
 }
 
@@ -2223,17 +1937,6 @@ func (ec *executionContext) field_Mutation_startFolderSync_args(ctx context.Cont
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_switchWorkspace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "workspaceID", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["workspaceID"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_syncProvider_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -2242,22 +1945,6 @@ func (ec *executionContext) field_Mutation_syncProvider_args(ctx context.Context
 		return nil, err
 	}
 	args["providerID"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateMemberRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "userId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["userId"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "roleId", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["roleId"] = arg1
 	return args, nil
 }
 
@@ -2270,22 +1957,6 @@ func (ec *executionContext) field_Mutation_updateProvider_args(ctx context.Conte
 	}
 	args["id"] = arg0
 	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNUpdateProviderInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐUpdateProviderInput)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateWorkspace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNUpdateWorkspaceInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐUpdateWorkspaceInput)
 	if err != nil {
 		return nil, err
 	}
@@ -2419,17 +2090,6 @@ func (ec *executionContext) field_Query_transferJob_args(ctx context.Context, ra
 }
 
 func (ec *executionContext) field_Query_uploadBatch_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_workspace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID)
@@ -3934,51 +3594,6 @@ func (ec *executionContext) fieldContext_Mutation_refreshToken(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_switchWorkspace(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_switchWorkspace,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().SwitchWorkspace(ctx, fc.Args["workspaceID"].(uuid.UUID))
-		},
-		nil,
-		ec.marshalNSwitchWorkspacePayload2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSwitchWorkspacePayload,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_switchWorkspace(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "accessToken":
-				return ec.fieldContext_SwitchWorkspacePayload_accessToken(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type SwitchWorkspacePayload", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_switchWorkspace_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_signOut(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4617,8 +4232,8 @@ func (ec *executionContext) fieldContext_Mutation_connectProvider(ctx context.Co
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Provider_id(ctx, field)
-			case "workspaceId":
-				return ec.fieldContext_Provider_workspaceId(ctx, field)
+			case "userID":
+				return ec.fieldContext_Provider_userID(ctx, field)
 			case "name":
 				return ec.fieldContext_Provider_name(ctx, field)
 			case "type":
@@ -4717,8 +4332,8 @@ func (ec *executionContext) fieldContext_Mutation_updateProvider(ctx context.Con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Provider_id(ctx, field)
-			case "workspaceId":
-				return ec.fieldContext_Provider_workspaceId(ctx, field)
+			case "userID":
+				return ec.fieldContext_Provider_userID(ctx, field)
 			case "name":
 				return ec.fieldContext_Provider_name(ctx, field)
 			case "type":
@@ -4882,8 +4497,8 @@ func (ec *executionContext) fieldContext_Mutation_createSharedLink(ctx context.C
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_SharedLink_id(ctx, field)
-			case "workspaceID":
-				return ec.fieldContext_SharedLink_workspaceID(ctx, field)
+			case "userID":
+				return ec.fieldContext_SharedLink_userID(ctx, field)
 			case "fileNodeID":
 				return ec.fieldContext_SharedLink_fileNodeID(ctx, field)
 			case "token":
@@ -4986,8 +4601,8 @@ func (ec *executionContext) fieldContext_Mutation_startFolderSync(ctx context.Co
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_TransferJob_id(ctx, field)
-			case "workspaceID":
-				return ec.fieldContext_TransferJob_workspaceID(ctx, field)
+			case "userID":
+				return ec.fieldContext_TransferJob_userID(ctx, field)
 			case "sourceProviderID":
 				return ec.fieldContext_TransferJob_sourceProviderID(ctx, field)
 			case "destProviderID":
@@ -5071,300 +4686,6 @@ func (ec *executionContext) fieldContext_Mutation_cancelTransferJob(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_cancelTransferJob_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_createWorkspace(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_createWorkspace,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().CreateWorkspace(ctx, fc.Args["input"].(CreateWorkspaceInput))
-		},
-		nil,
-		ec.marshalNWorkspace2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspace,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_createWorkspace(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Workspace_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Workspace_name(ctx, field)
-			case "slug":
-				return ec.fieldContext_Workspace_slug(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Workspace_createdAt(ctx, field)
-			case "members":
-				return ec.fieldContext_Workspace_members(ctx, field)
-			case "roles":
-				return ec.fieldContext_Workspace_roles(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Workspace", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createWorkspace_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateWorkspace(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_updateWorkspace,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().UpdateWorkspace(ctx, fc.Args["id"].(uuid.UUID), fc.Args["input"].(UpdateWorkspaceInput))
-		},
-		nil,
-		ec.marshalNWorkspace2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspace,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateWorkspace(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Workspace_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Workspace_name(ctx, field)
-			case "slug":
-				return ec.fieldContext_Workspace_slug(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Workspace_createdAt(ctx, field)
-			case "members":
-				return ec.fieldContext_Workspace_members(ctx, field)
-			case "roles":
-				return ec.fieldContext_Workspace_roles(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Workspace", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateWorkspace_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_deleteWorkspace(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_deleteWorkspace,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().DeleteWorkspace(ctx, fc.Args["id"].(uuid.UUID))
-		},
-		nil,
-		ec.marshalNBoolean2bool,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_deleteWorkspace(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteWorkspace_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_inviteMember(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_inviteMember,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().InviteMember(ctx, fc.Args["email"].(string), fc.Args["roleId"].(uuid.UUID))
-		},
-		nil,
-		ec.marshalNWorkspaceMember2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceMember,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_inviteMember(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_WorkspaceMember_id(ctx, field)
-			case "user":
-				return ec.fieldContext_WorkspaceMember_user(ctx, field)
-			case "role":
-				return ec.fieldContext_WorkspaceMember_role(ctx, field)
-			case "joinedAt":
-				return ec.fieldContext_WorkspaceMember_joinedAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type WorkspaceMember", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_inviteMember_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_removeMember(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_removeMember,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().RemoveMember(ctx, fc.Args["userId"].(uuid.UUID))
-		},
-		nil,
-		ec.marshalNBoolean2bool,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_removeMember(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_removeMember_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateMemberRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_updateMemberRole,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().UpdateMemberRole(ctx, fc.Args["userId"].(uuid.UUID), fc.Args["roleId"].(uuid.UUID))
-		},
-		nil,
-		ec.marshalNWorkspaceMember2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceMember,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateMemberRole(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_WorkspaceMember_id(ctx, field)
-			case "user":
-				return ec.fieldContext_WorkspaceMember_user(ctx, field)
-			case "role":
-				return ec.fieldContext_WorkspaceMember_role(ctx, field)
-			case "joinedAt":
-				return ec.fieldContext_WorkspaceMember_joinedAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type WorkspaceMember", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateMemberRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -5545,14 +4866,14 @@ func (ec *executionContext) fieldContext_Provider_id(_ context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Provider_workspaceId(ctx context.Context, field graphql.CollectedField, obj *Provider) (ret graphql.Marshaler) {
+func (ec *executionContext) _Provider_userID(ctx context.Context, field graphql.CollectedField, obj *Provider) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Provider_workspaceId,
+		ec.fieldContext_Provider_userID,
 		func(ctx context.Context) (any, error) {
-			return obj.WorkspaceID, nil
+			return obj.UserID, nil
 		},
 		nil,
 		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
@@ -5561,7 +4882,7 @@ func (ec *executionContext) _Provider_workspaceId(ctx context.Context, field gra
 	)
 }
 
-func (ec *executionContext) fieldContext_Provider_workspaceId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Provider_userID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Provider",
 		Field:      field,
@@ -6621,8 +5942,8 @@ func (ec *executionContext) fieldContext_Query_uploadBatch(ctx context.Context, 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_UploadBatch_id(ctx, field)
-			case "workspaceID":
-				return ec.fieldContext_UploadBatch_workspaceID(ctx, field)
+			case "userID":
+				return ec.fieldContext_UploadBatch_userID(ctx, field)
 			case "providerID":
 				return ec.fieldContext_UploadBatch_providerID(ctx, field)
 			case "parentRemoteID":
@@ -6687,8 +6008,8 @@ func (ec *executionContext) fieldContext_Query_myUploadBatches(_ context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_UploadBatch_id(ctx, field)
-			case "workspaceID":
-				return ec.fieldContext_UploadBatch_workspaceID(ctx, field)
+			case "userID":
+				return ec.fieldContext_UploadBatch_userID(ctx, field)
 			case "providerID":
 				return ec.fieldContext_UploadBatch_providerID(ctx, field)
 			case "parentRemoteID":
@@ -6836,8 +6157,8 @@ func (ec *executionContext) fieldContext_Query_providers(_ context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Provider_id(ctx, field)
-			case "workspaceId":
-				return ec.fieldContext_Provider_workspaceId(ctx, field)
+			case "userID":
+				return ec.fieldContext_Provider_userID(ctx, field)
 			case "name":
 				return ec.fieldContext_Provider_name(ctx, field)
 			case "type":
@@ -6884,8 +6205,8 @@ func (ec *executionContext) fieldContext_Query_provider(ctx context.Context, fie
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Provider_id(ctx, field)
-			case "workspaceId":
-				return ec.fieldContext_Provider_workspaceId(ctx, field)
+			case "userID":
+				return ec.fieldContext_Provider_userID(ctx, field)
 			case "name":
 				return ec.fieldContext_Provider_name(ctx, field)
 			case "type":
@@ -7001,8 +6322,8 @@ func (ec *executionContext) fieldContext_Query_sharedLinks(_ context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_SharedLink_id(ctx, field)
-			case "workspaceID":
-				return ec.fieldContext_SharedLink_workspaceID(ctx, field)
+			case "userID":
+				return ec.fieldContext_SharedLink_userID(ctx, field)
 			case "fileNodeID":
 				return ec.fieldContext_SharedLink_fileNodeID(ctx, field)
 			case "token":
@@ -7053,8 +6374,8 @@ func (ec *executionContext) fieldContext_Query_sharedLinkByToken(ctx context.Con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_SharedLink_id(ctx, field)
-			case "workspaceID":
-				return ec.fieldContext_SharedLink_workspaceID(ctx, field)
+			case "userID":
+				return ec.fieldContext_SharedLink_userID(ctx, field)
 			case "fileNodeID":
 				return ec.fieldContext_SharedLink_fileNodeID(ctx, field)
 			case "token":
@@ -7116,8 +6437,8 @@ func (ec *executionContext) fieldContext_Query_transferJob(ctx context.Context, 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_TransferJob_id(ctx, field)
-			case "workspaceID":
-				return ec.fieldContext_TransferJob_workspaceID(ctx, field)
+			case "userID":
+				return ec.fieldContext_TransferJob_userID(ctx, field)
 			case "sourceProviderID":
 				return ec.fieldContext_TransferJob_sourceProviderID(ctx, field)
 			case "destProviderID":
@@ -7192,8 +6513,8 @@ func (ec *executionContext) fieldContext_Query_myTransferJobs(_ context.Context,
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_TransferJob_id(ctx, field)
-			case "workspaceID":
-				return ec.fieldContext_TransferJob_workspaceID(ctx, field)
+			case "userID":
+				return ec.fieldContext_TransferJob_userID(ctx, field)
 			case "sourceProviderID":
 				return ec.fieldContext_TransferJob_sourceProviderID(ctx, field)
 			case "destProviderID":
@@ -7226,141 +6547,6 @@ func (ec *executionContext) fieldContext_Query_myTransferJobs(_ context.Context,
 				return ec.fieldContext_TransferJob_completedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TransferJob", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_workspace(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Query_workspace,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().Workspace(ctx, fc.Args["id"].(uuid.UUID))
-		},
-		nil,
-		ec.marshalNWorkspace2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspace,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Query_workspace(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Workspace_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Workspace_name(ctx, field)
-			case "slug":
-				return ec.fieldContext_Workspace_slug(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Workspace_createdAt(ctx, field)
-			case "members":
-				return ec.fieldContext_Workspace_members(ctx, field)
-			case "roles":
-				return ec.fieldContext_Workspace_roles(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Workspace", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_workspace_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_myWorkspaces(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Query_myWorkspaces,
-		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Query().MyWorkspaces(ctx)
-		},
-		nil,
-		ec.marshalNWorkspace2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceᚄ,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Query_myWorkspaces(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Workspace_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Workspace_name(ctx, field)
-			case "slug":
-				return ec.fieldContext_Workspace_slug(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Workspace_createdAt(ctx, field)
-			case "members":
-				return ec.fieldContext_Workspace_members(ctx, field)
-			case "roles":
-				return ec.fieldContext_Workspace_roles(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Workspace", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_workspaceRoles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Query_workspaceRoles,
-		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Query().WorkspaceRoles(ctx)
-		},
-		nil,
-		ec.marshalNRole2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐRoleᚄ,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Query_workspaceRoles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Role_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Role_name(ctx, field)
-			case "isSystem":
-				return ec.fieldContext_Role_isSystem(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
 		},
 	}
 	return fc, nil
@@ -7469,93 +6655,6 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Role_id(ctx context.Context, field graphql.CollectedField, obj *Role) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Role_id,
-		func(ctx context.Context) (any, error) {
-			return obj.ID, nil
-		},
-		nil,
-		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Role_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Role",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type UUID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Role_name(ctx context.Context, field graphql.CollectedField, obj *Role) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Role_name,
-		func(ctx context.Context) (any, error) {
-			return obj.Name, nil
-		},
-		nil,
-		ec.marshalNString2string,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Role_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Role",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Role_isSystem(ctx context.Context, field graphql.CollectedField, obj *Role) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Role_isSystem,
-		func(ctx context.Context) (any, error) {
-			return obj.IsSystem, nil
-		},
-		nil,
-		ec.marshalNBoolean2bool,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Role_isSystem(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Role",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7735,14 +6834,14 @@ func (ec *executionContext) fieldContext_SharedLink_id(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _SharedLink_workspaceID(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
+func (ec *executionContext) _SharedLink_userID(ctx context.Context, field graphql.CollectedField, obj *SharedLink) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_SharedLink_workspaceID,
+		ec.fieldContext_SharedLink_userID,
 		func(ctx context.Context) (any, error) {
-			return obj.WorkspaceID, nil
+			return obj.UserID, nil
 		},
 		nil,
 		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
@@ -7751,7 +6850,7 @@ func (ec *executionContext) _SharedLink_workspaceID(ctx context.Context, field g
 	)
 }
 
-func (ec *executionContext) fieldContext_SharedLink_workspaceID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SharedLink_userID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SharedLink",
 		Field:      field,
@@ -8184,35 +7283,6 @@ func (ec *executionContext) fieldContext_SharedLinkPermissions_copy(_ context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _SwitchWorkspacePayload_accessToken(ctx context.Context, field graphql.CollectedField, obj *SwitchWorkspacePayload) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_SwitchWorkspacePayload_accessToken,
-		func(ctx context.Context) (any, error) {
-			return obj.AccessToken, nil
-		},
-		nil,
-		ec.marshalNString2string,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_SwitchWorkspacePayload_accessToken(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SwitchWorkspacePayload",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _TransferJob_id(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -8242,14 +7312,14 @@ func (ec *executionContext) fieldContext_TransferJob_id(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _TransferJob_workspaceID(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
+func (ec *executionContext) _TransferJob_userID(ctx context.Context, field graphql.CollectedField, obj *TransferJob) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_TransferJob_workspaceID,
+		ec.fieldContext_TransferJob_userID,
 		func(ctx context.Context) (any, error) {
-			return obj.WorkspaceID, nil
+			return obj.UserID, nil
 		},
 		nil,
 		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
@@ -8258,7 +7328,7 @@ func (ec *executionContext) _TransferJob_workspaceID(ctx context.Context, field 
 	)
 }
 
-func (ec *executionContext) fieldContext_TransferJob_workspaceID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TransferJob_userID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TransferJob",
 		Field:      field,
@@ -8735,14 +7805,14 @@ func (ec *executionContext) fieldContext_UploadBatch_id(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _UploadBatch_workspaceID(ctx context.Context, field graphql.CollectedField, obj *UploadBatch) (ret graphql.Marshaler) {
+func (ec *executionContext) _UploadBatch_userID(ctx context.Context, field graphql.CollectedField, obj *UploadBatch) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_UploadBatch_workspaceID,
+		ec.fieldContext_UploadBatch_userID,
 		func(ctx context.Context) (any, error) {
-			return obj.WorkspaceID, nil
+			return obj.UserID, nil
 		},
 		nil,
 		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
@@ -8751,7 +7821,7 @@ func (ec *executionContext) _UploadBatch_workspaceID(ctx context.Context, field 
 	)
 }
 
-func (ec *executionContext) fieldContext_UploadBatch_workspaceID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_UploadBatch_userID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UploadBatch",
 		Field:      field,
@@ -9160,332 +8230,6 @@ func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.C
 func (ec *executionContext) fieldContext_User_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Workspace_id(ctx context.Context, field graphql.CollectedField, obj *Workspace) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Workspace_id,
-		func(ctx context.Context) (any, error) {
-			return obj.ID, nil
-		},
-		nil,
-		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Workspace_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Workspace",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type UUID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Workspace_name(ctx context.Context, field graphql.CollectedField, obj *Workspace) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Workspace_name,
-		func(ctx context.Context) (any, error) {
-			return obj.Name, nil
-		},
-		nil,
-		ec.marshalNString2string,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Workspace_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Workspace",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Workspace_slug(ctx context.Context, field graphql.CollectedField, obj *Workspace) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Workspace_slug,
-		func(ctx context.Context) (any, error) {
-			return obj.Slug, nil
-		},
-		nil,
-		ec.marshalNString2string,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Workspace_slug(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Workspace",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Workspace_createdAt(ctx context.Context, field graphql.CollectedField, obj *Workspace) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Workspace_createdAt,
-		func(ctx context.Context) (any, error) {
-			return obj.CreatedAt, nil
-		},
-		nil,
-		ec.marshalNTime2timeᚐTime,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Workspace_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Workspace",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Workspace_members(ctx context.Context, field graphql.CollectedField, obj *Workspace) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Workspace_members,
-		func(ctx context.Context) (any, error) {
-			return obj.Members, nil
-		},
-		nil,
-		ec.marshalNWorkspaceMember2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceMemberᚄ,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Workspace_members(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Workspace",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_WorkspaceMember_id(ctx, field)
-			case "user":
-				return ec.fieldContext_WorkspaceMember_user(ctx, field)
-			case "role":
-				return ec.fieldContext_WorkspaceMember_role(ctx, field)
-			case "joinedAt":
-				return ec.fieldContext_WorkspaceMember_joinedAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type WorkspaceMember", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Workspace_roles(ctx context.Context, field graphql.CollectedField, obj *Workspace) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Workspace_roles,
-		func(ctx context.Context) (any, error) {
-			return obj.Roles, nil
-		},
-		nil,
-		ec.marshalNRole2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐRoleᚄ,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Workspace_roles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Workspace",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Role_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Role_name(ctx, field)
-			case "isSystem":
-				return ec.fieldContext_Role_isSystem(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _WorkspaceMember_id(ctx context.Context, field graphql.CollectedField, obj *WorkspaceMember) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_WorkspaceMember_id,
-		func(ctx context.Context) (any, error) {
-			return obj.ID, nil
-		},
-		nil,
-		ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_WorkspaceMember_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "WorkspaceMember",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type UUID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _WorkspaceMember_user(ctx context.Context, field graphql.CollectedField, obj *WorkspaceMember) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_WorkspaceMember_user,
-		func(ctx context.Context) (any, error) {
-			return obj.User, nil
-		},
-		nil,
-		ec.marshalNUser2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐUser,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_WorkspaceMember_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "WorkspaceMember",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_User_id(ctx, field)
-			case "email":
-				return ec.fieldContext_User_email(ctx, field)
-			case "name":
-				return ec.fieldContext_User_name(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_User_createdAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _WorkspaceMember_role(ctx context.Context, field graphql.CollectedField, obj *WorkspaceMember) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_WorkspaceMember_role,
-		func(ctx context.Context) (any, error) {
-			return obj.Role, nil
-		},
-		nil,
-		ec.marshalNRole2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐRole,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_WorkspaceMember_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "WorkspaceMember",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Role_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Role_name(ctx, field)
-			case "isSystem":
-				return ec.fieldContext_Role_isSystem(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _WorkspaceMember_joinedAt(ctx context.Context, field graphql.CollectedField, obj *WorkspaceMember) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_WorkspaceMember_joinedAt,
-		func(ctx context.Context) (any, error) {
-			return obj.JoinedAt, nil
-		},
-		nil,
-		ec.marshalNTime2timeᚐTime,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_WorkspaceMember_joinedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "WorkspaceMember",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -11176,43 +9920,6 @@ func (ec *executionContext) unmarshalInputCreateSharedLinkInput(ctx context.Cont
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreateWorkspaceInput(ctx context.Context, obj any) (CreateWorkspaceInput, error) {
-	var it CreateWorkspaceInput
-	if obj == nil {
-		return it, nil
-	}
-
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"name", "slug"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "name":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Name = data
-		case "slug":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Slug = data
-		}
-	}
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputDeleteFileInput(ctx context.Context, obj any) (DeleteFileInput, error) {
 	var it DeleteFileInput
 	if obj == nil {
@@ -11516,7 +10223,7 @@ func (ec *executionContext) unmarshalInputSignInInput(ctx context.Context, obj a
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"email", "password", "workspaceSlug"}
+	fieldsInOrder := [...]string{"email", "password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11537,13 +10244,6 @@ func (ec *executionContext) unmarshalInputSignInInput(ctx context.Context, obj a
 				return it, err
 			}
 			it.Password = data
-		case "workspaceSlug":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("workspaceSlug"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.WorkspaceSlug = data
 		}
 	}
 	return it, nil
@@ -11653,36 +10353,6 @@ func (ec *executionContext) unmarshalInputStartFolderSyncInput(ctx context.Conte
 
 func (ec *executionContext) unmarshalInputUpdateProviderInput(ctx context.Context, obj any) (UpdateProviderInput, error) {
 	var it UpdateProviderInput
-	if obj == nil {
-		return it, nil
-	}
-
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"name"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "name":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Name = data
-		}
-	}
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputUpdateWorkspaceInput(ctx context.Context, obj any) (UpdateWorkspaceInput, error) {
-	var it UpdateWorkspaceInput
 	if obj == nil {
 		return it, nil
 	}
@@ -12216,13 +10886,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "switchWorkspace":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_switchWorkspace(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "signOut":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_signOut(ctx, field)
@@ -12377,48 +11040,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "createWorkspace":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createWorkspace(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "updateWorkspace":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateWorkspace(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "deleteWorkspace":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteWorkspace(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "inviteMember":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_inviteMember(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "removeMember":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_removeMember(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "updateMemberRole":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateMemberRole(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12514,8 +11135,8 @@ func (ec *executionContext) _Provider(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "workspaceId":
-			out.Values[i] = ec._Provider_workspaceId(ctx, field, obj)
+		case "userID":
+			out.Values[i] = ec._Provider_userID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -13147,72 +11768,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "workspace":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_workspace(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "myWorkspaces":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_myWorkspaces(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "workspaceRoles":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_workspaceRoles(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -13221,55 +11776,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var roleImplementors = []string{"Role"}
-
-func (ec *executionContext) _Role(ctx context.Context, sel ast.SelectionSet, obj *Role) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, roleImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Role")
-		case "id":
-			out.Values[i] = ec._Role_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "name":
-			out.Values[i] = ec._Role_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "isSystem":
-			out.Values[i] = ec._Role_isSystem(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13362,8 +11868,8 @@ func (ec *executionContext) _SharedLink(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "workspaceID":
-			out.Values[i] = ec._SharedLink_workspaceID(ctx, field, obj)
+		case "userID":
+			out.Values[i] = ec._SharedLink_userID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -13488,45 +11994,6 @@ func (ec *executionContext) _SharedLinkPermissions(ctx context.Context, sel ast.
 	return out
 }
 
-var switchWorkspacePayloadImplementors = []string{"SwitchWorkspacePayload"}
-
-func (ec *executionContext) _SwitchWorkspacePayload(ctx context.Context, sel ast.SelectionSet, obj *SwitchWorkspacePayload) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, switchWorkspacePayloadImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("SwitchWorkspacePayload")
-		case "accessToken":
-			out.Values[i] = ec._SwitchWorkspacePayload_accessToken(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
 var transferJobImplementors = []string{"TransferJob"}
 
 func (ec *executionContext) _TransferJob(ctx context.Context, sel ast.SelectionSet, obj *TransferJob) graphql.Marshaler {
@@ -13543,8 +12010,8 @@ func (ec *executionContext) _TransferJob(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "workspaceID":
-			out.Values[i] = ec._TransferJob_workspaceID(ctx, field, obj)
+		case "userID":
+			out.Values[i] = ec._TransferJob_userID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -13656,8 +12123,8 @@ func (ec *executionContext) _UploadBatch(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "workspaceID":
-			out.Values[i] = ec._UploadBatch_workspaceID(ctx, field, obj)
+		case "userID":
+			out.Values[i] = ec._UploadBatch_userID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -13756,124 +12223,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "createdAt":
 			out.Values[i] = ec._User_createdAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var workspaceImplementors = []string{"Workspace"}
-
-func (ec *executionContext) _Workspace(ctx context.Context, sel ast.SelectionSet, obj *Workspace) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, workspaceImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Workspace")
-		case "id":
-			out.Values[i] = ec._Workspace_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "name":
-			out.Values[i] = ec._Workspace_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "slug":
-			out.Values[i] = ec._Workspace_slug(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "createdAt":
-			out.Values[i] = ec._Workspace_createdAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "members":
-			out.Values[i] = ec._Workspace_members(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "roles":
-			out.Values[i] = ec._Workspace_roles(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var workspaceMemberImplementors = []string{"WorkspaceMember"}
-
-func (ec *executionContext) _WorkspaceMember(ctx context.Context, sel ast.SelectionSet, obj *WorkspaceMember) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, workspaceMemberImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("WorkspaceMember")
-		case "id":
-			out.Values[i] = ec._WorkspaceMember_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "user":
-			out.Values[i] = ec._WorkspaceMember_user(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "role":
-			out.Values[i] = ec._WorkspaceMember_role(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "joinedAt":
-			out.Values[i] = ec._WorkspaceMember_joinedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -14402,11 +12751,6 @@ func (ec *executionContext) unmarshalNCreateSharedLinkInput2githubᚗcomᚋdrive
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCreateWorkspaceInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐCreateWorkspaceInput(ctx context.Context, v any) (CreateWorkspaceInput, error) {
-	res, err := ec.unmarshalInputCreateWorkspaceInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNDeleteFileInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐDeleteFileInput(ctx context.Context, v any) (DeleteFileInput, error) {
 	res, err := ec.unmarshalInputDeleteFileInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -14631,32 +12975,6 @@ func (ec *executionContext) unmarshalNRenameFileInput2githubᚗcomᚋdrivebase�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNRole2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐRoleᚄ(ctx context.Context, sel ast.SelectionSet, v []*Role) graphql.Marshaler {
-	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
-		fc := graphql.GetFieldContext(ctx)
-		fc.Result = &v[i]
-		return ec.marshalNRole2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐRole(ctx, sel, v[i])
-	})
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNRole2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐRole(ctx context.Context, sel ast.SelectionSet, v *Role) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Role(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNSaveOAuthAppInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSaveOAuthAppInput(ctx context.Context, v any) (SaveOAuthAppInput, error) {
 	res, err := ec.unmarshalInputSaveOAuthAppInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -14789,20 +13107,6 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) marshalNSwitchWorkspacePayload2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSwitchWorkspacePayload(ctx context.Context, sel ast.SelectionSet, v SwitchWorkspacePayload) graphql.Marshaler {
-	return ec._SwitchWorkspacePayload(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNSwitchWorkspacePayload2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐSwitchWorkspacePayload(ctx context.Context, sel ast.SelectionSet, v *SwitchWorkspacePayload) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._SwitchWorkspacePayload(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v any) (time.Time, error) {
 	res, err := ec.unmarshalInputTime(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -14886,11 +13190,6 @@ func (ec *executionContext) unmarshalNUpdateProviderInput2githubᚗcomᚋdriveba
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNUpdateWorkspaceInput2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐUpdateWorkspaceInput(ctx context.Context, v any) (UpdateWorkspaceInput, error) {
-	res, err := ec.unmarshalInputUpdateWorkspaceInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) marshalNUploadBatch2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐUploadBatch(ctx context.Context, sel ast.SelectionSet, v UploadBatch) graphql.Marshaler {
 	return ec._UploadBatch(ctx, sel, &v)
 }
@@ -14933,66 +13232,6 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋdrivebaseᚋdrivebase
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNWorkspace2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspace(ctx context.Context, sel ast.SelectionSet, v Workspace) graphql.Marshaler {
-	return ec._Workspace(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNWorkspace2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceᚄ(ctx context.Context, sel ast.SelectionSet, v []*Workspace) graphql.Marshaler {
-	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
-		fc := graphql.GetFieldContext(ctx)
-		fc.Result = &v[i]
-		return ec.marshalNWorkspace2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspace(ctx, sel, v[i])
-	})
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNWorkspace2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspace(ctx context.Context, sel ast.SelectionSet, v *Workspace) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Workspace(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNWorkspaceMember2githubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceMember(ctx context.Context, sel ast.SelectionSet, v WorkspaceMember) graphql.Marshaler {
-	return ec._WorkspaceMember(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNWorkspaceMember2ᚕᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceMemberᚄ(ctx context.Context, sel ast.SelectionSet, v []*WorkspaceMember) graphql.Marshaler {
-	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
-		fc := graphql.GetFieldContext(ctx)
-		fc.Result = &v[i]
-		return ec.marshalNWorkspaceMember2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceMember(ctx, sel, v[i])
-	})
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNWorkspaceMember2ᚖgithubᚗcomᚋdrivebaseᚋdrivebaseᚋinternalᚋgraphᚐWorkspaceMember(ctx context.Context, sel ast.SelectionSet, v *WorkspaceMember) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._WorkspaceMember(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

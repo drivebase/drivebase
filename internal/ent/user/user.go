@@ -25,21 +25,26 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeMemberships holds the string denoting the memberships edge name in mutations.
-	EdgeMemberships = "memberships"
 	// EdgeSessions holds the string denoting the sessions edge name in mutations.
 	EdgeSessions = "sessions"
 	// EdgeAPITokens holds the string denoting the api_tokens edge name in mutations.
 	EdgeAPITokens = "api_tokens"
+	// EdgeProviders holds the string denoting the providers edge name in mutations.
+	EdgeProviders = "providers"
+	// EdgeOauthApps holds the string denoting the oauth_apps edge name in mutations.
+	EdgeOauthApps = "oauth_apps"
+	// EdgeOauthStates holds the string denoting the oauth_states edge name in mutations.
+	EdgeOauthStates = "oauth_states"
+	// EdgeUploadBatches holds the string denoting the upload_batches edge name in mutations.
+	EdgeUploadBatches = "upload_batches"
+	// EdgeTransferJobs holds the string denoting the transfer_jobs edge name in mutations.
+	EdgeTransferJobs = "transfer_jobs"
+	// EdgeSharedLinks holds the string denoting the shared_links edge name in mutations.
+	EdgeSharedLinks = "shared_links"
+	// EdgeBandwidthLogs holds the string denoting the bandwidth_logs edge name in mutations.
+	EdgeBandwidthLogs = "bandwidth_logs"
 	// Table holds the table name of the user in the database.
 	Table = "users"
-	// MembershipsTable is the table that holds the memberships relation/edge.
-	MembershipsTable = "workspace_members"
-	// MembershipsInverseTable is the table name for the WorkspaceMember entity.
-	// It exists in this package in order to avoid circular dependency with the "workspacemember" package.
-	MembershipsInverseTable = "workspace_members"
-	// MembershipsColumn is the table column denoting the memberships relation/edge.
-	MembershipsColumn = "user_id"
 	// SessionsTable is the table that holds the sessions relation/edge.
 	SessionsTable = "sessions"
 	// SessionsInverseTable is the table name for the Session entity.
@@ -54,6 +59,55 @@ const (
 	APITokensInverseTable = "api_tokens"
 	// APITokensColumn is the table column denoting the api_tokens relation/edge.
 	APITokensColumn = "user_id"
+	// ProvidersTable is the table that holds the providers relation/edge.
+	ProvidersTable = "providers"
+	// ProvidersInverseTable is the table name for the Provider entity.
+	// It exists in this package in order to avoid circular dependency with the "provider" package.
+	ProvidersInverseTable = "providers"
+	// ProvidersColumn is the table column denoting the providers relation/edge.
+	ProvidersColumn = "user_id"
+	// OauthAppsTable is the table that holds the oauth_apps relation/edge.
+	OauthAppsTable = "oauth_apps"
+	// OauthAppsInverseTable is the table name for the OAuthApp entity.
+	// It exists in this package in order to avoid circular dependency with the "oauthapp" package.
+	OauthAppsInverseTable = "oauth_apps"
+	// OauthAppsColumn is the table column denoting the oauth_apps relation/edge.
+	OauthAppsColumn = "user_id"
+	// OauthStatesTable is the table that holds the oauth_states relation/edge.
+	OauthStatesTable = "oauth_states"
+	// OauthStatesInverseTable is the table name for the OAuthState entity.
+	// It exists in this package in order to avoid circular dependency with the "oauthstate" package.
+	OauthStatesInverseTable = "oauth_states"
+	// OauthStatesColumn is the table column denoting the oauth_states relation/edge.
+	OauthStatesColumn = "user_id"
+	// UploadBatchesTable is the table that holds the upload_batches relation/edge.
+	UploadBatchesTable = "upload_batches"
+	// UploadBatchesInverseTable is the table name for the UploadBatch entity.
+	// It exists in this package in order to avoid circular dependency with the "uploadbatch" package.
+	UploadBatchesInverseTable = "upload_batches"
+	// UploadBatchesColumn is the table column denoting the upload_batches relation/edge.
+	UploadBatchesColumn = "user_id"
+	// TransferJobsTable is the table that holds the transfer_jobs relation/edge.
+	TransferJobsTable = "transfer_jobs"
+	// TransferJobsInverseTable is the table name for the TransferJob entity.
+	// It exists in this package in order to avoid circular dependency with the "transferjob" package.
+	TransferJobsInverseTable = "transfer_jobs"
+	// TransferJobsColumn is the table column denoting the transfer_jobs relation/edge.
+	TransferJobsColumn = "user_id"
+	// SharedLinksTable is the table that holds the shared_links relation/edge.
+	SharedLinksTable = "shared_links"
+	// SharedLinksInverseTable is the table name for the SharedLink entity.
+	// It exists in this package in order to avoid circular dependency with the "sharedlink" package.
+	SharedLinksInverseTable = "shared_links"
+	// SharedLinksColumn is the table column denoting the shared_links relation/edge.
+	SharedLinksColumn = "user_id"
+	// BandwidthLogsTable is the table that holds the bandwidth_logs relation/edge.
+	BandwidthLogsTable = "bandwidth_logs"
+	// BandwidthLogsInverseTable is the table name for the BandwidthLog entity.
+	// It exists in this package in order to avoid circular dependency with the "bandwidthlog" package.
+	BandwidthLogsInverseTable = "bandwidth_logs"
+	// BandwidthLogsColumn is the table column denoting the bandwidth_logs relation/edge.
+	BandwidthLogsColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -124,20 +178,6 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByMembershipsCount orders the results by memberships count.
-func ByMembershipsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newMembershipsStep(), opts...)
-	}
-}
-
-// ByMemberships orders the results by memberships terms.
-func ByMemberships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newMembershipsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // BySessionsCount orders the results by sessions count.
 func BySessionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -165,12 +205,103 @@ func ByAPITokens(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAPITokensStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newMembershipsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(MembershipsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, MembershipsTable, MembershipsColumn),
-	)
+
+// ByProvidersCount orders the results by providers count.
+func ByProvidersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProvidersStep(), opts...)
+	}
+}
+
+// ByProviders orders the results by providers terms.
+func ByProviders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProvidersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByOauthAppsCount orders the results by oauth_apps count.
+func ByOauthAppsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOauthAppsStep(), opts...)
+	}
+}
+
+// ByOauthApps orders the results by oauth_apps terms.
+func ByOauthApps(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOauthAppsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByOauthStatesCount orders the results by oauth_states count.
+func ByOauthStatesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOauthStatesStep(), opts...)
+	}
+}
+
+// ByOauthStates orders the results by oauth_states terms.
+func ByOauthStates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOauthStatesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByUploadBatchesCount orders the results by upload_batches count.
+func ByUploadBatchesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUploadBatchesStep(), opts...)
+	}
+}
+
+// ByUploadBatches orders the results by upload_batches terms.
+func ByUploadBatches(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUploadBatchesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByTransferJobsCount orders the results by transfer_jobs count.
+func ByTransferJobsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTransferJobsStep(), opts...)
+	}
+}
+
+// ByTransferJobs orders the results by transfer_jobs terms.
+func ByTransferJobs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTransferJobsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySharedLinksCount orders the results by shared_links count.
+func BySharedLinksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSharedLinksStep(), opts...)
+	}
+}
+
+// BySharedLinks orders the results by shared_links terms.
+func BySharedLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSharedLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByBandwidthLogsCount orders the results by bandwidth_logs count.
+func ByBandwidthLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newBandwidthLogsStep(), opts...)
+	}
+}
+
+// ByBandwidthLogs orders the results by bandwidth_logs terms.
+func ByBandwidthLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBandwidthLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
 }
 func newSessionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
@@ -184,5 +315,54 @@ func newAPITokensStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(APITokensInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, APITokensTable, APITokensColumn),
+	)
+}
+func newProvidersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProvidersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProvidersTable, ProvidersColumn),
+	)
+}
+func newOauthAppsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OauthAppsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OauthAppsTable, OauthAppsColumn),
+	)
+}
+func newOauthStatesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OauthStatesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OauthStatesTable, OauthStatesColumn),
+	)
+}
+func newUploadBatchesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UploadBatchesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, UploadBatchesTable, UploadBatchesColumn),
+	)
+}
+func newTransferJobsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TransferJobsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TransferJobsTable, TransferJobsColumn),
+	)
+}
+func newSharedLinksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SharedLinksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SharedLinksTable, SharedLinksColumn),
+	)
+}
+func newBandwidthLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(BandwidthLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, BandwidthLogsTable, BandwidthLogsColumn),
 	)
 }

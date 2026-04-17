@@ -15,19 +15,19 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/transferjob"
 	"github.com/drivebase/drivebase/internal/ent/transferjobfile"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
 // TransferJobQuery is the builder for querying TransferJob entities.
 type TransferJobQuery struct {
 	config
-	ctx           *QueryContext
-	order         []transferjob.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.TransferJob
-	withWorkspace *WorkspaceQuery
-	withFiles     *TransferJobFileQuery
+	ctx        *QueryContext
+	order      []transferjob.OrderOption
+	inters     []Interceptor
+	predicates []predicate.TransferJob
+	withUser   *UserQuery
+	withFiles  *TransferJobFileQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -64,9 +64,9 @@ func (_q *TransferJobQuery) Order(o ...transferjob.OrderOption) *TransferJobQuer
 	return _q
 }
 
-// QueryWorkspace chains the current query on the "workspace" edge.
-func (_q *TransferJobQuery) QueryWorkspace() *WorkspaceQuery {
-	query := (&WorkspaceClient{config: _q.config}).Query()
+// QueryUser chains the current query on the "user" edge.
+func (_q *TransferJobQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -77,8 +77,8 @@ func (_q *TransferJobQuery) QueryWorkspace() *WorkspaceQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(transferjob.Table, transferjob.FieldID, selector),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, transferjob.WorkspaceTable, transferjob.WorkspaceColumn),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, transferjob.UserTable, transferjob.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -295,27 +295,27 @@ func (_q *TransferJobQuery) Clone() *TransferJobQuery {
 		return nil
 	}
 	return &TransferJobQuery{
-		config:        _q.config,
-		ctx:           _q.ctx.Clone(),
-		order:         append([]transferjob.OrderOption{}, _q.order...),
-		inters:        append([]Interceptor{}, _q.inters...),
-		predicates:    append([]predicate.TransferJob{}, _q.predicates...),
-		withWorkspace: _q.withWorkspace.Clone(),
-		withFiles:     _q.withFiles.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]transferjob.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.TransferJob{}, _q.predicates...),
+		withUser:   _q.withUser.Clone(),
+		withFiles:  _q.withFiles.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
 }
 
-// WithWorkspace tells the query-builder to eager-load the nodes that are connected to
-// the "workspace" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *TransferJobQuery) WithWorkspace(opts ...func(*WorkspaceQuery)) *TransferJobQuery {
-	query := (&WorkspaceClient{config: _q.config}).Query()
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TransferJobQuery) WithUser(opts ...func(*UserQuery)) *TransferJobQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withWorkspace = query
+	_q.withUser = query
 	return _q
 }
 
@@ -336,12 +336,12 @@ func (_q *TransferJobQuery) WithFiles(opts ...func(*TransferJobFileQuery)) *Tran
 // Example:
 //
 //	var v []struct {
-//		WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.TransferJob.Query().
-//		GroupBy(transferjob.FieldWorkspaceID).
+//		GroupBy(transferjob.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *TransferJobQuery) GroupBy(field string, fields ...string) *TransferJobGroupBy {
@@ -359,11 +359,11 @@ func (_q *TransferJobQuery) GroupBy(field string, fields ...string) *TransferJob
 // Example:
 //
 //	var v []struct {
-//		WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.TransferJob.Query().
-//		Select(transferjob.FieldWorkspaceID).
+//		Select(transferjob.FieldUserID).
 //		Scan(ctx, &v)
 func (_q *TransferJobQuery) Select(fields ...string) *TransferJobSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -409,7 +409,7 @@ func (_q *TransferJobQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		nodes       = []*TransferJob{}
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			_q.withWorkspace != nil,
+			_q.withUser != nil,
 			_q.withFiles != nil,
 		}
 	)
@@ -431,9 +431,9 @@ func (_q *TransferJobQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withWorkspace; query != nil {
-		if err := _q.loadWorkspace(ctx, query, nodes, nil,
-			func(n *TransferJob, e *Workspace) { n.Edges.Workspace = e }); err != nil {
+	if query := _q.withUser; query != nil {
+		if err := _q.loadUser(ctx, query, nodes, nil,
+			func(n *TransferJob, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -447,11 +447,11 @@ func (_q *TransferJobQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	return nodes, nil
 }
 
-func (_q *TransferJobQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuery, nodes []*TransferJob, init func(*TransferJob), assign func(*TransferJob, *Workspace)) error {
+func (_q *TransferJobQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*TransferJob, init func(*TransferJob), assign func(*TransferJob, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*TransferJob)
 	for i := range nodes {
-		fk := nodes[i].WorkspaceID
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -460,7 +460,7 @@ func (_q *TransferJobQuery) loadWorkspace(ctx context.Context, query *WorkspaceQ
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(workspace.IDIn(ids...))
+	query.Where(user.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -468,7 +468,7 @@ func (_q *TransferJobQuery) loadWorkspace(ctx context.Context, query *WorkspaceQ
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workspace_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -532,8 +532,8 @@ func (_q *TransferJobQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if _q.withWorkspace != nil {
-			_spec.Node.AddColumnOnce(transferjob.FieldWorkspaceID)
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(transferjob.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

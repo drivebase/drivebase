@@ -12,10 +12,16 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
+	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
+	"github.com/drivebase/drivebase/internal/ent/oauthapp"
+	"github.com/drivebase/drivebase/internal/ent/oauthstate"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
+	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/session"
+	"github.com/drivebase/drivebase/internal/ent/sharedlink"
+	"github.com/drivebase/drivebase/internal/ent/transferjob"
+	"github.com/drivebase/drivebase/internal/ent/uploadbatch"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspacemember"
 	"github.com/google/uuid"
 )
 
@@ -80,21 +86,6 @@ func (_u *UserUpdate) SetUpdatedAt(v time.Time) *UserUpdate {
 	return _u
 }
 
-// AddMembershipIDs adds the "memberships" edge to the WorkspaceMember entity by IDs.
-func (_u *UserUpdate) AddMembershipIDs(ids ...uuid.UUID) *UserUpdate {
-	_u.mutation.AddMembershipIDs(ids...)
-	return _u
-}
-
-// AddMemberships adds the "memberships" edges to the WorkspaceMember entity.
-func (_u *UserUpdate) AddMemberships(v ...*WorkspaceMember) *UserUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddMembershipIDs(ids...)
-}
-
 // AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
 func (_u *UserUpdate) AddSessionIDs(ids ...uuid.UUID) *UserUpdate {
 	_u.mutation.AddSessionIDs(ids...)
@@ -125,30 +116,114 @@ func (_u *UserUpdate) AddAPITokens(v ...*ApiToken) *UserUpdate {
 	return _u.AddAPITokenIDs(ids...)
 }
 
-// Mutation returns the UserMutation object of the builder.
-func (_u *UserUpdate) Mutation() *UserMutation {
-	return _u.mutation
-}
-
-// ClearMemberships clears all "memberships" edges to the WorkspaceMember entity.
-func (_u *UserUpdate) ClearMemberships() *UserUpdate {
-	_u.mutation.ClearMemberships()
+// AddProviderIDs adds the "providers" edge to the Provider entity by IDs.
+func (_u *UserUpdate) AddProviderIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddProviderIDs(ids...)
 	return _u
 }
 
-// RemoveMembershipIDs removes the "memberships" edge to WorkspaceMember entities by IDs.
-func (_u *UserUpdate) RemoveMembershipIDs(ids ...uuid.UUID) *UserUpdate {
-	_u.mutation.RemoveMembershipIDs(ids...)
-	return _u
-}
-
-// RemoveMemberships removes "memberships" edges to WorkspaceMember entities.
-func (_u *UserUpdate) RemoveMemberships(v ...*WorkspaceMember) *UserUpdate {
+// AddProviders adds the "providers" edges to the Provider entity.
+func (_u *UserUpdate) AddProviders(v ...*Provider) *UserUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveMembershipIDs(ids...)
+	return _u.AddProviderIDs(ids...)
+}
+
+// AddOauthAppIDs adds the "oauth_apps" edge to the OAuthApp entity by IDs.
+func (_u *UserUpdate) AddOauthAppIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddOauthAppIDs(ids...)
+	return _u
+}
+
+// AddOauthApps adds the "oauth_apps" edges to the OAuthApp entity.
+func (_u *UserUpdate) AddOauthApps(v ...*OAuthApp) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOauthAppIDs(ids...)
+}
+
+// AddOauthStateIDs adds the "oauth_states" edge to the OAuthState entity by IDs.
+func (_u *UserUpdate) AddOauthStateIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddOauthStateIDs(ids...)
+	return _u
+}
+
+// AddOauthStates adds the "oauth_states" edges to the OAuthState entity.
+func (_u *UserUpdate) AddOauthStates(v ...*OAuthState) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOauthStateIDs(ids...)
+}
+
+// AddUploadBatchIDs adds the "upload_batches" edge to the UploadBatch entity by IDs.
+func (_u *UserUpdate) AddUploadBatchIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddUploadBatchIDs(ids...)
+	return _u
+}
+
+// AddUploadBatches adds the "upload_batches" edges to the UploadBatch entity.
+func (_u *UserUpdate) AddUploadBatches(v ...*UploadBatch) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUploadBatchIDs(ids...)
+}
+
+// AddTransferJobIDs adds the "transfer_jobs" edge to the TransferJob entity by IDs.
+func (_u *UserUpdate) AddTransferJobIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddTransferJobIDs(ids...)
+	return _u
+}
+
+// AddTransferJobs adds the "transfer_jobs" edges to the TransferJob entity.
+func (_u *UserUpdate) AddTransferJobs(v ...*TransferJob) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTransferJobIDs(ids...)
+}
+
+// AddSharedLinkIDs adds the "shared_links" edge to the SharedLink entity by IDs.
+func (_u *UserUpdate) AddSharedLinkIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddSharedLinkIDs(ids...)
+	return _u
+}
+
+// AddSharedLinks adds the "shared_links" edges to the SharedLink entity.
+func (_u *UserUpdate) AddSharedLinks(v ...*SharedLink) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSharedLinkIDs(ids...)
+}
+
+// AddBandwidthLogIDs adds the "bandwidth_logs" edge to the BandwidthLog entity by IDs.
+func (_u *UserUpdate) AddBandwidthLogIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddBandwidthLogIDs(ids...)
+	return _u
+}
+
+// AddBandwidthLogs adds the "bandwidth_logs" edges to the BandwidthLog entity.
+func (_u *UserUpdate) AddBandwidthLogs(v ...*BandwidthLog) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddBandwidthLogIDs(ids...)
+}
+
+// Mutation returns the UserMutation object of the builder.
+func (_u *UserUpdate) Mutation() *UserMutation {
+	return _u.mutation
 }
 
 // ClearSessions clears all "sessions" edges to the Session entity.
@@ -191,6 +266,153 @@ func (_u *UserUpdate) RemoveAPITokens(v ...*ApiToken) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAPITokenIDs(ids...)
+}
+
+// ClearProviders clears all "providers" edges to the Provider entity.
+func (_u *UserUpdate) ClearProviders() *UserUpdate {
+	_u.mutation.ClearProviders()
+	return _u
+}
+
+// RemoveProviderIDs removes the "providers" edge to Provider entities by IDs.
+func (_u *UserUpdate) RemoveProviderIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveProviderIDs(ids...)
+	return _u
+}
+
+// RemoveProviders removes "providers" edges to Provider entities.
+func (_u *UserUpdate) RemoveProviders(v ...*Provider) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveProviderIDs(ids...)
+}
+
+// ClearOauthApps clears all "oauth_apps" edges to the OAuthApp entity.
+func (_u *UserUpdate) ClearOauthApps() *UserUpdate {
+	_u.mutation.ClearOauthApps()
+	return _u
+}
+
+// RemoveOauthAppIDs removes the "oauth_apps" edge to OAuthApp entities by IDs.
+func (_u *UserUpdate) RemoveOauthAppIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveOauthAppIDs(ids...)
+	return _u
+}
+
+// RemoveOauthApps removes "oauth_apps" edges to OAuthApp entities.
+func (_u *UserUpdate) RemoveOauthApps(v ...*OAuthApp) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOauthAppIDs(ids...)
+}
+
+// ClearOauthStates clears all "oauth_states" edges to the OAuthState entity.
+func (_u *UserUpdate) ClearOauthStates() *UserUpdate {
+	_u.mutation.ClearOauthStates()
+	return _u
+}
+
+// RemoveOauthStateIDs removes the "oauth_states" edge to OAuthState entities by IDs.
+func (_u *UserUpdate) RemoveOauthStateIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveOauthStateIDs(ids...)
+	return _u
+}
+
+// RemoveOauthStates removes "oauth_states" edges to OAuthState entities.
+func (_u *UserUpdate) RemoveOauthStates(v ...*OAuthState) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOauthStateIDs(ids...)
+}
+
+// ClearUploadBatches clears all "upload_batches" edges to the UploadBatch entity.
+func (_u *UserUpdate) ClearUploadBatches() *UserUpdate {
+	_u.mutation.ClearUploadBatches()
+	return _u
+}
+
+// RemoveUploadBatchIDs removes the "upload_batches" edge to UploadBatch entities by IDs.
+func (_u *UserUpdate) RemoveUploadBatchIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveUploadBatchIDs(ids...)
+	return _u
+}
+
+// RemoveUploadBatches removes "upload_batches" edges to UploadBatch entities.
+func (_u *UserUpdate) RemoveUploadBatches(v ...*UploadBatch) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUploadBatchIDs(ids...)
+}
+
+// ClearTransferJobs clears all "transfer_jobs" edges to the TransferJob entity.
+func (_u *UserUpdate) ClearTransferJobs() *UserUpdate {
+	_u.mutation.ClearTransferJobs()
+	return _u
+}
+
+// RemoveTransferJobIDs removes the "transfer_jobs" edge to TransferJob entities by IDs.
+func (_u *UserUpdate) RemoveTransferJobIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveTransferJobIDs(ids...)
+	return _u
+}
+
+// RemoveTransferJobs removes "transfer_jobs" edges to TransferJob entities.
+func (_u *UserUpdate) RemoveTransferJobs(v ...*TransferJob) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTransferJobIDs(ids...)
+}
+
+// ClearSharedLinks clears all "shared_links" edges to the SharedLink entity.
+func (_u *UserUpdate) ClearSharedLinks() *UserUpdate {
+	_u.mutation.ClearSharedLinks()
+	return _u
+}
+
+// RemoveSharedLinkIDs removes the "shared_links" edge to SharedLink entities by IDs.
+func (_u *UserUpdate) RemoveSharedLinkIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveSharedLinkIDs(ids...)
+	return _u
+}
+
+// RemoveSharedLinks removes "shared_links" edges to SharedLink entities.
+func (_u *UserUpdate) RemoveSharedLinks(v ...*SharedLink) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSharedLinkIDs(ids...)
+}
+
+// ClearBandwidthLogs clears all "bandwidth_logs" edges to the BandwidthLog entity.
+func (_u *UserUpdate) ClearBandwidthLogs() *UserUpdate {
+	_u.mutation.ClearBandwidthLogs()
+	return _u
+}
+
+// RemoveBandwidthLogIDs removes the "bandwidth_logs" edge to BandwidthLog entities by IDs.
+func (_u *UserUpdate) RemoveBandwidthLogIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveBandwidthLogIDs(ids...)
+	return _u
+}
+
+// RemoveBandwidthLogs removes "bandwidth_logs" edges to BandwidthLog entities.
+func (_u *UserUpdate) RemoveBandwidthLogs(v ...*BandwidthLog) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveBandwidthLogIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -267,51 +489,6 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if _u.mutation.MembershipsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.MembershipsTable,
-			Columns: []string{user.MembershipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedMembershipsIDs(); len(nodes) > 0 && !_u.mutation.MembershipsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.MembershipsTable,
-			Columns: []string{user.MembershipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.MembershipsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.MembershipsTable,
-			Columns: []string{user.MembershipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.SessionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -403,6 +580,321 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProvidersTable,
+			Columns: []string{user.ProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(provider.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedProvidersIDs(); len(nodes) > 0 && !_u.mutation.ProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProvidersTable,
+			Columns: []string{user.ProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(provider.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProvidersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProvidersTable,
+			Columns: []string{user.ProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(provider.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OauthAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthAppsTable,
+			Columns: []string{user.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOauthAppsIDs(); len(nodes) > 0 && !_u.mutation.OauthAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthAppsTable,
+			Columns: []string{user.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OauthAppsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthAppsTable,
+			Columns: []string{user.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OauthStatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthStatesTable,
+			Columns: []string{user.OauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthstate.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOauthStatesIDs(); len(nodes) > 0 && !_u.mutation.OauthStatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthStatesTable,
+			Columns: []string{user.OauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OauthStatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthStatesTable,
+			Columns: []string{user.OauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UploadBatchesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UploadBatchesTable,
+			Columns: []string{user.UploadBatchesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadbatch.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUploadBatchesIDs(); len(nodes) > 0 && !_u.mutation.UploadBatchesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UploadBatchesTable,
+			Columns: []string{user.UploadBatchesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadbatch.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UploadBatchesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UploadBatchesTable,
+			Columns: []string{user.UploadBatchesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadbatch.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TransferJobsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransferJobsTable,
+			Columns: []string{user.TransferJobsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transferjob.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTransferJobsIDs(); len(nodes) > 0 && !_u.mutation.TransferJobsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransferJobsTable,
+			Columns: []string{user.TransferJobsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transferjob.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransferJobsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransferJobsTable,
+			Columns: []string{user.TransferJobsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transferjob.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SharedLinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SharedLinksTable,
+			Columns: []string{user.SharedLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sharedlink.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSharedLinksIDs(); len(nodes) > 0 && !_u.mutation.SharedLinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SharedLinksTable,
+			Columns: []string{user.SharedLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sharedlink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SharedLinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SharedLinksTable,
+			Columns: []string{user.SharedLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sharedlink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.BandwidthLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.BandwidthLogsTable,
+			Columns: []string{user.BandwidthLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bandwidthlog.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedBandwidthLogsIDs(); len(nodes) > 0 && !_u.mutation.BandwidthLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.BandwidthLogsTable,
+			Columns: []string{user.BandwidthLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bandwidthlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.BandwidthLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.BandwidthLogsTable,
+			Columns: []string{user.BandwidthLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bandwidthlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -471,21 +963,6 @@ func (_u *UserUpdateOne) SetUpdatedAt(v time.Time) *UserUpdateOne {
 	return _u
 }
 
-// AddMembershipIDs adds the "memberships" edge to the WorkspaceMember entity by IDs.
-func (_u *UserUpdateOne) AddMembershipIDs(ids ...uuid.UUID) *UserUpdateOne {
-	_u.mutation.AddMembershipIDs(ids...)
-	return _u
-}
-
-// AddMemberships adds the "memberships" edges to the WorkspaceMember entity.
-func (_u *UserUpdateOne) AddMemberships(v ...*WorkspaceMember) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddMembershipIDs(ids...)
-}
-
 // AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
 func (_u *UserUpdateOne) AddSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
 	_u.mutation.AddSessionIDs(ids...)
@@ -516,30 +993,114 @@ func (_u *UserUpdateOne) AddAPITokens(v ...*ApiToken) *UserUpdateOne {
 	return _u.AddAPITokenIDs(ids...)
 }
 
-// Mutation returns the UserMutation object of the builder.
-func (_u *UserUpdateOne) Mutation() *UserMutation {
-	return _u.mutation
-}
-
-// ClearMemberships clears all "memberships" edges to the WorkspaceMember entity.
-func (_u *UserUpdateOne) ClearMemberships() *UserUpdateOne {
-	_u.mutation.ClearMemberships()
+// AddProviderIDs adds the "providers" edge to the Provider entity by IDs.
+func (_u *UserUpdateOne) AddProviderIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddProviderIDs(ids...)
 	return _u
 }
 
-// RemoveMembershipIDs removes the "memberships" edge to WorkspaceMember entities by IDs.
-func (_u *UserUpdateOne) RemoveMembershipIDs(ids ...uuid.UUID) *UserUpdateOne {
-	_u.mutation.RemoveMembershipIDs(ids...)
-	return _u
-}
-
-// RemoveMemberships removes "memberships" edges to WorkspaceMember entities.
-func (_u *UserUpdateOne) RemoveMemberships(v ...*WorkspaceMember) *UserUpdateOne {
+// AddProviders adds the "providers" edges to the Provider entity.
+func (_u *UserUpdateOne) AddProviders(v ...*Provider) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveMembershipIDs(ids...)
+	return _u.AddProviderIDs(ids...)
+}
+
+// AddOauthAppIDs adds the "oauth_apps" edge to the OAuthApp entity by IDs.
+func (_u *UserUpdateOne) AddOauthAppIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddOauthAppIDs(ids...)
+	return _u
+}
+
+// AddOauthApps adds the "oauth_apps" edges to the OAuthApp entity.
+func (_u *UserUpdateOne) AddOauthApps(v ...*OAuthApp) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOauthAppIDs(ids...)
+}
+
+// AddOauthStateIDs adds the "oauth_states" edge to the OAuthState entity by IDs.
+func (_u *UserUpdateOne) AddOauthStateIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddOauthStateIDs(ids...)
+	return _u
+}
+
+// AddOauthStates adds the "oauth_states" edges to the OAuthState entity.
+func (_u *UserUpdateOne) AddOauthStates(v ...*OAuthState) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOauthStateIDs(ids...)
+}
+
+// AddUploadBatchIDs adds the "upload_batches" edge to the UploadBatch entity by IDs.
+func (_u *UserUpdateOne) AddUploadBatchIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddUploadBatchIDs(ids...)
+	return _u
+}
+
+// AddUploadBatches adds the "upload_batches" edges to the UploadBatch entity.
+func (_u *UserUpdateOne) AddUploadBatches(v ...*UploadBatch) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUploadBatchIDs(ids...)
+}
+
+// AddTransferJobIDs adds the "transfer_jobs" edge to the TransferJob entity by IDs.
+func (_u *UserUpdateOne) AddTransferJobIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddTransferJobIDs(ids...)
+	return _u
+}
+
+// AddTransferJobs adds the "transfer_jobs" edges to the TransferJob entity.
+func (_u *UserUpdateOne) AddTransferJobs(v ...*TransferJob) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTransferJobIDs(ids...)
+}
+
+// AddSharedLinkIDs adds the "shared_links" edge to the SharedLink entity by IDs.
+func (_u *UserUpdateOne) AddSharedLinkIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddSharedLinkIDs(ids...)
+	return _u
+}
+
+// AddSharedLinks adds the "shared_links" edges to the SharedLink entity.
+func (_u *UserUpdateOne) AddSharedLinks(v ...*SharedLink) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSharedLinkIDs(ids...)
+}
+
+// AddBandwidthLogIDs adds the "bandwidth_logs" edge to the BandwidthLog entity by IDs.
+func (_u *UserUpdateOne) AddBandwidthLogIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddBandwidthLogIDs(ids...)
+	return _u
+}
+
+// AddBandwidthLogs adds the "bandwidth_logs" edges to the BandwidthLog entity.
+func (_u *UserUpdateOne) AddBandwidthLogs(v ...*BandwidthLog) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddBandwidthLogIDs(ids...)
+}
+
+// Mutation returns the UserMutation object of the builder.
+func (_u *UserUpdateOne) Mutation() *UserMutation {
+	return _u.mutation
 }
 
 // ClearSessions clears all "sessions" edges to the Session entity.
@@ -582,6 +1143,153 @@ func (_u *UserUpdateOne) RemoveAPITokens(v ...*ApiToken) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAPITokenIDs(ids...)
+}
+
+// ClearProviders clears all "providers" edges to the Provider entity.
+func (_u *UserUpdateOne) ClearProviders() *UserUpdateOne {
+	_u.mutation.ClearProviders()
+	return _u
+}
+
+// RemoveProviderIDs removes the "providers" edge to Provider entities by IDs.
+func (_u *UserUpdateOne) RemoveProviderIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveProviderIDs(ids...)
+	return _u
+}
+
+// RemoveProviders removes "providers" edges to Provider entities.
+func (_u *UserUpdateOne) RemoveProviders(v ...*Provider) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveProviderIDs(ids...)
+}
+
+// ClearOauthApps clears all "oauth_apps" edges to the OAuthApp entity.
+func (_u *UserUpdateOne) ClearOauthApps() *UserUpdateOne {
+	_u.mutation.ClearOauthApps()
+	return _u
+}
+
+// RemoveOauthAppIDs removes the "oauth_apps" edge to OAuthApp entities by IDs.
+func (_u *UserUpdateOne) RemoveOauthAppIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveOauthAppIDs(ids...)
+	return _u
+}
+
+// RemoveOauthApps removes "oauth_apps" edges to OAuthApp entities.
+func (_u *UserUpdateOne) RemoveOauthApps(v ...*OAuthApp) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOauthAppIDs(ids...)
+}
+
+// ClearOauthStates clears all "oauth_states" edges to the OAuthState entity.
+func (_u *UserUpdateOne) ClearOauthStates() *UserUpdateOne {
+	_u.mutation.ClearOauthStates()
+	return _u
+}
+
+// RemoveOauthStateIDs removes the "oauth_states" edge to OAuthState entities by IDs.
+func (_u *UserUpdateOne) RemoveOauthStateIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveOauthStateIDs(ids...)
+	return _u
+}
+
+// RemoveOauthStates removes "oauth_states" edges to OAuthState entities.
+func (_u *UserUpdateOne) RemoveOauthStates(v ...*OAuthState) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOauthStateIDs(ids...)
+}
+
+// ClearUploadBatches clears all "upload_batches" edges to the UploadBatch entity.
+func (_u *UserUpdateOne) ClearUploadBatches() *UserUpdateOne {
+	_u.mutation.ClearUploadBatches()
+	return _u
+}
+
+// RemoveUploadBatchIDs removes the "upload_batches" edge to UploadBatch entities by IDs.
+func (_u *UserUpdateOne) RemoveUploadBatchIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveUploadBatchIDs(ids...)
+	return _u
+}
+
+// RemoveUploadBatches removes "upload_batches" edges to UploadBatch entities.
+func (_u *UserUpdateOne) RemoveUploadBatches(v ...*UploadBatch) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUploadBatchIDs(ids...)
+}
+
+// ClearTransferJobs clears all "transfer_jobs" edges to the TransferJob entity.
+func (_u *UserUpdateOne) ClearTransferJobs() *UserUpdateOne {
+	_u.mutation.ClearTransferJobs()
+	return _u
+}
+
+// RemoveTransferJobIDs removes the "transfer_jobs" edge to TransferJob entities by IDs.
+func (_u *UserUpdateOne) RemoveTransferJobIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveTransferJobIDs(ids...)
+	return _u
+}
+
+// RemoveTransferJobs removes "transfer_jobs" edges to TransferJob entities.
+func (_u *UserUpdateOne) RemoveTransferJobs(v ...*TransferJob) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTransferJobIDs(ids...)
+}
+
+// ClearSharedLinks clears all "shared_links" edges to the SharedLink entity.
+func (_u *UserUpdateOne) ClearSharedLinks() *UserUpdateOne {
+	_u.mutation.ClearSharedLinks()
+	return _u
+}
+
+// RemoveSharedLinkIDs removes the "shared_links" edge to SharedLink entities by IDs.
+func (_u *UserUpdateOne) RemoveSharedLinkIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveSharedLinkIDs(ids...)
+	return _u
+}
+
+// RemoveSharedLinks removes "shared_links" edges to SharedLink entities.
+func (_u *UserUpdateOne) RemoveSharedLinks(v ...*SharedLink) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSharedLinkIDs(ids...)
+}
+
+// ClearBandwidthLogs clears all "bandwidth_logs" edges to the BandwidthLog entity.
+func (_u *UserUpdateOne) ClearBandwidthLogs() *UserUpdateOne {
+	_u.mutation.ClearBandwidthLogs()
+	return _u
+}
+
+// RemoveBandwidthLogIDs removes the "bandwidth_logs" edge to BandwidthLog entities by IDs.
+func (_u *UserUpdateOne) RemoveBandwidthLogIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveBandwidthLogIDs(ids...)
+	return _u
+}
+
+// RemoveBandwidthLogs removes "bandwidth_logs" edges to BandwidthLog entities.
+func (_u *UserUpdateOne) RemoveBandwidthLogs(v ...*BandwidthLog) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveBandwidthLogIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -689,51 +1397,6 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.MembershipsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.MembershipsTable,
-			Columns: []string{user.MembershipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedMembershipsIDs(); len(nodes) > 0 && !_u.mutation.MembershipsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.MembershipsTable,
-			Columns: []string{user.MembershipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.MembershipsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.MembershipsTable,
-			Columns: []string{user.MembershipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.SessionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -817,6 +1480,321 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(entapitoken.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProvidersTable,
+			Columns: []string{user.ProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(provider.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedProvidersIDs(); len(nodes) > 0 && !_u.mutation.ProvidersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProvidersTable,
+			Columns: []string{user.ProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(provider.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProvidersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProvidersTable,
+			Columns: []string{user.ProvidersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(provider.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OauthAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthAppsTable,
+			Columns: []string{user.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOauthAppsIDs(); len(nodes) > 0 && !_u.mutation.OauthAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthAppsTable,
+			Columns: []string{user.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OauthAppsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthAppsTable,
+			Columns: []string{user.OauthAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthapp.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OauthStatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthStatesTable,
+			Columns: []string{user.OauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthstate.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOauthStatesIDs(); len(nodes) > 0 && !_u.mutation.OauthStatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthStatesTable,
+			Columns: []string{user.OauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OauthStatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthStatesTable,
+			Columns: []string{user.OauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UploadBatchesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UploadBatchesTable,
+			Columns: []string{user.UploadBatchesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadbatch.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUploadBatchesIDs(); len(nodes) > 0 && !_u.mutation.UploadBatchesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UploadBatchesTable,
+			Columns: []string{user.UploadBatchesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadbatch.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UploadBatchesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UploadBatchesTable,
+			Columns: []string{user.UploadBatchesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(uploadbatch.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TransferJobsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransferJobsTable,
+			Columns: []string{user.TransferJobsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transferjob.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTransferJobsIDs(); len(nodes) > 0 && !_u.mutation.TransferJobsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransferJobsTable,
+			Columns: []string{user.TransferJobsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transferjob.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TransferJobsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransferJobsTable,
+			Columns: []string{user.TransferJobsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transferjob.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SharedLinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SharedLinksTable,
+			Columns: []string{user.SharedLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sharedlink.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSharedLinksIDs(); len(nodes) > 0 && !_u.mutation.SharedLinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SharedLinksTable,
+			Columns: []string{user.SharedLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sharedlink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SharedLinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SharedLinksTable,
+			Columns: []string{user.SharedLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(sharedlink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.BandwidthLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.BandwidthLogsTable,
+			Columns: []string{user.BandwidthLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bandwidthlog.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedBandwidthLogsIDs(); len(nodes) > 0 && !_u.mutation.BandwidthLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.BandwidthLogsTable,
+			Columns: []string{user.BandwidthLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bandwidthlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.BandwidthLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.BandwidthLogsTable,
+			Columns: []string{user.BandwidthLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bandwidthlog.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

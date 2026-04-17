@@ -56,9 +56,9 @@ func IDLTE(id uuid.UUID) predicate.BandwidthLog {
 	return predicate.BandwidthLog(sql.FieldLTE(FieldID, id))
 }
 
-// WorkspaceID applies equality check predicate on the "workspace_id" field. It's identical to WorkspaceIDEQ.
-func WorkspaceID(v uuid.UUID) predicate.BandwidthLog {
-	return predicate.BandwidthLog(sql.FieldEQ(FieldWorkspaceID, v))
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.BandwidthLog {
+	return predicate.BandwidthLog(sql.FieldEQ(FieldUserID, v))
 }
 
 // ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
@@ -91,24 +91,24 @@ func CreatedAt(v time.Time) predicate.BandwidthLog {
 	return predicate.BandwidthLog(sql.FieldEQ(FieldCreatedAt, v))
 }
 
-// WorkspaceIDEQ applies the EQ predicate on the "workspace_id" field.
-func WorkspaceIDEQ(v uuid.UUID) predicate.BandwidthLog {
-	return predicate.BandwidthLog(sql.FieldEQ(FieldWorkspaceID, v))
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.BandwidthLog {
+	return predicate.BandwidthLog(sql.FieldEQ(FieldUserID, v))
 }
 
-// WorkspaceIDNEQ applies the NEQ predicate on the "workspace_id" field.
-func WorkspaceIDNEQ(v uuid.UUID) predicate.BandwidthLog {
-	return predicate.BandwidthLog(sql.FieldNEQ(FieldWorkspaceID, v))
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.BandwidthLog {
+	return predicate.BandwidthLog(sql.FieldNEQ(FieldUserID, v))
 }
 
-// WorkspaceIDIn applies the In predicate on the "workspace_id" field.
-func WorkspaceIDIn(vs ...uuid.UUID) predicate.BandwidthLog {
-	return predicate.BandwidthLog(sql.FieldIn(FieldWorkspaceID, vs...))
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.BandwidthLog {
+	return predicate.BandwidthLog(sql.FieldIn(FieldUserID, vs...))
 }
 
-// WorkspaceIDNotIn applies the NotIn predicate on the "workspace_id" field.
-func WorkspaceIDNotIn(vs ...uuid.UUID) predicate.BandwidthLog {
-	return predicate.BandwidthLog(sql.FieldNotIn(FieldWorkspaceID, vs...))
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.BandwidthLog {
+	return predicate.BandwidthLog(sql.FieldNotIn(FieldUserID, vs...))
 }
 
 // ProviderIDEQ applies the EQ predicate on the "provider_id" field.
@@ -376,21 +376,21 @@ func CreatedAtLTE(v time.Time) predicate.BandwidthLog {
 	return predicate.BandwidthLog(sql.FieldLTE(FieldCreatedAt, v))
 }
 
-// HasWorkspace applies the HasEdge predicate on the "workspace" edge.
-func HasWorkspace() predicate.BandwidthLog {
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.BandwidthLog {
 	return predicate.BandwidthLog(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkspaceTable, WorkspaceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasWorkspaceWith applies the HasEdge predicate on the "workspace" edge with a given conditions (other predicates).
-func HasWorkspaceWith(preds ...predicate.Workspace) predicate.BandwidthLog {
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.BandwidthLog {
 	return predicate.BandwidthLog(func(s *sql.Selector) {
-		step := newWorkspaceStep()
+		step := newUserStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -32,10 +32,10 @@ const (
 type AuthType string
 
 const (
-	AuthTypeOAuth       AuthType = "oauth"
-	AuthTypeAPIKey      AuthType = "api_key"
-	AuthTypeCredential  AuthType = "credential" // username + password
-	AuthTypeNone        AuthType = "none"
+	AuthTypeOAuth      AuthType = "oauth"
+	AuthTypeAPIKey     AuthType = "api_key"
+	AuthTypeCredential AuthType = "credential" // username + password
+	AuthTypeNone       AuthType = "none"
 )
 
 type Provider struct {
@@ -45,7 +45,7 @@ type Provider struct {
 func (Provider) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
-		field.UUID("workspace_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
 		field.String("type").NotEmpty(),      // ProviderType
 		field.String("name").NotEmpty(),      // Display name set by user
 		field.String("auth_type").NotEmpty(), // AuthType
@@ -57,7 +57,7 @@ func (Provider) Fields() []ent.Field {
 
 func (Provider) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("workspace", Workspace.Type).Ref("providers").Field("workspace_id").Unique().Required(),
+		edge.From("user", User.Type).Ref("providers").Field("user_id").Unique().Required(),
 		edge.To("credential", ProviderCredential.Type).Unique(),
 		edge.To("cache_config", CacheConfig.Type).Unique(),
 		edge.To("quota", ProviderQuota.Type).Unique(),
@@ -67,6 +67,6 @@ func (Provider) Edges() []ent.Edge {
 
 func (Provider) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("workspace_id"),
+		index.Fields("user_id"),
 	}
 }

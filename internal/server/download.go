@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/drivebase/drivebase/internal/auth"
-	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/sharing"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -37,7 +36,7 @@ func (h *fileHandler) download(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "provider not found", http.StatusNotFound)
 			return
 		}
-		if err := auth.Check(ctx, h.db, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionRead)); err != nil {
+		if prov.UserID != u.ID {
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}

@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -30,16 +30,16 @@ func (_u *OAuthAppUpdate) Where(ps ...predicate.OAuthApp) *OAuthAppUpdate {
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *OAuthAppUpdate) SetWorkspaceID(v uuid.UUID) *OAuthAppUpdate {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *OAuthAppUpdate) SetUserID(v uuid.UUID) *OAuthAppUpdate {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *OAuthAppUpdate) SetNillableWorkspaceID(v *uuid.UUID) *OAuthAppUpdate {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *OAuthAppUpdate) SetNillableUserID(v *uuid.UUID) *OAuthAppUpdate {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -104,9 +104,9 @@ func (_u *OAuthAppUpdate) SetUpdatedAt(v time.Time) *OAuthAppUpdate {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *OAuthAppUpdate) SetWorkspace(v *Workspace) *OAuthAppUpdate {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *OAuthAppUpdate) SetUser(v *User) *OAuthAppUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the OAuthAppMutation object of the builder.
@@ -114,9 +114,9 @@ func (_u *OAuthAppUpdate) Mutation() *OAuthAppMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *OAuthAppUpdate) ClearWorkspace() *OAuthAppUpdate {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *OAuthAppUpdate) ClearUser() *OAuthAppUpdate {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -168,8 +168,8 @@ func (_u *OAuthAppUpdate) check() error {
 			return &ValidationError{Name: "client_id", err: fmt.Errorf(`ent: validator failed for field "OAuthApp.client_id": %w`, err)}
 		}
 	}
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "OAuthApp.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OAuthApp.user"`)
 	}
 	return nil
 }
@@ -204,28 +204,28 @@ func (_u *OAuthAppUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(oauthapp.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   oauthapp.WorkspaceTable,
-			Columns: []string{oauthapp.WorkspaceColumn},
+			Table:   oauthapp.UserTable,
+			Columns: []string{oauthapp.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   oauthapp.WorkspaceTable,
-			Columns: []string{oauthapp.WorkspaceColumn},
+			Table:   oauthapp.UserTable,
+			Columns: []string{oauthapp.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -253,16 +253,16 @@ type OAuthAppUpdateOne struct {
 	mutation *OAuthAppMutation
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *OAuthAppUpdateOne) SetWorkspaceID(v uuid.UUID) *OAuthAppUpdateOne {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *OAuthAppUpdateOne) SetUserID(v uuid.UUID) *OAuthAppUpdateOne {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *OAuthAppUpdateOne) SetNillableWorkspaceID(v *uuid.UUID) *OAuthAppUpdateOne {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *OAuthAppUpdateOne) SetNillableUserID(v *uuid.UUID) *OAuthAppUpdateOne {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -327,9 +327,9 @@ func (_u *OAuthAppUpdateOne) SetUpdatedAt(v time.Time) *OAuthAppUpdateOne {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *OAuthAppUpdateOne) SetWorkspace(v *Workspace) *OAuthAppUpdateOne {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *OAuthAppUpdateOne) SetUser(v *User) *OAuthAppUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the OAuthAppMutation object of the builder.
@@ -337,9 +337,9 @@ func (_u *OAuthAppUpdateOne) Mutation() *OAuthAppMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *OAuthAppUpdateOne) ClearWorkspace() *OAuthAppUpdateOne {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *OAuthAppUpdateOne) ClearUser() *OAuthAppUpdateOne {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -404,8 +404,8 @@ func (_u *OAuthAppUpdateOne) check() error {
 			return &ValidationError{Name: "client_id", err: fmt.Errorf(`ent: validator failed for field "OAuthApp.client_id": %w`, err)}
 		}
 	}
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "OAuthApp.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OAuthApp.user"`)
 	}
 	return nil
 }
@@ -457,28 +457,28 @@ func (_u *OAuthAppUpdateOne) sqlSave(ctx context.Context) (_node *OAuthApp, err 
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(oauthapp.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   oauthapp.WorkspaceTable,
-			Columns: []string{oauthapp.WorkspaceColumn},
+			Table:   oauthapp.UserTable,
+			Columns: []string{oauthapp.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   oauthapp.WorkspaceTable,
-			Columns: []string{oauthapp.WorkspaceColumn},
+			Table:   oauthapp.UserTable,
+			Columns: []string{oauthapp.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

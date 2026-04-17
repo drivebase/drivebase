@@ -14,7 +14,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/ent/sharedlink"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -31,16 +31,16 @@ func (_u *SharedLinkUpdate) Where(ps ...predicate.SharedLink) *SharedLinkUpdate 
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *SharedLinkUpdate) SetWorkspaceID(v uuid.UUID) *SharedLinkUpdate {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *SharedLinkUpdate) SetUserID(v uuid.UUID) *SharedLinkUpdate {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *SharedLinkUpdate) SetNillableWorkspaceID(v *uuid.UUID) *SharedLinkUpdate {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *SharedLinkUpdate) SetNillableUserID(v *uuid.UUID) *SharedLinkUpdate {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -175,9 +175,9 @@ func (_u *SharedLinkUpdate) SetNillableActive(v *bool) *SharedLinkUpdate {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *SharedLinkUpdate) SetWorkspace(v *Workspace) *SharedLinkUpdate {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *SharedLinkUpdate) SetUser(v *User) *SharedLinkUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the SharedLinkMutation object of the builder.
@@ -185,9 +185,9 @@ func (_u *SharedLinkUpdate) Mutation() *SharedLinkMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *SharedLinkUpdate) ClearWorkspace() *SharedLinkUpdate {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *SharedLinkUpdate) ClearUser() *SharedLinkUpdate {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -220,8 +220,8 @@ func (_u *SharedLinkUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *SharedLinkUpdate) check() error {
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SharedLink.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SharedLink.user"`)
 	}
 	return nil
 }
@@ -274,28 +274,28 @@ func (_u *SharedLinkUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	if value, ok := _u.mutation.Active(); ok {
 		_spec.SetField(sharedlink.FieldActive, field.TypeBool, value)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   sharedlink.WorkspaceTable,
-			Columns: []string{sharedlink.WorkspaceColumn},
+			Table:   sharedlink.UserTable,
+			Columns: []string{sharedlink.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   sharedlink.WorkspaceTable,
-			Columns: []string{sharedlink.WorkspaceColumn},
+			Table:   sharedlink.UserTable,
+			Columns: []string{sharedlink.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -323,16 +323,16 @@ type SharedLinkUpdateOne struct {
 	mutation *SharedLinkMutation
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *SharedLinkUpdateOne) SetWorkspaceID(v uuid.UUID) *SharedLinkUpdateOne {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *SharedLinkUpdateOne) SetUserID(v uuid.UUID) *SharedLinkUpdateOne {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *SharedLinkUpdateOne) SetNillableWorkspaceID(v *uuid.UUID) *SharedLinkUpdateOne {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *SharedLinkUpdateOne) SetNillableUserID(v *uuid.UUID) *SharedLinkUpdateOne {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -467,9 +467,9 @@ func (_u *SharedLinkUpdateOne) SetNillableActive(v *bool) *SharedLinkUpdateOne {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *SharedLinkUpdateOne) SetWorkspace(v *Workspace) *SharedLinkUpdateOne {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *SharedLinkUpdateOne) SetUser(v *User) *SharedLinkUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the SharedLinkMutation object of the builder.
@@ -477,9 +477,9 @@ func (_u *SharedLinkUpdateOne) Mutation() *SharedLinkMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *SharedLinkUpdateOne) ClearWorkspace() *SharedLinkUpdateOne {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *SharedLinkUpdateOne) ClearUser() *SharedLinkUpdateOne {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -525,8 +525,8 @@ func (_u *SharedLinkUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *SharedLinkUpdateOne) check() error {
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SharedLink.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SharedLink.user"`)
 	}
 	return nil
 }
@@ -596,28 +596,28 @@ func (_u *SharedLinkUpdateOne) sqlSave(ctx context.Context) (_node *SharedLink, 
 	if value, ok := _u.mutation.Active(); ok {
 		_spec.SetField(sharedlink.FieldActive, field.TypeBool, value)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   sharedlink.WorkspaceTable,
-			Columns: []string{sharedlink.WorkspaceColumn},
+			Table:   sharedlink.UserTable,
+			Columns: []string{sharedlink.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   sharedlink.WorkspaceTable,
-			Columns: []string{sharedlink.WorkspaceColumn},
+			Table:   sharedlink.UserTable,
+			Columns: []string{sharedlink.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

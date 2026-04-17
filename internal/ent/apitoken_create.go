@@ -13,7 +13,6 @@ import (
 	"github.com/drivebase/drivebase/internal/apitoken"
 	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
 	"github.com/google/uuid"
 )
 
@@ -22,12 +21,6 @@ type ApiTokenCreate struct {
 	config
 	mutation *ApiTokenMutation
 	hooks    []Hook
-}
-
-// SetWorkspaceID sets the "workspace_id" field.
-func (_c *ApiTokenCreate) SetWorkspaceID(v uuid.UUID) *ApiTokenCreate {
-	_c.mutation.SetWorkspaceID(v)
-	return _c
 }
 
 // SetUserID sets the "user_id" field.
@@ -122,11 +115,6 @@ func (_c *ApiTokenCreate) SetNillableID(v *uuid.UUID) *ApiTokenCreate {
 	return _c
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_c *ApiTokenCreate) SetWorkspace(v *Workspace) *ApiTokenCreate {
-	return _c.SetWorkspaceID(v.ID)
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *ApiTokenCreate) SetUser(v *User) *ApiTokenCreate {
 	return _c.SetUserID(v.ID)
@@ -179,9 +167,6 @@ func (_c *ApiTokenCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ApiTokenCreate) check() error {
-	if _, ok := _c.mutation.WorkspaceID(); !ok {
-		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "ApiToken.workspace_id"`)}
-	}
 	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "ApiToken.user_id"`)}
 	}
@@ -214,9 +199,6 @@ func (_c *ApiTokenCreate) check() error {
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ApiToken.created_at"`)}
-	}
-	if len(_c.mutation.WorkspaceIDs()) == 0 {
-		return &ValidationError{Name: "workspace", err: errors.New(`ent: missing required edge "ApiToken.workspace"`)}
 	}
 	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "ApiToken.user"`)}
@@ -287,23 +269,6 @@ func (_c *ApiTokenCreate) createSpec() (*ApiToken, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(entapitoken.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
-	}
-	if nodes := _c.mutation.WorkspaceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   entapitoken.WorkspaceTable,
-			Columns: []string{entapitoken.WorkspaceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.WorkspaceID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

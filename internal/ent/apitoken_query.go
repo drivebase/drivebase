@@ -14,19 +14,17 @@ import (
 	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
 	"github.com/google/uuid"
 )
 
 // ApiTokenQuery is the builder for querying ApiToken entities.
 type ApiTokenQuery struct {
 	config
-	ctx           *QueryContext
-	order         []entapitoken.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.ApiToken
-	withWorkspace *WorkspaceQuery
-	withUser      *UserQuery
+	ctx        *QueryContext
+	order      []entapitoken.OrderOption
+	inters     []Interceptor
+	predicates []predicate.ApiToken
+	withUser   *UserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,28 +59,6 @@ func (_q *ApiTokenQuery) Unique(unique bool) *ApiTokenQuery {
 func (_q *ApiTokenQuery) Order(o ...entapitoken.OrderOption) *ApiTokenQuery {
 	_q.order = append(_q.order, o...)
 	return _q
-}
-
-// QueryWorkspace chains the current query on the "workspace" edge.
-func (_q *ApiTokenQuery) QueryWorkspace() *WorkspaceQuery {
-	query := (&WorkspaceClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(entapitoken.Table, entapitoken.FieldID, selector),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, entapitoken.WorkspaceTable, entapitoken.WorkspaceColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryUser chains the current query on the "user" edge.
@@ -294,28 +270,16 @@ func (_q *ApiTokenQuery) Clone() *ApiTokenQuery {
 		return nil
 	}
 	return &ApiTokenQuery{
-		config:        _q.config,
-		ctx:           _q.ctx.Clone(),
-		order:         append([]entapitoken.OrderOption{}, _q.order...),
-		inters:        append([]Interceptor{}, _q.inters...),
-		predicates:    append([]predicate.ApiToken{}, _q.predicates...),
-		withWorkspace: _q.withWorkspace.Clone(),
-		withUser:      _q.withUser.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]entapitoken.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.ApiToken{}, _q.predicates...),
+		withUser:   _q.withUser.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
-}
-
-// WithWorkspace tells the query-builder to eager-load the nodes that are connected to
-// the "workspace" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ApiTokenQuery) WithWorkspace(opts ...func(*WorkspaceQuery)) *ApiTokenQuery {
-	query := (&WorkspaceClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withWorkspace = query
-	return _q
 }
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
@@ -335,12 +299,12 @@ func (_q *ApiTokenQuery) WithUser(opts ...func(*UserQuery)) *ApiTokenQuery {
 // Example:
 //
 //	var v []struct {
-//		WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ApiToken.Query().
-//		GroupBy(entapitoken.FieldWorkspaceID).
+//		GroupBy(entapitoken.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *ApiTokenQuery) GroupBy(field string, fields ...string) *ApiTokenGroupBy {
@@ -358,11 +322,11 @@ func (_q *ApiTokenQuery) GroupBy(field string, fields ...string) *ApiTokenGroupB
 // Example:
 //
 //	var v []struct {
-//		WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.ApiToken.Query().
-//		Select(entapitoken.FieldWorkspaceID).
+//		Select(entapitoken.FieldUserID).
 //		Scan(ctx, &v)
 func (_q *ApiTokenQuery) Select(fields ...string) *ApiTokenSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,8 +371,7 @@ func (_q *ApiTokenQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Api
 	var (
 		nodes       = []*ApiToken{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
-			_q.withWorkspace != nil,
+		loadedTypes = [1]bool{
 			_q.withUser != nil,
 		}
 	)
@@ -430,12 +393,6 @@ func (_q *ApiTokenQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Api
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withWorkspace; query != nil {
-		if err := _q.loadWorkspace(ctx, query, nodes, nil,
-			func(n *ApiToken, e *Workspace) { n.Edges.Workspace = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withUser; query != nil {
 		if err := _q.loadUser(ctx, query, nodes, nil,
 			func(n *ApiToken, e *User) { n.Edges.User = e }); err != nil {
@@ -445,35 +402,6 @@ func (_q *ApiTokenQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Api
 	return nodes, nil
 }
 
-func (_q *ApiTokenQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuery, nodes []*ApiToken, init func(*ApiToken), assign func(*ApiToken, *Workspace)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*ApiToken)
-	for i := range nodes {
-		fk := nodes[i].WorkspaceID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(workspace.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workspace_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (_q *ApiTokenQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*ApiToken, init func(*ApiToken), assign func(*ApiToken, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ApiToken)
@@ -528,9 +456,6 @@ func (_q *ApiTokenQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != entapitoken.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if _q.withWorkspace != nil {
-			_spec.Node.AddColumnOnce(entapitoken.FieldWorkspaceID)
 		}
 		if _q.withUser != nil {
 			_spec.Node.AddColumnOnce(entapitoken.FieldUserID)

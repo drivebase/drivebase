@@ -16,7 +16,6 @@ import (
 	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
 	"github.com/google/uuid"
 )
 
@@ -30,20 +29,6 @@ type ApiTokenUpdate struct {
 // Where appends a list predicates to the ApiTokenUpdate builder.
 func (_u *ApiTokenUpdate) Where(ps ...predicate.ApiToken) *ApiTokenUpdate {
 	_u.mutation.Where(ps...)
-	return _u
-}
-
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *ApiTokenUpdate) SetWorkspaceID(v uuid.UUID) *ApiTokenUpdate {
-	_u.mutation.SetWorkspaceID(v)
-	return _u
-}
-
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *ApiTokenUpdate) SetNillableWorkspaceID(v *uuid.UUID) *ApiTokenUpdate {
-	if v != nil {
-		_u.SetWorkspaceID(*v)
-	}
 	return _u
 }
 
@@ -173,11 +158,6 @@ func (_u *ApiTokenUpdate) ClearExpiresAt() *ApiTokenUpdate {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *ApiTokenUpdate) SetWorkspace(v *Workspace) *ApiTokenUpdate {
-	return _u.SetWorkspaceID(v.ID)
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *ApiTokenUpdate) SetUser(v *User) *ApiTokenUpdate {
 	return _u.SetUserID(v.ID)
@@ -186,12 +166,6 @@ func (_u *ApiTokenUpdate) SetUser(v *User) *ApiTokenUpdate {
 // Mutation returns the ApiTokenMutation object of the builder.
 func (_u *ApiTokenUpdate) Mutation() *ApiTokenMutation {
 	return _u.mutation
-}
-
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *ApiTokenUpdate) ClearWorkspace() *ApiTokenUpdate {
-	_u.mutation.ClearWorkspace()
-	return _u
 }
 
 // ClearUser clears the "user" edge to the User entity.
@@ -243,9 +217,6 @@ func (_u *ApiTokenUpdate) check() error {
 		if err := entapitoken.DisplayTokenValidator(v); err != nil {
 			return &ValidationError{Name: "display_token", err: fmt.Errorf(`ent: validator failed for field "ApiToken.display_token": %w`, err)}
 		}
-	}
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "ApiToken.workspace"`)
 	}
 	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ApiToken.user"`)
@@ -305,35 +276,6 @@ func (_u *ApiTokenUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.ExpiresAtCleared() {
 		_spec.ClearField(entapitoken.FieldExpiresAt, field.TypeTime)
 	}
-	if _u.mutation.WorkspaceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   entapitoken.WorkspaceTable,
-			Columns: []string{entapitoken.WorkspaceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   entapitoken.WorkspaceTable,
-			Columns: []string{entapitoken.WorkspaceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -381,20 +323,6 @@ type ApiTokenUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *ApiTokenMutation
-}
-
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *ApiTokenUpdateOne) SetWorkspaceID(v uuid.UUID) *ApiTokenUpdateOne {
-	_u.mutation.SetWorkspaceID(v)
-	return _u
-}
-
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *ApiTokenUpdateOne) SetNillableWorkspaceID(v *uuid.UUID) *ApiTokenUpdateOne {
-	if v != nil {
-		_u.SetWorkspaceID(*v)
-	}
-	return _u
 }
 
 // SetUserID sets the "user_id" field.
@@ -523,11 +451,6 @@ func (_u *ApiTokenUpdateOne) ClearExpiresAt() *ApiTokenUpdateOne {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *ApiTokenUpdateOne) SetWorkspace(v *Workspace) *ApiTokenUpdateOne {
-	return _u.SetWorkspaceID(v.ID)
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *ApiTokenUpdateOne) SetUser(v *User) *ApiTokenUpdateOne {
 	return _u.SetUserID(v.ID)
@@ -536,12 +459,6 @@ func (_u *ApiTokenUpdateOne) SetUser(v *User) *ApiTokenUpdateOne {
 // Mutation returns the ApiTokenMutation object of the builder.
 func (_u *ApiTokenUpdateOne) Mutation() *ApiTokenMutation {
 	return _u.mutation
-}
-
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *ApiTokenUpdateOne) ClearWorkspace() *ApiTokenUpdateOne {
-	_u.mutation.ClearWorkspace()
-	return _u
 }
 
 // ClearUser clears the "user" edge to the User entity.
@@ -606,9 +523,6 @@ func (_u *ApiTokenUpdateOne) check() error {
 		if err := entapitoken.DisplayTokenValidator(v); err != nil {
 			return &ValidationError{Name: "display_token", err: fmt.Errorf(`ent: validator failed for field "ApiToken.display_token": %w`, err)}
 		}
-	}
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "ApiToken.workspace"`)
 	}
 	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ApiToken.user"`)
@@ -684,35 +598,6 @@ func (_u *ApiTokenUpdateOne) sqlSave(ctx context.Context) (_node *ApiToken, err 
 	}
 	if _u.mutation.ExpiresAtCleared() {
 		_spec.ClearField(entapitoken.FieldExpiresAt, field.TypeTime)
-	}
-	if _u.mutation.WorkspaceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   entapitoken.WorkspaceTable,
-			Columns: []string{entapitoken.WorkspaceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   entapitoken.WorkspaceTable,
-			Columns: []string{entapitoken.WorkspaceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

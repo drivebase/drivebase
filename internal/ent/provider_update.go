@@ -17,7 +17,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
 	"github.com/drivebase/drivebase/internal/ent/providerquota"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -34,16 +34,16 @@ func (_u *ProviderUpdate) Where(ps ...predicate.Provider) *ProviderUpdate {
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *ProviderUpdate) SetWorkspaceID(v uuid.UUID) *ProviderUpdate {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *ProviderUpdate) SetUserID(v uuid.UUID) *ProviderUpdate {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *ProviderUpdate) SetNillableWorkspaceID(v *uuid.UUID) *ProviderUpdate {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ProviderUpdate) SetNillableUserID(v *uuid.UUID) *ProviderUpdate {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -110,9 +110,9 @@ func (_u *ProviderUpdate) SetUpdatedAt(v time.Time) *ProviderUpdate {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *ProviderUpdate) SetWorkspace(v *Workspace) *ProviderUpdate {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *ProviderUpdate) SetUser(v *User) *ProviderUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // SetCredentialID sets the "credential" edge to the ProviderCredential entity by ID.
@@ -192,9 +192,9 @@ func (_u *ProviderUpdate) Mutation() *ProviderMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *ProviderUpdate) ClearWorkspace() *ProviderUpdate {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *ProviderUpdate) ClearUser() *ProviderUpdate {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -290,8 +290,8 @@ func (_u *ProviderUpdate) check() error {
 			return &ValidationError{Name: "auth_type", err: fmt.Errorf(`ent: validator failed for field "Provider.auth_type": %w`, err)}
 		}
 	}
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Provider.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Provider.user"`)
 	}
 	return nil
 }
@@ -323,28 +323,28 @@ func (_u *ProviderUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(provider.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   provider.WorkspaceTable,
-			Columns: []string{provider.WorkspaceColumn},
+			Table:   provider.UserTable,
+			Columns: []string{provider.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   provider.WorkspaceTable,
-			Columns: []string{provider.WorkspaceColumn},
+			Table:   provider.UserTable,
+			Columns: []string{provider.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -504,16 +504,16 @@ type ProviderUpdateOne struct {
 	mutation *ProviderMutation
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *ProviderUpdateOne) SetWorkspaceID(v uuid.UUID) *ProviderUpdateOne {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *ProviderUpdateOne) SetUserID(v uuid.UUID) *ProviderUpdateOne {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *ProviderUpdateOne) SetNillableWorkspaceID(v *uuid.UUID) *ProviderUpdateOne {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ProviderUpdateOne) SetNillableUserID(v *uuid.UUID) *ProviderUpdateOne {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -580,9 +580,9 @@ func (_u *ProviderUpdateOne) SetUpdatedAt(v time.Time) *ProviderUpdateOne {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *ProviderUpdateOne) SetWorkspace(v *Workspace) *ProviderUpdateOne {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *ProviderUpdateOne) SetUser(v *User) *ProviderUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // SetCredentialID sets the "credential" edge to the ProviderCredential entity by ID.
@@ -662,9 +662,9 @@ func (_u *ProviderUpdateOne) Mutation() *ProviderMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *ProviderUpdateOne) ClearWorkspace() *ProviderUpdateOne {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *ProviderUpdateOne) ClearUser() *ProviderUpdateOne {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -773,8 +773,8 @@ func (_u *ProviderUpdateOne) check() error {
 			return &ValidationError{Name: "auth_type", err: fmt.Errorf(`ent: validator failed for field "Provider.auth_type": %w`, err)}
 		}
 	}
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Provider.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Provider.user"`)
 	}
 	return nil
 }
@@ -823,28 +823,28 @@ func (_u *ProviderUpdateOne) sqlSave(ctx context.Context) (_node *Provider, err 
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(provider.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   provider.WorkspaceTable,
-			Columns: []string{provider.WorkspaceColumn},
+			Table:   provider.UserTable,
+			Columns: []string{provider.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   provider.WorkspaceTable,
-			Columns: []string{provider.WorkspaceColumn},
+			Table:   provider.UserTable,
+			Columns: []string{provider.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

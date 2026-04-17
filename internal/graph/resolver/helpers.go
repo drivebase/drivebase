@@ -13,6 +13,7 @@ import (
 	entproviderquota "github.com/drivebase/drivebase/internal/ent/providerquota"
 	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
+
 	"github.com/drivebase/drivebase/internal/storage"
 	"github.com/google/uuid"
 )
@@ -25,24 +26,12 @@ func WithHTTPRequest(ctx context.Context, r *http.Request) context.Context {
 	return context.WithValue(ctx, httpRequestKey{}, r)
 }
 
-// issueAccessToken returns a new workspace-scoped access token without creating a session.
-// Used by switchWorkspace — the existing refresh token/session is kept intact.
-func (r *mutationResolver) issueAccessToken(u *ent.User, workspaceID uuid.UUID) (string, error) {
-	return auth.IssueAccessToken(
-		r.Config.Auth.JWTSecret,
-		r.Config.Auth.AccessTokenTTL,
-		u.ID,
-		workspaceID,
-	)
-}
-
 // issueTokens creates a new session and returns a fresh AuthPayload.
-func (r *mutationResolver) issueTokens(ctx context.Context, u *ent.User, workspaceID uuid.UUID) (*graph.AuthPayload, error) {
+func (r *mutationResolver) issueTokens(ctx context.Context, u *ent.User) (*graph.AuthPayload, error) {
 	accessToken, err := auth.IssueAccessToken(
 		r.Config.Auth.JWTSecret,
 		r.Config.Auth.AccessTokenTTL,
 		u.ID,
-		workspaceID,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("internal error: %w", err)
@@ -98,12 +87,9 @@ func loadProviderByID(ctx context.Context, db *ent.Client, encKey string, provid
 
 // refreshQuota fetches live quota from the provider and upserts the DB record.
 func refreshQuota(ctx context.Context, r *Resolver, providerID uuid.UUID) (*graph.ProviderQuota, error) {
-	p, err := r.DB.Provider.Get(ctx, providerID)
+	_, err := r.DB.Provider.Get(ctx, providerID)
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), p.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
 	}
 
 	sp, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, providerID)

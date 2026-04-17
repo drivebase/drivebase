@@ -15,7 +15,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
 	"github.com/drivebase/drivebase/internal/ent/providerquota"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -26,9 +26,9 @@ type ProviderCreate struct {
 	hooks    []Hook
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_c *ProviderCreate) SetWorkspaceID(v uuid.UUID) *ProviderCreate {
-	_c.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_c *ProviderCreate) SetUserID(v uuid.UUID) *ProviderCreate {
+	_c.mutation.SetUserID(v)
 	return _c
 }
 
@@ -106,9 +106,9 @@ func (_c *ProviderCreate) SetNillableID(v *uuid.UUID) *ProviderCreate {
 	return _c
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_c *ProviderCreate) SetWorkspace(v *Workspace) *ProviderCreate {
-	return _c.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_c *ProviderCreate) SetUser(v *User) *ProviderCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // SetCredentialID sets the "credential" edge to the ProviderCredential entity by ID.
@@ -238,8 +238,8 @@ func (_c *ProviderCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ProviderCreate) check() error {
-	if _, ok := _c.mutation.WorkspaceID(); !ok {
-		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "Provider.workspace_id"`)}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Provider.user_id"`)}
 	}
 	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Provider.type"`)}
@@ -274,8 +274,8 @@ func (_c *ProviderCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Provider.updated_at"`)}
 	}
-	if len(_c.mutation.WorkspaceIDs()) == 0 {
-		return &ValidationError{Name: "workspace", err: errors.New(`ent: missing required edge "Provider.workspace"`)}
+	if len(_c.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Provider.user"`)}
 	}
 	return nil
 }
@@ -336,21 +336,21 @@ func (_c *ProviderCreate) createSpec() (*Provider, *sqlgraph.CreateSpec) {
 		_spec.SetField(provider.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if nodes := _c.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   provider.WorkspaceTable,
-			Columns: []string{provider.WorkspaceColumn},
+			Table:   provider.UserTable,
+			Columns: []string{provider.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.WorkspaceID = nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.CredentialIDs(); len(nodes) > 0 {

@@ -32,8 +32,8 @@ var ErrNotFound = fmt.Errorf("shared link not found")
 
 // CreateInput holds the parameters for creating a shared link.
 type CreateInput struct {
-	WorkspaceID uuid.UUID
-	FileNodeID  uuid.UUID
+	UserID     uuid.UUID
+	FileNodeID uuid.UUID
 	Password    string // empty = no password
 	ExpiresAt   *time.Time
 	MaxUploads  *int
@@ -53,7 +53,7 @@ func (s *Service) Create(ctx context.Context, in CreateInput) (*ent.SharedLink, 
 	}
 
 	q := s.DB.SharedLink.Create().
-		SetWorkspaceID(in.WorkspaceID).
+		SetUserID(in.UserID).
 		SetFileNodeID(in.FileNodeID).
 		SetToken(token).
 		SetPermissions(in.Permissions).
@@ -120,10 +120,10 @@ func (s *Service) Revoke(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// List returns all shared links for a workspace.
-func (s *Service) List(ctx context.Context, workspaceID uuid.UUID) ([]*ent.SharedLink, error) {
+// List returns all shared links for a user.
+func (s *Service) List(ctx context.Context, userID uuid.UUID) ([]*ent.SharedLink, error) {
 	links, err := s.DB.SharedLink.Query().
-		Where(entsharedlink.WorkspaceID(workspaceID)).
+		Where(entsharedlink.UserID(userID)).
 		Order(entsharedlink.ByCreatedAt()).
 		All(ctx)
 	if err != nil {

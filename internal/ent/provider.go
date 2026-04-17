@@ -13,7 +13,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
 	"github.com/drivebase/drivebase/internal/ent/providerquota"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -22,8 +22,8 @@ type Provider struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// WorkspaceID holds the value of the "workspace_id" field.
-	WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// Type holds the value of the "type" field.
 	Type string `json:"type,omitempty"`
 	// Name holds the value of the "name" field.
@@ -44,8 +44,8 @@ type Provider struct {
 
 // ProviderEdges holds the relations/edges for other nodes in the graph.
 type ProviderEdges struct {
-	// Workspace holds the value of the workspace edge.
-	Workspace *Workspace `json:"workspace,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// Credential holds the value of the credential edge.
 	Credential *ProviderCredential `json:"credential,omitempty"`
 	// CacheConfig holds the value of the cache_config edge.
@@ -59,15 +59,15 @@ type ProviderEdges struct {
 	loadedTypes [5]bool
 }
 
-// WorkspaceOrErr returns the Workspace value or an error if the edge
+// UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e ProviderEdges) WorkspaceOrErr() (*Workspace, error) {
-	if e.Workspace != nil {
-		return e.Workspace, nil
+func (e ProviderEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: workspace.Label}
+		return nil, &NotFoundError{label: user.Label}
 	}
-	return nil, &NotLoadedError{edge: "workspace"}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // CredentialOrErr returns the Credential value or an error if the edge
@@ -121,7 +121,7 @@ func (*Provider) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case provider.FieldCreatedAt, provider.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case provider.FieldID, provider.FieldWorkspaceID:
+		case provider.FieldID, provider.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -144,11 +144,11 @@ func (_m *Provider) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case provider.FieldWorkspaceID:
+		case provider.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				_m.WorkspaceID = *value
+				_m.UserID = *value
 			}
 		case provider.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -199,9 +199,9 @@ func (_m *Provider) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryWorkspace queries the "workspace" edge of the Provider entity.
-func (_m *Provider) QueryWorkspace() *WorkspaceQuery {
-	return NewProviderClient(_m.config).QueryWorkspace(_m)
+// QueryUser queries the "user" edge of the Provider entity.
+func (_m *Provider) QueryUser() *UserQuery {
+	return NewProviderClient(_m.config).QueryUser(_m)
 }
 
 // QueryCredential queries the "credential" edge of the Provider entity.
@@ -247,8 +247,8 @@ func (_m *Provider) String() string {
 	var builder strings.Builder
 	builder.WriteString("Provider(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("workspace_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.WorkspaceID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(_m.Type)

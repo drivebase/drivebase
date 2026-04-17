@@ -23,11 +23,9 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/oauthstate"
 	"github.com/drivebase/drivebase/internal/ent/passwordreset"
-	"github.com/drivebase/drivebase/internal/ent/permission"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
 	"github.com/drivebase/drivebase/internal/ent/providerquota"
-	"github.com/drivebase/drivebase/internal/ent/role"
 	"github.com/drivebase/drivebase/internal/ent/session"
 	"github.com/drivebase/drivebase/internal/ent/sharedlink"
 	"github.com/drivebase/drivebase/internal/ent/transferjob"
@@ -35,8 +33,6 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/uploadbatch"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatchfile"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
-	"github.com/drivebase/drivebase/internal/ent/workspacemember"
 )
 
 // Client is the client that holds all ent builders.
@@ -58,16 +54,12 @@ type Client struct {
 	OAuthState *OAuthStateClient
 	// PasswordReset is the client for interacting with the PasswordReset builders.
 	PasswordReset *PasswordResetClient
-	// Permission is the client for interacting with the Permission builders.
-	Permission *PermissionClient
 	// Provider is the client for interacting with the Provider builders.
 	Provider *ProviderClient
 	// ProviderCredential is the client for interacting with the ProviderCredential builders.
 	ProviderCredential *ProviderCredentialClient
 	// ProviderQuota is the client for interacting with the ProviderQuota builders.
 	ProviderQuota *ProviderQuotaClient
-	// Role is the client for interacting with the Role builders.
-	Role *RoleClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 	// SharedLink is the client for interacting with the SharedLink builders.
@@ -82,10 +74,6 @@ type Client struct {
 	UploadBatchFile *UploadBatchFileClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
-	// Workspace is the client for interacting with the Workspace builders.
-	Workspace *WorkspaceClient
-	// WorkspaceMember is the client for interacting with the WorkspaceMember builders.
-	WorkspaceMember *WorkspaceMemberClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -104,11 +92,9 @@ func (c *Client) init() {
 	c.OAuthApp = NewOAuthAppClient(c.config)
 	c.OAuthState = NewOAuthStateClient(c.config)
 	c.PasswordReset = NewPasswordResetClient(c.config)
-	c.Permission = NewPermissionClient(c.config)
 	c.Provider = NewProviderClient(c.config)
 	c.ProviderCredential = NewProviderCredentialClient(c.config)
 	c.ProviderQuota = NewProviderQuotaClient(c.config)
-	c.Role = NewRoleClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.SharedLink = NewSharedLinkClient(c.config)
 	c.TransferJob = NewTransferJobClient(c.config)
@@ -116,8 +102,6 @@ func (c *Client) init() {
 	c.UploadBatch = NewUploadBatchClient(c.config)
 	c.UploadBatchFile = NewUploadBatchFileClient(c.config)
 	c.User = NewUserClient(c.config)
-	c.Workspace = NewWorkspaceClient(c.config)
-	c.WorkspaceMember = NewWorkspaceMemberClient(c.config)
 }
 
 type (
@@ -217,11 +201,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OAuthApp:           NewOAuthAppClient(cfg),
 		OAuthState:         NewOAuthStateClient(cfg),
 		PasswordReset:      NewPasswordResetClient(cfg),
-		Permission:         NewPermissionClient(cfg),
 		Provider:           NewProviderClient(cfg),
 		ProviderCredential: NewProviderCredentialClient(cfg),
 		ProviderQuota:      NewProviderQuotaClient(cfg),
-		Role:               NewRoleClient(cfg),
 		Session:            NewSessionClient(cfg),
 		SharedLink:         NewSharedLinkClient(cfg),
 		TransferJob:        NewTransferJobClient(cfg),
@@ -229,8 +211,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		UploadBatch:        NewUploadBatchClient(cfg),
 		UploadBatchFile:    NewUploadBatchFileClient(cfg),
 		User:               NewUserClient(cfg),
-		Workspace:          NewWorkspaceClient(cfg),
-		WorkspaceMember:    NewWorkspaceMemberClient(cfg),
 	}, nil
 }
 
@@ -257,11 +237,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OAuthApp:           NewOAuthAppClient(cfg),
 		OAuthState:         NewOAuthStateClient(cfg),
 		PasswordReset:      NewPasswordResetClient(cfg),
-		Permission:         NewPermissionClient(cfg),
 		Provider:           NewProviderClient(cfg),
 		ProviderCredential: NewProviderCredentialClient(cfg),
 		ProviderQuota:      NewProviderQuotaClient(cfg),
-		Role:               NewRoleClient(cfg),
 		Session:            NewSessionClient(cfg),
 		SharedLink:         NewSharedLinkClient(cfg),
 		TransferJob:        NewTransferJobClient(cfg),
@@ -269,8 +247,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		UploadBatch:        NewUploadBatchClient(cfg),
 		UploadBatchFile:    NewUploadBatchFileClient(cfg),
 		User:               NewUserClient(cfg),
-		Workspace:          NewWorkspaceClient(cfg),
-		WorkspaceMember:    NewWorkspaceMemberClient(cfg),
 	}, nil
 }
 
@@ -301,10 +277,9 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.ApiToken, c.BandwidthLog, c.CacheConfig, c.FileNode, c.OAuthApp, c.OAuthState,
-		c.PasswordReset, c.Permission, c.Provider, c.ProviderCredential,
-		c.ProviderQuota, c.Role, c.Session, c.SharedLink, c.TransferJob,
-		c.TransferJobFile, c.UploadBatch, c.UploadBatchFile, c.User, c.Workspace,
-		c.WorkspaceMember,
+		c.PasswordReset, c.Provider, c.ProviderCredential, c.ProviderQuota, c.Session,
+		c.SharedLink, c.TransferJob, c.TransferJobFile, c.UploadBatch,
+		c.UploadBatchFile, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -315,10 +290,9 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.ApiToken, c.BandwidthLog, c.CacheConfig, c.FileNode, c.OAuthApp, c.OAuthState,
-		c.PasswordReset, c.Permission, c.Provider, c.ProviderCredential,
-		c.ProviderQuota, c.Role, c.Session, c.SharedLink, c.TransferJob,
-		c.TransferJobFile, c.UploadBatch, c.UploadBatchFile, c.User, c.Workspace,
-		c.WorkspaceMember,
+		c.PasswordReset, c.Provider, c.ProviderCredential, c.ProviderQuota, c.Session,
+		c.SharedLink, c.TransferJob, c.TransferJobFile, c.UploadBatch,
+		c.UploadBatchFile, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -341,16 +315,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OAuthState.mutate(ctx, m)
 	case *PasswordResetMutation:
 		return c.PasswordReset.mutate(ctx, m)
-	case *PermissionMutation:
-		return c.Permission.mutate(ctx, m)
 	case *ProviderMutation:
 		return c.Provider.mutate(ctx, m)
 	case *ProviderCredentialMutation:
 		return c.ProviderCredential.mutate(ctx, m)
 	case *ProviderQuotaMutation:
 		return c.ProviderQuota.mutate(ctx, m)
-	case *RoleMutation:
-		return c.Role.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
 	case *SharedLinkMutation:
@@ -365,10 +335,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.UploadBatchFile.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
-	case *WorkspaceMutation:
-		return c.Workspace.mutate(ctx, m)
-	case *WorkspaceMemberMutation:
-		return c.WorkspaceMember.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -480,22 +446,6 @@ func (c *ApiTokenClient) GetX(ctx context.Context, id uuid.UUID) *ApiToken {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryWorkspace queries the workspace edge of a ApiToken.
-func (c *ApiTokenClient) QueryWorkspace(_m *ApiToken) *WorkspaceQuery {
-	query := (&WorkspaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(entapitoken.Table, entapitoken.FieldID, id),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, entapitoken.WorkspaceTable, entapitoken.WorkspaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryUser queries the user edge of a ApiToken.
@@ -647,15 +597,15 @@ func (c *BandwidthLogClient) GetX(ctx context.Context, id uuid.UUID) *BandwidthL
 	return obj
 }
 
-// QueryWorkspace queries the workspace edge of a BandwidthLog.
-func (c *BandwidthLogClient) QueryWorkspace(_m *BandwidthLog) *WorkspaceQuery {
-	query := (&WorkspaceClient{config: c.config}).Query()
+// QueryUser queries the user edge of a BandwidthLog.
+func (c *BandwidthLogClient) QueryUser(_m *BandwidthLog) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(bandwidthlog.Table, bandwidthlog.FieldID, id),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, bandwidthlog.WorkspaceTable, bandwidthlog.WorkspaceColumn),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, bandwidthlog.UserTable, bandwidthlog.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1126,15 +1076,15 @@ func (c *OAuthAppClient) GetX(ctx context.Context, id uuid.UUID) *OAuthApp {
 	return obj
 }
 
-// QueryWorkspace queries the workspace edge of a OAuthApp.
-func (c *OAuthAppClient) QueryWorkspace(_m *OAuthApp) *WorkspaceQuery {
-	query := (&WorkspaceClient{config: c.config}).Query()
+// QueryUser queries the user edge of a OAuthApp.
+func (c *OAuthAppClient) QueryUser(_m *OAuthApp) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oauthapp.Table, oauthapp.FieldID, id),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, oauthapp.WorkspaceTable, oauthapp.WorkspaceColumn),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, oauthapp.UserTable, oauthapp.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1273,6 +1223,22 @@ func (c *OAuthStateClient) GetX(ctx context.Context, id uuid.UUID) *OAuthState {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryUser queries the user edge of a OAuthState.
+func (c *OAuthStateClient) QueryUser(_m *OAuthState) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oauthstate.Table, oauthstate.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, oauthstate.UserTable, oauthstate.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -1433,155 +1399,6 @@ func (c *PasswordResetClient) mutate(ctx context.Context, m *PasswordResetMutati
 	}
 }
 
-// PermissionClient is a client for the Permission schema.
-type PermissionClient struct {
-	config
-}
-
-// NewPermissionClient returns a client for the Permission from the given config.
-func NewPermissionClient(c config) *PermissionClient {
-	return &PermissionClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `permission.Hooks(f(g(h())))`.
-func (c *PermissionClient) Use(hooks ...Hook) {
-	c.hooks.Permission = append(c.hooks.Permission, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `permission.Intercept(f(g(h())))`.
-func (c *PermissionClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Permission = append(c.inters.Permission, interceptors...)
-}
-
-// Create returns a builder for creating a Permission entity.
-func (c *PermissionClient) Create() *PermissionCreate {
-	mutation := newPermissionMutation(c.config, OpCreate)
-	return &PermissionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Permission entities.
-func (c *PermissionClient) CreateBulk(builders ...*PermissionCreate) *PermissionCreateBulk {
-	return &PermissionCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *PermissionClient) MapCreateBulk(slice any, setFunc func(*PermissionCreate, int)) *PermissionCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &PermissionCreateBulk{err: fmt.Errorf("calling to PermissionClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*PermissionCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &PermissionCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Permission.
-func (c *PermissionClient) Update() *PermissionUpdate {
-	mutation := newPermissionMutation(c.config, OpUpdate)
-	return &PermissionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *PermissionClient) UpdateOne(_m *Permission) *PermissionUpdateOne {
-	mutation := newPermissionMutation(c.config, OpUpdateOne, withPermission(_m))
-	return &PermissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *PermissionClient) UpdateOneID(id uuid.UUID) *PermissionUpdateOne {
-	mutation := newPermissionMutation(c.config, OpUpdateOne, withPermissionID(id))
-	return &PermissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Permission.
-func (c *PermissionClient) Delete() *PermissionDelete {
-	mutation := newPermissionMutation(c.config, OpDelete)
-	return &PermissionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *PermissionClient) DeleteOne(_m *Permission) *PermissionDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *PermissionClient) DeleteOneID(id uuid.UUID) *PermissionDeleteOne {
-	builder := c.Delete().Where(permission.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &PermissionDeleteOne{builder}
-}
-
-// Query returns a query builder for Permission.
-func (c *PermissionClient) Query() *PermissionQuery {
-	return &PermissionQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypePermission},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Permission entity by its id.
-func (c *PermissionClient) Get(ctx context.Context, id uuid.UUID) (*Permission, error) {
-	return c.Query().Where(permission.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *PermissionClient) GetX(ctx context.Context, id uuid.UUID) *Permission {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryRole queries the role edge of a Permission.
-func (c *PermissionClient) QueryRole(_m *Permission) *RoleQuery {
-	query := (&RoleClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(permission.Table, permission.FieldID, id),
-			sqlgraph.To(role.Table, role.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, permission.RoleTable, permission.RoleColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *PermissionClient) Hooks() []Hook {
-	return c.hooks.Permission
-}
-
-// Interceptors returns the client interceptors.
-func (c *PermissionClient) Interceptors() []Interceptor {
-	return c.inters.Permission
-}
-
-func (c *PermissionClient) mutate(ctx context.Context, m *PermissionMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&PermissionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&PermissionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&PermissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&PermissionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Permission mutation op: %q", m.Op())
-	}
-}
-
 // ProviderClient is a client for the Provider schema.
 type ProviderClient struct {
 	config
@@ -1690,15 +1507,15 @@ func (c *ProviderClient) GetX(ctx context.Context, id uuid.UUID) *Provider {
 	return obj
 }
 
-// QueryWorkspace queries the workspace edge of a Provider.
-func (c *ProviderClient) QueryWorkspace(_m *Provider) *WorkspaceQuery {
-	query := (&WorkspaceClient{config: c.config}).Query()
+// QueryUser queries the user edge of a Provider.
+func (c *ProviderClient) QueryUser(_m *Provider) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provider.Table, provider.FieldID, id),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, provider.WorkspaceTable, provider.WorkspaceColumn),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, provider.UserTable, provider.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2093,187 +1910,6 @@ func (c *ProviderQuotaClient) mutate(ctx context.Context, m *ProviderQuotaMutati
 	}
 }
 
-// RoleClient is a client for the Role schema.
-type RoleClient struct {
-	config
-}
-
-// NewRoleClient returns a client for the Role from the given config.
-func NewRoleClient(c config) *RoleClient {
-	return &RoleClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `role.Hooks(f(g(h())))`.
-func (c *RoleClient) Use(hooks ...Hook) {
-	c.hooks.Role = append(c.hooks.Role, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `role.Intercept(f(g(h())))`.
-func (c *RoleClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Role = append(c.inters.Role, interceptors...)
-}
-
-// Create returns a builder for creating a Role entity.
-func (c *RoleClient) Create() *RoleCreate {
-	mutation := newRoleMutation(c.config, OpCreate)
-	return &RoleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Role entities.
-func (c *RoleClient) CreateBulk(builders ...*RoleCreate) *RoleCreateBulk {
-	return &RoleCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *RoleClient) MapCreateBulk(slice any, setFunc func(*RoleCreate, int)) *RoleCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &RoleCreateBulk{err: fmt.Errorf("calling to RoleClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*RoleCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &RoleCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Role.
-func (c *RoleClient) Update() *RoleUpdate {
-	mutation := newRoleMutation(c.config, OpUpdate)
-	return &RoleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RoleClient) UpdateOne(_m *Role) *RoleUpdateOne {
-	mutation := newRoleMutation(c.config, OpUpdateOne, withRole(_m))
-	return &RoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RoleClient) UpdateOneID(id uuid.UUID) *RoleUpdateOne {
-	mutation := newRoleMutation(c.config, OpUpdateOne, withRoleID(id))
-	return &RoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Role.
-func (c *RoleClient) Delete() *RoleDelete {
-	mutation := newRoleMutation(c.config, OpDelete)
-	return &RoleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RoleClient) DeleteOne(_m *Role) *RoleDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RoleClient) DeleteOneID(id uuid.UUID) *RoleDeleteOne {
-	builder := c.Delete().Where(role.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RoleDeleteOne{builder}
-}
-
-// Query returns a query builder for Role.
-func (c *RoleClient) Query() *RoleQuery {
-	return &RoleQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeRole},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Role entity by its id.
-func (c *RoleClient) Get(ctx context.Context, id uuid.UUID) (*Role, error) {
-	return c.Query().Where(role.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RoleClient) GetX(ctx context.Context, id uuid.UUID) *Role {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryWorkspace queries the workspace edge of a Role.
-func (c *RoleClient) QueryWorkspace(_m *Role) *WorkspaceQuery {
-	query := (&WorkspaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(role.Table, role.FieldID, id),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, role.WorkspaceTable, role.WorkspaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryPermissions queries the permissions edge of a Role.
-func (c *RoleClient) QueryPermissions(_m *Role) *PermissionQuery {
-	query := (&PermissionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(role.Table, role.FieldID, id),
-			sqlgraph.To(permission.Table, permission.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, role.PermissionsTable, role.PermissionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMembers queries the members edge of a Role.
-func (c *RoleClient) QueryMembers(_m *Role) *WorkspaceMemberQuery {
-	query := (&WorkspaceMemberClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(role.Table, role.FieldID, id),
-			sqlgraph.To(workspacemember.Table, workspacemember.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, role.MembersTable, role.MembersColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *RoleClient) Hooks() []Hook {
-	return c.hooks.Role
-}
-
-// Interceptors returns the client interceptors.
-func (c *RoleClient) Interceptors() []Interceptor {
-	return c.inters.Role
-}
-
-func (c *RoleClient) mutate(ctx context.Context, m *RoleMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&RoleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&RoleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&RoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&RoleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Role mutation op: %q", m.Op())
-	}
-}
-
 // SessionClient is a client for the Session schema.
 type SessionClient struct {
 	config
@@ -2531,15 +2167,15 @@ func (c *SharedLinkClient) GetX(ctx context.Context, id uuid.UUID) *SharedLink {
 	return obj
 }
 
-// QueryWorkspace queries the workspace edge of a SharedLink.
-func (c *SharedLinkClient) QueryWorkspace(_m *SharedLink) *WorkspaceQuery {
-	query := (&WorkspaceClient{config: c.config}).Query()
+// QueryUser queries the user edge of a SharedLink.
+func (c *SharedLinkClient) QueryUser(_m *SharedLink) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(sharedlink.Table, sharedlink.FieldID, id),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, sharedlink.WorkspaceTable, sharedlink.WorkspaceColumn),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, sharedlink.UserTable, sharedlink.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2680,15 +2316,15 @@ func (c *TransferJobClient) GetX(ctx context.Context, id uuid.UUID) *TransferJob
 	return obj
 }
 
-// QueryWorkspace queries the workspace edge of a TransferJob.
-func (c *TransferJobClient) QueryWorkspace(_m *TransferJob) *WorkspaceQuery {
-	query := (&WorkspaceClient{config: c.config}).Query()
+// QueryUser queries the user edge of a TransferJob.
+func (c *TransferJobClient) QueryUser(_m *TransferJob) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(transferjob.Table, transferjob.FieldID, id),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, transferjob.WorkspaceTable, transferjob.WorkspaceColumn),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, transferjob.UserTable, transferjob.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2994,15 +2630,15 @@ func (c *UploadBatchClient) GetX(ctx context.Context, id uuid.UUID) *UploadBatch
 	return obj
 }
 
-// QueryWorkspace queries the workspace edge of a UploadBatch.
-func (c *UploadBatchClient) QueryWorkspace(_m *UploadBatch) *WorkspaceQuery {
-	query := (&WorkspaceClient{config: c.config}).Query()
+// QueryUser queries the user edge of a UploadBatch.
+func (c *UploadBatchClient) QueryUser(_m *UploadBatch) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(uploadbatch.Table, uploadbatch.FieldID, id),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, uploadbatch.WorkspaceTable, uploadbatch.WorkspaceColumn),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, uploadbatch.UserTable, uploadbatch.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -3308,22 +2944,6 @@ func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 	return obj
 }
 
-// QueryMemberships queries the memberships edge of a User.
-func (c *UserClient) QueryMemberships(_m *User) *WorkspaceMemberQuery {
-	query := (&WorkspaceMemberClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(workspacemember.Table, workspacemember.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.MembershipsTable, user.MembershipsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QuerySessions queries the sessions edge of a User.
 func (c *UserClient) QuerySessions(_m *User) *SessionQuery {
 	query := (&SessionClient{config: c.config}).Query()
@@ -3356,6 +2976,118 @@ func (c *UserClient) QueryAPITokens(_m *User) *ApiTokenQuery {
 	return query
 }
 
+// QueryProviders queries the providers edge of a User.
+func (c *UserClient) QueryProviders(_m *User) *ProviderQuery {
+	query := (&ProviderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(provider.Table, provider.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ProvidersTable, user.ProvidersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOauthApps queries the oauth_apps edge of a User.
+func (c *UserClient) QueryOauthApps(_m *User) *OAuthAppQuery {
+	query := (&OAuthAppClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(oauthapp.Table, oauthapp.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OauthAppsTable, user.OauthAppsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOauthStates queries the oauth_states edge of a User.
+func (c *UserClient) QueryOauthStates(_m *User) *OAuthStateQuery {
+	query := (&OAuthStateClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(oauthstate.Table, oauthstate.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OauthStatesTable, user.OauthStatesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUploadBatches queries the upload_batches edge of a User.
+func (c *UserClient) QueryUploadBatches(_m *User) *UploadBatchQuery {
+	query := (&UploadBatchClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(uploadbatch.Table, uploadbatch.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.UploadBatchesTable, user.UploadBatchesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTransferJobs queries the transfer_jobs edge of a User.
+func (c *UserClient) QueryTransferJobs(_m *User) *TransferJobQuery {
+	query := (&TransferJobClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(transferjob.Table, transferjob.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.TransferJobsTable, user.TransferJobsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySharedLinks queries the shared_links edge of a User.
+func (c *UserClient) QuerySharedLinks(_m *User) *SharedLinkQuery {
+	query := (&SharedLinkClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(sharedlink.Table, sharedlink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.SharedLinksTable, user.SharedLinksColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBandwidthLogs queries the bandwidth_logs edge of a User.
+func (c *UserClient) QueryBandwidthLogs(_m *User) *BandwidthLogQuery {
+	query := (&BandwidthLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(bandwidthlog.Table, bandwidthlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.BandwidthLogsTable, user.BandwidthLogsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -3381,476 +3113,18 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 	}
 }
 
-// WorkspaceClient is a client for the Workspace schema.
-type WorkspaceClient struct {
-	config
-}
-
-// NewWorkspaceClient returns a client for the Workspace from the given config.
-func NewWorkspaceClient(c config) *WorkspaceClient {
-	return &WorkspaceClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `workspace.Hooks(f(g(h())))`.
-func (c *WorkspaceClient) Use(hooks ...Hook) {
-	c.hooks.Workspace = append(c.hooks.Workspace, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `workspace.Intercept(f(g(h())))`.
-func (c *WorkspaceClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Workspace = append(c.inters.Workspace, interceptors...)
-}
-
-// Create returns a builder for creating a Workspace entity.
-func (c *WorkspaceClient) Create() *WorkspaceCreate {
-	mutation := newWorkspaceMutation(c.config, OpCreate)
-	return &WorkspaceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Workspace entities.
-func (c *WorkspaceClient) CreateBulk(builders ...*WorkspaceCreate) *WorkspaceCreateBulk {
-	return &WorkspaceCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *WorkspaceClient) MapCreateBulk(slice any, setFunc func(*WorkspaceCreate, int)) *WorkspaceCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &WorkspaceCreateBulk{err: fmt.Errorf("calling to WorkspaceClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*WorkspaceCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &WorkspaceCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Workspace.
-func (c *WorkspaceClient) Update() *WorkspaceUpdate {
-	mutation := newWorkspaceMutation(c.config, OpUpdate)
-	return &WorkspaceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *WorkspaceClient) UpdateOne(_m *Workspace) *WorkspaceUpdateOne {
-	mutation := newWorkspaceMutation(c.config, OpUpdateOne, withWorkspace(_m))
-	return &WorkspaceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *WorkspaceClient) UpdateOneID(id uuid.UUID) *WorkspaceUpdateOne {
-	mutation := newWorkspaceMutation(c.config, OpUpdateOne, withWorkspaceID(id))
-	return &WorkspaceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Workspace.
-func (c *WorkspaceClient) Delete() *WorkspaceDelete {
-	mutation := newWorkspaceMutation(c.config, OpDelete)
-	return &WorkspaceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *WorkspaceClient) DeleteOne(_m *Workspace) *WorkspaceDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *WorkspaceClient) DeleteOneID(id uuid.UUID) *WorkspaceDeleteOne {
-	builder := c.Delete().Where(workspace.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &WorkspaceDeleteOne{builder}
-}
-
-// Query returns a query builder for Workspace.
-func (c *WorkspaceClient) Query() *WorkspaceQuery {
-	return &WorkspaceQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeWorkspace},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Workspace entity by its id.
-func (c *WorkspaceClient) Get(ctx context.Context, id uuid.UUID) (*Workspace, error) {
-	return c.Query().Where(workspace.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *WorkspaceClient) GetX(ctx context.Context, id uuid.UUID) *Workspace {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryMembers queries the members edge of a Workspace.
-func (c *WorkspaceClient) QueryMembers(_m *Workspace) *WorkspaceMemberQuery {
-	query := (&WorkspaceMemberClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(workspacemember.Table, workspacemember.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workspace.MembersTable, workspace.MembersColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryProviders queries the providers edge of a Workspace.
-func (c *WorkspaceClient) QueryProviders(_m *Workspace) *ProviderQuery {
-	query := (&ProviderClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(provider.Table, provider.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workspace.ProvidersTable, workspace.ProvidersColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRoles queries the roles edge of a Workspace.
-func (c *WorkspaceClient) QueryRoles(_m *Workspace) *RoleQuery {
-	query := (&RoleClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(role.Table, role.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workspace.RolesTable, workspace.RolesColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUploadBatches queries the upload_batches edge of a Workspace.
-func (c *WorkspaceClient) QueryUploadBatches(_m *Workspace) *UploadBatchQuery {
-	query := (&UploadBatchClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(uploadbatch.Table, uploadbatch.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workspace.UploadBatchesTable, workspace.UploadBatchesColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTransferJobs queries the transfer_jobs edge of a Workspace.
-func (c *WorkspaceClient) QueryTransferJobs(_m *Workspace) *TransferJobQuery {
-	query := (&TransferJobClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(transferjob.Table, transferjob.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workspace.TransferJobsTable, workspace.TransferJobsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySharedLinks queries the shared_links edge of a Workspace.
-func (c *WorkspaceClient) QuerySharedLinks(_m *Workspace) *SharedLinkQuery {
-	query := (&SharedLinkClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(sharedlink.Table, sharedlink.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workspace.SharedLinksTable, workspace.SharedLinksColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryBandwidthLogs queries the bandwidth_logs edge of a Workspace.
-func (c *WorkspaceClient) QueryBandwidthLogs(_m *Workspace) *BandwidthLogQuery {
-	query := (&BandwidthLogClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(bandwidthlog.Table, bandwidthlog.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workspace.BandwidthLogsTable, workspace.BandwidthLogsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryOauthApps queries the oauth_apps edge of a Workspace.
-func (c *WorkspaceClient) QueryOauthApps(_m *Workspace) *OAuthAppQuery {
-	query := (&OAuthAppClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(oauthapp.Table, oauthapp.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workspace.OauthAppsTable, workspace.OauthAppsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAPITokens queries the api_tokens edge of a Workspace.
-func (c *WorkspaceClient) QueryAPITokens(_m *Workspace) *ApiTokenQuery {
-	query := (&ApiTokenClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(entapitoken.Table, entapitoken.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, workspace.APITokensTable, workspace.APITokensColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *WorkspaceClient) Hooks() []Hook {
-	return c.hooks.Workspace
-}
-
-// Interceptors returns the client interceptors.
-func (c *WorkspaceClient) Interceptors() []Interceptor {
-	return c.inters.Workspace
-}
-
-func (c *WorkspaceClient) mutate(ctx context.Context, m *WorkspaceMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&WorkspaceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&WorkspaceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&WorkspaceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&WorkspaceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Workspace mutation op: %q", m.Op())
-	}
-}
-
-// WorkspaceMemberClient is a client for the WorkspaceMember schema.
-type WorkspaceMemberClient struct {
-	config
-}
-
-// NewWorkspaceMemberClient returns a client for the WorkspaceMember from the given config.
-func NewWorkspaceMemberClient(c config) *WorkspaceMemberClient {
-	return &WorkspaceMemberClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `workspacemember.Hooks(f(g(h())))`.
-func (c *WorkspaceMemberClient) Use(hooks ...Hook) {
-	c.hooks.WorkspaceMember = append(c.hooks.WorkspaceMember, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `workspacemember.Intercept(f(g(h())))`.
-func (c *WorkspaceMemberClient) Intercept(interceptors ...Interceptor) {
-	c.inters.WorkspaceMember = append(c.inters.WorkspaceMember, interceptors...)
-}
-
-// Create returns a builder for creating a WorkspaceMember entity.
-func (c *WorkspaceMemberClient) Create() *WorkspaceMemberCreate {
-	mutation := newWorkspaceMemberMutation(c.config, OpCreate)
-	return &WorkspaceMemberCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of WorkspaceMember entities.
-func (c *WorkspaceMemberClient) CreateBulk(builders ...*WorkspaceMemberCreate) *WorkspaceMemberCreateBulk {
-	return &WorkspaceMemberCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *WorkspaceMemberClient) MapCreateBulk(slice any, setFunc func(*WorkspaceMemberCreate, int)) *WorkspaceMemberCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &WorkspaceMemberCreateBulk{err: fmt.Errorf("calling to WorkspaceMemberClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*WorkspaceMemberCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &WorkspaceMemberCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for WorkspaceMember.
-func (c *WorkspaceMemberClient) Update() *WorkspaceMemberUpdate {
-	mutation := newWorkspaceMemberMutation(c.config, OpUpdate)
-	return &WorkspaceMemberUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *WorkspaceMemberClient) UpdateOne(_m *WorkspaceMember) *WorkspaceMemberUpdateOne {
-	mutation := newWorkspaceMemberMutation(c.config, OpUpdateOne, withWorkspaceMember(_m))
-	return &WorkspaceMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *WorkspaceMemberClient) UpdateOneID(id uuid.UUID) *WorkspaceMemberUpdateOne {
-	mutation := newWorkspaceMemberMutation(c.config, OpUpdateOne, withWorkspaceMemberID(id))
-	return &WorkspaceMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for WorkspaceMember.
-func (c *WorkspaceMemberClient) Delete() *WorkspaceMemberDelete {
-	mutation := newWorkspaceMemberMutation(c.config, OpDelete)
-	return &WorkspaceMemberDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *WorkspaceMemberClient) DeleteOne(_m *WorkspaceMember) *WorkspaceMemberDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *WorkspaceMemberClient) DeleteOneID(id uuid.UUID) *WorkspaceMemberDeleteOne {
-	builder := c.Delete().Where(workspacemember.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &WorkspaceMemberDeleteOne{builder}
-}
-
-// Query returns a query builder for WorkspaceMember.
-func (c *WorkspaceMemberClient) Query() *WorkspaceMemberQuery {
-	return &WorkspaceMemberQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeWorkspaceMember},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a WorkspaceMember entity by its id.
-func (c *WorkspaceMemberClient) Get(ctx context.Context, id uuid.UUID) (*WorkspaceMember, error) {
-	return c.Query().Where(workspacemember.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *WorkspaceMemberClient) GetX(ctx context.Context, id uuid.UUID) *WorkspaceMember {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryUser queries the user edge of a WorkspaceMember.
-func (c *WorkspaceMemberClient) QueryUser(_m *WorkspaceMember) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspacemember.Table, workspacemember.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, workspacemember.UserTable, workspacemember.UserColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryWorkspace queries the workspace edge of a WorkspaceMember.
-func (c *WorkspaceMemberClient) QueryWorkspace(_m *WorkspaceMember) *WorkspaceQuery {
-	query := (&WorkspaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspacemember.Table, workspacemember.FieldID, id),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, workspacemember.WorkspaceTable, workspacemember.WorkspaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRole queries the role edge of a WorkspaceMember.
-func (c *WorkspaceMemberClient) QueryRole(_m *WorkspaceMember) *RoleQuery {
-	query := (&RoleClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspacemember.Table, workspacemember.FieldID, id),
-			sqlgraph.To(role.Table, role.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, workspacemember.RoleTable, workspacemember.RoleColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *WorkspaceMemberClient) Hooks() []Hook {
-	return c.hooks.WorkspaceMember
-}
-
-// Interceptors returns the client interceptors.
-func (c *WorkspaceMemberClient) Interceptors() []Interceptor {
-	return c.inters.WorkspaceMember
-}
-
-func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&WorkspaceMemberCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&WorkspaceMemberUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&WorkspaceMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&WorkspaceMemberDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown WorkspaceMember mutation op: %q", m.Op())
-	}
-}
-
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
 		ApiToken, BandwidthLog, CacheConfig, FileNode, OAuthApp, OAuthState,
-		PasswordReset, Permission, Provider, ProviderCredential, ProviderQuota, Role,
-		Session, SharedLink, TransferJob, TransferJobFile, UploadBatch,
-		UploadBatchFile, User, Workspace, WorkspaceMember []ent.Hook
+		PasswordReset, Provider, ProviderCredential, ProviderQuota, Session,
+		SharedLink, TransferJob, TransferJobFile, UploadBatch, UploadBatchFile,
+		User []ent.Hook
 	}
 	inters struct {
 		ApiToken, BandwidthLog, CacheConfig, FileNode, OAuthApp, OAuthState,
-		PasswordReset, Permission, Provider, ProviderCredential, ProviderQuota, Role,
-		Session, SharedLink, TransferJob, TransferJobFile, UploadBatch,
-		UploadBatchFile, User, Workspace, WorkspaceMember []ent.Interceptor
+		PasswordReset, Provider, ProviderCredential, ProviderQuota, Session,
+		SharedLink, TransferJob, TransferJobFile, UploadBatch, UploadBatchFile,
+		User []ent.Interceptor
 	}
 )

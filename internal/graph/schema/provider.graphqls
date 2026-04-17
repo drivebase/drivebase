@@ -14,7 +14,7 @@ extend type Mutation {
 
 type Provider {
   id: UUID!
-  workspaceId: UUID!
+  userID: UUID!
   name: String!
   type: ProviderType!
   authType: AuthType!

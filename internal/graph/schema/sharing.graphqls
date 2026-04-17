@@ -1,6 +1,6 @@
 type SharedLink {
     id: UUID!
-    workspaceID: UUID!
+    userID: UUID!
     fileNodeID: UUID!
     token: String!
     permissions: SharedLinkPermissions!

@@ -28,7 +28,7 @@ type SharedLink struct {
 func (SharedLink) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
-		field.UUID("workspace_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("file_node_id", uuid.UUID{}),
 		// token: 32-byte crypto/rand base64url — used in public URLs
 		field.String("token").Unique().NotEmpty().Immutable(),
@@ -48,13 +48,13 @@ func (SharedLink) Fields() []ent.Field {
 
 func (SharedLink) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("workspace", Workspace.Type).Ref("shared_links").Field("workspace_id").Unique().Required(),
+		edge.From("user", User.Type).Ref("shared_links").Field("user_id").Unique().Required(),
 	}
 }
 
 func (SharedLink) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("token"),
-		index.Fields("workspace_id"),
+		index.Fields("user_id"),
 	}
 }

@@ -15,8 +15,8 @@ const (
 	Label = "provider"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldWorkspaceID holds the string denoting the workspace_id field in the database.
-	FieldWorkspaceID = "workspace_id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
 	// FieldName holds the string denoting the name field in the database.
@@ -29,8 +29,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeWorkspace holds the string denoting the workspace edge name in mutations.
-	EdgeWorkspace = "workspace"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// EdgeCredential holds the string denoting the credential edge name in mutations.
 	EdgeCredential = "credential"
 	// EdgeCacheConfig holds the string denoting the cache_config edge name in mutations.
@@ -41,13 +41,13 @@ const (
 	EdgeFileNodes = "file_nodes"
 	// Table holds the table name of the provider in the database.
 	Table = "providers"
-	// WorkspaceTable is the table that holds the workspace relation/edge.
-	WorkspaceTable = "providers"
-	// WorkspaceInverseTable is the table name for the Workspace entity.
-	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	WorkspaceInverseTable = "workspaces"
-	// WorkspaceColumn is the table column denoting the workspace relation/edge.
-	WorkspaceColumn = "workspace_id"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "providers"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "user_id"
 	// CredentialTable is the table that holds the credential relation/edge.
 	CredentialTable = "provider_credentials"
 	// CredentialInverseTable is the table name for the ProviderCredential entity.
@@ -81,7 +81,7 @@ const (
 // Columns holds all SQL columns for provider fields.
 var Columns = []string{
 	FieldID,
-	FieldWorkspaceID,
+	FieldUserID,
 	FieldType,
 	FieldName,
 	FieldAuthType,
@@ -127,9 +127,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByWorkspaceID orders the results by the workspace_id field.
-func ByWorkspaceID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldWorkspaceID, opts...).ToFunc()
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByType orders the results by the type field.
@@ -162,10 +162,10 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByWorkspaceField orders the results by workspace field.
-func ByWorkspaceField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newWorkspaceStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -203,11 +203,11 @@ func ByFileNodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newFileNodesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newWorkspaceStep() *sqlgraph.Step {
+func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(WorkspaceInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, WorkspaceTable, WorkspaceColumn),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 	)
 }
 func newCredentialStep() *sqlgraph.Step {

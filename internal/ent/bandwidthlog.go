@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -19,8 +19,8 @@ type BandwidthLog struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// WorkspaceID holds the value of the "workspace_id" field.
-	WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// ProviderID holds the value of the "provider_id" field.
 	ProviderID uuid.UUID `json:"provider_id,omitempty"`
 	// Direction holds the value of the "direction" field.
@@ -41,22 +41,22 @@ type BandwidthLog struct {
 
 // BandwidthLogEdges holds the relations/edges for other nodes in the graph.
 type BandwidthLogEdges struct {
-	// Workspace holds the value of the workspace edge.
-	Workspace *Workspace `json:"workspace,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// WorkspaceOrErr returns the Workspace value or an error if the edge
+// UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e BandwidthLogEdges) WorkspaceOrErr() (*Workspace, error) {
-	if e.Workspace != nil {
-		return e.Workspace, nil
+func (e BandwidthLogEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: workspace.Label}
+		return nil, &NotFoundError{label: user.Label}
 	}
-	return nil, &NotLoadedError{edge: "workspace"}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -70,7 +70,7 @@ func (*BandwidthLog) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case bandwidthlog.FieldPeriodStart, bandwidthlog.FieldPeriodEnd, bandwidthlog.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case bandwidthlog.FieldID, bandwidthlog.FieldWorkspaceID, bandwidthlog.FieldProviderID:
+		case bandwidthlog.FieldID, bandwidthlog.FieldUserID, bandwidthlog.FieldProviderID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -93,11 +93,11 @@ func (_m *BandwidthLog) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case bandwidthlog.FieldWorkspaceID:
+		case bandwidthlog.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				_m.WorkspaceID = *value
+				_m.UserID = *value
 			}
 		case bandwidthlog.FieldProviderID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -148,9 +148,9 @@ func (_m *BandwidthLog) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryWorkspace queries the "workspace" edge of the BandwidthLog entity.
-func (_m *BandwidthLog) QueryWorkspace() *WorkspaceQuery {
-	return NewBandwidthLogClient(_m.config).QueryWorkspace(_m)
+// QueryUser queries the "user" edge of the BandwidthLog entity.
+func (_m *BandwidthLog) QueryUser() *UserQuery {
+	return NewBandwidthLogClient(_m.config).QueryUser(_m)
 }
 
 // Update returns a builder for updating this BandwidthLog.
@@ -176,8 +176,8 @@ func (_m *BandwidthLog) String() string {
 	var builder strings.Builder
 	builder.WriteString("BandwidthLog(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("workspace_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.WorkspaceID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ProviderID))

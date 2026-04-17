@@ -12,7 +12,6 @@ import (
 	"github.com/drivebase/drivebase/internal/auth"
 	"github.com/drivebase/drivebase/internal/ent"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspacemember"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/google/uuid"
 )
@@ -40,7 +39,7 @@ func (r *mutationResolver) SignUp(ctx context.Context, input graph.SignUpInput) 
 		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
-	return r.issueTokens(ctx, u, uuid.Nil)
+	return r.issueTokens(ctx, u)
 }
 
 // SignIn is the resolver for the signIn field.
@@ -56,24 +55,7 @@ func (r *mutationResolver) SignIn(ctx context.Context, input graph.SignInInput) 
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
-	// Optionally scope token to a specific workspace
-	var workspaceID uuid.UUID
-	if input.WorkspaceSlug != nil && *input.WorkspaceSlug != "" {
-		member, err := r.DB.WorkspaceMember.Query().
-			Where(workspacemember.UserID(u.ID)).
-			WithWorkspace().
-			All(ctx)
-		if err == nil {
-			for _, m := range member {
-				if m.Edges.Workspace != nil && m.Edges.Workspace.Slug == *input.WorkspaceSlug {
-					workspaceID = m.Edges.Workspace.ID
-					break
-				}
-			}
-		}
-	}
-
-	return r.issueTokens(ctx, u, workspaceID)
+	return r.issueTokens(ctx, u)
 }
 
 // RefreshToken is the resolver for the refreshToken field.
@@ -85,7 +67,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, token string) (*gra
 
 	u := sess.Edges.User
 	if u == nil {
-		return nil, fmt.Errorf("internal error: %w", err)
+		return nil, fmt.Errorf("internal error: session has no user")
 	}
 
 	// Rotate: revoke old session, issue new one
@@ -93,33 +75,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, token string) (*gra
 		return nil, fmt.Errorf("internal error: %w", err)
 	}
 
-	return r.issueTokens(ctx, u, uuid.Nil)
-}
-
-// SwitchWorkspace is the resolver for the switchWorkspace field.
-func (r *mutationResolver) SwitchWorkspace(ctx context.Context, workspaceID uuid.UUID) (*graph.SwitchWorkspacePayload, error) {
-	u, err := auth.UserFromCtx(ctx)
-	if err != nil {
-		return nil, auth.ErrUnauthenticated
-	}
-
-	// Verify the user is actually a member of the requested workspace
-	_, err = r.DB.WorkspaceMember.Query().
-		Where(
-			workspacemember.UserID(u.ID),
-			workspacemember.WorkspaceID(workspaceID),
-		).
-		Only(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("workspace not found or access denied")
-	}
-
-	token, err := r.issueAccessToken(u, workspaceID)
-	if err != nil {
-		return nil, fmt.Errorf("internal error: %w", err)
-	}
-
-	return &graph.SwitchWorkspacePayload{AccessToken: token}, nil
+	return r.issueTokens(ctx, u)
 }
 
 // SignOut is the resolver for the signOut field.

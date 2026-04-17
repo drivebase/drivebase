@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/drivebase/drivebase/internal/ent/oauthapp"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -19,8 +19,8 @@ type OAuthApp struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// WorkspaceID holds the value of the "workspace_id" field.
-	WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// ProviderType holds the value of the "provider_type" field.
 	ProviderType string `json:"provider_type,omitempty"`
 	// ClientID holds the value of the "client_id" field.
@@ -41,22 +41,22 @@ type OAuthApp struct {
 
 // OAuthAppEdges holds the relations/edges for other nodes in the graph.
 type OAuthAppEdges struct {
-	// Workspace holds the value of the workspace edge.
-	Workspace *Workspace `json:"workspace,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// WorkspaceOrErr returns the Workspace value or an error if the edge
+// UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OAuthAppEdges) WorkspaceOrErr() (*Workspace, error) {
-	if e.Workspace != nil {
-		return e.Workspace, nil
+func (e OAuthAppEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: workspace.Label}
+		return nil, &NotFoundError{label: user.Label}
 	}
-	return nil, &NotLoadedError{edge: "workspace"}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -70,7 +70,7 @@ func (*OAuthApp) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case oauthapp.FieldCreatedAt, oauthapp.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case oauthapp.FieldID, oauthapp.FieldWorkspaceID:
+		case oauthapp.FieldID, oauthapp.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -93,11 +93,11 @@ func (_m *OAuthApp) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case oauthapp.FieldWorkspaceID:
+		case oauthapp.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				_m.WorkspaceID = *value
+				_m.UserID = *value
 			}
 		case oauthapp.FieldProviderType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -148,9 +148,9 @@ func (_m *OAuthApp) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryWorkspace queries the "workspace" edge of the OAuthApp entity.
-func (_m *OAuthApp) QueryWorkspace() *WorkspaceQuery {
-	return NewOAuthAppClient(_m.config).QueryWorkspace(_m)
+// QueryUser queries the "user" edge of the OAuthApp entity.
+func (_m *OAuthApp) QueryUser() *UserQuery {
+	return NewOAuthAppClient(_m.config).QueryUser(_m)
 }
 
 // Update returns a builder for updating this OAuthApp.
@@ -176,8 +176,8 @@ func (_m *OAuthApp) String() string {
 	var builder strings.Builder
 	builder.WriteString("OAuthApp(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("workspace_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.WorkspaceID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_type=")
 	builder.WriteString(_m.ProviderType)

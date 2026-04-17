@@ -56,9 +56,9 @@ func IDLTE(id uuid.UUID) predicate.SharedLink {
 	return predicate.SharedLink(sql.FieldLTE(FieldID, id))
 }
 
-// WorkspaceID applies equality check predicate on the "workspace_id" field. It's identical to WorkspaceIDEQ.
-func WorkspaceID(v uuid.UUID) predicate.SharedLink {
-	return predicate.SharedLink(sql.FieldEQ(FieldWorkspaceID, v))
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.SharedLink {
+	return predicate.SharedLink(sql.FieldEQ(FieldUserID, v))
 }
 
 // FileNodeID applies equality check predicate on the "file_node_id" field. It's identical to FileNodeIDEQ.
@@ -101,24 +101,24 @@ func CreatedAt(v time.Time) predicate.SharedLink {
 	return predicate.SharedLink(sql.FieldEQ(FieldCreatedAt, v))
 }
 
-// WorkspaceIDEQ applies the EQ predicate on the "workspace_id" field.
-func WorkspaceIDEQ(v uuid.UUID) predicate.SharedLink {
-	return predicate.SharedLink(sql.FieldEQ(FieldWorkspaceID, v))
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.SharedLink {
+	return predicate.SharedLink(sql.FieldEQ(FieldUserID, v))
 }
 
-// WorkspaceIDNEQ applies the NEQ predicate on the "workspace_id" field.
-func WorkspaceIDNEQ(v uuid.UUID) predicate.SharedLink {
-	return predicate.SharedLink(sql.FieldNEQ(FieldWorkspaceID, v))
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.SharedLink {
+	return predicate.SharedLink(sql.FieldNEQ(FieldUserID, v))
 }
 
-// WorkspaceIDIn applies the In predicate on the "workspace_id" field.
-func WorkspaceIDIn(vs ...uuid.UUID) predicate.SharedLink {
-	return predicate.SharedLink(sql.FieldIn(FieldWorkspaceID, vs...))
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.SharedLink {
+	return predicate.SharedLink(sql.FieldIn(FieldUserID, vs...))
 }
 
-// WorkspaceIDNotIn applies the NotIn predicate on the "workspace_id" field.
-func WorkspaceIDNotIn(vs ...uuid.UUID) predicate.SharedLink {
-	return predicate.SharedLink(sql.FieldNotIn(FieldWorkspaceID, vs...))
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.SharedLink {
+	return predicate.SharedLink(sql.FieldNotIn(FieldUserID, vs...))
 }
 
 // FileNodeIDEQ applies the EQ predicate on the "file_node_id" field.
@@ -491,21 +491,21 @@ func CreatedAtLTE(v time.Time) predicate.SharedLink {
 	return predicate.SharedLink(sql.FieldLTE(FieldCreatedAt, v))
 }
 
-// HasWorkspace applies the HasEdge predicate on the "workspace" edge.
-func HasWorkspace() predicate.SharedLink {
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.SharedLink {
 	return predicate.SharedLink(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, WorkspaceTable, WorkspaceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasWorkspaceWith applies the HasEdge predicate on the "workspace" edge with a given conditions (other predicates).
-func HasWorkspaceWith(preds ...predicate.Workspace) predicate.SharedLink {
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.SharedLink {
 	return predicate.SharedLink(func(s *sql.Selector) {
-		step := newWorkspaceStep()
+		step := newUserStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

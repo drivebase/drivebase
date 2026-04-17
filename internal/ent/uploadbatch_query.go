@@ -15,19 +15,19 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatch"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatchfile"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
 // UploadBatchQuery is the builder for querying UploadBatch entities.
 type UploadBatchQuery struct {
 	config
-	ctx           *QueryContext
-	order         []uploadbatch.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.UploadBatch
-	withWorkspace *WorkspaceQuery
-	withFiles     *UploadBatchFileQuery
+	ctx        *QueryContext
+	order      []uploadbatch.OrderOption
+	inters     []Interceptor
+	predicates []predicate.UploadBatch
+	withUser   *UserQuery
+	withFiles  *UploadBatchFileQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -64,9 +64,9 @@ func (_q *UploadBatchQuery) Order(o ...uploadbatch.OrderOption) *UploadBatchQuer
 	return _q
 }
 
-// QueryWorkspace chains the current query on the "workspace" edge.
-func (_q *UploadBatchQuery) QueryWorkspace() *WorkspaceQuery {
-	query := (&WorkspaceClient{config: _q.config}).Query()
+// QueryUser chains the current query on the "user" edge.
+func (_q *UploadBatchQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -77,8 +77,8 @@ func (_q *UploadBatchQuery) QueryWorkspace() *WorkspaceQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(uploadbatch.Table, uploadbatch.FieldID, selector),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, uploadbatch.WorkspaceTable, uploadbatch.WorkspaceColumn),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, uploadbatch.UserTable, uploadbatch.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -295,27 +295,27 @@ func (_q *UploadBatchQuery) Clone() *UploadBatchQuery {
 		return nil
 	}
 	return &UploadBatchQuery{
-		config:        _q.config,
-		ctx:           _q.ctx.Clone(),
-		order:         append([]uploadbatch.OrderOption{}, _q.order...),
-		inters:        append([]Interceptor{}, _q.inters...),
-		predicates:    append([]predicate.UploadBatch{}, _q.predicates...),
-		withWorkspace: _q.withWorkspace.Clone(),
-		withFiles:     _q.withFiles.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]uploadbatch.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.UploadBatch{}, _q.predicates...),
+		withUser:   _q.withUser.Clone(),
+		withFiles:  _q.withFiles.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
 }
 
-// WithWorkspace tells the query-builder to eager-load the nodes that are connected to
-// the "workspace" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UploadBatchQuery) WithWorkspace(opts ...func(*WorkspaceQuery)) *UploadBatchQuery {
-	query := (&WorkspaceClient{config: _q.config}).Query()
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UploadBatchQuery) WithUser(opts ...func(*UserQuery)) *UploadBatchQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withWorkspace = query
+	_q.withUser = query
 	return _q
 }
 
@@ -336,12 +336,12 @@ func (_q *UploadBatchQuery) WithFiles(opts ...func(*UploadBatchFileQuery)) *Uplo
 // Example:
 //
 //	var v []struct {
-//		WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.UploadBatch.Query().
-//		GroupBy(uploadbatch.FieldWorkspaceID).
+//		GroupBy(uploadbatch.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *UploadBatchQuery) GroupBy(field string, fields ...string) *UploadBatchGroupBy {
@@ -359,11 +359,11 @@ func (_q *UploadBatchQuery) GroupBy(field string, fields ...string) *UploadBatch
 // Example:
 //
 //	var v []struct {
-//		WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.UploadBatch.Query().
-//		Select(uploadbatch.FieldWorkspaceID).
+//		Select(uploadbatch.FieldUserID).
 //		Scan(ctx, &v)
 func (_q *UploadBatchQuery) Select(fields ...string) *UploadBatchSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -409,7 +409,7 @@ func (_q *UploadBatchQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		nodes       = []*UploadBatch{}
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			_q.withWorkspace != nil,
+			_q.withUser != nil,
 			_q.withFiles != nil,
 		}
 	)
@@ -431,9 +431,9 @@ func (_q *UploadBatchQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withWorkspace; query != nil {
-		if err := _q.loadWorkspace(ctx, query, nodes, nil,
-			func(n *UploadBatch, e *Workspace) { n.Edges.Workspace = e }); err != nil {
+	if query := _q.withUser; query != nil {
+		if err := _q.loadUser(ctx, query, nodes, nil,
+			func(n *UploadBatch, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -447,11 +447,11 @@ func (_q *UploadBatchQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	return nodes, nil
 }
 
-func (_q *UploadBatchQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuery, nodes []*UploadBatch, init func(*UploadBatch), assign func(*UploadBatch, *Workspace)) error {
+func (_q *UploadBatchQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*UploadBatch, init func(*UploadBatch), assign func(*UploadBatch, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*UploadBatch)
 	for i := range nodes {
-		fk := nodes[i].WorkspaceID
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -460,7 +460,7 @@ func (_q *UploadBatchQuery) loadWorkspace(ctx context.Context, query *WorkspaceQ
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(workspace.IDIn(ids...))
+	query.Where(user.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -468,7 +468,7 @@ func (_q *UploadBatchQuery) loadWorkspace(ctx context.Context, query *WorkspaceQ
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workspace_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -532,8 +532,8 @@ func (_q *UploadBatchQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if _q.withWorkspace != nil {
-			_spec.Node.AddColumnOnce(uploadbatch.FieldWorkspaceID)
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(uploadbatch.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

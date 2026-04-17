@@ -12,11 +12,9 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/oauthstate"
 	"github.com/drivebase/drivebase/internal/ent/passwordreset"
-	"github.com/drivebase/drivebase/internal/ent/permission"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
 	"github.com/drivebase/drivebase/internal/ent/providerquota"
-	"github.com/drivebase/drivebase/internal/ent/role"
 	"github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/ent/session"
 	"github.com/drivebase/drivebase/internal/ent/sharedlink"
@@ -25,8 +23,6 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/uploadbatch"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatchfile"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
-	"github.com/drivebase/drivebase/internal/ent/workspacemember"
 	"github.com/google/uuid"
 )
 
@@ -37,19 +33,19 @@ func init() {
 	entapitokenFields := schema.ApiToken{}.Fields()
 	_ = entapitokenFields
 	// entapitokenDescName is the schema descriptor for name field.
-	entapitokenDescName := entapitokenFields[3].Descriptor()
+	entapitokenDescName := entapitokenFields[2].Descriptor()
 	// entapitoken.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	entapitoken.NameValidator = entapitokenDescName.Validators[0].(func(string) error)
 	// entapitokenDescTokenHash is the schema descriptor for token_hash field.
-	entapitokenDescTokenHash := entapitokenFields[4].Descriptor()
+	entapitokenDescTokenHash := entapitokenFields[3].Descriptor()
 	// entapitoken.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
 	entapitoken.TokenHashValidator = entapitokenDescTokenHash.Validators[0].(func(string) error)
 	// entapitokenDescDisplayToken is the schema descriptor for display_token field.
-	entapitokenDescDisplayToken := entapitokenFields[5].Descriptor()
+	entapitokenDescDisplayToken := entapitokenFields[4].Descriptor()
 	// entapitoken.DisplayTokenValidator is a validator for the "display_token" field. It is called by the builders before save.
 	entapitoken.DisplayTokenValidator = entapitokenDescDisplayToken.Validators[0].(func(string) error)
 	// entapitokenDescCreatedAt is the schema descriptor for created_at field.
-	entapitokenDescCreatedAt := entapitokenFields[10].Descriptor()
+	entapitokenDescCreatedAt := entapitokenFields[9].Descriptor()
 	// entapitoken.DefaultCreatedAt holds the default value on creation for the created_at field.
 	entapitoken.DefaultCreatedAt = entapitokenDescCreatedAt.Default.(func() time.Time)
 	// entapitokenDescID is the schema descriptor for id field.
@@ -192,20 +188,6 @@ func init() {
 	passwordresetDescID := passwordresetFields[0].Descriptor()
 	// passwordreset.DefaultID holds the default value on creation for the id field.
 	passwordreset.DefaultID = passwordresetDescID.Default.(func() uuid.UUID)
-	permissionFields := schema.Permission{}.Fields()
-	_ = permissionFields
-	// permissionDescResourceType is the schema descriptor for resource_type field.
-	permissionDescResourceType := permissionFields[2].Descriptor()
-	// permission.ResourceTypeValidator is a validator for the "resource_type" field. It is called by the builders before save.
-	permission.ResourceTypeValidator = permissionDescResourceType.Validators[0].(func(string) error)
-	// permissionDescCreatedAt is the schema descriptor for created_at field.
-	permissionDescCreatedAt := permissionFields[5].Descriptor()
-	// permission.DefaultCreatedAt holds the default value on creation for the created_at field.
-	permission.DefaultCreatedAt = permissionDescCreatedAt.Default.(func() time.Time)
-	// permissionDescID is the schema descriptor for id field.
-	permissionDescID := permissionFields[0].Descriptor()
-	// permission.DefaultID holds the default value on creation for the id field.
-	permission.DefaultID = permissionDescID.Default.(func() uuid.UUID)
 	providerFields := schema.Provider{}.Fields()
 	_ = providerFields
 	// providerDescType is the schema descriptor for type field.
@@ -276,24 +258,6 @@ func init() {
 	providerquotaDescID := providerquotaFields[0].Descriptor()
 	// providerquota.DefaultID holds the default value on creation for the id field.
 	providerquota.DefaultID = providerquotaDescID.Default.(func() uuid.UUID)
-	roleFields := schema.Role{}.Fields()
-	_ = roleFields
-	// roleDescName is the schema descriptor for name field.
-	roleDescName := roleFields[2].Descriptor()
-	// role.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	role.NameValidator = roleDescName.Validators[0].(func(string) error)
-	// roleDescIsSystem is the schema descriptor for is_system field.
-	roleDescIsSystem := roleFields[3].Descriptor()
-	// role.DefaultIsSystem holds the default value on creation for the is_system field.
-	role.DefaultIsSystem = roleDescIsSystem.Default.(bool)
-	// roleDescCreatedAt is the schema descriptor for created_at field.
-	roleDescCreatedAt := roleFields[4].Descriptor()
-	// role.DefaultCreatedAt holds the default value on creation for the created_at field.
-	role.DefaultCreatedAt = roleDescCreatedAt.Default.(func() time.Time)
-	// roleDescID is the schema descriptor for id field.
-	roleDescID := roleFields[0].Descriptor()
-	// role.DefaultID holds the default value on creation for the id field.
-	role.DefaultID = roleDescID.Default.(func() uuid.UUID)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
 	// sessionDescRefreshTokenHash is the schema descriptor for refresh_token_hash field.
@@ -498,38 +462,4 @@ func init() {
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
-	workspaceFields := schema.Workspace{}.Fields()
-	_ = workspaceFields
-	// workspaceDescName is the schema descriptor for name field.
-	workspaceDescName := workspaceFields[1].Descriptor()
-	// workspace.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	workspace.NameValidator = workspaceDescName.Validators[0].(func(string) error)
-	// workspaceDescSlug is the schema descriptor for slug field.
-	workspaceDescSlug := workspaceFields[2].Descriptor()
-	// workspace.SlugValidator is a validator for the "slug" field. It is called by the builders before save.
-	workspace.SlugValidator = workspaceDescSlug.Validators[0].(func(string) error)
-	// workspaceDescCreatedAt is the schema descriptor for created_at field.
-	workspaceDescCreatedAt := workspaceFields[3].Descriptor()
-	// workspace.DefaultCreatedAt holds the default value on creation for the created_at field.
-	workspace.DefaultCreatedAt = workspaceDescCreatedAt.Default.(func() time.Time)
-	// workspaceDescUpdatedAt is the schema descriptor for updated_at field.
-	workspaceDescUpdatedAt := workspaceFields[4].Descriptor()
-	// workspace.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	workspace.DefaultUpdatedAt = workspaceDescUpdatedAt.Default.(func() time.Time)
-	// workspace.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	workspace.UpdateDefaultUpdatedAt = workspaceDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// workspaceDescID is the schema descriptor for id field.
-	workspaceDescID := workspaceFields[0].Descriptor()
-	// workspace.DefaultID holds the default value on creation for the id field.
-	workspace.DefaultID = workspaceDescID.Default.(func() uuid.UUID)
-	workspacememberFields := schema.WorkspaceMember{}.Fields()
-	_ = workspacememberFields
-	// workspacememberDescJoinedAt is the schema descriptor for joined_at field.
-	workspacememberDescJoinedAt := workspacememberFields[4].Descriptor()
-	// workspacemember.DefaultJoinedAt holds the default value on creation for the joined_at field.
-	workspacemember.DefaultJoinedAt = workspacememberDescJoinedAt.Default.(func() time.Time)
-	// workspacememberDescID is the schema descriptor for id field.
-	workspacememberDescID := workspacememberFields[0].Descriptor()
-	// workspacemember.DefaultID holds the default value on creation for the id field.
-	workspacemember.DefaultID = workspacememberDescID.Default.(func() uuid.UUID)
 }

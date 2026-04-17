@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -30,16 +30,16 @@ func (_u *BandwidthLogUpdate) Where(ps ...predicate.BandwidthLog) *BandwidthLogU
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *BandwidthLogUpdate) SetWorkspaceID(v uuid.UUID) *BandwidthLogUpdate {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *BandwidthLogUpdate) SetUserID(v uuid.UUID) *BandwidthLogUpdate {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *BandwidthLogUpdate) SetNillableWorkspaceID(v *uuid.UUID) *BandwidthLogUpdate {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *BandwidthLogUpdate) SetNillableUserID(v *uuid.UUID) *BandwidthLogUpdate {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -121,9 +121,9 @@ func (_u *BandwidthLogUpdate) SetNillablePeriodEnd(v *time.Time) *BandwidthLogUp
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *BandwidthLogUpdate) SetWorkspace(v *Workspace) *BandwidthLogUpdate {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *BandwidthLogUpdate) SetUser(v *User) *BandwidthLogUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the BandwidthLogMutation object of the builder.
@@ -131,9 +131,9 @@ func (_u *BandwidthLogUpdate) Mutation() *BandwidthLogMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *BandwidthLogUpdate) ClearWorkspace() *BandwidthLogUpdate {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *BandwidthLogUpdate) ClearUser() *BandwidthLogUpdate {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -171,8 +171,8 @@ func (_u *BandwidthLogUpdate) check() error {
 			return &ValidationError{Name: "direction", err: fmt.Errorf(`ent: validator failed for field "BandwidthLog.direction": %w`, err)}
 		}
 	}
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "BandwidthLog.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "BandwidthLog.user"`)
 	}
 	return nil
 }
@@ -207,28 +207,28 @@ func (_u *BandwidthLogUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.PeriodEnd(); ok {
 		_spec.SetField(bandwidthlog.FieldPeriodEnd, field.TypeTime, value)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   bandwidthlog.WorkspaceTable,
-			Columns: []string{bandwidthlog.WorkspaceColumn},
+			Table:   bandwidthlog.UserTable,
+			Columns: []string{bandwidthlog.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   bandwidthlog.WorkspaceTable,
-			Columns: []string{bandwidthlog.WorkspaceColumn},
+			Table:   bandwidthlog.UserTable,
+			Columns: []string{bandwidthlog.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -256,16 +256,16 @@ type BandwidthLogUpdateOne struct {
 	mutation *BandwidthLogMutation
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *BandwidthLogUpdateOne) SetWorkspaceID(v uuid.UUID) *BandwidthLogUpdateOne {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *BandwidthLogUpdateOne) SetUserID(v uuid.UUID) *BandwidthLogUpdateOne {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *BandwidthLogUpdateOne) SetNillableWorkspaceID(v *uuid.UUID) *BandwidthLogUpdateOne {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *BandwidthLogUpdateOne) SetNillableUserID(v *uuid.UUID) *BandwidthLogUpdateOne {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -347,9 +347,9 @@ func (_u *BandwidthLogUpdateOne) SetNillablePeriodEnd(v *time.Time) *BandwidthLo
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *BandwidthLogUpdateOne) SetWorkspace(v *Workspace) *BandwidthLogUpdateOne {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *BandwidthLogUpdateOne) SetUser(v *User) *BandwidthLogUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the BandwidthLogMutation object of the builder.
@@ -357,9 +357,9 @@ func (_u *BandwidthLogUpdateOne) Mutation() *BandwidthLogMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *BandwidthLogUpdateOne) ClearWorkspace() *BandwidthLogUpdateOne {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *BandwidthLogUpdateOne) ClearUser() *BandwidthLogUpdateOne {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -410,8 +410,8 @@ func (_u *BandwidthLogUpdateOne) check() error {
 			return &ValidationError{Name: "direction", err: fmt.Errorf(`ent: validator failed for field "BandwidthLog.direction": %w`, err)}
 		}
 	}
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "BandwidthLog.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "BandwidthLog.user"`)
 	}
 	return nil
 }
@@ -463,28 +463,28 @@ func (_u *BandwidthLogUpdateOne) sqlSave(ctx context.Context) (_node *BandwidthL
 	if value, ok := _u.mutation.PeriodEnd(); ok {
 		_spec.SetField(bandwidthlog.FieldPeriodEnd, field.TypeTime, value)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   bandwidthlog.WorkspaceTable,
-			Columns: []string{bandwidthlog.WorkspaceColumn},
+			Table:   bandwidthlog.UserTable,
+			Columns: []string{bandwidthlog.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   bandwidthlog.WorkspaceTable,
-			Columns: []string{bandwidthlog.WorkspaceColumn},
+			Table:   bandwidthlog.UserTable,
+			Columns: []string{bandwidthlog.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

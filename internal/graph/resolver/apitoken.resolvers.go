@@ -12,23 +12,15 @@ import (
 	"github.com/drivebase/drivebase/internal/apitoken"
 	"github.com/drivebase/drivebase/internal/auth"
 	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
-	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/google/uuid"
 )
 
 // CreateAPIToken is the resolver for the createApiToken field.
 func (r *mutationResolver) CreateAPIToken(ctx context.Context, input graph.CreateAPITokenInput) (*graph.CreateAPITokenPayload, error) {
-	user, err := auth.UserFromCtx(ctx)
+	u, err := auth.UserFromCtx(ctx)
 	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
-		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
 	}
 
 	if len(input.Scopes) == 0 {
@@ -54,8 +46,7 @@ func (r *mutationResolver) CreateAPIToken(ctx context.Context, input graph.Creat
 	}
 
 	q := r.DB.ApiToken.Create().
-		SetWorkspaceID(workspaceID).
-		SetUserID(user.ID).
+		SetUserID(u.ID).
 		SetName(input.Name).
 		SetTokenHash(hash).
 		SetDisplayToken(display).
@@ -79,16 +70,13 @@ func (r *mutationResolver) CreateAPIToken(ctx context.Context, input graph.Creat
 
 // RevokeAPIToken is the resolver for the revokeApiToken field.
 func (r *mutationResolver) RevokeAPIToken(ctx context.Context, id uuid.UUID) (bool, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return false, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionWrite)); err != nil {
-		return false, err
 	}
 
 	n, err := r.DB.ApiToken.Delete().
-		Where(entapitoken.ID(id), entapitoken.WorkspaceID(workspaceID)).
+		Where(entapitoken.ID(id), entapitoken.UserID(u.ID)).
 		Exec(ctx)
 	if err != nil {
 		return false, fmt.Errorf("internal error: %w", err)
@@ -101,16 +89,13 @@ func (r *mutationResolver) RevokeAPIToken(ctx context.Context, id uuid.UUID) (bo
 
 // APITokens is the resolver for the apiTokens field.
 func (r *queryResolver) APITokens(ctx context.Context) ([]*graph.APIToken, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
 	}
 
 	tokens, err := r.DB.ApiToken.Query().
-		Where(entapitoken.WorkspaceID(workspaceID)).
+		Where(entapitoken.UserID(u.ID)).
 		Order(entapitoken.ByCreatedAt()).
 		All(ctx)
 	if err != nil {

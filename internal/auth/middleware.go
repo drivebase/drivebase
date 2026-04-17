@@ -9,7 +9,6 @@ import (
 	"github.com/drivebase/drivebase/internal/apitoken"
 	"github.com/drivebase/drivebase/internal/ent"
 	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
-	"github.com/google/uuid"
 )
 
 // Extractor is HTTP middleware that reads the Authorization header,
@@ -51,15 +50,6 @@ func Extractor(secret string, db *ent.Client) func(http.Handler) http.Handler {
 			}
 
 			ctx := WithUser(r.Context(), user)
-			if claims.WorkspaceID != uuid.Nil {
-				ctx = WithWorkspaceID(ctx, claims.WorkspaceID)
-			}
-			if wsHeader := r.Header.Get("X-Workspace-ID"); wsHeader != "" {
-				if wsID, err := uuid.Parse(wsHeader); err == nil {
-					ctx = WithWorkspaceID(ctx, wsID)
-				}
-			}
-
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -71,7 +61,6 @@ func handleAPIToken(r *http.Request, w http.ResponseWriter, next http.Handler, d
 	tok, err := db.ApiToken.Query().
 		Where(entapitoken.TokenHash(hash)).
 		WithUser().
-		WithWorkspace().
 		Only(r.Context())
 	if err != nil {
 		slog.Debug("api token not found", "hash_prefix", hash[:8])
@@ -99,7 +88,6 @@ func handleAPIToken(r *http.Request, w http.ResponseWriter, next http.Handler, d
 	}
 
 	ctx := WithUser(r.Context(), user)
-	ctx = WithWorkspaceID(ctx, tok.WorkspaceID)
 	ctx = WithTokenScopes(ctx, tok.Scopes)
 	if len(tok.ProviderScopes) > 0 {
 		ctx = WithProviderScopes(ctx, tok.ProviderScopes)

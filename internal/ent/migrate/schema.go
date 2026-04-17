@@ -20,7 +20,6 @@ var (
 		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "workspace_id", Type: field.TypeUUID},
 	}
 	// APITokensTable holds the schema information for the "api_tokens" table.
 	APITokensTable = &schema.Table{
@@ -34,12 +33,6 @@ var (
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
-			{
-				Symbol:     "api_tokens_workspaces_api_tokens",
-				Columns:    []*schema.Column{APITokensColumns[10]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
 		},
 		Indexes: []*schema.Index{
 			{
@@ -48,9 +41,9 @@ var (
 				Columns: []*schema.Column{APITokensColumns[2]},
 			},
 			{
-				Name:    "apitoken_workspace_id",
+				Name:    "apitoken_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{APITokensColumns[10]},
+				Columns: []*schema.Column{APITokensColumns[9]},
 			},
 		},
 	}
@@ -63,7 +56,7 @@ var (
 		{Name: "period_start", Type: field.TypeTime},
 		{Name: "period_end", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "workspace_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// BandwidthLogsTable holds the schema information for the "bandwidth_logs" table.
 	BandwidthLogsTable = &schema.Table{
@@ -72,15 +65,15 @@ var (
 		PrimaryKey: []*schema.Column{BandwidthLogsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "bandwidth_logs_workspaces_bandwidth_logs",
+				Symbol:     "bandwidth_logs_users_bandwidth_logs",
 				Columns:    []*schema.Column{BandwidthLogsColumns[7]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "bandwidthlog_workspace_id_period_start",
+				Name:    "bandwidthlog_user_id_period_start",
 				Unique:  false,
 				Columns: []*schema.Column{BandwidthLogsColumns[7], BandwidthLogsColumns[4]},
 			},
@@ -171,7 +164,7 @@ var (
 		{Name: "alias", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "workspace_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// OauthAppsTable holds the schema information for the "oauth_apps" table.
 	OauthAppsTable = &schema.Table{
@@ -180,15 +173,15 @@ var (
 		PrimaryKey: []*schema.Column{OauthAppsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "oauth_apps_workspaces_oauth_apps",
+				Symbol:     "oauth_apps_users_oauth_apps",
 				Columns:    []*schema.Column{OauthAppsColumns[7]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "oauthapp_workspace_id_provider_type",
+				Name:    "oauthapp_user_id_provider_type",
 				Unique:  true,
 				Columns: []*schema.Column{OauthAppsColumns[7], OauthAppsColumns[1]},
 			},
@@ -197,23 +190,31 @@ var (
 	// OauthStatesColumns holds the columns for the "oauth_states" table.
 	OauthStatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "workspace_id", Type: field.TypeUUID},
 		{Name: "oauth_app_id", Type: field.TypeUUID},
 		{Name: "provider_type", Type: field.TypeString},
 		{Name: "provider_name", Type: field.TypeString},
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// OauthStatesTable holds the schema information for the "oauth_states" table.
 	OauthStatesTable = &schema.Table{
 		Name:       "oauth_states",
 		Columns:    OauthStatesColumns,
 		PrimaryKey: []*schema.Column{OauthStatesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oauth_states_users_oauth_states",
+				Columns:    []*schema.Column{OauthStatesColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "oauthstate_workspace_id",
+				Name:    "oauthstate_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{OauthStatesColumns[1]},
+				Columns: []*schema.Column{OauthStatesColumns[6]},
 			},
 		},
 	}
@@ -239,29 +240,6 @@ var (
 			},
 		},
 	}
-	// PermissionsColumns holds the columns for the "permissions" table.
-	PermissionsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "resource_type", Type: field.TypeString},
-		{Name: "resource_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "actions", Type: field.TypeJSON},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "role_id", Type: field.TypeUUID},
-	}
-	// PermissionsTable holds the schema information for the "permissions" table.
-	PermissionsTable = &schema.Table{
-		Name:       "permissions",
-		Columns:    PermissionsColumns,
-		PrimaryKey: []*schema.Column{PermissionsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "permissions_roles_permissions",
-				Columns:    []*schema.Column{PermissionsColumns[5]},
-				RefColumns: []*schema.Column{RolesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
 	// ProvidersColumns holds the columns for the "providers" table.
 	ProvidersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -271,7 +249,7 @@ var (
 		{Name: "status", Type: field.TypeString, Default: "active"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "workspace_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// ProvidersTable holds the schema information for the "providers" table.
 	ProvidersTable = &schema.Table{
@@ -280,15 +258,15 @@ var (
 		PrimaryKey: []*schema.Column{ProvidersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "providers_workspaces_providers",
+				Symbol:     "providers_users_providers",
 				Columns:    []*schema.Column{ProvidersColumns[7]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "provider_workspace_id",
+				Name:    "provider_user_id",
 				Unique:  false,
 				Columns: []*schema.Column{ProvidersColumns[7]},
 			},
@@ -341,35 +319,6 @@ var (
 			},
 		},
 	}
-	// RolesColumns holds the columns for the "roles" table.
-	RolesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "is_system", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "workspace_id", Type: field.TypeUUID},
-	}
-	// RolesTable holds the schema information for the "roles" table.
-	RolesTable = &schema.Table{
-		Name:       "roles",
-		Columns:    RolesColumns,
-		PrimaryKey: []*schema.Column{RolesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "roles_workspaces_roles",
-				Columns:    []*schema.Column{RolesColumns[4]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "role_workspace_id_name",
-				Unique:  true,
-				Columns: []*schema.Column{RolesColumns[4], RolesColumns[1]},
-			},
-		},
-	}
 	// SessionsColumns holds the columns for the "sessions" table.
 	SessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -419,7 +368,7 @@ var (
 		{Name: "upload_count", Type: field.TypeInt, Default: 0},
 		{Name: "active", Type: field.TypeBool, Default: true},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "workspace_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// SharedLinksTable holds the schema information for the "shared_links" table.
 	SharedLinksTable = &schema.Table{
@@ -428,9 +377,9 @@ var (
 		PrimaryKey: []*schema.Column{SharedLinksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "shared_links_workspaces_shared_links",
+				Symbol:     "shared_links_users_shared_links",
 				Columns:    []*schema.Column{SharedLinksColumns[10]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -441,7 +390,7 @@ var (
 				Columns: []*schema.Column{SharedLinksColumns[2]},
 			},
 			{
-				Name:    "sharedlink_workspace_id",
+				Name:    "sharedlink_user_id",
 				Unique:  false,
 				Columns: []*schema.Column{SharedLinksColumns[10]},
 			},
@@ -465,7 +414,7 @@ var (
 		{Name: "error_message", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
-		{Name: "workspace_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// TransferJobsTable holds the schema information for the "transfer_jobs" table.
 	TransferJobsTable = &schema.Table{
@@ -474,15 +423,15 @@ var (
 		PrimaryKey: []*schema.Column{TransferJobsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "transfer_jobs_workspaces_transfer_jobs",
+				Symbol:     "transfer_jobs_users_transfer_jobs",
 				Columns:    []*schema.Column{TransferJobsColumns[16]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "transferjob_workspace_id",
+				Name:    "transferjob_user_id",
 				Unique:  false,
 				Columns: []*schema.Column{TransferJobsColumns[16]},
 			},
@@ -536,7 +485,7 @@ var (
 		{Name: "transferred_bytes", Type: field.TypeInt64, Default: 0},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
-		{Name: "workspace_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// UploadBatchesTable holds the schema information for the "upload_batches" table.
 	UploadBatchesTable = &schema.Table{
@@ -545,15 +494,15 @@ var (
 		PrimaryKey: []*schema.Column{UploadBatchesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "upload_batches_workspaces_upload_batches",
+				Symbol:     "upload_batches_users_upload_batches",
 				Columns:    []*schema.Column{UploadBatchesColumns[11]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "uploadbatch_workspace_id",
+				Name:    "uploadbatch_user_id",
 				Unique:  false,
 				Columns: []*schema.Column{UploadBatchesColumns[11]},
 			},
@@ -616,68 +565,6 @@ var (
 			},
 		},
 	}
-	// WorkspacesColumns holds the columns for the "workspaces" table.
-	WorkspacesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "slug", Type: field.TypeString, Unique: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-	}
-	// WorkspacesTable holds the schema information for the "workspaces" table.
-	WorkspacesTable = &schema.Table{
-		Name:       "workspaces",
-		Columns:    WorkspacesColumns,
-		PrimaryKey: []*schema.Column{WorkspacesColumns[0]},
-		Indexes: []*schema.Index{
-			{
-				Name:    "workspace_slug",
-				Unique:  false,
-				Columns: []*schema.Column{WorkspacesColumns[2]},
-			},
-		},
-	}
-	// WorkspaceMembersColumns holds the columns for the "workspace_members" table.
-	WorkspaceMembersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "joined_at", Type: field.TypeTime},
-		{Name: "role_id", Type: field.TypeUUID},
-		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "workspace_id", Type: field.TypeUUID},
-	}
-	// WorkspaceMembersTable holds the schema information for the "workspace_members" table.
-	WorkspaceMembersTable = &schema.Table{
-		Name:       "workspace_members",
-		Columns:    WorkspaceMembersColumns,
-		PrimaryKey: []*schema.Column{WorkspaceMembersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "workspace_members_roles_members",
-				Columns:    []*schema.Column{WorkspaceMembersColumns[2]},
-				RefColumns: []*schema.Column{RolesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "workspace_members_users_memberships",
-				Columns:    []*schema.Column{WorkspaceMembersColumns[3]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "workspace_members_workspaces_members",
-				Columns:    []*schema.Column{WorkspaceMembersColumns[4]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "workspacemember_user_id_workspace_id",
-				Unique:  true,
-				Columns: []*schema.Column{WorkspaceMembersColumns[3], WorkspaceMembersColumns[4]},
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		APITokensTable,
@@ -687,11 +574,9 @@ var (
 		OauthAppsTable,
 		OauthStatesTable,
 		PasswordResetsTable,
-		PermissionsTable,
 		ProvidersTable,
 		ProviderCredentialsTable,
 		ProviderQuotaTable,
-		RolesTable,
 		SessionsTable,
 		SharedLinksTable,
 		TransferJobsTable,
@@ -699,31 +584,24 @@ var (
 		UploadBatchesTable,
 		UploadBatchFilesTable,
 		UsersTable,
-		WorkspacesTable,
-		WorkspaceMembersTable,
 	}
 )
 
 func init() {
 	APITokensTable.ForeignKeys[0].RefTable = UsersTable
-	APITokensTable.ForeignKeys[1].RefTable = WorkspacesTable
-	BandwidthLogsTable.ForeignKeys[0].RefTable = WorkspacesTable
+	BandwidthLogsTable.ForeignKeys[0].RefTable = UsersTable
 	CacheConfigsTable.ForeignKeys[0].RefTable = ProvidersTable
 	FileNodesTable.ForeignKeys[0].RefTable = FileNodesTable
 	FileNodesTable.ForeignKeys[1].RefTable = ProvidersTable
-	OauthAppsTable.ForeignKeys[0].RefTable = WorkspacesTable
-	PermissionsTable.ForeignKeys[0].RefTable = RolesTable
-	ProvidersTable.ForeignKeys[0].RefTable = WorkspacesTable
+	OauthAppsTable.ForeignKeys[0].RefTable = UsersTable
+	OauthStatesTable.ForeignKeys[0].RefTable = UsersTable
+	ProvidersTable.ForeignKeys[0].RefTable = UsersTable
 	ProviderCredentialsTable.ForeignKeys[0].RefTable = ProvidersTable
 	ProviderQuotaTable.ForeignKeys[0].RefTable = ProvidersTable
-	RolesTable.ForeignKeys[0].RefTable = WorkspacesTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
-	SharedLinksTable.ForeignKeys[0].RefTable = WorkspacesTable
-	TransferJobsTable.ForeignKeys[0].RefTable = WorkspacesTable
+	SharedLinksTable.ForeignKeys[0].RefTable = UsersTable
+	TransferJobsTable.ForeignKeys[0].RefTable = UsersTable
 	TransferJobFilesTable.ForeignKeys[0].RefTable = TransferJobsTable
-	UploadBatchesTable.ForeignKeys[0].RefTable = WorkspacesTable
+	UploadBatchesTable.ForeignKeys[0].RefTable = UsersTable
 	UploadBatchFilesTable.ForeignKeys[0].RefTable = UploadBatchesTable
-	WorkspaceMembersTable.ForeignKeys[0].RefTable = RolesTable
-	WorkspaceMembersTable.ForeignKeys[1].RefTable = UsersTable
-	WorkspaceMembersTable.ForeignKeys[2].RefTable = WorkspacesTable
 }

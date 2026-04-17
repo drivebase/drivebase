@@ -19,29 +19,26 @@ const (
 
 // Claims are the JWT payload fields.
 type Claims struct {
-	UserID      uuid.UUID `json:"uid"`
-	WorkspaceID uuid.UUID `json:"wid,omitempty"`
-	TokenType   TokenType `json:"type"`
+	UserID    uuid.UUID `json:"uid"`
+	TokenType TokenType `json:"type"`
 	jwt.RegisteredClaims
 }
 
 // IssueAccessToken creates a short-lived access token (15 min).
-// workspaceID may be uuid.Nil for tokens not scoped to a workspace.
-func IssueAccessToken(secret string, ttl time.Duration, userID, workspaceID uuid.UUID) (string, error) {
-	return issueToken(secret, TokenTypeAccess, ttl, userID, workspaceID)
+func IssueAccessToken(secret string, ttl time.Duration, userID uuid.UUID) (string, error) {
+	return issueToken(secret, TokenTypeAccess, ttl, userID)
 }
 
 // IssueRefreshToken creates a long-lived refresh token (7 days).
 func IssueRefreshToken(secret string, ttl time.Duration, userID uuid.UUID) (string, error) {
-	return issueToken(secret, TokenTypeRefresh, ttl, userID, uuid.Nil)
+	return issueToken(secret, TokenTypeRefresh, ttl, userID)
 }
 
-func issueToken(secret string, tt TokenType, ttl time.Duration, userID, workspaceID uuid.UUID) (string, error) {
+func issueToken(secret string, tt TokenType, ttl time.Duration, userID uuid.UUID) (string, error) {
 	now := time.Now()
 	claims := Claims{
-		UserID:      userID,
-		WorkspaceID: workspaceID,
-		TokenType:   tt,
+		UserID:    userID,
+		TokenType: tt,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        uuid.New().String(), // jti — unique per token
 			IssuedAt:  jwt.NewNumericDate(now),

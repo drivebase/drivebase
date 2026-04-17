@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/drivebase/drivebase/internal/ent/oauthstate"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -18,8 +19,8 @@ type OAuthState struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// WorkspaceID holds the value of the "workspace_id" field.
-	WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// OauthAppID holds the value of the "oauth_app_id" field.
 	OauthAppID uuid.UUID `json:"oauth_app_id,omitempty"`
 	// ProviderType holds the value of the "provider_type" field.
@@ -29,8 +30,31 @@ type OAuthState struct {
 	// ExpiresAt holds the value of the "expires_at" field.
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt    time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the OAuthStateQuery when eager-loading is set.
+	Edges        OAuthStateEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// OAuthStateEdges holds the relations/edges for other nodes in the graph.
+type OAuthStateEdges struct {
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OAuthStateEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -42,7 +66,7 @@ func (*OAuthState) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case oauthstate.FieldExpiresAt, oauthstate.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case oauthstate.FieldID, oauthstate.FieldWorkspaceID, oauthstate.FieldOauthAppID:
+		case oauthstate.FieldID, oauthstate.FieldUserID, oauthstate.FieldOauthAppID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -65,11 +89,11 @@ func (_m *OAuthState) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case oauthstate.FieldWorkspaceID:
+		case oauthstate.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				_m.WorkspaceID = *value
+				_m.UserID = *value
 			}
 		case oauthstate.FieldOauthAppID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -114,6 +138,11 @@ func (_m *OAuthState) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
+// QueryUser queries the "user" edge of the OAuthState entity.
+func (_m *OAuthState) QueryUser() *UserQuery {
+	return NewOAuthStateClient(_m.config).QueryUser(_m)
+}
+
 // Update returns a builder for updating this OAuthState.
 // Note that you need to call OAuthState.Unwrap() before calling this method if this OAuthState
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -137,8 +166,8 @@ func (_m *OAuthState) String() string {
 	var builder strings.Builder
 	builder.WriteString("OAuthState(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("workspace_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.WorkspaceID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("oauth_app_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.OauthAppID))

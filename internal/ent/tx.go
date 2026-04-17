@@ -26,16 +26,12 @@ type Tx struct {
 	OAuthState *OAuthStateClient
 	// PasswordReset is the client for interacting with the PasswordReset builders.
 	PasswordReset *PasswordResetClient
-	// Permission is the client for interacting with the Permission builders.
-	Permission *PermissionClient
 	// Provider is the client for interacting with the Provider builders.
 	Provider *ProviderClient
 	// ProviderCredential is the client for interacting with the ProviderCredential builders.
 	ProviderCredential *ProviderCredentialClient
 	// ProviderQuota is the client for interacting with the ProviderQuota builders.
 	ProviderQuota *ProviderQuotaClient
-	// Role is the client for interacting with the Role builders.
-	Role *RoleClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 	// SharedLink is the client for interacting with the SharedLink builders.
@@ -50,10 +46,6 @@ type Tx struct {
 	UploadBatchFile *UploadBatchFileClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
-	// Workspace is the client for interacting with the Workspace builders.
-	Workspace *WorkspaceClient
-	// WorkspaceMember is the client for interacting with the WorkspaceMember builders.
-	WorkspaceMember *WorkspaceMemberClient
 
 	// lazily loaded.
 	client     *Client
@@ -192,11 +184,9 @@ func (tx *Tx) init() {
 	tx.OAuthApp = NewOAuthAppClient(tx.config)
 	tx.OAuthState = NewOAuthStateClient(tx.config)
 	tx.PasswordReset = NewPasswordResetClient(tx.config)
-	tx.Permission = NewPermissionClient(tx.config)
 	tx.Provider = NewProviderClient(tx.config)
 	tx.ProviderCredential = NewProviderCredentialClient(tx.config)
 	tx.ProviderQuota = NewProviderQuotaClient(tx.config)
-	tx.Role = NewRoleClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 	tx.SharedLink = NewSharedLinkClient(tx.config)
 	tx.TransferJob = NewTransferJobClient(tx.config)
@@ -204,8 +194,6 @@ func (tx *Tx) init() {
 	tx.UploadBatch = NewUploadBatchClient(tx.config)
 	tx.UploadBatchFile = NewUploadBatchFileClient(tx.config)
 	tx.User = NewUserClient(tx.config)
-	tx.Workspace = NewWorkspaceClient(tx.config)
-	tx.WorkspaceMember = NewWorkspaceMemberClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

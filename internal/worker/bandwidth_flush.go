@@ -42,7 +42,7 @@ func (w *BandwidthFlushWorker) Work(ctx context.Context, _ *river.Job[BandwidthF
 		}
 
 		_, err := w.db.BandwidthLog.Create().
-			SetWorkspaceID(e.WorkspaceID).
+			SetUserID(e.UserID).
 			SetProviderID(e.ProviderID).
 			SetDirection(direction).
 			SetBytes(e.Bytes).
@@ -51,7 +51,7 @@ func (w *BandwidthFlushWorker) Work(ctx context.Context, _ *river.Job[BandwidthF
 			Save(ctx)
 		if err != nil {
 			slog.Warn("bandwidth flush: write log entry", "error", err,
-				"workspace", e.WorkspaceID, "provider", e.ProviderID)
+				"user", e.UserID, "provider", e.ProviderID)
 		}
 	}
 

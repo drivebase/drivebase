@@ -23,12 +23,9 @@ import (
 
 // ConnectProvider is the resolver for the connectProvider field.
 func (r *mutationResolver) ConnectProvider(ctx context.Context, input graph.ConnectProviderInput) (*graph.Provider, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
 	}
 
 	providerType := storage.ProviderType(input.Type)
@@ -54,7 +51,7 @@ func (r *mutationResolver) ConnectProvider(ctx context.Context, input graph.Conn
 	var gp *graph.Provider
 	if err := withTx(ctx, r.DB, func(tx *ent.Tx) error {
 		p, err := tx.Provider.Create().
-			SetWorkspaceID(workspaceID).
+			SetUserID(u.ID).
 			SetType(string(providerType)).
 			SetName(input.Name).
 			SetAuthType(string(authType)).
@@ -92,13 +89,17 @@ func (r *mutationResolver) ConnectProvider(ctx context.Context, input graph.Conn
 
 // DisconnectProvider is the resolver for the disconnectProvider field.
 func (r *mutationResolver) DisconnectProvider(ctx context.Context, id uuid.UUID) (bool, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return false, auth.ErrUnauthenticated
+	}
+
 	p, err := r.DB.Provider.Get(ctx, id)
 	if err != nil {
 		return false, fmt.Errorf("provider not found")
 	}
-
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), p.WorkspaceID, string(entschema.ActionAdmin)); err != nil {
-		return false, err
+	if p.UserID != u.ID {
+		return false, fmt.Errorf("forbidden")
 	}
 
 	if err := r.DB.Provider.DeleteOneID(id).Exec(ctx); err != nil {
@@ -109,13 +110,17 @@ func (r *mutationResolver) DisconnectProvider(ctx context.Context, id uuid.UUID)
 
 // UpdateProvider is the resolver for the updateProvider field.
 func (r *mutationResolver) UpdateProvider(ctx context.Context, id uuid.UUID, input graph.UpdateProviderInput) (*graph.Provider, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	p, err := r.DB.Provider.Get(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
 	}
-
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), p.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
+	if p.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 
 	q := r.DB.Provider.UpdateOneID(id)
@@ -131,13 +136,17 @@ func (r *mutationResolver) UpdateProvider(ctx context.Context, id uuid.UUID, inp
 
 // ValidateProvider is the resolver for the validateProvider field.
 func (r *mutationResolver) ValidateProvider(ctx context.Context, id uuid.UUID) (*graph.ProviderValidationResult, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	p, err := r.DB.Provider.Get(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
 	}
-
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), p.WorkspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
+	if p.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 
 	prov, err := loadProviderByID(ctx, r.DB, r.Config.Crypto.EncryptionKey, id)
@@ -158,21 +167,31 @@ func (r *mutationResolver) ValidateProvider(ctx context.Context, id uuid.UUID) (
 
 // RefreshProviderQuota is the resolver for the refreshProviderQuota field.
 func (r *mutationResolver) RefreshProviderQuota(ctx context.Context, providerID uuid.UUID) (*graph.ProviderQuota, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
+	p, err := r.DB.Provider.Get(ctx, providerID)
+	if err != nil {
+		return nil, fmt.Errorf("provider not found")
+	}
+	if p.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
+	}
+
 	return refreshQuota(ctx, r.Resolver, providerID)
 }
 
 // Providers is the resolver for the providers field.
 func (r *queryResolver) Providers(ctx context.Context) ([]*graph.Provider, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
 	}
 
 	providers, err := r.DB.Provider.Query().
-		Where(entprovider.WorkspaceID(workspaceID)).
+		Where(entprovider.UserID(u.ID)).
 		WithQuota().
 		All(ctx)
 	if err != nil {
@@ -188,6 +207,11 @@ func (r *queryResolver) Providers(ctx context.Context) ([]*graph.Provider, error
 
 // Provider is the resolver for the provider field.
 func (r *queryResolver) Provider(ctx context.Context, id uuid.UUID) (*graph.Provider, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	p, err := r.DB.Provider.Query().
 		Where(entprovider.ID(id)).
 		WithQuota().
@@ -195,9 +219,8 @@ func (r *queryResolver) Provider(ctx context.Context, id uuid.UUID) (*graph.Prov
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
 	}
-
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), p.WorkspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
+	if p.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 
 	return mapProvider(p), nil
@@ -205,12 +228,17 @@ func (r *queryResolver) Provider(ctx context.Context, id uuid.UUID) (*graph.Prov
 
 // ProviderQuota is the resolver for the providerQuota field.
 func (r *queryResolver) ProviderQuota(ctx context.Context, providerID uuid.UUID) (*graph.ProviderQuota, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	p, err := r.DB.Provider.Get(ctx, providerID)
 	if err != nil {
 		return nil, fmt.Errorf("provider not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), p.WorkspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
+	if p.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 
 	q, err := r.DB.ProviderQuota.Query().

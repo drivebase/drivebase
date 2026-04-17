@@ -31,7 +31,7 @@ type UploadBatch struct {
 func (UploadBatch) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
-		field.UUID("workspace_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("provider_id", uuid.UUID{}),
 		// parent_remote_id: the destination folder remote ID in the provider
 		field.String("parent_remote_id").Optional(),
@@ -48,13 +48,13 @@ func (UploadBatch) Fields() []ent.Field {
 
 func (UploadBatch) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("workspace", Workspace.Type).Ref("upload_batches").Field("workspace_id").Unique().Required(),
+		edge.From("user", User.Type).Ref("upload_batches").Field("user_id").Unique().Required(),
 		edge.To("files", UploadBatchFile.Type),
 	}
 }
 
 func (UploadBatch) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("workspace_id"),
+		index.Fields("user_id"),
 	}
 }

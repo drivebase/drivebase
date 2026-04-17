@@ -27,9 +27,6 @@ type OAuthState func(*sql.Selector)
 // PasswordReset is the predicate function for passwordreset builders.
 type PasswordReset func(*sql.Selector)
 
-// Permission is the predicate function for permission builders.
-type Permission func(*sql.Selector)
-
 // Provider is the predicate function for provider builders.
 type Provider func(*sql.Selector)
 
@@ -38,9 +35,6 @@ type ProviderCredential func(*sql.Selector)
 
 // ProviderQuota is the predicate function for providerquota builders.
 type ProviderQuota func(*sql.Selector)
-
-// Role is the predicate function for role builders.
-type Role func(*sql.Selector)
 
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)
@@ -62,9 +56,3 @@ type UploadBatchFile func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
-
-// Workspace is the predicate function for workspace builders.
-type Workspace func(*sql.Selector)
-
-// WorkspaceMember is the predicate function for workspacemember builders.
-type WorkspaceMember func(*sql.Selector)

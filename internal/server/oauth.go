@@ -109,7 +109,7 @@ func (h *oauthHandler) callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p, err := tx.Provider.Create().
-		SetWorkspaceID(state.WorkspaceID).
+		SetUserID(state.UserID).
 		SetType(string(provType)).
 		SetName(state.ProviderName).
 		SetAuthType(string(entschema.AuthTypeOAuth)).
@@ -148,7 +148,7 @@ func (h *oauthHandler) callback(w http.ResponseWriter, r *http.Request) {
 	_ = h.db.OAuthState.DeleteOneID(stateID).Exec(ctx)
 
 	slog.Info("oauth provider connected",
-		"workspace_id", state.WorkspaceID,
+		"user_id", state.UserID,
 		"provider_type", state.ProviderType,
 		"provider_name", state.ProviderName,
 	)

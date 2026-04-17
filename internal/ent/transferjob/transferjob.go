@@ -15,8 +15,8 @@ const (
 	Label = "transfer_job"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldWorkspaceID holds the string denoting the workspace_id field in the database.
-	FieldWorkspaceID = "workspace_id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldSourceProviderID holds the string denoting the source_provider_id field in the database.
 	FieldSourceProviderID = "source_provider_id"
 	// FieldDestProviderID holds the string denoting the dest_provider_id field in the database.
@@ -47,19 +47,19 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldCompletedAt holds the string denoting the completed_at field in the database.
 	FieldCompletedAt = "completed_at"
-	// EdgeWorkspace holds the string denoting the workspace edge name in mutations.
-	EdgeWorkspace = "workspace"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// EdgeFiles holds the string denoting the files edge name in mutations.
 	EdgeFiles = "files"
 	// Table holds the table name of the transferjob in the database.
 	Table = "transfer_jobs"
-	// WorkspaceTable is the table that holds the workspace relation/edge.
-	WorkspaceTable = "transfer_jobs"
-	// WorkspaceInverseTable is the table name for the Workspace entity.
-	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	WorkspaceInverseTable = "workspaces"
-	// WorkspaceColumn is the table column denoting the workspace relation/edge.
-	WorkspaceColumn = "workspace_id"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "transfer_jobs"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "user_id"
 	// FilesTable is the table that holds the files relation/edge.
 	FilesTable = "transfer_job_files"
 	// FilesInverseTable is the table name for the TransferJobFile entity.
@@ -72,7 +72,7 @@ const (
 // Columns holds all SQL columns for transferjob fields.
 var Columns = []string{
 	FieldID,
-	FieldWorkspaceID,
+	FieldUserID,
 	FieldSourceProviderID,
 	FieldDestProviderID,
 	FieldSourceFolderRemoteID,
@@ -135,9 +135,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByWorkspaceID orders the results by the workspace_id field.
-func ByWorkspaceID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldWorkspaceID, opts...).ToFunc()
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // BySourceProviderID orders the results by the source_provider_id field.
@@ -215,10 +215,10 @@ func ByCompletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCompletedAt, opts...).ToFunc()
 }
 
-// ByWorkspaceField orders the results by workspace field.
-func ByWorkspaceField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newWorkspaceStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -235,11 +235,11 @@ func ByFiles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newFilesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newWorkspaceStep() *sqlgraph.Step {
+func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(WorkspaceInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, WorkspaceTable, WorkspaceColumn),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 	)
 }
 func newFilesStep() *sqlgraph.Step {

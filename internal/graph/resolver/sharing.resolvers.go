@@ -18,12 +18,9 @@ import (
 
 // CreateSharedLink is the resolver for the createSharedLink field.
 func (r *mutationResolver) CreateSharedLink(ctx context.Context, input graph.CreateSharedLinkInput) (*graph.SharedLink, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
 	}
 
 	perms := entschema.SharedLinkPermissions{}
@@ -37,7 +34,7 @@ func (r *mutationResolver) CreateSharedLink(ctx context.Context, input graph.Cre
 	}
 
 	in := sharing.CreateInput{
-		WorkspaceID: workspaceID,
+		UserID:      u.ID,
 		FileNodeID:  input.FileNodeID,
 		Permissions: perms,
 	}
@@ -61,13 +58,19 @@ func (r *mutationResolver) CreateSharedLink(ctx context.Context, input graph.Cre
 
 // RevokeSharedLink is the resolver for the revokeSharedLink field.
 func (r *mutationResolver) RevokeSharedLink(ctx context.Context, id uuid.UUID) (bool, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return false, auth.ErrUnauthenticated
+	}
+
 	link, err := r.DB.SharedLink.Get(ctx, id)
 	if err != nil {
 		return false, fmt.Errorf("shared link not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), link.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return false, err
+	if link.UserID != u.ID {
+		return false, fmt.Errorf("forbidden")
 	}
+
 	if err := r.Sharing.Revoke(ctx, id); err != nil {
 		return false, fmt.Errorf("internal error: %w", err)
 	}
@@ -76,14 +79,12 @@ func (r *mutationResolver) RevokeSharedLink(ctx context.Context, id uuid.UUID) (
 
 // SharedLinks is the resolver for the sharedLinks field.
 func (r *queryResolver) SharedLinks(ctx context.Context) ([]*graph.SharedLink, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
-	}
-	links, err := r.Sharing.List(ctx, workspaceID)
+
+	links, err := r.Sharing.List(ctx, u.ID)
 	if err != nil {
 		return nil, fmt.Errorf("internal error: %w", err)
 	}

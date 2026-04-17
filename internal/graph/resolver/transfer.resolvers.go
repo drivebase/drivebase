@@ -19,22 +19,19 @@ import (
 
 // StartFolderSync is the resolver for the startFolderSync field.
 func (r *mutationResolver) StartFolderSync(ctx context.Context, input graph.StartFolderSyncInput) (*graph.TransferJob, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
-	}
 
-	// Both providers must belong to this workspace
+	// Both providers must belong to this user
 	for _, provID := range []uuid.UUID{input.SourceProviderID, input.DestProviderID} {
 		p, err := r.DB.Provider.Get(ctx, provID)
 		if err != nil {
 			return nil, fmt.Errorf("provider %s not found", provID)
 		}
-		if p.WorkspaceID != workspaceID {
-			return nil, fmt.Errorf("provider %s does not belong to this workspace", provID)
+		if p.UserID != u.ID {
+			return nil, fmt.Errorf("provider %s does not belong to this user", provID)
 		}
 	}
 
@@ -53,7 +50,7 @@ func (r *mutationResolver) StartFolderSync(ctx context.Context, input graph.Star
 	}
 
 	job, err := r.Transfer.StartSync(ctx, transfer.SyncOptions{
-		WorkspaceID:          workspaceID,
+		UserID:               u.ID,
 		SourceProviderID:     input.SourceProviderID,
 		SourceFolderRemoteID: sourceFolderID,
 		DestProviderID:       input.DestProviderID,
@@ -68,13 +65,19 @@ func (r *mutationResolver) StartFolderSync(ctx context.Context, input graph.Star
 
 // CancelTransferJob is the resolver for the cancelTransferJob field.
 func (r *mutationResolver) CancelTransferJob(ctx context.Context, id uuid.UUID) (bool, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return false, auth.ErrUnauthenticated
+	}
+
 	job, err := r.DB.TransferJob.Get(ctx, id)
 	if err != nil {
 		return false, fmt.Errorf("job not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), job.WorkspaceID, string(entschema.ActionWrite)); err != nil {
-		return false, err
+	if job.UserID != u.ID {
+		return false, fmt.Errorf("forbidden")
 	}
+
 	_, err = r.DB.TransferJob.UpdateOneID(id).
 		SetStatus(string(entschema.BatchStatusCancelled)).
 		Save(ctx)
@@ -86,28 +89,30 @@ func (r *mutationResolver) CancelTransferJob(ctx context.Context, id uuid.UUID) 
 
 // TransferJob is the resolver for the transferJob field.
 func (r *queryResolver) TransferJob(ctx context.Context, id uuid.UUID) (*graph.TransferJob, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return nil, auth.ErrUnauthenticated
+	}
+
 	job, err := r.DB.TransferJob.Get(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("job not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), job.WorkspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
+	if job.UserID != u.ID {
+		return nil, fmt.Errorf("forbidden")
 	}
 	return mapTransferJob(job), nil
 }
 
 // MyTransferJobs is the resolver for the myTransferJobs field.
 func (r *queryResolver) MyTransferJobs(ctx context.Context) ([]*graph.TransferJob, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
 	}
 
 	jobs, err := r.DB.TransferJob.Query().
-		Where(enttransferjob.WorkspaceID(workspaceID)).
+		Where(enttransferjob.UserID(u.ID)).
 		Order(enttransferjob.ByCreatedAt()).
 		All(ctx)
 	if err != nil {

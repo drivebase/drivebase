@@ -31,7 +31,7 @@ type Engine struct {
 
 // SyncOptions describes a folder-to-folder sync between two providers.
 type SyncOptions struct {
-	WorkspaceID          uuid.UUID
+	UserID               uuid.UUID
 	SourceProviderID     uuid.UUID
 	SourceFolderRemoteID string // "" = root
 	DestProviderID       uuid.UUID
@@ -43,7 +43,7 @@ type SyncOptions struct {
 // Returns the job immediately so the caller can poll for progress.
 func (e *Engine) StartSync(ctx context.Context, opts SyncOptions) (*ent.TransferJob, error) {
 	job, err := e.DB.TransferJob.Create().
-		SetWorkspaceID(opts.WorkspaceID).
+		SetUserID(opts.UserID).
 		SetSourceProviderID(opts.SourceProviderID).
 		SetDestProviderID(opts.DestProviderID).
 		SetSourceFolderRemoteID(opts.SourceFolderRemoteID).
@@ -76,7 +76,7 @@ func (e *Engine) RunSync(ctx context.Context, jobID uuid.UUID) {
 		return
 	}
 	opts := SyncOptions{
-		WorkspaceID:          job.WorkspaceID,
+		UserID:               job.UserID,
 		SourceProviderID:     job.SourceProviderID,
 		DestProviderID:       job.DestProviderID,
 		SourceFolderRemoteID: job.SourceFolderRemoteID,

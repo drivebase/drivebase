@@ -33,32 +33,15 @@ func mapSession(s *ent.Session) *graph.Session {
 	return gs
 }
 
-func mapWorkspace(w *ent.Workspace) *graph.Workspace {
-	return &graph.Workspace{
-		ID:        w.ID,
-		Name:      w.Name,
-		Slug:      w.Slug,
-		CreatedAt: w.CreatedAt,
-	}
-}
-
-func mapRole(r *ent.Role) *graph.Role {
-	return &graph.Role{
-		ID:       r.ID,
-		Name:     r.Name,
-		IsSystem: r.IsSystem,
-	}
-}
-
 func mapProvider(p *ent.Provider) *graph.Provider {
 	gp := &graph.Provider{
-		ID:          p.ID,
-		WorkspaceID: p.WorkspaceID,
-		Name:        p.Name,
-		Type:        graph.ProviderType(p.Type),
-		AuthType:    graph.AuthType(p.AuthType),
-		Status:      graph.ProviderStatus(p.Status),
-		CreatedAt:   p.CreatedAt,
+		ID:        p.ID,
+		UserID:    p.UserID,
+		Name:      p.Name,
+		Type:      graph.ProviderType(p.Type),
+		AuthType:  graph.AuthType(p.AuthType),
+		Status:    graph.ProviderStatus(p.Status),
+		CreatedAt: p.CreatedAt,
 	}
 	if q := p.Edges.Quota; q != nil {
 		gp.Quota = mapProviderQuota(q)
@@ -90,7 +73,7 @@ func mapProviderQuota(q *ent.ProviderQuota) *graph.ProviderQuota {
 func mapTransferJob(j *ent.TransferJob) *graph.TransferJob {
 	gj := &graph.TransferJob{
 		ID:                   j.ID,
-		WorkspaceID:          j.WorkspaceID,
+		UserID:               j.UserID,
 		SourceProviderID:     j.SourceProviderID,
 		DestProviderID:       j.DestProviderID,
 		SourceFolderRemoteID: j.SourceFolderRemoteID,
@@ -139,7 +122,7 @@ func mapFileNode(f *ent.FileNode) *graph.FileNode {
 func mapUploadBatch(b *ent.UploadBatch) *graph.UploadBatch {
 	gb := &graph.UploadBatch{
 		ID:               b.ID,
-		WorkspaceID:      b.WorkspaceID,
+		UserID:           b.UserID,
 		ProviderID:       b.ProviderID,
 		Status:           b.Status,
 		TotalFiles:       b.TotalFiles,
@@ -158,10 +141,10 @@ func mapUploadBatch(b *ent.UploadBatch) *graph.UploadBatch {
 
 func mapSharedLink(l *ent.SharedLink) *graph.SharedLink {
 	gl := &graph.SharedLink{
-		ID:          l.ID,
-		WorkspaceID: l.WorkspaceID,
-		FileNodeID:  l.FileNodeID,
-		Token:       l.Token,
+		ID:         l.ID,
+		UserID:     l.UserID,
+		FileNodeID: l.FileNodeID,
+		Token:      l.Token,
 		Permissions: &graph.SharedLinkPermissions{
 			Upload: l.Permissions.Upload,
 			Delete: l.Permissions.Delete,
@@ -219,18 +202,4 @@ func mapOAuthApp(a *ent.OAuthApp) *graph.OAuthApp {
 		out.Alias = &a.Alias
 	}
 	return out
-}
-
-func mapWorkspaceMember(m *ent.WorkspaceMember) *graph.WorkspaceMember {
-	gm := &graph.WorkspaceMember{
-		ID:       m.ID,
-		JoinedAt: m.JoinedAt,
-	}
-	if u := m.Edges.User; u != nil {
-		gm.User = mapUser(u)
-	}
-	if r := m.Edges.Role; r != nil {
-		gm.Role = mapRole(r)
-	}
-	return gm
 }

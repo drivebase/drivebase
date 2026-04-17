@@ -18,7 +18,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
 	"github.com/drivebase/drivebase/internal/ent/providerquota"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -29,7 +29,7 @@ type ProviderQuery struct {
 	order           []provider.OrderOption
 	inters          []Interceptor
 	predicates      []predicate.Provider
-	withWorkspace   *WorkspaceQuery
+	withUser        *UserQuery
 	withCredential  *ProviderCredentialQuery
 	withCacheConfig *CacheConfigQuery
 	withQuota       *ProviderQuotaQuery
@@ -70,9 +70,9 @@ func (_q *ProviderQuery) Order(o ...provider.OrderOption) *ProviderQuery {
 	return _q
 }
 
-// QueryWorkspace chains the current query on the "workspace" edge.
-func (_q *ProviderQuery) QueryWorkspace() *WorkspaceQuery {
-	query := (&WorkspaceClient{config: _q.config}).Query()
+// QueryUser chains the current query on the "user" edge.
+func (_q *ProviderQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -83,8 +83,8 @@ func (_q *ProviderQuery) QueryWorkspace() *WorkspaceQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provider.Table, provider.FieldID, selector),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, provider.WorkspaceTable, provider.WorkspaceColumn),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, provider.UserTable, provider.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -372,7 +372,7 @@ func (_q *ProviderQuery) Clone() *ProviderQuery {
 		order:           append([]provider.OrderOption{}, _q.order...),
 		inters:          append([]Interceptor{}, _q.inters...),
 		predicates:      append([]predicate.Provider{}, _q.predicates...),
-		withWorkspace:   _q.withWorkspace.Clone(),
+		withUser:        _q.withUser.Clone(),
 		withCredential:  _q.withCredential.Clone(),
 		withCacheConfig: _q.withCacheConfig.Clone(),
 		withQuota:       _q.withQuota.Clone(),
@@ -383,14 +383,14 @@ func (_q *ProviderQuery) Clone() *ProviderQuery {
 	}
 }
 
-// WithWorkspace tells the query-builder to eager-load the nodes that are connected to
-// the "workspace" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ProviderQuery) WithWorkspace(opts ...func(*WorkspaceQuery)) *ProviderQuery {
-	query := (&WorkspaceClient{config: _q.config}).Query()
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProviderQuery) WithUser(opts ...func(*UserQuery)) *ProviderQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withWorkspace = query
+	_q.withUser = query
 	return _q
 }
 
@@ -444,12 +444,12 @@ func (_q *ProviderQuery) WithFileNodes(opts ...func(*FileNodeQuery)) *ProviderQu
 // Example:
 //
 //	var v []struct {
-//		WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Provider.Query().
-//		GroupBy(provider.FieldWorkspaceID).
+//		GroupBy(provider.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *ProviderQuery) GroupBy(field string, fields ...string) *ProviderGroupBy {
@@ -467,11 +467,11 @@ func (_q *ProviderQuery) GroupBy(field string, fields ...string) *ProviderGroupB
 // Example:
 //
 //	var v []struct {
-//		WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.Provider.Query().
-//		Select(provider.FieldWorkspaceID).
+//		Select(provider.FieldUserID).
 //		Scan(ctx, &v)
 func (_q *ProviderQuery) Select(fields ...string) *ProviderSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -517,7 +517,7 @@ func (_q *ProviderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pro
 		nodes       = []*Provider{}
 		_spec       = _q.querySpec()
 		loadedTypes = [5]bool{
-			_q.withWorkspace != nil,
+			_q.withUser != nil,
 			_q.withCredential != nil,
 			_q.withCacheConfig != nil,
 			_q.withQuota != nil,
@@ -542,9 +542,9 @@ func (_q *ProviderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pro
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withWorkspace; query != nil {
-		if err := _q.loadWorkspace(ctx, query, nodes, nil,
-			func(n *Provider, e *Workspace) { n.Edges.Workspace = e }); err != nil {
+	if query := _q.withUser; query != nil {
+		if err := _q.loadUser(ctx, query, nodes, nil,
+			func(n *Provider, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -576,11 +576,11 @@ func (_q *ProviderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pro
 	return nodes, nil
 }
 
-func (_q *ProviderQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuery, nodes []*Provider, init func(*Provider), assign func(*Provider, *Workspace)) error {
+func (_q *ProviderQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Provider, init func(*Provider), assign func(*Provider, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Provider)
 	for i := range nodes {
-		fk := nodes[i].WorkspaceID
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -589,7 +589,7 @@ func (_q *ProviderQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuer
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(workspace.IDIn(ids...))
+	query.Where(user.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -597,7 +597,7 @@ func (_q *ProviderQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuer
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workspace_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -742,8 +742,8 @@ func (_q *ProviderQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if _q.withWorkspace != nil {
-			_spec.Node.AddColumnOnce(provider.FieldWorkspaceID)
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(provider.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

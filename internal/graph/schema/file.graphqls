@@ -20,7 +20,7 @@ type ListFilesResult {
 
 type UploadBatch {
   id: UUID!
-  workspaceID: UUID!
+  userID: UUID!
   providerID: UUID!
   parentRemoteID: String
   status: String!

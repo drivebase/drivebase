@@ -13,7 +13,6 @@ import (
 	"github.com/drivebase/drivebase/internal/apitoken"
 	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
 	"github.com/google/uuid"
 )
 
@@ -22,8 +21,6 @@ type ApiToken struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// WorkspaceID holds the value of the "workspace_id" field.
-	WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// Name holds the value of the "name" field.
@@ -50,24 +47,11 @@ type ApiToken struct {
 
 // ApiTokenEdges holds the relations/edges for other nodes in the graph.
 type ApiTokenEdges struct {
-	// Workspace holds the value of the workspace edge.
-	Workspace *Workspace `json:"workspace,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// WorkspaceOrErr returns the Workspace value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e ApiTokenEdges) WorkspaceOrErr() (*Workspace, error) {
-	if e.Workspace != nil {
-		return e.Workspace, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: workspace.Label}
-	}
-	return nil, &NotLoadedError{edge: "workspace"}
+	loadedTypes [1]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -75,7 +59,7 @@ func (e ApiTokenEdges) WorkspaceOrErr() (*Workspace, error) {
 func (e ApiTokenEdges) UserOrErr() (*User, error) {
 	if e.User != nil {
 		return e.User, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[0] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "user"}
@@ -92,7 +76,7 @@ func (*ApiToken) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case entapitoken.FieldLastUsedAt, entapitoken.FieldExpiresAt, entapitoken.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case entapitoken.FieldID, entapitoken.FieldWorkspaceID, entapitoken.FieldUserID:
+		case entapitoken.FieldID, entapitoken.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -114,12 +98,6 @@ func (_m *ApiToken) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
-			}
-		case entapitoken.FieldWorkspaceID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
-			} else if value != nil {
-				_m.WorkspaceID = *value
 			}
 		case entapitoken.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -194,11 +172,6 @@ func (_m *ApiToken) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryWorkspace queries the "workspace" edge of the ApiToken entity.
-func (_m *ApiToken) QueryWorkspace() *WorkspaceQuery {
-	return NewApiTokenClient(_m.config).QueryWorkspace(_m)
-}
-
 // QueryUser queries the "user" edge of the ApiToken entity.
 func (_m *ApiToken) QueryUser() *UserQuery {
 	return NewApiTokenClient(_m.config).QueryUser(_m)
@@ -227,9 +200,6 @@ func (_m *ApiToken) String() string {
 	var builder strings.Builder
 	builder.WriteString("ApiToken(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("workspace_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.WorkspaceID))
-	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")

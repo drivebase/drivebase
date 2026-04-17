@@ -87,11 +87,6 @@ type CreateSharedLinkInput struct {
 	Permissions *SharedLinkPermissionsInput `json:"permissions,omitempty"`
 }
 
-type CreateWorkspaceInput struct {
-	Name string `json:"name"`
-	Slug string `json:"slug"`
-}
-
 type DeleteFileInput struct {
 	ProviderID uuid.UUID `json:"providerID"`
 	FileNodeID uuid.UUID `json:"fileNodeID"`
@@ -142,14 +137,14 @@ type OAuthApp struct {
 }
 
 type Provider struct {
-	ID          uuid.UUID      `json:"id"`
-	WorkspaceID uuid.UUID      `json:"workspaceId"`
-	Name        string         `json:"name"`
-	Type        ProviderType   `json:"type"`
-	AuthType    AuthType       `json:"authType"`
-	Status      ProviderStatus `json:"status"`
-	CreatedAt   time.Time      `json:"createdAt"`
-	Quota       *ProviderQuota `json:"quota,omitempty"`
+	ID        uuid.UUID      `json:"id"`
+	UserID    uuid.UUID      `json:"userID"`
+	Name      string         `json:"name"`
+	Type      ProviderType   `json:"type"`
+	AuthType  AuthType       `json:"authType"`
+	Status    ProviderStatus `json:"status"`
+	CreatedAt time.Time      `json:"createdAt"`
+	Quota     *ProviderQuota `json:"quota,omitempty"`
 }
 
 type ProviderFieldDef struct {
@@ -187,12 +182,6 @@ type RenameFileInput struct {
 	NewName    string    `json:"newName"`
 }
 
-type Role struct {
-	ID       uuid.UUID `json:"id"`
-	Name     string    `json:"name"`
-	IsSystem bool      `json:"isSystem"`
-}
-
 type SaveOAuthAppInput struct {
 	ProviderType ProviderType `json:"providerType"`
 	ClientID     string       `json:"clientID"`
@@ -210,7 +199,7 @@ type Session struct {
 
 type SharedLink struct {
 	ID          uuid.UUID              `json:"id"`
-	WorkspaceID uuid.UUID              `json:"workspaceID"`
+	UserID      uuid.UUID              `json:"userID"`
 	FileNodeID  uuid.UUID              `json:"fileNodeID"`
 	Token       string                 `json:"token"`
 	Permissions *SharedLinkPermissions `json:"permissions"`
@@ -240,9 +229,8 @@ type SharedLinkPermissionsInput struct {
 }
 
 type SignInInput struct {
-	Email         string  `json:"email"`
-	Password      string  `json:"password"`
-	WorkspaceSlug *string `json:"workspaceSlug,omitempty"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type SignUpInput struct {
@@ -259,13 +247,9 @@ type StartFolderSyncInput struct {
 	ConflictStrategy     *ConflictStrategy `json:"conflictStrategy,omitempty"`
 }
 
-type SwitchWorkspacePayload struct {
-	AccessToken string `json:"accessToken"`
-}
-
 type TransferJob struct {
 	ID                   uuid.UUID  `json:"id"`
-	WorkspaceID          uuid.UUID  `json:"workspaceID"`
+	UserID               uuid.UUID  `json:"userID"`
 	SourceProviderID     uuid.UUID  `json:"sourceProviderID"`
 	DestProviderID       uuid.UUID  `json:"destProviderID"`
 	SourceFolderRemoteID string     `json:"sourceFolderRemoteID"`
@@ -287,13 +271,9 @@ type UpdateProviderInput struct {
 	Name *string `json:"name,omitempty"`
 }
 
-type UpdateWorkspaceInput struct {
-	Name *string `json:"name,omitempty"`
-}
-
 type UploadBatch struct {
 	ID               uuid.UUID  `json:"id"`
-	WorkspaceID      uuid.UUID  `json:"workspaceID"`
+	UserID           uuid.UUID  `json:"userID"`
 	ProviderID       uuid.UUID  `json:"providerID"`
 	ParentRemoteID   *string    `json:"parentRemoteID,omitempty"`
 	Status           string     `json:"status"`
@@ -311,22 +291,6 @@ type User struct {
 	Email     string    `json:"email"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"createdAt"`
-}
-
-type Workspace struct {
-	ID        uuid.UUID          `json:"id"`
-	Name      string             `json:"name"`
-	Slug      string             `json:"slug"`
-	CreatedAt time.Time          `json:"createdAt"`
-	Members   []*WorkspaceMember `json:"members"`
-	Roles     []*Role            `json:"roles"`
-}
-
-type WorkspaceMember struct {
-	ID       uuid.UUID `json:"id"`
-	User     *User     `json:"user"`
-	Role     *Role     `json:"role"`
-	JoinedAt time.Time `json:"joinedAt"`
 }
 
 type AuthType string

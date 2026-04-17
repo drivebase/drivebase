@@ -14,7 +14,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatch"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatchfile"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -31,16 +31,16 @@ func (_u *UploadBatchUpdate) Where(ps ...predicate.UploadBatch) *UploadBatchUpda
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *UploadBatchUpdate) SetWorkspaceID(v uuid.UUID) *UploadBatchUpdate {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *UploadBatchUpdate) SetUserID(v uuid.UUID) *UploadBatchUpdate {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *UploadBatchUpdate) SetNillableWorkspaceID(v *uuid.UUID) *UploadBatchUpdate {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *UploadBatchUpdate) SetNillableUserID(v *uuid.UUID) *UploadBatchUpdate {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -218,9 +218,9 @@ func (_u *UploadBatchUpdate) ClearCompletedAt() *UploadBatchUpdate {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *UploadBatchUpdate) SetWorkspace(v *Workspace) *UploadBatchUpdate {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *UploadBatchUpdate) SetUser(v *User) *UploadBatchUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // AddFileIDs adds the "files" edge to the UploadBatchFile entity by IDs.
@@ -243,9 +243,9 @@ func (_u *UploadBatchUpdate) Mutation() *UploadBatchMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *UploadBatchUpdate) ClearWorkspace() *UploadBatchUpdate {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *UploadBatchUpdate) ClearUser() *UploadBatchUpdate {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -299,8 +299,8 @@ func (_u *UploadBatchUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UploadBatchUpdate) check() error {
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "UploadBatch.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "UploadBatch.user"`)
 	}
 	return nil
 }
@@ -365,28 +365,28 @@ func (_u *UploadBatchUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if _u.mutation.CompletedAtCleared() {
 		_spec.ClearField(uploadbatch.FieldCompletedAt, field.TypeTime)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   uploadbatch.WorkspaceTable,
-			Columns: []string{uploadbatch.WorkspaceColumn},
+			Table:   uploadbatch.UserTable,
+			Columns: []string{uploadbatch.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   uploadbatch.WorkspaceTable,
-			Columns: []string{uploadbatch.WorkspaceColumn},
+			Table:   uploadbatch.UserTable,
+			Columns: []string{uploadbatch.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -459,16 +459,16 @@ type UploadBatchUpdateOne struct {
 	mutation *UploadBatchMutation
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *UploadBatchUpdateOne) SetWorkspaceID(v uuid.UUID) *UploadBatchUpdateOne {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *UploadBatchUpdateOne) SetUserID(v uuid.UUID) *UploadBatchUpdateOne {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *UploadBatchUpdateOne) SetNillableWorkspaceID(v *uuid.UUID) *UploadBatchUpdateOne {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *UploadBatchUpdateOne) SetNillableUserID(v *uuid.UUID) *UploadBatchUpdateOne {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -646,9 +646,9 @@ func (_u *UploadBatchUpdateOne) ClearCompletedAt() *UploadBatchUpdateOne {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *UploadBatchUpdateOne) SetWorkspace(v *Workspace) *UploadBatchUpdateOne {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *UploadBatchUpdateOne) SetUser(v *User) *UploadBatchUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // AddFileIDs adds the "files" edge to the UploadBatchFile entity by IDs.
@@ -671,9 +671,9 @@ func (_u *UploadBatchUpdateOne) Mutation() *UploadBatchMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *UploadBatchUpdateOne) ClearWorkspace() *UploadBatchUpdateOne {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *UploadBatchUpdateOne) ClearUser() *UploadBatchUpdateOne {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -740,8 +740,8 @@ func (_u *UploadBatchUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UploadBatchUpdateOne) check() error {
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "UploadBatch.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "UploadBatch.user"`)
 	}
 	return nil
 }
@@ -823,28 +823,28 @@ func (_u *UploadBatchUpdateOne) sqlSave(ctx context.Context) (_node *UploadBatch
 	if _u.mutation.CompletedAtCleared() {
 		_spec.ClearField(uploadbatch.FieldCompletedAt, field.TypeTime)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   uploadbatch.WorkspaceTable,
-			Columns: []string{uploadbatch.WorkspaceColumn},
+			Table:   uploadbatch.UserTable,
+			Columns: []string{uploadbatch.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   uploadbatch.WorkspaceTable,
-			Columns: []string{uploadbatch.WorkspaceColumn},
+			Table:   uploadbatch.UserTable,
+			Columns: []string{uploadbatch.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/drivebase/drivebase/internal/ent/oauthstate"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -21,9 +22,9 @@ type OAuthStateCreate struct {
 	hooks    []Hook
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_c *OAuthStateCreate) SetWorkspaceID(v uuid.UUID) *OAuthStateCreate {
-	_c.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_c *OAuthStateCreate) SetUserID(v uuid.UUID) *OAuthStateCreate {
+	_c.mutation.SetUserID(v)
 	return _c
 }
 
@@ -79,6 +80,11 @@ func (_c *OAuthStateCreate) SetNillableID(v *uuid.UUID) *OAuthStateCreate {
 	return _c
 }
 
+// SetUser sets the "user" edge to the User entity.
+func (_c *OAuthStateCreate) SetUser(v *User) *OAuthStateCreate {
+	return _c.SetUserID(v.ID)
+}
+
 // Mutation returns the OAuthStateMutation object of the builder.
 func (_c *OAuthStateCreate) Mutation() *OAuthStateMutation {
 	return _c.mutation
@@ -126,8 +132,8 @@ func (_c *OAuthStateCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *OAuthStateCreate) check() error {
-	if _, ok := _c.mutation.WorkspaceID(); !ok {
-		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "OAuthState.workspace_id"`)}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "OAuthState.user_id"`)}
 	}
 	if _, ok := _c.mutation.OauthAppID(); !ok {
 		return &ValidationError{Name: "oauth_app_id", err: errors.New(`ent: missing required field "OAuthState.oauth_app_id"`)}
@@ -153,6 +159,9 @@ func (_c *OAuthStateCreate) check() error {
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "OAuthState.created_at"`)}
+	}
+	if len(_c.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "OAuthState.user"`)}
 	}
 	return nil
 }
@@ -189,10 +198,6 @@ func (_c *OAuthStateCreate) createSpec() (*OAuthState, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.WorkspaceID(); ok {
-		_spec.SetField(oauthstate.FieldWorkspaceID, field.TypeUUID, value)
-		_node.WorkspaceID = value
-	}
 	if value, ok := _c.mutation.OauthAppID(); ok {
 		_spec.SetField(oauthstate.FieldOauthAppID, field.TypeUUID, value)
 		_node.OauthAppID = value
@@ -212,6 +217,23 @@ func (_c *OAuthStateCreate) createSpec() (*OAuthState, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(oauthstate.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   oauthstate.UserTable,
+			Columns: []string{oauthstate.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

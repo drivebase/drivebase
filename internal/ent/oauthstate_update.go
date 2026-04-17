@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/drivebase/drivebase/internal/ent/oauthstate"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -29,16 +30,16 @@ func (_u *OAuthStateUpdate) Where(ps ...predicate.OAuthState) *OAuthStateUpdate 
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *OAuthStateUpdate) SetWorkspaceID(v uuid.UUID) *OAuthStateUpdate {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *OAuthStateUpdate) SetUserID(v uuid.UUID) *OAuthStateUpdate {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *OAuthStateUpdate) SetNillableWorkspaceID(v *uuid.UUID) *OAuthStateUpdate {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *OAuthStateUpdate) SetNillableUserID(v *uuid.UUID) *OAuthStateUpdate {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -99,9 +100,20 @@ func (_u *OAuthStateUpdate) SetNillableExpiresAt(v *time.Time) *OAuthStateUpdate
 	return _u
 }
 
+// SetUser sets the "user" edge to the User entity.
+func (_u *OAuthStateUpdate) SetUser(v *User) *OAuthStateUpdate {
+	return _u.SetUserID(v.ID)
+}
+
 // Mutation returns the OAuthStateMutation object of the builder.
 func (_u *OAuthStateUpdate) Mutation() *OAuthStateMutation {
 	return _u.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *OAuthStateUpdate) ClearUser() *OAuthStateUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -143,6 +155,9 @@ func (_u *OAuthStateUpdate) check() error {
 			return &ValidationError{Name: "provider_name", err: fmt.Errorf(`ent: validator failed for field "OAuthState.provider_name": %w`, err)}
 		}
 	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OAuthState.user"`)
+	}
 	return nil
 }
 
@@ -158,9 +173,6 @@ func (_u *OAuthStateUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 			}
 		}
 	}
-	if value, ok := _u.mutation.WorkspaceID(); ok {
-		_spec.SetField(oauthstate.FieldWorkspaceID, field.TypeUUID, value)
-	}
 	if value, ok := _u.mutation.OauthAppID(); ok {
 		_spec.SetField(oauthstate.FieldOauthAppID, field.TypeUUID, value)
 	}
@@ -172,6 +184,35 @@ func (_u *OAuthStateUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {
 		_spec.SetField(oauthstate.FieldExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   oauthstate.UserTable,
+			Columns: []string{oauthstate.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   oauthstate.UserTable,
+			Columns: []string{oauthstate.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -193,16 +234,16 @@ type OAuthStateUpdateOne struct {
 	mutation *OAuthStateMutation
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *OAuthStateUpdateOne) SetWorkspaceID(v uuid.UUID) *OAuthStateUpdateOne {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *OAuthStateUpdateOne) SetUserID(v uuid.UUID) *OAuthStateUpdateOne {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *OAuthStateUpdateOne) SetNillableWorkspaceID(v *uuid.UUID) *OAuthStateUpdateOne {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *OAuthStateUpdateOne) SetNillableUserID(v *uuid.UUID) *OAuthStateUpdateOne {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -263,9 +304,20 @@ func (_u *OAuthStateUpdateOne) SetNillableExpiresAt(v *time.Time) *OAuthStateUpd
 	return _u
 }
 
+// SetUser sets the "user" edge to the User entity.
+func (_u *OAuthStateUpdateOne) SetUser(v *User) *OAuthStateUpdateOne {
+	return _u.SetUserID(v.ID)
+}
+
 // Mutation returns the OAuthStateMutation object of the builder.
 func (_u *OAuthStateUpdateOne) Mutation() *OAuthStateMutation {
 	return _u.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *OAuthStateUpdateOne) ClearUser() *OAuthStateUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Where appends a list predicates to the OAuthStateUpdate builder.
@@ -320,6 +372,9 @@ func (_u *OAuthStateUpdateOne) check() error {
 			return &ValidationError{Name: "provider_name", err: fmt.Errorf(`ent: validator failed for field "OAuthState.provider_name": %w`, err)}
 		}
 	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OAuthState.user"`)
+	}
 	return nil
 }
 
@@ -352,9 +407,6 @@ func (_u *OAuthStateUpdateOne) sqlSave(ctx context.Context) (_node *OAuthState, 
 			}
 		}
 	}
-	if value, ok := _u.mutation.WorkspaceID(); ok {
-		_spec.SetField(oauthstate.FieldWorkspaceID, field.TypeUUID, value)
-	}
 	if value, ok := _u.mutation.OauthAppID(); ok {
 		_spec.SetField(oauthstate.FieldOauthAppID, field.TypeUUID, value)
 	}
@@ -366,6 +418,35 @@ func (_u *OAuthStateUpdateOne) sqlSave(ctx context.Context) (_node *OAuthState, 
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {
 		_spec.SetField(oauthstate.FieldExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   oauthstate.UserTable,
+			Columns: []string{oauthstate.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   oauthstate.UserTable,
+			Columns: []string{oauthstate.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &OAuthState{config: _u.config}
 	_spec.Assign = _node.assignValues

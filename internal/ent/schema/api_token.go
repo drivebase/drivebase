@@ -18,7 +18,6 @@ type ApiToken struct {
 func (ApiToken) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
-		field.UUID("workspace_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
 		// Human-readable label (e.g. "CI Deploy Key", "Local Dev")
 		field.String("name").NotEmpty(),
@@ -38,7 +37,6 @@ func (ApiToken) Fields() []ent.Field {
 
 func (ApiToken) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("workspace", Workspace.Type).Ref("api_tokens").Field("workspace_id").Unique().Required(),
 		edge.From("user", User.Type).Ref("api_tokens").Field("user_id").Unique().Required(),
 	}
 }
@@ -46,6 +44,6 @@ func (ApiToken) Edges() []ent.Edge {
 func (ApiToken) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("token_hash"),
-		index.Fields("workspace_id"),
+		index.Fields("user_id"),
 	}
 }

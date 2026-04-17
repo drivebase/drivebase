@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/ent/sharedlink"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -23,9 +23,9 @@ type SharedLinkCreate struct {
 	hooks    []Hook
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_c *SharedLinkCreate) SetWorkspaceID(v uuid.UUID) *SharedLinkCreate {
-	_c.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_c *SharedLinkCreate) SetUserID(v uuid.UUID) *SharedLinkCreate {
+	_c.mutation.SetUserID(v)
 	return _c
 }
 
@@ -145,9 +145,9 @@ func (_c *SharedLinkCreate) SetNillableID(v *uuid.UUID) *SharedLinkCreate {
 	return _c
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_c *SharedLinkCreate) SetWorkspace(v *Workspace) *SharedLinkCreate {
-	return _c.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_c *SharedLinkCreate) SetUser(v *User) *SharedLinkCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // Mutation returns the SharedLinkMutation object of the builder.
@@ -205,8 +205,8 @@ func (_c *SharedLinkCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *SharedLinkCreate) check() error {
-	if _, ok := _c.mutation.WorkspaceID(); !ok {
-		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "SharedLink.workspace_id"`)}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "SharedLink.user_id"`)}
 	}
 	if _, ok := _c.mutation.FileNodeID(); !ok {
 		return &ValidationError{Name: "file_node_id", err: errors.New(`ent: missing required field "SharedLink.file_node_id"`)}
@@ -231,8 +231,8 @@ func (_c *SharedLinkCreate) check() error {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SharedLink.created_at"`)}
 	}
-	if len(_c.mutation.WorkspaceIDs()) == 0 {
-		return &ValidationError{Name: "workspace", err: errors.New(`ent: missing required edge "SharedLink.workspace"`)}
+	if len(_c.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "SharedLink.user"`)}
 	}
 	return nil
 }
@@ -305,21 +305,21 @@ func (_c *SharedLinkCreate) createSpec() (*SharedLink, *sqlgraph.CreateSpec) {
 		_spec.SetField(sharedlink.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := _c.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   sharedlink.WorkspaceTable,
-			Columns: []string{sharedlink.WorkspaceColumn},
+			Table:   sharedlink.UserTable,
+			Columns: []string{sharedlink.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.WorkspaceID = nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

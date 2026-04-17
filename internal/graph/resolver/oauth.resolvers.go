@@ -13,7 +13,6 @@ import (
 	"github.com/drivebase/drivebase/internal/auth"
 	"github.com/drivebase/drivebase/internal/crypto"
 	entoauthapp "github.com/drivebase/drivebase/internal/ent/oauthapp"
-	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
 	"github.com/google/uuid"
@@ -22,12 +21,9 @@ import (
 
 // SaveOAuthApp is the resolver for the saveOAuthApp field.
 func (r *mutationResolver) SaveOAuthApp(ctx context.Context, input graph.SaveOAuthAppInput) (*graph.OAuthApp, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionWrite)); err != nil {
-		return nil, err
 	}
 
 	encrypted, err := crypto.Encrypt([]byte(input.ClientSecret), r.Config.Crypto.EncryptionKey)
@@ -39,7 +35,7 @@ func (r *mutationResolver) SaveOAuthApp(ctx context.Context, input graph.SaveOAu
 
 	// Upsert: update if exists, create if not
 	existing, err := r.DB.OAuthApp.Query().
-		Where(entoauthapp.WorkspaceID(workspaceID), entoauthapp.ProviderType(provType)).
+		Where(entoauthapp.UserID(u.ID), entoauthapp.ProviderType(provType)).
 		Only(ctx)
 	if err == nil {
 		// Update
@@ -60,7 +56,7 @@ func (r *mutationResolver) SaveOAuthApp(ctx context.Context, input graph.SaveOAu
 
 	// Create
 	q := r.DB.OAuthApp.Create().
-		SetWorkspaceID(workspaceID).
+		SetUserID(u.ID).
 		SetProviderType(provType).
 		SetClientID(input.ClientID).
 		SetEncryptedClientSecret(encrypted)
@@ -76,16 +72,13 @@ func (r *mutationResolver) SaveOAuthApp(ctx context.Context, input graph.SaveOAu
 
 // DeleteOAuthApp is the resolver for the deleteOAuthApp field.
 func (r *mutationResolver) DeleteOAuthApp(ctx context.Context, providerType graph.ProviderType) (bool, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return false, auth.ErrUnauthenticated
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionAdmin)); err != nil {
-		return false, err
-	}
 
-	_, err := r.DB.OAuthApp.Delete().
-		Where(entoauthapp.WorkspaceID(workspaceID), entoauthapp.ProviderType(string(providerType))).
+	_, err = r.DB.OAuthApp.Delete().
+		Where(entoauthapp.UserID(u.ID), entoauthapp.ProviderType(string(providerType))).
 		Exec(ctx)
 	if err != nil {
 		return false, fmt.Errorf("internal error: %w", err)
@@ -95,16 +88,13 @@ func (r *mutationResolver) DeleteOAuthApp(ctx context.Context, providerType grap
 
 // InitiateOAuth is the resolver for the initiateOAuth field.
 func (r *mutationResolver) InitiateOAuth(ctx context.Context, oauthAppID uuid.UUID, providerName string) (string, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return "", auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionWrite)); err != nil {
-		return "", err
 	}
 
 	app, err := r.DB.OAuthApp.Query().
-		Where(entoauthapp.WorkspaceID(workspaceID), entoauthapp.ID(oauthAppID)).
+		Where(entoauthapp.UserID(u.ID), entoauthapp.ID(oauthAppID)).
 		Only(ctx)
 	if err != nil {
 		return "", fmt.Errorf("OAuth app not found")
@@ -122,7 +112,7 @@ func (r *mutationResolver) InitiateOAuth(ctx context.Context, oauthAppID uuid.UU
 
 	// Store state for CSRF protection and to recover context in callback
 	state, err := r.DB.OAuthState.Create().
-		SetWorkspaceID(workspaceID).
+		SetUserID(u.ID).
 		SetOauthAppID(app.ID).
 		SetProviderType(app.ProviderType).
 		SetProviderName(providerName).
@@ -138,16 +128,13 @@ func (r *mutationResolver) InitiateOAuth(ctx context.Context, oauthAppID uuid.UU
 
 // OauthApp is the resolver for the oauthApp field.
 func (r *queryResolver) OauthApp(ctx context.Context, providerType graph.ProviderType) (*graph.OAuthApp, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
 	}
 
 	app, err := r.DB.OAuthApp.Query().
-		Where(entoauthapp.WorkspaceID(workspaceID), entoauthapp.ProviderType(string(providerType))).
+		Where(entoauthapp.UserID(u.ID), entoauthapp.ProviderType(string(providerType))).
 		Only(ctx)
 	if err != nil {
 		return nil, nil // not found → null, not an error
@@ -157,16 +144,13 @@ func (r *queryResolver) OauthApp(ctx context.Context, providerType graph.Provide
 
 // OauthApps is the resolver for the oauthApps field.
 func (r *queryResolver) OauthApps(ctx context.Context) ([]*graph.OAuthApp, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
 	}
 
 	apps, err := r.DB.OAuthApp.Query().
-		Where(entoauthapp.WorkspaceID(workspaceID)).
+		Where(entoauthapp.UserID(u.ID)).
 		All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("internal error: %w", err)

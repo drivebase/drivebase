@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatch"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatchfile"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -23,9 +23,9 @@ type UploadBatchCreate struct {
 	hooks    []Hook
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_c *UploadBatchCreate) SetWorkspaceID(v uuid.UUID) *UploadBatchCreate {
-	_c.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_c *UploadBatchCreate) SetUserID(v uuid.UUID) *UploadBatchCreate {
+	_c.mutation.SetUserID(v)
 	return _c
 }
 
@@ -175,9 +175,9 @@ func (_c *UploadBatchCreate) SetNillableID(v *uuid.UUID) *UploadBatchCreate {
 	return _c
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_c *UploadBatchCreate) SetWorkspace(v *Workspace) *UploadBatchCreate {
-	return _c.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_c *UploadBatchCreate) SetUser(v *User) *UploadBatchCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // AddFileIDs adds the "files" edge to the UploadBatchFile entity by IDs.
@@ -266,8 +266,8 @@ func (_c *UploadBatchCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *UploadBatchCreate) check() error {
-	if _, ok := _c.mutation.WorkspaceID(); !ok {
-		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "UploadBatch.workspace_id"`)}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "UploadBatch.user_id"`)}
 	}
 	if _, ok := _c.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "UploadBatch.provider_id"`)}
@@ -293,8 +293,8 @@ func (_c *UploadBatchCreate) check() error {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "UploadBatch.created_at"`)}
 	}
-	if len(_c.mutation.WorkspaceIDs()) == 0 {
-		return &ValidationError{Name: "workspace", err: errors.New(`ent: missing required edge "UploadBatch.workspace"`)}
+	if len(_c.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "UploadBatch.user"`)}
 	}
 	return nil
 }
@@ -371,21 +371,21 @@ func (_c *UploadBatchCreate) createSpec() (*UploadBatch, *sqlgraph.CreateSpec) {
 		_spec.SetField(uploadbatch.FieldCompletedAt, field.TypeTime, value)
 		_node.CompletedAt = &value
 	}
-	if nodes := _c.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   uploadbatch.WorkspaceTable,
-			Columns: []string{uploadbatch.WorkspaceColumn},
+			Table:   uploadbatch.UserTable,
+			Columns: []string{uploadbatch.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.WorkspaceID = nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.FilesIDs(); len(nodes) > 0 {

@@ -13,7 +13,6 @@ type contextKey int
 
 const (
 	ctxKeyUser           contextKey = iota
-	ctxKeyWorkspaceID    contextKey = iota
 	ctxKeyTokenScopes    contextKey = iota
 	ctxKeyProviderScopes contextKey = iota
 )
@@ -34,17 +33,6 @@ func UserFromCtx(ctx context.Context) (*ent.User, error) {
 		return nil, ErrUnauthenticated
 	}
 	return u, nil
-}
-
-// WithWorkspaceID stores the active workspace ID in the context.
-func WithWorkspaceID(ctx context.Context, id uuid.UUID) context.Context {
-	return context.WithValue(ctx, ctxKeyWorkspaceID, id)
-}
-
-// WorkspaceIDFromCtx retrieves the active workspace ID from context.
-func WorkspaceIDFromCtx(ctx context.Context) (uuid.UUID, bool) {
-	id, ok := ctx.Value(ctxKeyWorkspaceID).(uuid.UUID)
-	return id, ok && id != uuid.Nil
 }
 
 // WithTokenScopes stores the API token scopes in the context.

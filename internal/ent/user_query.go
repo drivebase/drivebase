@@ -13,23 +13,35 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	entapitoken "github.com/drivebase/drivebase/internal/ent/apitoken"
+	"github.com/drivebase/drivebase/internal/ent/bandwidthlog"
+	"github.com/drivebase/drivebase/internal/ent/oauthapp"
+	"github.com/drivebase/drivebase/internal/ent/oauthstate"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
+	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/session"
+	"github.com/drivebase/drivebase/internal/ent/sharedlink"
+	"github.com/drivebase/drivebase/internal/ent/transferjob"
+	"github.com/drivebase/drivebase/internal/ent/uploadbatch"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspacemember"
 	"github.com/google/uuid"
 )
 
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx             *QueryContext
-	order           []user.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.User
-	withMemberships *WorkspaceMemberQuery
-	withSessions    *SessionQuery
-	withAPITokens   *ApiTokenQuery
+	ctx               *QueryContext
+	order             []user.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.User
+	withSessions      *SessionQuery
+	withAPITokens     *ApiTokenQuery
+	withProviders     *ProviderQuery
+	withOauthApps     *OAuthAppQuery
+	withOauthStates   *OAuthStateQuery
+	withUploadBatches *UploadBatchQuery
+	withTransferJobs  *TransferJobQuery
+	withSharedLinks   *SharedLinkQuery
+	withBandwidthLogs *BandwidthLogQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -64,28 +76,6 @@ func (_q *UserQuery) Unique(unique bool) *UserQuery {
 func (_q *UserQuery) Order(o ...user.OrderOption) *UserQuery {
 	_q.order = append(_q.order, o...)
 	return _q
-}
-
-// QueryMemberships chains the current query on the "memberships" edge.
-func (_q *UserQuery) QueryMemberships() *WorkspaceMemberQuery {
-	query := (&WorkspaceMemberClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(workspacemember.Table, workspacemember.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.MembershipsTable, user.MembershipsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QuerySessions chains the current query on the "sessions" edge.
@@ -125,6 +115,160 @@ func (_q *UserQuery) QueryAPITokens() *ApiTokenQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(entapitoken.Table, entapitoken.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.APITokensTable, user.APITokensColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProviders chains the current query on the "providers" edge.
+func (_q *UserQuery) QueryProviders() *ProviderQuery {
+	query := (&ProviderClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(provider.Table, provider.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ProvidersTable, user.ProvidersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOauthApps chains the current query on the "oauth_apps" edge.
+func (_q *UserQuery) QueryOauthApps() *OAuthAppQuery {
+	query := (&OAuthAppClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(oauthapp.Table, oauthapp.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OauthAppsTable, user.OauthAppsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOauthStates chains the current query on the "oauth_states" edge.
+func (_q *UserQuery) QueryOauthStates() *OAuthStateQuery {
+	query := (&OAuthStateClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(oauthstate.Table, oauthstate.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OauthStatesTable, user.OauthStatesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUploadBatches chains the current query on the "upload_batches" edge.
+func (_q *UserQuery) QueryUploadBatches() *UploadBatchQuery {
+	query := (&UploadBatchClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(uploadbatch.Table, uploadbatch.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.UploadBatchesTable, user.UploadBatchesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTransferJobs chains the current query on the "transfer_jobs" edge.
+func (_q *UserQuery) QueryTransferJobs() *TransferJobQuery {
+	query := (&TransferJobClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(transferjob.Table, transferjob.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.TransferJobsTable, user.TransferJobsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySharedLinks chains the current query on the "shared_links" edge.
+func (_q *UserQuery) QuerySharedLinks() *SharedLinkQuery {
+	query := (&SharedLinkClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(sharedlink.Table, sharedlink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.SharedLinksTable, user.SharedLinksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBandwidthLogs chains the current query on the "bandwidth_logs" edge.
+func (_q *UserQuery) QueryBandwidthLogs() *BandwidthLogQuery {
+	query := (&BandwidthLogClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(bandwidthlog.Table, bandwidthlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.BandwidthLogsTable, user.BandwidthLogsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -319,29 +463,24 @@ func (_q *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:          _q.config,
-		ctx:             _q.ctx.Clone(),
-		order:           append([]user.OrderOption{}, _q.order...),
-		inters:          append([]Interceptor{}, _q.inters...),
-		predicates:      append([]predicate.User{}, _q.predicates...),
-		withMemberships: _q.withMemberships.Clone(),
-		withSessions:    _q.withSessions.Clone(),
-		withAPITokens:   _q.withAPITokens.Clone(),
+		config:            _q.config,
+		ctx:               _q.ctx.Clone(),
+		order:             append([]user.OrderOption{}, _q.order...),
+		inters:            append([]Interceptor{}, _q.inters...),
+		predicates:        append([]predicate.User{}, _q.predicates...),
+		withSessions:      _q.withSessions.Clone(),
+		withAPITokens:     _q.withAPITokens.Clone(),
+		withProviders:     _q.withProviders.Clone(),
+		withOauthApps:     _q.withOauthApps.Clone(),
+		withOauthStates:   _q.withOauthStates.Clone(),
+		withUploadBatches: _q.withUploadBatches.Clone(),
+		withTransferJobs:  _q.withTransferJobs.Clone(),
+		withSharedLinks:   _q.withSharedLinks.Clone(),
+		withBandwidthLogs: _q.withBandwidthLogs.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
-}
-
-// WithMemberships tells the query-builder to eager-load the nodes that are connected to
-// the "memberships" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithMemberships(opts ...func(*WorkspaceMemberQuery)) *UserQuery {
-	query := (&WorkspaceMemberClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withMemberships = query
-	return _q
 }
 
 // WithSessions tells the query-builder to eager-load the nodes that are connected to
@@ -363,6 +502,83 @@ func (_q *UserQuery) WithAPITokens(opts ...func(*ApiTokenQuery)) *UserQuery {
 		opt(query)
 	}
 	_q.withAPITokens = query
+	return _q
+}
+
+// WithProviders tells the query-builder to eager-load the nodes that are connected to
+// the "providers" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithProviders(opts ...func(*ProviderQuery)) *UserQuery {
+	query := (&ProviderClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withProviders = query
+	return _q
+}
+
+// WithOauthApps tells the query-builder to eager-load the nodes that are connected to
+// the "oauth_apps" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithOauthApps(opts ...func(*OAuthAppQuery)) *UserQuery {
+	query := (&OAuthAppClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOauthApps = query
+	return _q
+}
+
+// WithOauthStates tells the query-builder to eager-load the nodes that are connected to
+// the "oauth_states" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithOauthStates(opts ...func(*OAuthStateQuery)) *UserQuery {
+	query := (&OAuthStateClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOauthStates = query
+	return _q
+}
+
+// WithUploadBatches tells the query-builder to eager-load the nodes that are connected to
+// the "upload_batches" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithUploadBatches(opts ...func(*UploadBatchQuery)) *UserQuery {
+	query := (&UploadBatchClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUploadBatches = query
+	return _q
+}
+
+// WithTransferJobs tells the query-builder to eager-load the nodes that are connected to
+// the "transfer_jobs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithTransferJobs(opts ...func(*TransferJobQuery)) *UserQuery {
+	query := (&TransferJobClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTransferJobs = query
+	return _q
+}
+
+// WithSharedLinks tells the query-builder to eager-load the nodes that are connected to
+// the "shared_links" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithSharedLinks(opts ...func(*SharedLinkQuery)) *UserQuery {
+	query := (&SharedLinkClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSharedLinks = query
+	return _q
+}
+
+// WithBandwidthLogs tells the query-builder to eager-load the nodes that are connected to
+// the "bandwidth_logs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithBandwidthLogs(opts ...func(*BandwidthLogQuery)) *UserQuery {
+	query := (&BandwidthLogClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withBandwidthLogs = query
 	return _q
 }
 
@@ -444,10 +660,16 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
-			_q.withMemberships != nil,
+		loadedTypes = [9]bool{
 			_q.withSessions != nil,
 			_q.withAPITokens != nil,
+			_q.withProviders != nil,
+			_q.withOauthApps != nil,
+			_q.withOauthStates != nil,
+			_q.withUploadBatches != nil,
+			_q.withTransferJobs != nil,
+			_q.withSharedLinks != nil,
+			_q.withBandwidthLogs != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -468,13 +690,6 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withMemberships; query != nil {
-		if err := _q.loadMemberships(ctx, query, nodes,
-			func(n *User) { n.Edges.Memberships = []*WorkspaceMember{} },
-			func(n *User, e *WorkspaceMember) { n.Edges.Memberships = append(n.Edges.Memberships, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withSessions; query != nil {
 		if err := _q.loadSessions(ctx, query, nodes,
 			func(n *User) { n.Edges.Sessions = []*Session{} },
@@ -489,39 +704,58 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
+	if query := _q.withProviders; query != nil {
+		if err := _q.loadProviders(ctx, query, nodes,
+			func(n *User) { n.Edges.Providers = []*Provider{} },
+			func(n *User, e *Provider) { n.Edges.Providers = append(n.Edges.Providers, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOauthApps; query != nil {
+		if err := _q.loadOauthApps(ctx, query, nodes,
+			func(n *User) { n.Edges.OauthApps = []*OAuthApp{} },
+			func(n *User, e *OAuthApp) { n.Edges.OauthApps = append(n.Edges.OauthApps, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOauthStates; query != nil {
+		if err := _q.loadOauthStates(ctx, query, nodes,
+			func(n *User) { n.Edges.OauthStates = []*OAuthState{} },
+			func(n *User, e *OAuthState) { n.Edges.OauthStates = append(n.Edges.OauthStates, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUploadBatches; query != nil {
+		if err := _q.loadUploadBatches(ctx, query, nodes,
+			func(n *User) { n.Edges.UploadBatches = []*UploadBatch{} },
+			func(n *User, e *UploadBatch) { n.Edges.UploadBatches = append(n.Edges.UploadBatches, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTransferJobs; query != nil {
+		if err := _q.loadTransferJobs(ctx, query, nodes,
+			func(n *User) { n.Edges.TransferJobs = []*TransferJob{} },
+			func(n *User, e *TransferJob) { n.Edges.TransferJobs = append(n.Edges.TransferJobs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSharedLinks; query != nil {
+		if err := _q.loadSharedLinks(ctx, query, nodes,
+			func(n *User) { n.Edges.SharedLinks = []*SharedLink{} },
+			func(n *User, e *SharedLink) { n.Edges.SharedLinks = append(n.Edges.SharedLinks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withBandwidthLogs; query != nil {
+		if err := _q.loadBandwidthLogs(ctx, query, nodes,
+			func(n *User) { n.Edges.BandwidthLogs = []*BandwidthLog{} },
+			func(n *User, e *BandwidthLog) { n.Edges.BandwidthLogs = append(n.Edges.BandwidthLogs, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
-func (_q *UserQuery) loadMemberships(ctx context.Context, query *WorkspaceMemberQuery, nodes []*User, init func(*User), assign func(*User, *WorkspaceMember)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(workspacemember.FieldUserID)
-	}
-	query.Where(predicate.WorkspaceMember(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.MembershipsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.UserID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (_q *UserQuery) loadSessions(ctx context.Context, query *SessionQuery, nodes []*User, init func(*User), assign func(*User, *Session)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
@@ -567,6 +801,216 @@ func (_q *UserQuery) loadAPITokens(ctx context.Context, query *ApiTokenQuery, no
 	}
 	query.Where(predicate.ApiToken(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.APITokensColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadProviders(ctx context.Context, query *ProviderQuery, nodes []*User, init func(*User), assign func(*User, *Provider)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(provider.FieldUserID)
+	}
+	query.Where(predicate.Provider(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.ProvidersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadOauthApps(ctx context.Context, query *OAuthAppQuery, nodes []*User, init func(*User), assign func(*User, *OAuthApp)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(oauthapp.FieldUserID)
+	}
+	query.Where(predicate.OAuthApp(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.OauthAppsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadOauthStates(ctx context.Context, query *OAuthStateQuery, nodes []*User, init func(*User), assign func(*User, *OAuthState)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(oauthstate.FieldUserID)
+	}
+	query.Where(predicate.OAuthState(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.OauthStatesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadUploadBatches(ctx context.Context, query *UploadBatchQuery, nodes []*User, init func(*User), assign func(*User, *UploadBatch)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(uploadbatch.FieldUserID)
+	}
+	query.Where(predicate.UploadBatch(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.UploadBatchesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadTransferJobs(ctx context.Context, query *TransferJobQuery, nodes []*User, init func(*User), assign func(*User, *TransferJob)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(transferjob.FieldUserID)
+	}
+	query.Where(predicate.TransferJob(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.TransferJobsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadSharedLinks(ctx context.Context, query *SharedLinkQuery, nodes []*User, init func(*User), assign func(*User, *SharedLink)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(sharedlink.FieldUserID)
+	}
+	query.Where(predicate.SharedLink(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.SharedLinksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadBandwidthLogs(ctx context.Context, query *BandwidthLogQuery, nodes []*User, init func(*User), assign func(*User, *BandwidthLog)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(bandwidthlog.FieldUserID)
+	}
+	query.Where(predicate.BandwidthLog(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.BandwidthLogsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

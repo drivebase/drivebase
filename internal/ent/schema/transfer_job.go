@@ -35,7 +35,7 @@ type TransferJob struct {
 func (TransferJob) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
-		field.UUID("workspace_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("source_provider_id", uuid.UUID{}),
 		field.UUID("dest_provider_id", uuid.UUID{}),
 		// source/dest folder remote IDs — empty string means root
@@ -57,13 +57,13 @@ func (TransferJob) Fields() []ent.Field {
 
 func (TransferJob) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("workspace", Workspace.Type).Ref("transfer_jobs").Field("workspace_id").Unique().Required(),
+		edge.From("user", User.Type).Ref("transfer_jobs").Field("user_id").Unique().Required(),
 		edge.To("files", TransferJobFile.Type),
 	}
 }
 
 func (TransferJob) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("workspace_id"),
+		index.Fields("user_id"),
 	}
 }

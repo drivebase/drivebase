@@ -14,7 +14,6 @@ import (
 	"github.com/drivebase/drivebase/internal/crypto"
 	"github.com/drivebase/drivebase/internal/ent"
 	entoauthapp "github.com/drivebase/drivebase/internal/ent/oauthapp"
-	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/storage"
 )
@@ -56,15 +55,12 @@ func TestMapOAuthApp_withoutAlias(t *testing.T) {
 
 const testEncryptionKey = "test-encryption-key-32-chars-xxx"
 
-// setupOAuthTest creates a fresh workspace in the shared DB and returns
-// ready-to-use resolvers + an auth context scoped to that workspace.
+// setupOAuthTest creates a fresh user in the shared DB and returns
+// ready-to-use resolvers + a user-scoped auth context.
 // No container is started — TestMain starts one for the whole package.
 func setupOAuthTest(t *testing.T) (*mutationResolver, *queryResolver, context.Context) {
 	t.Helper()
 	ctx := context.Background()
-
-	// Use a unique slug per test to avoid conflicts with parallel runs
-	slug := "ws-" + t.Name()
 
 	hashedPw, err := auth.HashPassword("password")
 	require.NoError(t, err)
@@ -75,35 +71,7 @@ func setupOAuthTest(t *testing.T) (*mutationResolver, *queryResolver, context.Co
 		Save(ctx)
 	require.NoError(t, err)
 
-	ws, err := sharedDB.Workspace.Create().
-		SetName("Test Workspace").
-		SetSlug(slug).
-		Save(ctx)
-	require.NoError(t, err)
-
-	role, err := sharedDB.Role.Create().
-		SetWorkspaceID(ws.ID).
-		SetName("owner").
-		SetIsSystem(true).
-		Save(ctx)
-	require.NoError(t, err)
-
-	_, err = sharedDB.Permission.Create().
-		SetRoleID(role.ID).
-		SetResourceType(string(entschema.ResourceTypeWorkspace)).
-		SetActions([]string{string(entschema.ActionAdmin)}).
-		Save(ctx)
-	require.NoError(t, err)
-
-	_, err = sharedDB.WorkspaceMember.Create().
-		SetUserID(user.ID).
-		SetWorkspaceID(ws.ID).
-		SetRoleID(role.ID).
-		Save(ctx)
-	require.NoError(t, err)
-
 	authCtx := auth.WithUser(ctx, user)
-	authCtx = auth.WithWorkspaceID(authCtx, ws.ID)
 
 	r := &Resolver{DB: sharedDB, Config: sharedCfg}
 	return &mutationResolver{r}, &queryResolver{r}, authCtx
@@ -132,9 +100,9 @@ func TestSaveOAuthApp_create(t *testing.T) {
 	assert.Equal(t, "client-123", got.ClientID)
 
 	// Verify client_secret is stored encrypted
-	wsID, _ := auth.WorkspaceIDFromCtx(ctx)
+	u, _ := auth.UserFromCtx(ctx)
 	dbApp, err := mut.DB.OAuthApp.Query().
-		Where(entoauthapp.WorkspaceID(wsID)).
+		Where(entoauthapp.UserID(u.ID)).
 		Only(ctx)
 	require.NoError(t, err)
 	decrypted, err := crypto.Decrypt(dbApp.EncryptedClientSecret, testEncryptionKey)

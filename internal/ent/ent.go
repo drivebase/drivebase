@@ -20,11 +20,9 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/oauthstate"
 	"github.com/drivebase/drivebase/internal/ent/passwordreset"
-	"github.com/drivebase/drivebase/internal/ent/permission"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
 	"github.com/drivebase/drivebase/internal/ent/providerquota"
-	"github.com/drivebase/drivebase/internal/ent/role"
 	"github.com/drivebase/drivebase/internal/ent/session"
 	"github.com/drivebase/drivebase/internal/ent/sharedlink"
 	"github.com/drivebase/drivebase/internal/ent/transferjob"
@@ -32,8 +30,6 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/uploadbatch"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatchfile"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
-	"github.com/drivebase/drivebase/internal/ent/workspacemember"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -101,11 +97,9 @@ func checkColumn(t, c string) error {
 			oauthapp.Table:           oauthapp.ValidColumn,
 			oauthstate.Table:         oauthstate.ValidColumn,
 			passwordreset.Table:      passwordreset.ValidColumn,
-			permission.Table:         permission.ValidColumn,
 			provider.Table:           provider.ValidColumn,
 			providercredential.Table: providercredential.ValidColumn,
 			providerquota.Table:      providerquota.ValidColumn,
-			role.Table:               role.ValidColumn,
 			session.Table:            session.ValidColumn,
 			sharedlink.Table:         sharedlink.ValidColumn,
 			transferjob.Table:        transferjob.ValidColumn,
@@ -113,8 +107,6 @@ func checkColumn(t, c string) error {
 			uploadbatch.Table:        uploadbatch.ValidColumn,
 			uploadbatchfile.Table:    uploadbatchfile.ValidColumn,
 			user.Table:               user.ValidColumn,
-			workspace.Table:          workspace.ValidColumn,
-			workspacemember.Table:    workspacemember.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

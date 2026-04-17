@@ -27,7 +27,7 @@ type BandwidthLog struct {
 func (BandwidthLog) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
-		field.UUID("workspace_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("provider_id", uuid.UUID{}),
 		field.String("direction").NotEmpty(), // BandwidthDirection
 		field.Int64("bytes").Default(0),
@@ -39,13 +39,13 @@ func (BandwidthLog) Fields() []ent.Field {
 
 func (BandwidthLog) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("workspace", Workspace.Type).Ref("bandwidth_logs").Field("workspace_id").Unique().Required(),
+		edge.From("user", User.Type).Ref("bandwidth_logs").Field("user_id").Unique().Required(),
 	}
 }
 
 func (BandwidthLog) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("workspace_id", "period_start"),
+		index.Fields("user_id", "period_start"),
 		index.Fields("provider_id", "period_start"),
 	}
 }

@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/drivebase/drivebase/internal/ent/oauthapp"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -22,9 +22,9 @@ type OAuthAppCreate struct {
 	hooks    []Hook
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_c *OAuthAppCreate) SetWorkspaceID(v uuid.UUID) *OAuthAppCreate {
-	_c.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_c *OAuthAppCreate) SetUserID(v uuid.UUID) *OAuthAppCreate {
+	_c.mutation.SetUserID(v)
 	return _c
 }
 
@@ -102,9 +102,9 @@ func (_c *OAuthAppCreate) SetNillableID(v *uuid.UUID) *OAuthAppCreate {
 	return _c
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_c *OAuthAppCreate) SetWorkspace(v *Workspace) *OAuthAppCreate {
-	return _c.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_c *OAuthAppCreate) SetUser(v *User) *OAuthAppCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // Mutation returns the OAuthAppMutation object of the builder.
@@ -158,8 +158,8 @@ func (_c *OAuthAppCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *OAuthAppCreate) check() error {
-	if _, ok := _c.mutation.WorkspaceID(); !ok {
-		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "OAuthApp.workspace_id"`)}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "OAuthApp.user_id"`)}
 	}
 	if _, ok := _c.mutation.ProviderType(); !ok {
 		return &ValidationError{Name: "provider_type", err: errors.New(`ent: missing required field "OAuthApp.provider_type"`)}
@@ -186,8 +186,8 @@ func (_c *OAuthAppCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "OAuthApp.updated_at"`)}
 	}
-	if len(_c.mutation.WorkspaceIDs()) == 0 {
-		return &ValidationError{Name: "workspace", err: errors.New(`ent: missing required edge "OAuthApp.workspace"`)}
+	if len(_c.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "OAuthApp.user"`)}
 	}
 	return nil
 }
@@ -248,21 +248,21 @@ func (_c *OAuthAppCreate) createSpec() (*OAuthApp, *sqlgraph.CreateSpec) {
 		_spec.SetField(oauthapp.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if nodes := _c.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   oauthapp.WorkspaceTable,
-			Columns: []string{oauthapp.WorkspaceColumn},
+			Table:   oauthapp.UserTable,
+			Columns: []string{oauthapp.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.WorkspaceID = nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

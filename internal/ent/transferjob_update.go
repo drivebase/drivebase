@@ -14,7 +14,7 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/transferjob"
 	"github.com/drivebase/drivebase/internal/ent/transferjobfile"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -31,16 +31,16 @@ func (_u *TransferJobUpdate) Where(ps ...predicate.TransferJob) *TransferJobUpda
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *TransferJobUpdate) SetWorkspaceID(v uuid.UUID) *TransferJobUpdate {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *TransferJobUpdate) SetUserID(v uuid.UUID) *TransferJobUpdate {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *TransferJobUpdate) SetNillableWorkspaceID(v *uuid.UUID) *TransferJobUpdate {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *TransferJobUpdate) SetNillableUserID(v *uuid.UUID) *TransferJobUpdate {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -300,9 +300,9 @@ func (_u *TransferJobUpdate) ClearCompletedAt() *TransferJobUpdate {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *TransferJobUpdate) SetWorkspace(v *Workspace) *TransferJobUpdate {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *TransferJobUpdate) SetUser(v *User) *TransferJobUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // AddFileIDs adds the "files" edge to the TransferJobFile entity by IDs.
@@ -325,9 +325,9 @@ func (_u *TransferJobUpdate) Mutation() *TransferJobMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *TransferJobUpdate) ClearWorkspace() *TransferJobUpdate {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *TransferJobUpdate) ClearUser() *TransferJobUpdate {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -381,8 +381,8 @@ func (_u *TransferJobUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *TransferJobUpdate) check() error {
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "TransferJob.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "TransferJob.user"`)
 	}
 	return nil
 }
@@ -468,28 +468,28 @@ func (_u *TransferJobUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if _u.mutation.CompletedAtCleared() {
 		_spec.ClearField(transferjob.FieldCompletedAt, field.TypeTime)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   transferjob.WorkspaceTable,
-			Columns: []string{transferjob.WorkspaceColumn},
+			Table:   transferjob.UserTable,
+			Columns: []string{transferjob.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   transferjob.WorkspaceTable,
-			Columns: []string{transferjob.WorkspaceColumn},
+			Table:   transferjob.UserTable,
+			Columns: []string{transferjob.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -562,16 +562,16 @@ type TransferJobUpdateOne struct {
 	mutation *TransferJobMutation
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (_u *TransferJobUpdateOne) SetWorkspaceID(v uuid.UUID) *TransferJobUpdateOne {
-	_u.mutation.SetWorkspaceID(v)
+// SetUserID sets the "user_id" field.
+func (_u *TransferJobUpdateOne) SetUserID(v uuid.UUID) *TransferJobUpdateOne {
+	_u.mutation.SetUserID(v)
 	return _u
 }
 
-// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
-func (_u *TransferJobUpdateOne) SetNillableWorkspaceID(v *uuid.UUID) *TransferJobUpdateOne {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *TransferJobUpdateOne) SetNillableUserID(v *uuid.UUID) *TransferJobUpdateOne {
 	if v != nil {
-		_u.SetWorkspaceID(*v)
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -831,9 +831,9 @@ func (_u *TransferJobUpdateOne) ClearCompletedAt() *TransferJobUpdateOne {
 	return _u
 }
 
-// SetWorkspace sets the "workspace" edge to the Workspace entity.
-func (_u *TransferJobUpdateOne) SetWorkspace(v *Workspace) *TransferJobUpdateOne {
-	return _u.SetWorkspaceID(v.ID)
+// SetUser sets the "user" edge to the User entity.
+func (_u *TransferJobUpdateOne) SetUser(v *User) *TransferJobUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // AddFileIDs adds the "files" edge to the TransferJobFile entity by IDs.
@@ -856,9 +856,9 @@ func (_u *TransferJobUpdateOne) Mutation() *TransferJobMutation {
 	return _u.mutation
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (_u *TransferJobUpdateOne) ClearWorkspace() *TransferJobUpdateOne {
-	_u.mutation.ClearWorkspace()
+// ClearUser clears the "user" edge to the User entity.
+func (_u *TransferJobUpdateOne) ClearUser() *TransferJobUpdateOne {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -925,8 +925,8 @@ func (_u *TransferJobUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *TransferJobUpdateOne) check() error {
-	if _u.mutation.WorkspaceCleared() && len(_u.mutation.WorkspaceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "TransferJob.workspace"`)
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "TransferJob.user"`)
 	}
 	return nil
 }
@@ -1029,28 +1029,28 @@ func (_u *TransferJobUpdateOne) sqlSave(ctx context.Context) (_node *TransferJob
 	if _u.mutation.CompletedAtCleared() {
 		_spec.ClearField(transferjob.FieldCompletedAt, field.TypeTime)
 	}
-	if _u.mutation.WorkspaceCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   transferjob.WorkspaceTable,
-			Columns: []string{transferjob.WorkspaceColumn},
+			Table:   transferjob.UserTable,
+			Columns: []string{transferjob.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   transferjob.WorkspaceTable,
-			Columns: []string{transferjob.WorkspaceColumn},
+			Table:   transferjob.UserTable,
+			Columns: []string{transferjob.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

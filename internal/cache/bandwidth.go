@@ -12,7 +12,7 @@ import (
 )
 
 // BandwidthCounter tracks upload/download bytes in Redis.
-// Keys are hourly buckets: bw:{workspaceID}:{providerID}:{direction}:{YYYY-MM-DD-HH}
+// Keys are hourly buckets: bw:{userID}:{providerID}:{direction}:{YYYY-MM-DD-HH}
 type BandwidthCounter struct {
 	rdb *redis.Client
 	ttl time.Duration
@@ -24,7 +24,7 @@ func NewBandwidthCounter(rdb *redis.Client) *BandwidthCounter {
 
 // BandwidthEntry is a flushed counter ready to write to bandwidth_log.
 type BandwidthEntry struct {
-	WorkspaceID uuid.UUID
+	UserID      uuid.UUID
 	ProviderID  uuid.UUID
 	Direction   string
 	Bytes       int64
@@ -32,16 +32,16 @@ type BandwidthEntry struct {
 	PeriodEnd   time.Time
 }
 
-func (c *BandwidthCounter) IncrUpload(ctx context.Context, workspaceID, providerID uuid.UUID, bytes int64) error {
-	return c.incr(ctx, workspaceID, providerID, "upload", bytes)
+func (c *BandwidthCounter) IncrUpload(ctx context.Context, userID, providerID uuid.UUID, bytes int64) error {
+	return c.incr(ctx, userID, providerID, "upload", bytes)
 }
 
-func (c *BandwidthCounter) IncrDownload(ctx context.Context, workspaceID, providerID uuid.UUID, bytes int64) error {
-	return c.incr(ctx, workspaceID, providerID, "download", bytes)
+func (c *BandwidthCounter) IncrDownload(ctx context.Context, userID, providerID uuid.UUID, bytes int64) error {
+	return c.incr(ctx, userID, providerID, "download", bytes)
 }
 
-func (c *BandwidthCounter) incr(ctx context.Context, workspaceID, providerID uuid.UUID, direction string, bytes int64) error {
-	key := c.key(workspaceID, providerID, direction, time.Now())
+func (c *BandwidthCounter) incr(ctx context.Context, userID, providerID uuid.UUID, direction string, bytes int64) error {
+	key := c.key(userID, providerID, direction, time.Now())
 	pipe := c.rdb.Pipeline()
 	pipe.IncrBy(ctx, key, bytes)
 	pipe.Expire(ctx, key, c.ttl)
@@ -49,9 +49,9 @@ func (c *BandwidthCounter) incr(ctx context.Context, workspaceID, providerID uui
 	return err
 }
 
-func (c *BandwidthCounter) key(workspaceID, providerID uuid.UUID, direction string, t time.Time) string {
+func (c *BandwidthCounter) key(userID, providerID uuid.UUID, direction string, t time.Time) string {
 	period := t.UTC().Format("2006-01-02-15")
-	return fmt.Sprintf("bw:%s:%s:%s:%s", workspaceID, providerID, direction, period)
+	return fmt.Sprintf("bw:%s:%s:%s:%s", userID, providerID, direction, period)
 }
 
 // FlushCounters reads all bandwidth keys, returns entries, and deletes the keys atomically.
@@ -71,12 +71,11 @@ func (c *BandwidthCounter) FlushCounters(ctx context.Context) ([]BandwidthEntry,
 			continue
 		}
 		period := parts[4]
-		// Skip current hour — it's still accumulating
 		if period == currentPeriod {
 			continue
 		}
 
-		wsID, err := uuid.Parse(parts[1])
+		userID, err := uuid.Parse(parts[1])
 		if err != nil {
 			continue
 		}
@@ -105,7 +104,7 @@ func (c *BandwidthCounter) FlushCounters(ctx context.Context) ([]BandwidthEntry,
 		}
 
 		entries = append(entries, BandwidthEntry{
-			WorkspaceID: wsID,
+			UserID:      userID,
 			ProviderID:  provID,
 			Direction:   direction,
 			Bytes:       bytes,

@@ -19,12 +19,10 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/oauthapp"
 	"github.com/drivebase/drivebase/internal/ent/oauthstate"
 	"github.com/drivebase/drivebase/internal/ent/passwordreset"
-	"github.com/drivebase/drivebase/internal/ent/permission"
 	"github.com/drivebase/drivebase/internal/ent/predicate"
 	"github.com/drivebase/drivebase/internal/ent/provider"
 	"github.com/drivebase/drivebase/internal/ent/providercredential"
 	"github.com/drivebase/drivebase/internal/ent/providerquota"
-	"github.com/drivebase/drivebase/internal/ent/role"
 	"github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/ent/session"
 	"github.com/drivebase/drivebase/internal/ent/sharedlink"
@@ -33,8 +31,6 @@ import (
 	"github.com/drivebase/drivebase/internal/ent/uploadbatch"
 	"github.com/drivebase/drivebase/internal/ent/uploadbatchfile"
 	"github.com/drivebase/drivebase/internal/ent/user"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
-	"github.com/drivebase/drivebase/internal/ent/workspacemember"
 	"github.com/google/uuid"
 )
 
@@ -54,11 +50,9 @@ const (
 	TypeOAuthApp           = "OAuthApp"
 	TypeOAuthState         = "OAuthState"
 	TypePasswordReset      = "PasswordReset"
-	TypePermission         = "Permission"
 	TypeProvider           = "Provider"
 	TypeProviderCredential = "ProviderCredential"
 	TypeProviderQuota      = "ProviderQuota"
-	TypeRole               = "Role"
 	TypeSession            = "Session"
 	TypeSharedLink         = "SharedLink"
 	TypeTransferJob        = "TransferJob"
@@ -66,8 +60,6 @@ const (
 	TypeUploadBatch        = "UploadBatch"
 	TypeUploadBatchFile    = "UploadBatchFile"
 	TypeUser               = "User"
-	TypeWorkspace          = "Workspace"
-	TypeWorkspaceMember    = "WorkspaceMember"
 )
 
 // ApiTokenMutation represents an operation that mutates the ApiToken nodes in the graph.
@@ -87,8 +79,6 @@ type ApiTokenMutation struct {
 	expires_at            *time.Time
 	created_at            *time.Time
 	clearedFields         map[string]struct{}
-	workspace             *uuid.UUID
-	clearedworkspace      bool
 	user                  *uuid.UUID
 	cleareduser           bool
 	done                  bool
@@ -198,42 +188,6 @@ func (m *ApiTokenMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetWorkspaceID sets the "workspace_id" field.
-func (m *ApiTokenMutation) SetWorkspaceID(u uuid.UUID) {
-	m.workspace = &u
-}
-
-// WorkspaceID returns the value of the "workspace_id" field in the mutation.
-func (m *ApiTokenMutation) WorkspaceID() (r uuid.UUID, exists bool) {
-	v := m.workspace
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldWorkspaceID returns the old "workspace_id" field's value of the ApiToken entity.
-// If the ApiToken object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ApiTokenMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
-	}
-	return oldValue.WorkspaceID, nil
-}
-
-// ResetWorkspaceID resets all changes to the "workspace_id" field.
-func (m *ApiTokenMutation) ResetWorkspaceID() {
-	m.workspace = nil
 }
 
 // SetUserID sets the "user_id" field.
@@ -630,33 +584,6 @@ func (m *ApiTokenMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (m *ApiTokenMutation) ClearWorkspace() {
-	m.clearedworkspace = true
-	m.clearedFields[entapitoken.FieldWorkspaceID] = struct{}{}
-}
-
-// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
-func (m *ApiTokenMutation) WorkspaceCleared() bool {
-	return m.clearedworkspace
-}
-
-// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *ApiTokenMutation) WorkspaceIDs() (ids []uuid.UUID) {
-	if id := m.workspace; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetWorkspace resets all changes to the "workspace" edge.
-func (m *ApiTokenMutation) ResetWorkspace() {
-	m.workspace = nil
-	m.clearedworkspace = false
-}
-
 // ClearUser clears the "user" edge to the User entity.
 func (m *ApiTokenMutation) ClearUser() {
 	m.cleareduser = true
@@ -718,10 +645,7 @@ func (m *ApiTokenMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ApiTokenMutation) Fields() []string {
-	fields := make([]string, 0, 10)
-	if m.workspace != nil {
-		fields = append(fields, entapitoken.FieldWorkspaceID)
-	}
+	fields := make([]string, 0, 9)
 	if m.user != nil {
 		fields = append(fields, entapitoken.FieldUserID)
 	}
@@ -757,8 +681,6 @@ func (m *ApiTokenMutation) Fields() []string {
 // schema.
 func (m *ApiTokenMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case entapitoken.FieldWorkspaceID:
-		return m.WorkspaceID()
 	case entapitoken.FieldUserID:
 		return m.UserID()
 	case entapitoken.FieldName:
@@ -786,8 +708,6 @@ func (m *ApiTokenMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ApiTokenMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case entapitoken.FieldWorkspaceID:
-		return m.OldWorkspaceID(ctx)
 	case entapitoken.FieldUserID:
 		return m.OldUserID(ctx)
 	case entapitoken.FieldName:
@@ -815,13 +735,6 @@ func (m *ApiTokenMutation) OldField(ctx context.Context, name string) (ent.Value
 // type.
 func (m *ApiTokenMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case entapitoken.FieldWorkspaceID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetWorkspaceID(v)
-		return nil
 	case entapitoken.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
@@ -955,9 +868,6 @@ func (m *ApiTokenMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ApiTokenMutation) ResetField(name string) error {
 	switch name {
-	case entapitoken.FieldWorkspaceID:
-		m.ResetWorkspaceID()
-		return nil
 	case entapitoken.FieldUserID:
 		m.ResetUserID()
 		return nil
@@ -991,10 +901,7 @@ func (m *ApiTokenMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ApiTokenMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.workspace != nil {
-		edges = append(edges, entapitoken.EdgeWorkspace)
-	}
+	edges := make([]string, 0, 1)
 	if m.user != nil {
 		edges = append(edges, entapitoken.EdgeUser)
 	}
@@ -1005,10 +912,6 @@ func (m *ApiTokenMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ApiTokenMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case entapitoken.EdgeWorkspace:
-		if id := m.workspace; id != nil {
-			return []ent.Value{*id}
-		}
 	case entapitoken.EdgeUser:
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
@@ -1019,7 +922,7 @@ func (m *ApiTokenMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ApiTokenMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -1031,10 +934,7 @@ func (m *ApiTokenMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ApiTokenMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedworkspace {
-		edges = append(edges, entapitoken.EdgeWorkspace)
-	}
+	edges := make([]string, 0, 1)
 	if m.cleareduser {
 		edges = append(edges, entapitoken.EdgeUser)
 	}
@@ -1045,8 +945,6 @@ func (m *ApiTokenMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ApiTokenMutation) EdgeCleared(name string) bool {
 	switch name {
-	case entapitoken.EdgeWorkspace:
-		return m.clearedworkspace
 	case entapitoken.EdgeUser:
 		return m.cleareduser
 	}
@@ -1057,9 +955,6 @@ func (m *ApiTokenMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ApiTokenMutation) ClearEdge(name string) error {
 	switch name {
-	case entapitoken.EdgeWorkspace:
-		m.ClearWorkspace()
-		return nil
 	case entapitoken.EdgeUser:
 		m.ClearUser()
 		return nil
@@ -1071,9 +966,6 @@ func (m *ApiTokenMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ApiTokenMutation) ResetEdge(name string) error {
 	switch name {
-	case entapitoken.EdgeWorkspace:
-		m.ResetWorkspace()
-		return nil
 	case entapitoken.EdgeUser:
 		m.ResetUser()
 		return nil
@@ -1084,22 +976,22 @@ func (m *ApiTokenMutation) ResetEdge(name string) error {
 // BandwidthLogMutation represents an operation that mutates the BandwidthLog nodes in the graph.
 type BandwidthLogMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	provider_id      *uuid.UUID
-	direction        *string
-	bytes            *int64
-	addbytes         *int64
-	period_start     *time.Time
-	period_end       *time.Time
-	created_at       *time.Time
-	clearedFields    map[string]struct{}
-	workspace        *uuid.UUID
-	clearedworkspace bool
-	done             bool
-	oldValue         func(context.Context) (*BandwidthLog, error)
-	predicates       []predicate.BandwidthLog
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	provider_id   *uuid.UUID
+	direction     *string
+	bytes         *int64
+	addbytes      *int64
+	period_start  *time.Time
+	period_end    *time.Time
+	created_at    *time.Time
+	clearedFields map[string]struct{}
+	user          *uuid.UUID
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*BandwidthLog, error)
+	predicates    []predicate.BandwidthLog
 }
 
 var _ ent.Mutation = (*BandwidthLogMutation)(nil)
@@ -1206,40 +1098,40 @@ func (m *BandwidthLogMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (m *BandwidthLogMutation) SetWorkspaceID(u uuid.UUID) {
-	m.workspace = &u
+// SetUserID sets the "user_id" field.
+func (m *BandwidthLogMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
 }
 
-// WorkspaceID returns the value of the "workspace_id" field in the mutation.
-func (m *BandwidthLogMutation) WorkspaceID() (r uuid.UUID, exists bool) {
-	v := m.workspace
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *BandwidthLogMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldWorkspaceID returns the old "workspace_id" field's value of the BandwidthLog entity.
+// OldUserID returns the old "user_id" field's value of the BandwidthLog entity.
 // If the BandwidthLog object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BandwidthLogMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *BandwidthLogMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
+		return v, errors.New("OldUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
 	}
-	return oldValue.WorkspaceID, nil
+	return oldValue.UserID, nil
 }
 
-// ResetWorkspaceID resets all changes to the "workspace_id" field.
-func (m *BandwidthLogMutation) ResetWorkspaceID() {
-	m.workspace = nil
+// ResetUserID resets all changes to the "user_id" field.
+func (m *BandwidthLogMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetProviderID sets the "provider_id" field.
@@ -1478,31 +1370,31 @@ func (m *BandwidthLogMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (m *BandwidthLogMutation) ClearWorkspace() {
-	m.clearedworkspace = true
-	m.clearedFields[bandwidthlog.FieldWorkspaceID] = struct{}{}
+// ClearUser clears the "user" edge to the User entity.
+func (m *BandwidthLogMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[bandwidthlog.FieldUserID] = struct{}{}
 }
 
-// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
-func (m *BandwidthLogMutation) WorkspaceCleared() bool {
-	return m.clearedworkspace
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *BandwidthLogMutation) UserCleared() bool {
+	return m.cleareduser
 }
 
-// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
+// UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *BandwidthLogMutation) WorkspaceIDs() (ids []uuid.UUID) {
-	if id := m.workspace; id != nil {
+// UserID instead. It exists only for internal usage by the builders.
+func (m *BandwidthLogMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetWorkspace resets all changes to the "workspace" edge.
-func (m *BandwidthLogMutation) ResetWorkspace() {
-	m.workspace = nil
-	m.clearedworkspace = false
+// ResetUser resets all changes to the "user" edge.
+func (m *BandwidthLogMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // Where appends a list predicates to the BandwidthLogMutation builder.
@@ -1540,8 +1432,8 @@ func (m *BandwidthLogMutation) Type() string {
 // AddedFields().
 func (m *BandwidthLogMutation) Fields() []string {
 	fields := make([]string, 0, 7)
-	if m.workspace != nil {
-		fields = append(fields, bandwidthlog.FieldWorkspaceID)
+	if m.user != nil {
+		fields = append(fields, bandwidthlog.FieldUserID)
 	}
 	if m.provider_id != nil {
 		fields = append(fields, bandwidthlog.FieldProviderID)
@@ -1569,8 +1461,8 @@ func (m *BandwidthLogMutation) Fields() []string {
 // schema.
 func (m *BandwidthLogMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case bandwidthlog.FieldWorkspaceID:
-		return m.WorkspaceID()
+	case bandwidthlog.FieldUserID:
+		return m.UserID()
 	case bandwidthlog.FieldProviderID:
 		return m.ProviderID()
 	case bandwidthlog.FieldDirection:
@@ -1592,8 +1484,8 @@ func (m *BandwidthLogMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *BandwidthLogMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case bandwidthlog.FieldWorkspaceID:
-		return m.OldWorkspaceID(ctx)
+	case bandwidthlog.FieldUserID:
+		return m.OldUserID(ctx)
 	case bandwidthlog.FieldProviderID:
 		return m.OldProviderID(ctx)
 	case bandwidthlog.FieldDirection:
@@ -1615,12 +1507,12 @@ func (m *BandwidthLogMutation) OldField(ctx context.Context, name string) (ent.V
 // type.
 func (m *BandwidthLogMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case bandwidthlog.FieldWorkspaceID:
+	case bandwidthlog.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetWorkspaceID(v)
+		m.SetUserID(v)
 		return nil
 	case bandwidthlog.FieldProviderID:
 		v, ok := value.(uuid.UUID)
@@ -1728,8 +1620,8 @@ func (m *BandwidthLogMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *BandwidthLogMutation) ResetField(name string) error {
 	switch name {
-	case bandwidthlog.FieldWorkspaceID:
-		m.ResetWorkspaceID()
+	case bandwidthlog.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case bandwidthlog.FieldProviderID:
 		m.ResetProviderID()
@@ -1756,8 +1648,8 @@ func (m *BandwidthLogMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *BandwidthLogMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.workspace != nil {
-		edges = append(edges, bandwidthlog.EdgeWorkspace)
+	if m.user != nil {
+		edges = append(edges, bandwidthlog.EdgeUser)
 	}
 	return edges
 }
@@ -1766,8 +1658,8 @@ func (m *BandwidthLogMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *BandwidthLogMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case bandwidthlog.EdgeWorkspace:
-		if id := m.workspace; id != nil {
+	case bandwidthlog.EdgeUser:
+		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -1789,8 +1681,8 @@ func (m *BandwidthLogMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *BandwidthLogMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedworkspace {
-		edges = append(edges, bandwidthlog.EdgeWorkspace)
+	if m.cleareduser {
+		edges = append(edges, bandwidthlog.EdgeUser)
 	}
 	return edges
 }
@@ -1799,8 +1691,8 @@ func (m *BandwidthLogMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *BandwidthLogMutation) EdgeCleared(name string) bool {
 	switch name {
-	case bandwidthlog.EdgeWorkspace:
-		return m.clearedworkspace
+	case bandwidthlog.EdgeUser:
+		return m.cleareduser
 	}
 	return false
 }
@@ -1809,8 +1701,8 @@ func (m *BandwidthLogMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *BandwidthLogMutation) ClearEdge(name string) error {
 	switch name {
-	case bandwidthlog.EdgeWorkspace:
-		m.ClearWorkspace()
+	case bandwidthlog.EdgeUser:
+		m.ClearUser()
 		return nil
 	}
 	return fmt.Errorf("unknown BandwidthLog unique edge %s", name)
@@ -1820,8 +1712,8 @@ func (m *BandwidthLogMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *BandwidthLogMutation) ResetEdge(name string) error {
 	switch name {
-	case bandwidthlog.EdgeWorkspace:
-		m.ResetWorkspace()
+	case bandwidthlog.EdgeUser:
+		m.ResetUser()
 		return nil
 	}
 	return fmt.Errorf("unknown BandwidthLog edge %s", name)
@@ -3737,8 +3629,8 @@ type OAuthAppMutation struct {
 	created_at              *time.Time
 	updated_at              *time.Time
 	clearedFields           map[string]struct{}
-	workspace               *uuid.UUID
-	clearedworkspace        bool
+	user                    *uuid.UUID
+	cleareduser             bool
 	done                    bool
 	oldValue                func(context.Context) (*OAuthApp, error)
 	predicates              []predicate.OAuthApp
@@ -3848,40 +3740,40 @@ func (m *OAuthAppMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (m *OAuthAppMutation) SetWorkspaceID(u uuid.UUID) {
-	m.workspace = &u
+// SetUserID sets the "user_id" field.
+func (m *OAuthAppMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
 }
 
-// WorkspaceID returns the value of the "workspace_id" field in the mutation.
-func (m *OAuthAppMutation) WorkspaceID() (r uuid.UUID, exists bool) {
-	v := m.workspace
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *OAuthAppMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldWorkspaceID returns the old "workspace_id" field's value of the OAuthApp entity.
+// OldUserID returns the old "user_id" field's value of the OAuthApp entity.
 // If the OAuthApp object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OAuthAppMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OAuthAppMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
+		return v, errors.New("OldUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
 	}
-	return oldValue.WorkspaceID, nil
+	return oldValue.UserID, nil
 }
 
-// ResetWorkspaceID resets all changes to the "workspace_id" field.
-func (m *OAuthAppMutation) ResetWorkspaceID() {
-	m.workspace = nil
+// ResetUserID resets all changes to the "user_id" field.
+func (m *OAuthAppMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetProviderType sets the "provider_type" field.
@@ -4113,31 +4005,31 @@ func (m *OAuthAppMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (m *OAuthAppMutation) ClearWorkspace() {
-	m.clearedworkspace = true
-	m.clearedFields[oauthapp.FieldWorkspaceID] = struct{}{}
+// ClearUser clears the "user" edge to the User entity.
+func (m *OAuthAppMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[oauthapp.FieldUserID] = struct{}{}
 }
 
-// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
-func (m *OAuthAppMutation) WorkspaceCleared() bool {
-	return m.clearedworkspace
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *OAuthAppMutation) UserCleared() bool {
+	return m.cleareduser
 }
 
-// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
+// UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *OAuthAppMutation) WorkspaceIDs() (ids []uuid.UUID) {
-	if id := m.workspace; id != nil {
+// UserID instead. It exists only for internal usage by the builders.
+func (m *OAuthAppMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetWorkspace resets all changes to the "workspace" edge.
-func (m *OAuthAppMutation) ResetWorkspace() {
-	m.workspace = nil
-	m.clearedworkspace = false
+// ResetUser resets all changes to the "user" edge.
+func (m *OAuthAppMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // Where appends a list predicates to the OAuthAppMutation builder.
@@ -4175,8 +4067,8 @@ func (m *OAuthAppMutation) Type() string {
 // AddedFields().
 func (m *OAuthAppMutation) Fields() []string {
 	fields := make([]string, 0, 7)
-	if m.workspace != nil {
-		fields = append(fields, oauthapp.FieldWorkspaceID)
+	if m.user != nil {
+		fields = append(fields, oauthapp.FieldUserID)
 	}
 	if m.provider_type != nil {
 		fields = append(fields, oauthapp.FieldProviderType)
@@ -4204,8 +4096,8 @@ func (m *OAuthAppMutation) Fields() []string {
 // schema.
 func (m *OAuthAppMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case oauthapp.FieldWorkspaceID:
-		return m.WorkspaceID()
+	case oauthapp.FieldUserID:
+		return m.UserID()
 	case oauthapp.FieldProviderType:
 		return m.ProviderType()
 	case oauthapp.FieldClientID:
@@ -4227,8 +4119,8 @@ func (m *OAuthAppMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *OAuthAppMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case oauthapp.FieldWorkspaceID:
-		return m.OldWorkspaceID(ctx)
+	case oauthapp.FieldUserID:
+		return m.OldUserID(ctx)
 	case oauthapp.FieldProviderType:
 		return m.OldProviderType(ctx)
 	case oauthapp.FieldClientID:
@@ -4250,12 +4142,12 @@ func (m *OAuthAppMutation) OldField(ctx context.Context, name string) (ent.Value
 // type.
 func (m *OAuthAppMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case oauthapp.FieldWorkspaceID:
+	case oauthapp.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetWorkspaceID(v)
+		m.SetUserID(v)
 		return nil
 	case oauthapp.FieldProviderType:
 		v, ok := value.(string)
@@ -4357,8 +4249,8 @@ func (m *OAuthAppMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *OAuthAppMutation) ResetField(name string) error {
 	switch name {
-	case oauthapp.FieldWorkspaceID:
-		m.ResetWorkspaceID()
+	case oauthapp.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case oauthapp.FieldProviderType:
 		m.ResetProviderType()
@@ -4385,8 +4277,8 @@ func (m *OAuthAppMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OAuthAppMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.workspace != nil {
-		edges = append(edges, oauthapp.EdgeWorkspace)
+	if m.user != nil {
+		edges = append(edges, oauthapp.EdgeUser)
 	}
 	return edges
 }
@@ -4395,8 +4287,8 @@ func (m *OAuthAppMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *OAuthAppMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case oauthapp.EdgeWorkspace:
-		if id := m.workspace; id != nil {
+	case oauthapp.EdgeUser:
+		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -4418,8 +4310,8 @@ func (m *OAuthAppMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OAuthAppMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedworkspace {
-		edges = append(edges, oauthapp.EdgeWorkspace)
+	if m.cleareduser {
+		edges = append(edges, oauthapp.EdgeUser)
 	}
 	return edges
 }
@@ -4428,8 +4320,8 @@ func (m *OAuthAppMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *OAuthAppMutation) EdgeCleared(name string) bool {
 	switch name {
-	case oauthapp.EdgeWorkspace:
-		return m.clearedworkspace
+	case oauthapp.EdgeUser:
+		return m.cleareduser
 	}
 	return false
 }
@@ -4438,8 +4330,8 @@ func (m *OAuthAppMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *OAuthAppMutation) ClearEdge(name string) error {
 	switch name {
-	case oauthapp.EdgeWorkspace:
-		m.ClearWorkspace()
+	case oauthapp.EdgeUser:
+		m.ClearUser()
 		return nil
 	}
 	return fmt.Errorf("unknown OAuthApp unique edge %s", name)
@@ -4449,8 +4341,8 @@ func (m *OAuthAppMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *OAuthAppMutation) ResetEdge(name string) error {
 	switch name {
-	case oauthapp.EdgeWorkspace:
-		m.ResetWorkspace()
+	case oauthapp.EdgeUser:
+		m.ResetUser()
 		return nil
 	}
 	return fmt.Errorf("unknown OAuthApp edge %s", name)
@@ -4462,13 +4354,14 @@ type OAuthStateMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	workspace_id  *uuid.UUID
 	oauth_app_id  *uuid.UUID
 	provider_type *string
 	provider_name *string
 	expires_at    *time.Time
 	created_at    *time.Time
 	clearedFields map[string]struct{}
+	user          *uuid.UUID
+	cleareduser   bool
 	done          bool
 	oldValue      func(context.Context) (*OAuthState, error)
 	predicates    []predicate.OAuthState
@@ -4578,40 +4471,40 @@ func (m *OAuthStateMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (m *OAuthStateMutation) SetWorkspaceID(u uuid.UUID) {
-	m.workspace_id = &u
+// SetUserID sets the "user_id" field.
+func (m *OAuthStateMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
 }
 
-// WorkspaceID returns the value of the "workspace_id" field in the mutation.
-func (m *OAuthStateMutation) WorkspaceID() (r uuid.UUID, exists bool) {
-	v := m.workspace_id
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *OAuthStateMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldWorkspaceID returns the old "workspace_id" field's value of the OAuthState entity.
+// OldUserID returns the old "user_id" field's value of the OAuthState entity.
 // If the OAuthState object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OAuthStateMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OAuthStateMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
+		return v, errors.New("OldUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
 	}
-	return oldValue.WorkspaceID, nil
+	return oldValue.UserID, nil
 }
 
-// ResetWorkspaceID resets all changes to the "workspace_id" field.
-func (m *OAuthStateMutation) ResetWorkspaceID() {
-	m.workspace_id = nil
+// ResetUserID resets all changes to the "user_id" field.
+func (m *OAuthStateMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetOauthAppID sets the "oauth_app_id" field.
@@ -4794,6 +4687,33 @@ func (m *OAuthStateMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
+// ClearUser clears the "user" edge to the User entity.
+func (m *OAuthStateMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[oauthstate.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *OAuthStateMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *OAuthStateMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *OAuthStateMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
 // Where appends a list predicates to the OAuthStateMutation builder.
 func (m *OAuthStateMutation) Where(ps ...predicate.OAuthState) {
 	m.predicates = append(m.predicates, ps...)
@@ -4829,8 +4749,8 @@ func (m *OAuthStateMutation) Type() string {
 // AddedFields().
 func (m *OAuthStateMutation) Fields() []string {
 	fields := make([]string, 0, 6)
-	if m.workspace_id != nil {
-		fields = append(fields, oauthstate.FieldWorkspaceID)
+	if m.user != nil {
+		fields = append(fields, oauthstate.FieldUserID)
 	}
 	if m.oauth_app_id != nil {
 		fields = append(fields, oauthstate.FieldOauthAppID)
@@ -4855,8 +4775,8 @@ func (m *OAuthStateMutation) Fields() []string {
 // schema.
 func (m *OAuthStateMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case oauthstate.FieldWorkspaceID:
-		return m.WorkspaceID()
+	case oauthstate.FieldUserID:
+		return m.UserID()
 	case oauthstate.FieldOauthAppID:
 		return m.OauthAppID()
 	case oauthstate.FieldProviderType:
@@ -4876,8 +4796,8 @@ func (m *OAuthStateMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *OAuthStateMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case oauthstate.FieldWorkspaceID:
-		return m.OldWorkspaceID(ctx)
+	case oauthstate.FieldUserID:
+		return m.OldUserID(ctx)
 	case oauthstate.FieldOauthAppID:
 		return m.OldOauthAppID(ctx)
 	case oauthstate.FieldProviderType:
@@ -4897,12 +4817,12 @@ func (m *OAuthStateMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *OAuthStateMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case oauthstate.FieldWorkspaceID:
+	case oauthstate.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetWorkspaceID(v)
+		m.SetUserID(v)
 		return nil
 	case oauthstate.FieldOauthAppID:
 		v, ok := value.(uuid.UUID)
@@ -4988,8 +4908,8 @@ func (m *OAuthStateMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *OAuthStateMutation) ResetField(name string) error {
 	switch name {
-	case oauthstate.FieldWorkspaceID:
-		m.ResetWorkspaceID()
+	case oauthstate.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case oauthstate.FieldOauthAppID:
 		m.ResetOauthAppID()
@@ -5012,19 +4932,28 @@ func (m *OAuthStateMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OAuthStateMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, oauthstate.EdgeUser)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *OAuthStateMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oauthstate.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OAuthStateMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -5036,25 +4965,42 @@ func (m *OAuthStateMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OAuthStateMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, oauthstate.EdgeUser)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *OAuthStateMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oauthstate.EdgeUser:
+		return m.cleareduser
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *OAuthStateMutation) ClearEdge(name string) error {
+	switch name {
+	case oauthstate.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
 	return fmt.Errorf("unknown OAuthState unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *OAuthStateMutation) ResetEdge(name string) error {
+	switch name {
+	case oauthstate.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
 	return fmt.Errorf("unknown OAuthState edge %s", name)
 }
 
@@ -5628,646 +5574,6 @@ func (m *PasswordResetMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown PasswordReset edge %s", name)
 }
 
-// PermissionMutation represents an operation that mutates the Permission nodes in the graph.
-type PermissionMutation struct {
-	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	resource_type *string
-	resource_id   *uuid.UUID
-	actions       *[]string
-	appendactions []string
-	created_at    *time.Time
-	clearedFields map[string]struct{}
-	role          *uuid.UUID
-	clearedrole   bool
-	done          bool
-	oldValue      func(context.Context) (*Permission, error)
-	predicates    []predicate.Permission
-}
-
-var _ ent.Mutation = (*PermissionMutation)(nil)
-
-// permissionOption allows management of the mutation configuration using functional options.
-type permissionOption func(*PermissionMutation)
-
-// newPermissionMutation creates new mutation for the Permission entity.
-func newPermissionMutation(c config, op Op, opts ...permissionOption) *PermissionMutation {
-	m := &PermissionMutation{
-		config:        c,
-		op:            op,
-		typ:           TypePermission,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withPermissionID sets the ID field of the mutation.
-func withPermissionID(id uuid.UUID) permissionOption {
-	return func(m *PermissionMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Permission
-		)
-		m.oldValue = func(ctx context.Context) (*Permission, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Permission.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withPermission sets the old Permission of the mutation.
-func withPermission(node *Permission) permissionOption {
-	return func(m *PermissionMutation) {
-		m.oldValue = func(context.Context) (*Permission, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m PermissionMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m PermissionMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Permission entities.
-func (m *PermissionMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *PermissionMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *PermissionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Permission.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetRoleID sets the "role_id" field.
-func (m *PermissionMutation) SetRoleID(u uuid.UUID) {
-	m.role = &u
-}
-
-// RoleID returns the value of the "role_id" field in the mutation.
-func (m *PermissionMutation) RoleID() (r uuid.UUID, exists bool) {
-	v := m.role
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRoleID returns the old "role_id" field's value of the Permission entity.
-// If the Permission object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldRoleID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRoleID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRoleID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRoleID: %w", err)
-	}
-	return oldValue.RoleID, nil
-}
-
-// ResetRoleID resets all changes to the "role_id" field.
-func (m *PermissionMutation) ResetRoleID() {
-	m.role = nil
-}
-
-// SetResourceType sets the "resource_type" field.
-func (m *PermissionMutation) SetResourceType(s string) {
-	m.resource_type = &s
-}
-
-// ResourceType returns the value of the "resource_type" field in the mutation.
-func (m *PermissionMutation) ResourceType() (r string, exists bool) {
-	v := m.resource_type
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldResourceType returns the old "resource_type" field's value of the Permission entity.
-// If the Permission object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldResourceType(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldResourceType is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldResourceType requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldResourceType: %w", err)
-	}
-	return oldValue.ResourceType, nil
-}
-
-// ResetResourceType resets all changes to the "resource_type" field.
-func (m *PermissionMutation) ResetResourceType() {
-	m.resource_type = nil
-}
-
-// SetResourceID sets the "resource_id" field.
-func (m *PermissionMutation) SetResourceID(u uuid.UUID) {
-	m.resource_id = &u
-}
-
-// ResourceID returns the value of the "resource_id" field in the mutation.
-func (m *PermissionMutation) ResourceID() (r uuid.UUID, exists bool) {
-	v := m.resource_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldResourceID returns the old "resource_id" field's value of the Permission entity.
-// If the Permission object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldResourceID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldResourceID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldResourceID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldResourceID: %w", err)
-	}
-	return oldValue.ResourceID, nil
-}
-
-// ClearResourceID clears the value of the "resource_id" field.
-func (m *PermissionMutation) ClearResourceID() {
-	m.resource_id = nil
-	m.clearedFields[permission.FieldResourceID] = struct{}{}
-}
-
-// ResourceIDCleared returns if the "resource_id" field was cleared in this mutation.
-func (m *PermissionMutation) ResourceIDCleared() bool {
-	_, ok := m.clearedFields[permission.FieldResourceID]
-	return ok
-}
-
-// ResetResourceID resets all changes to the "resource_id" field.
-func (m *PermissionMutation) ResetResourceID() {
-	m.resource_id = nil
-	delete(m.clearedFields, permission.FieldResourceID)
-}
-
-// SetActions sets the "actions" field.
-func (m *PermissionMutation) SetActions(s []string) {
-	m.actions = &s
-	m.appendactions = nil
-}
-
-// Actions returns the value of the "actions" field in the mutation.
-func (m *PermissionMutation) Actions() (r []string, exists bool) {
-	v := m.actions
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldActions returns the old "actions" field's value of the Permission entity.
-// If the Permission object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldActions(ctx context.Context) (v []string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldActions is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldActions requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldActions: %w", err)
-	}
-	return oldValue.Actions, nil
-}
-
-// AppendActions adds s to the "actions" field.
-func (m *PermissionMutation) AppendActions(s []string) {
-	m.appendactions = append(m.appendactions, s...)
-}
-
-// AppendedActions returns the list of values that were appended to the "actions" field in this mutation.
-func (m *PermissionMutation) AppendedActions() ([]string, bool) {
-	if len(m.appendactions) == 0 {
-		return nil, false
-	}
-	return m.appendactions, true
-}
-
-// ResetActions resets all changes to the "actions" field.
-func (m *PermissionMutation) ResetActions() {
-	m.actions = nil
-	m.appendactions = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *PermissionMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *PermissionMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Permission entity.
-// If the Permission object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *PermissionMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// ClearRole clears the "role" edge to the Role entity.
-func (m *PermissionMutation) ClearRole() {
-	m.clearedrole = true
-	m.clearedFields[permission.FieldRoleID] = struct{}{}
-}
-
-// RoleCleared reports if the "role" edge to the Role entity was cleared.
-func (m *PermissionMutation) RoleCleared() bool {
-	return m.clearedrole
-}
-
-// RoleIDs returns the "role" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// RoleID instead. It exists only for internal usage by the builders.
-func (m *PermissionMutation) RoleIDs() (ids []uuid.UUID) {
-	if id := m.role; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetRole resets all changes to the "role" edge.
-func (m *PermissionMutation) ResetRole() {
-	m.role = nil
-	m.clearedrole = false
-}
-
-// Where appends a list predicates to the PermissionMutation builder.
-func (m *PermissionMutation) Where(ps ...predicate.Permission) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the PermissionMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *PermissionMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Permission, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *PermissionMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *PermissionMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (Permission).
-func (m *PermissionMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *PermissionMutation) Fields() []string {
-	fields := make([]string, 0, 5)
-	if m.role != nil {
-		fields = append(fields, permission.FieldRoleID)
-	}
-	if m.resource_type != nil {
-		fields = append(fields, permission.FieldResourceType)
-	}
-	if m.resource_id != nil {
-		fields = append(fields, permission.FieldResourceID)
-	}
-	if m.actions != nil {
-		fields = append(fields, permission.FieldActions)
-	}
-	if m.created_at != nil {
-		fields = append(fields, permission.FieldCreatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *PermissionMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case permission.FieldRoleID:
-		return m.RoleID()
-	case permission.FieldResourceType:
-		return m.ResourceType()
-	case permission.FieldResourceID:
-		return m.ResourceID()
-	case permission.FieldActions:
-		return m.Actions()
-	case permission.FieldCreatedAt:
-		return m.CreatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *PermissionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case permission.FieldRoleID:
-		return m.OldRoleID(ctx)
-	case permission.FieldResourceType:
-		return m.OldResourceType(ctx)
-	case permission.FieldResourceID:
-		return m.OldResourceID(ctx)
-	case permission.FieldActions:
-		return m.OldActions(ctx)
-	case permission.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown Permission field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *PermissionMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case permission.FieldRoleID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRoleID(v)
-		return nil
-	case permission.FieldResourceType:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetResourceType(v)
-		return nil
-	case permission.FieldResourceID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetResourceID(v)
-		return nil
-	case permission.FieldActions:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetActions(v)
-		return nil
-	case permission.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Permission field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *PermissionMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *PermissionMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *PermissionMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown Permission numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *PermissionMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(permission.FieldResourceID) {
-		fields = append(fields, permission.FieldResourceID)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *PermissionMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *PermissionMutation) ClearField(name string) error {
-	switch name {
-	case permission.FieldResourceID:
-		m.ClearResourceID()
-		return nil
-	}
-	return fmt.Errorf("unknown Permission nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *PermissionMutation) ResetField(name string) error {
-	switch name {
-	case permission.FieldRoleID:
-		m.ResetRoleID()
-		return nil
-	case permission.FieldResourceType:
-		m.ResetResourceType()
-		return nil
-	case permission.FieldResourceID:
-		m.ResetResourceID()
-		return nil
-	case permission.FieldActions:
-		m.ResetActions()
-		return nil
-	case permission.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown Permission field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *PermissionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.role != nil {
-		edges = append(edges, permission.EdgeRole)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *PermissionMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case permission.EdgeRole:
-		if id := m.role; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *PermissionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *PermissionMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *PermissionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedrole {
-		edges = append(edges, permission.EdgeRole)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *PermissionMutation) EdgeCleared(name string) bool {
-	switch name {
-	case permission.EdgeRole:
-		return m.clearedrole
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *PermissionMutation) ClearEdge(name string) error {
-	switch name {
-	case permission.EdgeRole:
-		m.ClearRole()
-		return nil
-	}
-	return fmt.Errorf("unknown Permission unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *PermissionMutation) ResetEdge(name string) error {
-	switch name {
-	case permission.EdgeRole:
-		m.ResetRole()
-		return nil
-	}
-	return fmt.Errorf("unknown Permission edge %s", name)
-}
-
 // ProviderMutation represents an operation that mutates the Provider nodes in the graph.
 type ProviderMutation struct {
 	config
@@ -6281,8 +5587,8 @@ type ProviderMutation struct {
 	created_at          *time.Time
 	updated_at          *time.Time
 	clearedFields       map[string]struct{}
-	workspace           *uuid.UUID
-	clearedworkspace    bool
+	user                *uuid.UUID
+	cleareduser         bool
 	credential          *uuid.UUID
 	clearedcredential   bool
 	cache_config        *uuid.UUID
@@ -6401,40 +5707,40 @@ func (m *ProviderMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (m *ProviderMutation) SetWorkspaceID(u uuid.UUID) {
-	m.workspace = &u
+// SetUserID sets the "user_id" field.
+func (m *ProviderMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
 }
 
-// WorkspaceID returns the value of the "workspace_id" field in the mutation.
-func (m *ProviderMutation) WorkspaceID() (r uuid.UUID, exists bool) {
-	v := m.workspace
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *ProviderMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldWorkspaceID returns the old "workspace_id" field's value of the Provider entity.
+// OldUserID returns the old "user_id" field's value of the Provider entity.
 // If the Provider object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *ProviderMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
+		return v, errors.New("OldUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
 	}
-	return oldValue.WorkspaceID, nil
+	return oldValue.UserID, nil
 }
 
-// ResetWorkspaceID resets all changes to the "workspace_id" field.
-func (m *ProviderMutation) ResetWorkspaceID() {
-	m.workspace = nil
+// ResetUserID resets all changes to the "user_id" field.
+func (m *ProviderMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetType sets the "type" field.
@@ -6653,31 +5959,31 @@ func (m *ProviderMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (m *ProviderMutation) ClearWorkspace() {
-	m.clearedworkspace = true
-	m.clearedFields[provider.FieldWorkspaceID] = struct{}{}
+// ClearUser clears the "user" edge to the User entity.
+func (m *ProviderMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[provider.FieldUserID] = struct{}{}
 }
 
-// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
-func (m *ProviderMutation) WorkspaceCleared() bool {
-	return m.clearedworkspace
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *ProviderMutation) UserCleared() bool {
+	return m.cleareduser
 }
 
-// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
+// UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *ProviderMutation) WorkspaceIDs() (ids []uuid.UUID) {
-	if id := m.workspace; id != nil {
+// UserID instead. It exists only for internal usage by the builders.
+func (m *ProviderMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetWorkspace resets all changes to the "workspace" edge.
-func (m *ProviderMutation) ResetWorkspace() {
-	m.workspace = nil
-	m.clearedworkspace = false
+// ResetUser resets all changes to the "user" edge.
+func (m *ProviderMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // SetCredentialID sets the "credential" edge to the ProviderCredential entity by id.
@@ -6886,8 +6192,8 @@ func (m *ProviderMutation) Type() string {
 // AddedFields().
 func (m *ProviderMutation) Fields() []string {
 	fields := make([]string, 0, 7)
-	if m.workspace != nil {
-		fields = append(fields, provider.FieldWorkspaceID)
+	if m.user != nil {
+		fields = append(fields, provider.FieldUserID)
 	}
 	if m._type != nil {
 		fields = append(fields, provider.FieldType)
@@ -6915,8 +6221,8 @@ func (m *ProviderMutation) Fields() []string {
 // schema.
 func (m *ProviderMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case provider.FieldWorkspaceID:
-		return m.WorkspaceID()
+	case provider.FieldUserID:
+		return m.UserID()
 	case provider.FieldType:
 		return m.GetType()
 	case provider.FieldName:
@@ -6938,8 +6244,8 @@ func (m *ProviderMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ProviderMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case provider.FieldWorkspaceID:
-		return m.OldWorkspaceID(ctx)
+	case provider.FieldUserID:
+		return m.OldUserID(ctx)
 	case provider.FieldType:
 		return m.OldType(ctx)
 	case provider.FieldName:
@@ -6961,12 +6267,12 @@ func (m *ProviderMutation) OldField(ctx context.Context, name string) (ent.Value
 // type.
 func (m *ProviderMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case provider.FieldWorkspaceID:
+	case provider.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetWorkspaceID(v)
+		m.SetUserID(v)
 		return nil
 	case provider.FieldType:
 		v, ok := value.(string)
@@ -7059,8 +6365,8 @@ func (m *ProviderMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ProviderMutation) ResetField(name string) error {
 	switch name {
-	case provider.FieldWorkspaceID:
-		m.ResetWorkspaceID()
+	case provider.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case provider.FieldType:
 		m.ResetType()
@@ -7087,8 +6393,8 @@ func (m *ProviderMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProviderMutation) AddedEdges() []string {
 	edges := make([]string, 0, 5)
-	if m.workspace != nil {
-		edges = append(edges, provider.EdgeWorkspace)
+	if m.user != nil {
+		edges = append(edges, provider.EdgeUser)
 	}
 	if m.credential != nil {
 		edges = append(edges, provider.EdgeCredential)
@@ -7109,8 +6415,8 @@ func (m *ProviderMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ProviderMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case provider.EdgeWorkspace:
-		if id := m.workspace; id != nil {
+	case provider.EdgeUser:
+		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
 	case provider.EdgeCredential:
@@ -7161,8 +6467,8 @@ func (m *ProviderMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProviderMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 5)
-	if m.clearedworkspace {
-		edges = append(edges, provider.EdgeWorkspace)
+	if m.cleareduser {
+		edges = append(edges, provider.EdgeUser)
 	}
 	if m.clearedcredential {
 		edges = append(edges, provider.EdgeCredential)
@@ -7183,8 +6489,8 @@ func (m *ProviderMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ProviderMutation) EdgeCleared(name string) bool {
 	switch name {
-	case provider.EdgeWorkspace:
-		return m.clearedworkspace
+	case provider.EdgeUser:
+		return m.cleareduser
 	case provider.EdgeCredential:
 		return m.clearedcredential
 	case provider.EdgeCacheConfig:
@@ -7201,8 +6507,8 @@ func (m *ProviderMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ProviderMutation) ClearEdge(name string) error {
 	switch name {
-	case provider.EdgeWorkspace:
-		m.ClearWorkspace()
+	case provider.EdgeUser:
+		m.ClearUser()
 		return nil
 	case provider.EdgeCredential:
 		m.ClearCredential()
@@ -7221,8 +6527,8 @@ func (m *ProviderMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProviderMutation) ResetEdge(name string) error {
 	switch name {
-	case provider.EdgeWorkspace:
-		m.ResetWorkspace()
+	case provider.EdgeUser:
+		m.ResetUser()
 		return nil
 	case provider.EdgeCredential:
 		m.ResetCredential()
@@ -8674,722 +7980,6 @@ func (m *ProviderQuotaMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown ProviderQuota edge %s", name)
 }
 
-// RoleMutation represents an operation that mutates the Role nodes in the graph.
-type RoleMutation struct {
-	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	name               *string
-	is_system          *bool
-	created_at         *time.Time
-	clearedFields      map[string]struct{}
-	workspace          *uuid.UUID
-	clearedworkspace   bool
-	permissions        map[uuid.UUID]struct{}
-	removedpermissions map[uuid.UUID]struct{}
-	clearedpermissions bool
-	members            map[uuid.UUID]struct{}
-	removedmembers     map[uuid.UUID]struct{}
-	clearedmembers     bool
-	done               bool
-	oldValue           func(context.Context) (*Role, error)
-	predicates         []predicate.Role
-}
-
-var _ ent.Mutation = (*RoleMutation)(nil)
-
-// roleOption allows management of the mutation configuration using functional options.
-type roleOption func(*RoleMutation)
-
-// newRoleMutation creates new mutation for the Role entity.
-func newRoleMutation(c config, op Op, opts ...roleOption) *RoleMutation {
-	m := &RoleMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeRole,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withRoleID sets the ID field of the mutation.
-func withRoleID(id uuid.UUID) roleOption {
-	return func(m *RoleMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Role
-		)
-		m.oldValue = func(ctx context.Context) (*Role, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Role.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withRole sets the old Role of the mutation.
-func withRole(node *Role) roleOption {
-	return func(m *RoleMutation) {
-		m.oldValue = func(context.Context) (*Role, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m RoleMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m RoleMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Role entities.
-func (m *RoleMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *RoleMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *RoleMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Role.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetWorkspaceID sets the "workspace_id" field.
-func (m *RoleMutation) SetWorkspaceID(u uuid.UUID) {
-	m.workspace = &u
-}
-
-// WorkspaceID returns the value of the "workspace_id" field in the mutation.
-func (m *RoleMutation) WorkspaceID() (r uuid.UUID, exists bool) {
-	v := m.workspace
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldWorkspaceID returns the old "workspace_id" field's value of the Role entity.
-// If the Role object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoleMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
-	}
-	return oldValue.WorkspaceID, nil
-}
-
-// ResetWorkspaceID resets all changes to the "workspace_id" field.
-func (m *RoleMutation) ResetWorkspaceID() {
-	m.workspace = nil
-}
-
-// SetName sets the "name" field.
-func (m *RoleMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *RoleMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the Role entity.
-// If the Role object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoleMutation) OldName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
-	}
-	return oldValue.Name, nil
-}
-
-// ResetName resets all changes to the "name" field.
-func (m *RoleMutation) ResetName() {
-	m.name = nil
-}
-
-// SetIsSystem sets the "is_system" field.
-func (m *RoleMutation) SetIsSystem(b bool) {
-	m.is_system = &b
-}
-
-// IsSystem returns the value of the "is_system" field in the mutation.
-func (m *RoleMutation) IsSystem() (r bool, exists bool) {
-	v := m.is_system
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsSystem returns the old "is_system" field's value of the Role entity.
-// If the Role object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoleMutation) OldIsSystem(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsSystem is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsSystem requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsSystem: %w", err)
-	}
-	return oldValue.IsSystem, nil
-}
-
-// ResetIsSystem resets all changes to the "is_system" field.
-func (m *RoleMutation) ResetIsSystem() {
-	m.is_system = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *RoleMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *RoleMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Role entity.
-// If the Role object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoleMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *RoleMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (m *RoleMutation) ClearWorkspace() {
-	m.clearedworkspace = true
-	m.clearedFields[role.FieldWorkspaceID] = struct{}{}
-}
-
-// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
-func (m *RoleMutation) WorkspaceCleared() bool {
-	return m.clearedworkspace
-}
-
-// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *RoleMutation) WorkspaceIDs() (ids []uuid.UUID) {
-	if id := m.workspace; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetWorkspace resets all changes to the "workspace" edge.
-func (m *RoleMutation) ResetWorkspace() {
-	m.workspace = nil
-	m.clearedworkspace = false
-}
-
-// AddPermissionIDs adds the "permissions" edge to the Permission entity by ids.
-func (m *RoleMutation) AddPermissionIDs(ids ...uuid.UUID) {
-	if m.permissions == nil {
-		m.permissions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.permissions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearPermissions clears the "permissions" edge to the Permission entity.
-func (m *RoleMutation) ClearPermissions() {
-	m.clearedpermissions = true
-}
-
-// PermissionsCleared reports if the "permissions" edge to the Permission entity was cleared.
-func (m *RoleMutation) PermissionsCleared() bool {
-	return m.clearedpermissions
-}
-
-// RemovePermissionIDs removes the "permissions" edge to the Permission entity by IDs.
-func (m *RoleMutation) RemovePermissionIDs(ids ...uuid.UUID) {
-	if m.removedpermissions == nil {
-		m.removedpermissions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.permissions, ids[i])
-		m.removedpermissions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedPermissions returns the removed IDs of the "permissions" edge to the Permission entity.
-func (m *RoleMutation) RemovedPermissionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedpermissions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// PermissionsIDs returns the "permissions" edge IDs in the mutation.
-func (m *RoleMutation) PermissionsIDs() (ids []uuid.UUID) {
-	for id := range m.permissions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetPermissions resets all changes to the "permissions" edge.
-func (m *RoleMutation) ResetPermissions() {
-	m.permissions = nil
-	m.clearedpermissions = false
-	m.removedpermissions = nil
-}
-
-// AddMemberIDs adds the "members" edge to the WorkspaceMember entity by ids.
-func (m *RoleMutation) AddMemberIDs(ids ...uuid.UUID) {
-	if m.members == nil {
-		m.members = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.members[ids[i]] = struct{}{}
-	}
-}
-
-// ClearMembers clears the "members" edge to the WorkspaceMember entity.
-func (m *RoleMutation) ClearMembers() {
-	m.clearedmembers = true
-}
-
-// MembersCleared reports if the "members" edge to the WorkspaceMember entity was cleared.
-func (m *RoleMutation) MembersCleared() bool {
-	return m.clearedmembers
-}
-
-// RemoveMemberIDs removes the "members" edge to the WorkspaceMember entity by IDs.
-func (m *RoleMutation) RemoveMemberIDs(ids ...uuid.UUID) {
-	if m.removedmembers == nil {
-		m.removedmembers = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.members, ids[i])
-		m.removedmembers[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMembers returns the removed IDs of the "members" edge to the WorkspaceMember entity.
-func (m *RoleMutation) RemovedMembersIDs() (ids []uuid.UUID) {
-	for id := range m.removedmembers {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MembersIDs returns the "members" edge IDs in the mutation.
-func (m *RoleMutation) MembersIDs() (ids []uuid.UUID) {
-	for id := range m.members {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMembers resets all changes to the "members" edge.
-func (m *RoleMutation) ResetMembers() {
-	m.members = nil
-	m.clearedmembers = false
-	m.removedmembers = nil
-}
-
-// Where appends a list predicates to the RoleMutation builder.
-func (m *RoleMutation) Where(ps ...predicate.Role) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the RoleMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *RoleMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Role, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *RoleMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *RoleMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (Role).
-func (m *RoleMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *RoleMutation) Fields() []string {
-	fields := make([]string, 0, 4)
-	if m.workspace != nil {
-		fields = append(fields, role.FieldWorkspaceID)
-	}
-	if m.name != nil {
-		fields = append(fields, role.FieldName)
-	}
-	if m.is_system != nil {
-		fields = append(fields, role.FieldIsSystem)
-	}
-	if m.created_at != nil {
-		fields = append(fields, role.FieldCreatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *RoleMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case role.FieldWorkspaceID:
-		return m.WorkspaceID()
-	case role.FieldName:
-		return m.Name()
-	case role.FieldIsSystem:
-		return m.IsSystem()
-	case role.FieldCreatedAt:
-		return m.CreatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *RoleMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case role.FieldWorkspaceID:
-		return m.OldWorkspaceID(ctx)
-	case role.FieldName:
-		return m.OldName(ctx)
-	case role.FieldIsSystem:
-		return m.OldIsSystem(ctx)
-	case role.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown Role field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *RoleMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case role.FieldWorkspaceID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetWorkspaceID(v)
-		return nil
-	case role.FieldName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetName(v)
-		return nil
-	case role.FieldIsSystem:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsSystem(v)
-		return nil
-	case role.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Role field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *RoleMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *RoleMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *RoleMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown Role numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *RoleMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *RoleMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *RoleMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown Role nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *RoleMutation) ResetField(name string) error {
-	switch name {
-	case role.FieldWorkspaceID:
-		m.ResetWorkspaceID()
-		return nil
-	case role.FieldName:
-		m.ResetName()
-		return nil
-	case role.FieldIsSystem:
-		m.ResetIsSystem()
-		return nil
-	case role.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown Role field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *RoleMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.workspace != nil {
-		edges = append(edges, role.EdgeWorkspace)
-	}
-	if m.permissions != nil {
-		edges = append(edges, role.EdgePermissions)
-	}
-	if m.members != nil {
-		edges = append(edges, role.EdgeMembers)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *RoleMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case role.EdgeWorkspace:
-		if id := m.workspace; id != nil {
-			return []ent.Value{*id}
-		}
-	case role.EdgePermissions:
-		ids := make([]ent.Value, 0, len(m.permissions))
-		for id := range m.permissions {
-			ids = append(ids, id)
-		}
-		return ids
-	case role.EdgeMembers:
-		ids := make([]ent.Value, 0, len(m.members))
-		for id := range m.members {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *RoleMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removedpermissions != nil {
-		edges = append(edges, role.EdgePermissions)
-	}
-	if m.removedmembers != nil {
-		edges = append(edges, role.EdgeMembers)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *RoleMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case role.EdgePermissions:
-		ids := make([]ent.Value, 0, len(m.removedpermissions))
-		for id := range m.removedpermissions {
-			ids = append(ids, id)
-		}
-		return ids
-	case role.EdgeMembers:
-		ids := make([]ent.Value, 0, len(m.removedmembers))
-		for id := range m.removedmembers {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *RoleMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.clearedworkspace {
-		edges = append(edges, role.EdgeWorkspace)
-	}
-	if m.clearedpermissions {
-		edges = append(edges, role.EdgePermissions)
-	}
-	if m.clearedmembers {
-		edges = append(edges, role.EdgeMembers)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *RoleMutation) EdgeCleared(name string) bool {
-	switch name {
-	case role.EdgeWorkspace:
-		return m.clearedworkspace
-	case role.EdgePermissions:
-		return m.clearedpermissions
-	case role.EdgeMembers:
-		return m.clearedmembers
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *RoleMutation) ClearEdge(name string) error {
-	switch name {
-	case role.EdgeWorkspace:
-		m.ClearWorkspace()
-		return nil
-	}
-	return fmt.Errorf("unknown Role unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *RoleMutation) ResetEdge(name string) error {
-	switch name {
-	case role.EdgeWorkspace:
-		m.ResetWorkspace()
-		return nil
-	case role.EdgePermissions:
-		m.ResetPermissions()
-		return nil
-	case role.EdgeMembers:
-		m.ResetMembers()
-		return nil
-	}
-	return fmt.Errorf("unknown Role edge %s", name)
-}
-
 // SessionMutation represents an operation that mutates the Session nodes in the graph.
 type SessionMutation struct {
 	config
@@ -10144,26 +8734,26 @@ func (m *SessionMutation) ResetEdge(name string) error {
 // SharedLinkMutation represents an operation that mutates the SharedLink nodes in the graph.
 type SharedLinkMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	file_node_id     *uuid.UUID
-	token            *string
-	permissions      *schema.SharedLinkPermissions
-	password_hash    *string
-	expires_at       *time.Time
-	max_uploads      *int
-	addmax_uploads   *int
-	upload_count     *int
-	addupload_count  *int
-	active           *bool
-	created_at       *time.Time
-	clearedFields    map[string]struct{}
-	workspace        *uuid.UUID
-	clearedworkspace bool
-	done             bool
-	oldValue         func(context.Context) (*SharedLink, error)
-	predicates       []predicate.SharedLink
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	file_node_id    *uuid.UUID
+	token           *string
+	permissions     *schema.SharedLinkPermissions
+	password_hash   *string
+	expires_at      *time.Time
+	max_uploads     *int
+	addmax_uploads  *int
+	upload_count    *int
+	addupload_count *int
+	active          *bool
+	created_at      *time.Time
+	clearedFields   map[string]struct{}
+	user            *uuid.UUID
+	cleareduser     bool
+	done            bool
+	oldValue        func(context.Context) (*SharedLink, error)
+	predicates      []predicate.SharedLink
 }
 
 var _ ent.Mutation = (*SharedLinkMutation)(nil)
@@ -10270,40 +8860,40 @@ func (m *SharedLinkMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (m *SharedLinkMutation) SetWorkspaceID(u uuid.UUID) {
-	m.workspace = &u
+// SetUserID sets the "user_id" field.
+func (m *SharedLinkMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
 }
 
-// WorkspaceID returns the value of the "workspace_id" field in the mutation.
-func (m *SharedLinkMutation) WorkspaceID() (r uuid.UUID, exists bool) {
-	v := m.workspace
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *SharedLinkMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldWorkspaceID returns the old "workspace_id" field's value of the SharedLink entity.
+// OldUserID returns the old "user_id" field's value of the SharedLink entity.
 // If the SharedLink object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SharedLinkMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *SharedLinkMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
+		return v, errors.New("OldUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
 	}
-	return oldValue.WorkspaceID, nil
+	return oldValue.UserID, nil
 }
 
-// ResetWorkspaceID resets all changes to the "workspace_id" field.
-func (m *SharedLinkMutation) ResetWorkspaceID() {
-	m.workspace = nil
+// ResetUserID resets all changes to the "user_id" field.
+func (m *SharedLinkMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetFileNodeID sets the "file_node_id" field.
@@ -10710,31 +9300,31 @@ func (m *SharedLinkMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (m *SharedLinkMutation) ClearWorkspace() {
-	m.clearedworkspace = true
-	m.clearedFields[sharedlink.FieldWorkspaceID] = struct{}{}
+// ClearUser clears the "user" edge to the User entity.
+func (m *SharedLinkMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[sharedlink.FieldUserID] = struct{}{}
 }
 
-// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
-func (m *SharedLinkMutation) WorkspaceCleared() bool {
-	return m.clearedworkspace
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *SharedLinkMutation) UserCleared() bool {
+	return m.cleareduser
 }
 
-// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
+// UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *SharedLinkMutation) WorkspaceIDs() (ids []uuid.UUID) {
-	if id := m.workspace; id != nil {
+// UserID instead. It exists only for internal usage by the builders.
+func (m *SharedLinkMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetWorkspace resets all changes to the "workspace" edge.
-func (m *SharedLinkMutation) ResetWorkspace() {
-	m.workspace = nil
-	m.clearedworkspace = false
+// ResetUser resets all changes to the "user" edge.
+func (m *SharedLinkMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // Where appends a list predicates to the SharedLinkMutation builder.
@@ -10772,8 +9362,8 @@ func (m *SharedLinkMutation) Type() string {
 // AddedFields().
 func (m *SharedLinkMutation) Fields() []string {
 	fields := make([]string, 0, 10)
-	if m.workspace != nil {
-		fields = append(fields, sharedlink.FieldWorkspaceID)
+	if m.user != nil {
+		fields = append(fields, sharedlink.FieldUserID)
 	}
 	if m.file_node_id != nil {
 		fields = append(fields, sharedlink.FieldFileNodeID)
@@ -10810,8 +9400,8 @@ func (m *SharedLinkMutation) Fields() []string {
 // schema.
 func (m *SharedLinkMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case sharedlink.FieldWorkspaceID:
-		return m.WorkspaceID()
+	case sharedlink.FieldUserID:
+		return m.UserID()
 	case sharedlink.FieldFileNodeID:
 		return m.FileNodeID()
 	case sharedlink.FieldToken:
@@ -10839,8 +9429,8 @@ func (m *SharedLinkMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *SharedLinkMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case sharedlink.FieldWorkspaceID:
-		return m.OldWorkspaceID(ctx)
+	case sharedlink.FieldUserID:
+		return m.OldUserID(ctx)
 	case sharedlink.FieldFileNodeID:
 		return m.OldFileNodeID(ctx)
 	case sharedlink.FieldToken:
@@ -10868,12 +9458,12 @@ func (m *SharedLinkMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *SharedLinkMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case sharedlink.FieldWorkspaceID:
+	case sharedlink.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetWorkspaceID(v)
+		m.SetUserID(v)
 		return nil
 	case sharedlink.FieldFileNodeID:
 		v, ok := value.(uuid.UUID)
@@ -11035,8 +9625,8 @@ func (m *SharedLinkMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *SharedLinkMutation) ResetField(name string) error {
 	switch name {
-	case sharedlink.FieldWorkspaceID:
-		m.ResetWorkspaceID()
+	case sharedlink.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case sharedlink.FieldFileNodeID:
 		m.ResetFileNodeID()
@@ -11072,8 +9662,8 @@ func (m *SharedLinkMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SharedLinkMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.workspace != nil {
-		edges = append(edges, sharedlink.EdgeWorkspace)
+	if m.user != nil {
+		edges = append(edges, sharedlink.EdgeUser)
 	}
 	return edges
 }
@@ -11082,8 +9672,8 @@ func (m *SharedLinkMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *SharedLinkMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case sharedlink.EdgeWorkspace:
-		if id := m.workspace; id != nil {
+	case sharedlink.EdgeUser:
+		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -11105,8 +9695,8 @@ func (m *SharedLinkMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SharedLinkMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedworkspace {
-		edges = append(edges, sharedlink.EdgeWorkspace)
+	if m.cleareduser {
+		edges = append(edges, sharedlink.EdgeUser)
 	}
 	return edges
 }
@@ -11115,8 +9705,8 @@ func (m *SharedLinkMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *SharedLinkMutation) EdgeCleared(name string) bool {
 	switch name {
-	case sharedlink.EdgeWorkspace:
-		return m.clearedworkspace
+	case sharedlink.EdgeUser:
+		return m.cleareduser
 	}
 	return false
 }
@@ -11125,8 +9715,8 @@ func (m *SharedLinkMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *SharedLinkMutation) ClearEdge(name string) error {
 	switch name {
-	case sharedlink.EdgeWorkspace:
-		m.ClearWorkspace()
+	case sharedlink.EdgeUser:
+		m.ClearUser()
 		return nil
 	}
 	return fmt.Errorf("unknown SharedLink unique edge %s", name)
@@ -11136,8 +9726,8 @@ func (m *SharedLinkMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *SharedLinkMutation) ResetEdge(name string) error {
 	switch name {
-	case sharedlink.EdgeWorkspace:
-		m.ResetWorkspace()
+	case sharedlink.EdgeUser:
+		m.ResetUser()
 		return nil
 	}
 	return fmt.Errorf("unknown SharedLink edge %s", name)
@@ -11170,8 +9760,8 @@ type TransferJobMutation struct {
 	created_at              *time.Time
 	completed_at            *time.Time
 	clearedFields           map[string]struct{}
-	workspace               *uuid.UUID
-	clearedworkspace        bool
+	user                    *uuid.UUID
+	cleareduser             bool
 	files                   map[uuid.UUID]struct{}
 	removedfiles            map[uuid.UUID]struct{}
 	clearedfiles            bool
@@ -11284,40 +9874,40 @@ func (m *TransferJobMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (m *TransferJobMutation) SetWorkspaceID(u uuid.UUID) {
-	m.workspace = &u
+// SetUserID sets the "user_id" field.
+func (m *TransferJobMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
 }
 
-// WorkspaceID returns the value of the "workspace_id" field in the mutation.
-func (m *TransferJobMutation) WorkspaceID() (r uuid.UUID, exists bool) {
-	v := m.workspace
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *TransferJobMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldWorkspaceID returns the old "workspace_id" field's value of the TransferJob entity.
+// OldUserID returns the old "user_id" field's value of the TransferJob entity.
 // If the TransferJob object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TransferJobMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *TransferJobMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
+		return v, errors.New("OldUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
 	}
-	return oldValue.WorkspaceID, nil
+	return oldValue.UserID, nil
 }
 
-// ResetWorkspaceID resets all changes to the "workspace_id" field.
-func (m *TransferJobMutation) ResetWorkspaceID() {
-	m.workspace = nil
+// ResetUserID resets all changes to the "user_id" field.
+func (m *TransferJobMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetSourceProviderID sets the "source_provider_id" field.
@@ -12012,31 +10602,31 @@ func (m *TransferJobMutation) ResetCompletedAt() {
 	delete(m.clearedFields, transferjob.FieldCompletedAt)
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (m *TransferJobMutation) ClearWorkspace() {
-	m.clearedworkspace = true
-	m.clearedFields[transferjob.FieldWorkspaceID] = struct{}{}
+// ClearUser clears the "user" edge to the User entity.
+func (m *TransferJobMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[transferjob.FieldUserID] = struct{}{}
 }
 
-// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
-func (m *TransferJobMutation) WorkspaceCleared() bool {
-	return m.clearedworkspace
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *TransferJobMutation) UserCleared() bool {
+	return m.cleareduser
 }
 
-// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
+// UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *TransferJobMutation) WorkspaceIDs() (ids []uuid.UUID) {
-	if id := m.workspace; id != nil {
+// UserID instead. It exists only for internal usage by the builders.
+func (m *TransferJobMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetWorkspace resets all changes to the "workspace" edge.
-func (m *TransferJobMutation) ResetWorkspace() {
-	m.workspace = nil
-	m.clearedworkspace = false
+// ResetUser resets all changes to the "user" edge.
+func (m *TransferJobMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // AddFileIDs adds the "files" edge to the TransferJobFile entity by ids.
@@ -12128,8 +10718,8 @@ func (m *TransferJobMutation) Type() string {
 // AddedFields().
 func (m *TransferJobMutation) Fields() []string {
 	fields := make([]string, 0, 16)
-	if m.workspace != nil {
-		fields = append(fields, transferjob.FieldWorkspaceID)
+	if m.user != nil {
+		fields = append(fields, transferjob.FieldUserID)
 	}
 	if m.source_provider_id != nil {
 		fields = append(fields, transferjob.FieldSourceProviderID)
@@ -12184,8 +10774,8 @@ func (m *TransferJobMutation) Fields() []string {
 // schema.
 func (m *TransferJobMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case transferjob.FieldWorkspaceID:
-		return m.WorkspaceID()
+	case transferjob.FieldUserID:
+		return m.UserID()
 	case transferjob.FieldSourceProviderID:
 		return m.SourceProviderID()
 	case transferjob.FieldDestProviderID:
@@ -12225,8 +10815,8 @@ func (m *TransferJobMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *TransferJobMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case transferjob.FieldWorkspaceID:
-		return m.OldWorkspaceID(ctx)
+	case transferjob.FieldUserID:
+		return m.OldUserID(ctx)
 	case transferjob.FieldSourceProviderID:
 		return m.OldSourceProviderID(ctx)
 	case transferjob.FieldDestProviderID:
@@ -12266,12 +10856,12 @@ func (m *TransferJobMutation) OldField(ctx context.Context, name string) (ent.Va
 // type.
 func (m *TransferJobMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case transferjob.FieldWorkspaceID:
+	case transferjob.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetWorkspaceID(v)
+		m.SetUserID(v)
 		return nil
 	case transferjob.FieldSourceProviderID:
 		v, ok := value.(uuid.UUID)
@@ -12517,8 +11107,8 @@ func (m *TransferJobMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *TransferJobMutation) ResetField(name string) error {
 	switch name {
-	case transferjob.FieldWorkspaceID:
-		m.ResetWorkspaceID()
+	case transferjob.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case transferjob.FieldSourceProviderID:
 		m.ResetSourceProviderID()
@@ -12572,8 +11162,8 @@ func (m *TransferJobMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TransferJobMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.workspace != nil {
-		edges = append(edges, transferjob.EdgeWorkspace)
+	if m.user != nil {
+		edges = append(edges, transferjob.EdgeUser)
 	}
 	if m.files != nil {
 		edges = append(edges, transferjob.EdgeFiles)
@@ -12585,8 +11175,8 @@ func (m *TransferJobMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *TransferJobMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case transferjob.EdgeWorkspace:
-		if id := m.workspace; id != nil {
+	case transferjob.EdgeUser:
+		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
 	case transferjob.EdgeFiles:
@@ -12625,8 +11215,8 @@ func (m *TransferJobMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TransferJobMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.clearedworkspace {
-		edges = append(edges, transferjob.EdgeWorkspace)
+	if m.cleareduser {
+		edges = append(edges, transferjob.EdgeUser)
 	}
 	if m.clearedfiles {
 		edges = append(edges, transferjob.EdgeFiles)
@@ -12638,8 +11228,8 @@ func (m *TransferJobMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *TransferJobMutation) EdgeCleared(name string) bool {
 	switch name {
-	case transferjob.EdgeWorkspace:
-		return m.clearedworkspace
+	case transferjob.EdgeUser:
+		return m.cleareduser
 	case transferjob.EdgeFiles:
 		return m.clearedfiles
 	}
@@ -12650,8 +11240,8 @@ func (m *TransferJobMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *TransferJobMutation) ClearEdge(name string) error {
 	switch name {
-	case transferjob.EdgeWorkspace:
-		m.ClearWorkspace()
+	case transferjob.EdgeUser:
+		m.ClearUser()
 		return nil
 	}
 	return fmt.Errorf("unknown TransferJob unique edge %s", name)
@@ -12661,8 +11251,8 @@ func (m *TransferJobMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *TransferJobMutation) ResetEdge(name string) error {
 	switch name {
-	case transferjob.EdgeWorkspace:
-		m.ResetWorkspace()
+	case transferjob.EdgeUser:
+		m.ResetUser()
 		return nil
 	case transferjob.EdgeFiles:
 		m.ResetFiles()
@@ -13694,8 +12284,8 @@ type UploadBatchMutation struct {
 	created_at           *time.Time
 	completed_at         *time.Time
 	clearedFields        map[string]struct{}
-	workspace            *uuid.UUID
-	clearedworkspace     bool
+	user                 *uuid.UUID
+	cleareduser          bool
 	files                map[uuid.UUID]struct{}
 	removedfiles         map[uuid.UUID]struct{}
 	clearedfiles         bool
@@ -13808,40 +12398,40 @@ func (m *UploadBatchMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetWorkspaceID sets the "workspace_id" field.
-func (m *UploadBatchMutation) SetWorkspaceID(u uuid.UUID) {
-	m.workspace = &u
+// SetUserID sets the "user_id" field.
+func (m *UploadBatchMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
 }
 
-// WorkspaceID returns the value of the "workspace_id" field in the mutation.
-func (m *UploadBatchMutation) WorkspaceID() (r uuid.UUID, exists bool) {
-	v := m.workspace
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *UploadBatchMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldWorkspaceID returns the old "workspace_id" field's value of the UploadBatch entity.
+// OldUserID returns the old "user_id" field's value of the UploadBatch entity.
 // If the UploadBatch object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UploadBatchMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *UploadBatchMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
+		return v, errors.New("OldUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
 	}
-	return oldValue.WorkspaceID, nil
+	return oldValue.UserID, nil
 }
 
-// ResetWorkspaceID resets all changes to the "workspace_id" field.
-func (m *UploadBatchMutation) ResetWorkspaceID() {
-	m.workspace = nil
+// ResetUserID resets all changes to the "user_id" field.
+func (m *UploadBatchMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetProviderID sets the "provider_id" field.
@@ -14330,31 +12920,31 @@ func (m *UploadBatchMutation) ResetCompletedAt() {
 	delete(m.clearedFields, uploadbatch.FieldCompletedAt)
 }
 
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (m *UploadBatchMutation) ClearWorkspace() {
-	m.clearedworkspace = true
-	m.clearedFields[uploadbatch.FieldWorkspaceID] = struct{}{}
+// ClearUser clears the "user" edge to the User entity.
+func (m *UploadBatchMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[uploadbatch.FieldUserID] = struct{}{}
 }
 
-// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
-func (m *UploadBatchMutation) WorkspaceCleared() bool {
-	return m.clearedworkspace
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *UploadBatchMutation) UserCleared() bool {
+	return m.cleareduser
 }
 
-// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
+// UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *UploadBatchMutation) WorkspaceIDs() (ids []uuid.UUID) {
-	if id := m.workspace; id != nil {
+// UserID instead. It exists only for internal usage by the builders.
+func (m *UploadBatchMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetWorkspace resets all changes to the "workspace" edge.
-func (m *UploadBatchMutation) ResetWorkspace() {
-	m.workspace = nil
-	m.clearedworkspace = false
+// ResetUser resets all changes to the "user" edge.
+func (m *UploadBatchMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // AddFileIDs adds the "files" edge to the UploadBatchFile entity by ids.
@@ -14446,8 +13036,8 @@ func (m *UploadBatchMutation) Type() string {
 // AddedFields().
 func (m *UploadBatchMutation) Fields() []string {
 	fields := make([]string, 0, 11)
-	if m.workspace != nil {
-		fields = append(fields, uploadbatch.FieldWorkspaceID)
+	if m.user != nil {
+		fields = append(fields, uploadbatch.FieldUserID)
 	}
 	if m.provider_id != nil {
 		fields = append(fields, uploadbatch.FieldProviderID)
@@ -14487,8 +13077,8 @@ func (m *UploadBatchMutation) Fields() []string {
 // schema.
 func (m *UploadBatchMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case uploadbatch.FieldWorkspaceID:
-		return m.WorkspaceID()
+	case uploadbatch.FieldUserID:
+		return m.UserID()
 	case uploadbatch.FieldProviderID:
 		return m.ProviderID()
 	case uploadbatch.FieldParentRemoteID:
@@ -14518,8 +13108,8 @@ func (m *UploadBatchMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *UploadBatchMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case uploadbatch.FieldWorkspaceID:
-		return m.OldWorkspaceID(ctx)
+	case uploadbatch.FieldUserID:
+		return m.OldUserID(ctx)
 	case uploadbatch.FieldProviderID:
 		return m.OldProviderID(ctx)
 	case uploadbatch.FieldParentRemoteID:
@@ -14549,12 +13139,12 @@ func (m *UploadBatchMutation) OldField(ctx context.Context, name string) (ent.Va
 // type.
 func (m *UploadBatchMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case uploadbatch.FieldWorkspaceID:
+	case uploadbatch.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetWorkspaceID(v)
+		m.SetUserID(v)
 		return nil
 	case uploadbatch.FieldProviderID:
 		v, ok := value.(uuid.UUID)
@@ -14753,8 +13343,8 @@ func (m *UploadBatchMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *UploadBatchMutation) ResetField(name string) error {
 	switch name {
-	case uploadbatch.FieldWorkspaceID:
-		m.ResetWorkspaceID()
+	case uploadbatch.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case uploadbatch.FieldProviderID:
 		m.ResetProviderID()
@@ -14793,8 +13383,8 @@ func (m *UploadBatchMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UploadBatchMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.workspace != nil {
-		edges = append(edges, uploadbatch.EdgeWorkspace)
+	if m.user != nil {
+		edges = append(edges, uploadbatch.EdgeUser)
 	}
 	if m.files != nil {
 		edges = append(edges, uploadbatch.EdgeFiles)
@@ -14806,8 +13396,8 @@ func (m *UploadBatchMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *UploadBatchMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case uploadbatch.EdgeWorkspace:
-		if id := m.workspace; id != nil {
+	case uploadbatch.EdgeUser:
+		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
 	case uploadbatch.EdgeFiles:
@@ -14846,8 +13436,8 @@ func (m *UploadBatchMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UploadBatchMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.clearedworkspace {
-		edges = append(edges, uploadbatch.EdgeWorkspace)
+	if m.cleareduser {
+		edges = append(edges, uploadbatch.EdgeUser)
 	}
 	if m.clearedfiles {
 		edges = append(edges, uploadbatch.EdgeFiles)
@@ -14859,8 +13449,8 @@ func (m *UploadBatchMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *UploadBatchMutation) EdgeCleared(name string) bool {
 	switch name {
-	case uploadbatch.EdgeWorkspace:
-		return m.clearedworkspace
+	case uploadbatch.EdgeUser:
+		return m.cleareduser
 	case uploadbatch.EdgeFiles:
 		return m.clearedfiles
 	}
@@ -14871,8 +13461,8 @@ func (m *UploadBatchMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UploadBatchMutation) ClearEdge(name string) error {
 	switch name {
-	case uploadbatch.EdgeWorkspace:
-		m.ClearWorkspace()
+	case uploadbatch.EdgeUser:
+		m.ClearUser()
 		return nil
 	}
 	return fmt.Errorf("unknown UploadBatch unique edge %s", name)
@@ -14882,8 +13472,8 @@ func (m *UploadBatchMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *UploadBatchMutation) ResetEdge(name string) error {
 	switch name {
-	case uploadbatch.EdgeWorkspace:
-		m.ResetWorkspace()
+	case uploadbatch.EdgeUser:
+		m.ResetUser()
 		return nil
 	case uploadbatch.EdgeFiles:
 		m.ResetFiles()
@@ -15915,27 +14505,45 @@ func (m *UploadBatchFileMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	email              *string
-	name               *string
-	password_hash      *string
-	created_at         *time.Time
-	updated_at         *time.Time
-	clearedFields      map[string]struct{}
-	memberships        map[uuid.UUID]struct{}
-	removedmemberships map[uuid.UUID]struct{}
-	clearedmemberships bool
-	sessions           map[uuid.UUID]struct{}
-	removedsessions    map[uuid.UUID]struct{}
-	clearedsessions    bool
-	api_tokens         map[uuid.UUID]struct{}
-	removedapi_tokens  map[uuid.UUID]struct{}
-	clearedapi_tokens  bool
-	done               bool
-	oldValue           func(context.Context) (*User, error)
-	predicates         []predicate.User
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	email                 *string
+	name                  *string
+	password_hash         *string
+	created_at            *time.Time
+	updated_at            *time.Time
+	clearedFields         map[string]struct{}
+	sessions              map[uuid.UUID]struct{}
+	removedsessions       map[uuid.UUID]struct{}
+	clearedsessions       bool
+	api_tokens            map[uuid.UUID]struct{}
+	removedapi_tokens     map[uuid.UUID]struct{}
+	clearedapi_tokens     bool
+	providers             map[uuid.UUID]struct{}
+	removedproviders      map[uuid.UUID]struct{}
+	clearedproviders      bool
+	oauth_apps            map[uuid.UUID]struct{}
+	removedoauth_apps     map[uuid.UUID]struct{}
+	clearedoauth_apps     bool
+	oauth_states          map[uuid.UUID]struct{}
+	removedoauth_states   map[uuid.UUID]struct{}
+	clearedoauth_states   bool
+	upload_batches        map[uuid.UUID]struct{}
+	removedupload_batches map[uuid.UUID]struct{}
+	clearedupload_batches bool
+	transfer_jobs         map[uuid.UUID]struct{}
+	removedtransfer_jobs  map[uuid.UUID]struct{}
+	clearedtransfer_jobs  bool
+	shared_links          map[uuid.UUID]struct{}
+	removedshared_links   map[uuid.UUID]struct{}
+	clearedshared_links   bool
+	bandwidth_logs        map[uuid.UUID]struct{}
+	removedbandwidth_logs map[uuid.UUID]struct{}
+	clearedbandwidth_logs bool
+	done                  bool
+	oldValue              func(context.Context) (*User, error)
+	predicates            []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -16222,60 +14830,6 @@ func (m *UserMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// AddMembershipIDs adds the "memberships" edge to the WorkspaceMember entity by ids.
-func (m *UserMutation) AddMembershipIDs(ids ...uuid.UUID) {
-	if m.memberships == nil {
-		m.memberships = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.memberships[ids[i]] = struct{}{}
-	}
-}
-
-// ClearMemberships clears the "memberships" edge to the WorkspaceMember entity.
-func (m *UserMutation) ClearMemberships() {
-	m.clearedmemberships = true
-}
-
-// MembershipsCleared reports if the "memberships" edge to the WorkspaceMember entity was cleared.
-func (m *UserMutation) MembershipsCleared() bool {
-	return m.clearedmemberships
-}
-
-// RemoveMembershipIDs removes the "memberships" edge to the WorkspaceMember entity by IDs.
-func (m *UserMutation) RemoveMembershipIDs(ids ...uuid.UUID) {
-	if m.removedmemberships == nil {
-		m.removedmemberships = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.memberships, ids[i])
-		m.removedmemberships[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMemberships returns the removed IDs of the "memberships" edge to the WorkspaceMember entity.
-func (m *UserMutation) RemovedMembershipsIDs() (ids []uuid.UUID) {
-	for id := range m.removedmemberships {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MembershipsIDs returns the "memberships" edge IDs in the mutation.
-func (m *UserMutation) MembershipsIDs() (ids []uuid.UUID) {
-	for id := range m.memberships {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMemberships resets all changes to the "memberships" edge.
-func (m *UserMutation) ResetMemberships() {
-	m.memberships = nil
-	m.clearedmemberships = false
-	m.removedmemberships = nil
-}
-
 // AddSessionIDs adds the "sessions" edge to the Session entity by ids.
 func (m *UserMutation) AddSessionIDs(ids ...uuid.UUID) {
 	if m.sessions == nil {
@@ -16382,6 +14936,384 @@ func (m *UserMutation) ResetAPITokens() {
 	m.api_tokens = nil
 	m.clearedapi_tokens = false
 	m.removedapi_tokens = nil
+}
+
+// AddProviderIDs adds the "providers" edge to the Provider entity by ids.
+func (m *UserMutation) AddProviderIDs(ids ...uuid.UUID) {
+	if m.providers == nil {
+		m.providers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.providers[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProviders clears the "providers" edge to the Provider entity.
+func (m *UserMutation) ClearProviders() {
+	m.clearedproviders = true
+}
+
+// ProvidersCleared reports if the "providers" edge to the Provider entity was cleared.
+func (m *UserMutation) ProvidersCleared() bool {
+	return m.clearedproviders
+}
+
+// RemoveProviderIDs removes the "providers" edge to the Provider entity by IDs.
+func (m *UserMutation) RemoveProviderIDs(ids ...uuid.UUID) {
+	if m.removedproviders == nil {
+		m.removedproviders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.providers, ids[i])
+		m.removedproviders[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProviders returns the removed IDs of the "providers" edge to the Provider entity.
+func (m *UserMutation) RemovedProvidersIDs() (ids []uuid.UUID) {
+	for id := range m.removedproviders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProvidersIDs returns the "providers" edge IDs in the mutation.
+func (m *UserMutation) ProvidersIDs() (ids []uuid.UUID) {
+	for id := range m.providers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProviders resets all changes to the "providers" edge.
+func (m *UserMutation) ResetProviders() {
+	m.providers = nil
+	m.clearedproviders = false
+	m.removedproviders = nil
+}
+
+// AddOauthAppIDs adds the "oauth_apps" edge to the OAuthApp entity by ids.
+func (m *UserMutation) AddOauthAppIDs(ids ...uuid.UUID) {
+	if m.oauth_apps == nil {
+		m.oauth_apps = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.oauth_apps[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOauthApps clears the "oauth_apps" edge to the OAuthApp entity.
+func (m *UserMutation) ClearOauthApps() {
+	m.clearedoauth_apps = true
+}
+
+// OauthAppsCleared reports if the "oauth_apps" edge to the OAuthApp entity was cleared.
+func (m *UserMutation) OauthAppsCleared() bool {
+	return m.clearedoauth_apps
+}
+
+// RemoveOauthAppIDs removes the "oauth_apps" edge to the OAuthApp entity by IDs.
+func (m *UserMutation) RemoveOauthAppIDs(ids ...uuid.UUID) {
+	if m.removedoauth_apps == nil {
+		m.removedoauth_apps = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.oauth_apps, ids[i])
+		m.removedoauth_apps[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOauthApps returns the removed IDs of the "oauth_apps" edge to the OAuthApp entity.
+func (m *UserMutation) RemovedOauthAppsIDs() (ids []uuid.UUID) {
+	for id := range m.removedoauth_apps {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OauthAppsIDs returns the "oauth_apps" edge IDs in the mutation.
+func (m *UserMutation) OauthAppsIDs() (ids []uuid.UUID) {
+	for id := range m.oauth_apps {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOauthApps resets all changes to the "oauth_apps" edge.
+func (m *UserMutation) ResetOauthApps() {
+	m.oauth_apps = nil
+	m.clearedoauth_apps = false
+	m.removedoauth_apps = nil
+}
+
+// AddOauthStateIDs adds the "oauth_states" edge to the OAuthState entity by ids.
+func (m *UserMutation) AddOauthStateIDs(ids ...uuid.UUID) {
+	if m.oauth_states == nil {
+		m.oauth_states = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.oauth_states[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOauthStates clears the "oauth_states" edge to the OAuthState entity.
+func (m *UserMutation) ClearOauthStates() {
+	m.clearedoauth_states = true
+}
+
+// OauthStatesCleared reports if the "oauth_states" edge to the OAuthState entity was cleared.
+func (m *UserMutation) OauthStatesCleared() bool {
+	return m.clearedoauth_states
+}
+
+// RemoveOauthStateIDs removes the "oauth_states" edge to the OAuthState entity by IDs.
+func (m *UserMutation) RemoveOauthStateIDs(ids ...uuid.UUID) {
+	if m.removedoauth_states == nil {
+		m.removedoauth_states = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.oauth_states, ids[i])
+		m.removedoauth_states[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOauthStates returns the removed IDs of the "oauth_states" edge to the OAuthState entity.
+func (m *UserMutation) RemovedOauthStatesIDs() (ids []uuid.UUID) {
+	for id := range m.removedoauth_states {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OauthStatesIDs returns the "oauth_states" edge IDs in the mutation.
+func (m *UserMutation) OauthStatesIDs() (ids []uuid.UUID) {
+	for id := range m.oauth_states {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOauthStates resets all changes to the "oauth_states" edge.
+func (m *UserMutation) ResetOauthStates() {
+	m.oauth_states = nil
+	m.clearedoauth_states = false
+	m.removedoauth_states = nil
+}
+
+// AddUploadBatchIDs adds the "upload_batches" edge to the UploadBatch entity by ids.
+func (m *UserMutation) AddUploadBatchIDs(ids ...uuid.UUID) {
+	if m.upload_batches == nil {
+		m.upload_batches = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.upload_batches[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUploadBatches clears the "upload_batches" edge to the UploadBatch entity.
+func (m *UserMutation) ClearUploadBatches() {
+	m.clearedupload_batches = true
+}
+
+// UploadBatchesCleared reports if the "upload_batches" edge to the UploadBatch entity was cleared.
+func (m *UserMutation) UploadBatchesCleared() bool {
+	return m.clearedupload_batches
+}
+
+// RemoveUploadBatchIDs removes the "upload_batches" edge to the UploadBatch entity by IDs.
+func (m *UserMutation) RemoveUploadBatchIDs(ids ...uuid.UUID) {
+	if m.removedupload_batches == nil {
+		m.removedupload_batches = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.upload_batches, ids[i])
+		m.removedupload_batches[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUploadBatches returns the removed IDs of the "upload_batches" edge to the UploadBatch entity.
+func (m *UserMutation) RemovedUploadBatchesIDs() (ids []uuid.UUID) {
+	for id := range m.removedupload_batches {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UploadBatchesIDs returns the "upload_batches" edge IDs in the mutation.
+func (m *UserMutation) UploadBatchesIDs() (ids []uuid.UUID) {
+	for id := range m.upload_batches {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUploadBatches resets all changes to the "upload_batches" edge.
+func (m *UserMutation) ResetUploadBatches() {
+	m.upload_batches = nil
+	m.clearedupload_batches = false
+	m.removedupload_batches = nil
+}
+
+// AddTransferJobIDs adds the "transfer_jobs" edge to the TransferJob entity by ids.
+func (m *UserMutation) AddTransferJobIDs(ids ...uuid.UUID) {
+	if m.transfer_jobs == nil {
+		m.transfer_jobs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.transfer_jobs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTransferJobs clears the "transfer_jobs" edge to the TransferJob entity.
+func (m *UserMutation) ClearTransferJobs() {
+	m.clearedtransfer_jobs = true
+}
+
+// TransferJobsCleared reports if the "transfer_jobs" edge to the TransferJob entity was cleared.
+func (m *UserMutation) TransferJobsCleared() bool {
+	return m.clearedtransfer_jobs
+}
+
+// RemoveTransferJobIDs removes the "transfer_jobs" edge to the TransferJob entity by IDs.
+func (m *UserMutation) RemoveTransferJobIDs(ids ...uuid.UUID) {
+	if m.removedtransfer_jobs == nil {
+		m.removedtransfer_jobs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.transfer_jobs, ids[i])
+		m.removedtransfer_jobs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTransferJobs returns the removed IDs of the "transfer_jobs" edge to the TransferJob entity.
+func (m *UserMutation) RemovedTransferJobsIDs() (ids []uuid.UUID) {
+	for id := range m.removedtransfer_jobs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TransferJobsIDs returns the "transfer_jobs" edge IDs in the mutation.
+func (m *UserMutation) TransferJobsIDs() (ids []uuid.UUID) {
+	for id := range m.transfer_jobs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTransferJobs resets all changes to the "transfer_jobs" edge.
+func (m *UserMutation) ResetTransferJobs() {
+	m.transfer_jobs = nil
+	m.clearedtransfer_jobs = false
+	m.removedtransfer_jobs = nil
+}
+
+// AddSharedLinkIDs adds the "shared_links" edge to the SharedLink entity by ids.
+func (m *UserMutation) AddSharedLinkIDs(ids ...uuid.UUID) {
+	if m.shared_links == nil {
+		m.shared_links = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.shared_links[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSharedLinks clears the "shared_links" edge to the SharedLink entity.
+func (m *UserMutation) ClearSharedLinks() {
+	m.clearedshared_links = true
+}
+
+// SharedLinksCleared reports if the "shared_links" edge to the SharedLink entity was cleared.
+func (m *UserMutation) SharedLinksCleared() bool {
+	return m.clearedshared_links
+}
+
+// RemoveSharedLinkIDs removes the "shared_links" edge to the SharedLink entity by IDs.
+func (m *UserMutation) RemoveSharedLinkIDs(ids ...uuid.UUID) {
+	if m.removedshared_links == nil {
+		m.removedshared_links = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.shared_links, ids[i])
+		m.removedshared_links[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSharedLinks returns the removed IDs of the "shared_links" edge to the SharedLink entity.
+func (m *UserMutation) RemovedSharedLinksIDs() (ids []uuid.UUID) {
+	for id := range m.removedshared_links {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SharedLinksIDs returns the "shared_links" edge IDs in the mutation.
+func (m *UserMutation) SharedLinksIDs() (ids []uuid.UUID) {
+	for id := range m.shared_links {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSharedLinks resets all changes to the "shared_links" edge.
+func (m *UserMutation) ResetSharedLinks() {
+	m.shared_links = nil
+	m.clearedshared_links = false
+	m.removedshared_links = nil
+}
+
+// AddBandwidthLogIDs adds the "bandwidth_logs" edge to the BandwidthLog entity by ids.
+func (m *UserMutation) AddBandwidthLogIDs(ids ...uuid.UUID) {
+	if m.bandwidth_logs == nil {
+		m.bandwidth_logs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.bandwidth_logs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBandwidthLogs clears the "bandwidth_logs" edge to the BandwidthLog entity.
+func (m *UserMutation) ClearBandwidthLogs() {
+	m.clearedbandwidth_logs = true
+}
+
+// BandwidthLogsCleared reports if the "bandwidth_logs" edge to the BandwidthLog entity was cleared.
+func (m *UserMutation) BandwidthLogsCleared() bool {
+	return m.clearedbandwidth_logs
+}
+
+// RemoveBandwidthLogIDs removes the "bandwidth_logs" edge to the BandwidthLog entity by IDs.
+func (m *UserMutation) RemoveBandwidthLogIDs(ids ...uuid.UUID) {
+	if m.removedbandwidth_logs == nil {
+		m.removedbandwidth_logs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.bandwidth_logs, ids[i])
+		m.removedbandwidth_logs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBandwidthLogs returns the removed IDs of the "bandwidth_logs" edge to the BandwidthLog entity.
+func (m *UserMutation) RemovedBandwidthLogsIDs() (ids []uuid.UUID) {
+	for id := range m.removedbandwidth_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BandwidthLogsIDs returns the "bandwidth_logs" edge IDs in the mutation.
+func (m *UserMutation) BandwidthLogsIDs() (ids []uuid.UUID) {
+	for id := range m.bandwidth_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBandwidthLogs resets all changes to the "bandwidth_logs" edge.
+func (m *UserMutation) ResetBandwidthLogs() {
+	m.bandwidth_logs = nil
+	m.clearedbandwidth_logs = false
+	m.removedbandwidth_logs = nil
 }
 
 // Where appends a list predicates to the UserMutation builder.
@@ -16585,15 +15517,33 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.memberships != nil {
-		edges = append(edges, user.EdgeMemberships)
-	}
+	edges := make([]string, 0, 9)
 	if m.sessions != nil {
 		edges = append(edges, user.EdgeSessions)
 	}
 	if m.api_tokens != nil {
 		edges = append(edges, user.EdgeAPITokens)
+	}
+	if m.providers != nil {
+		edges = append(edges, user.EdgeProviders)
+	}
+	if m.oauth_apps != nil {
+		edges = append(edges, user.EdgeOauthApps)
+	}
+	if m.oauth_states != nil {
+		edges = append(edges, user.EdgeOauthStates)
+	}
+	if m.upload_batches != nil {
+		edges = append(edges, user.EdgeUploadBatches)
+	}
+	if m.transfer_jobs != nil {
+		edges = append(edges, user.EdgeTransferJobs)
+	}
+	if m.shared_links != nil {
+		edges = append(edges, user.EdgeSharedLinks)
+	}
+	if m.bandwidth_logs != nil {
+		edges = append(edges, user.EdgeBandwidthLogs)
 	}
 	return edges
 }
@@ -16602,12 +15552,6 @@ func (m *UserMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case user.EdgeMemberships:
-		ids := make([]ent.Value, 0, len(m.memberships))
-		for id := range m.memberships {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeSessions:
 		ids := make([]ent.Value, 0, len(m.sessions))
 		for id := range m.sessions {
@@ -16620,21 +15564,81 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeProviders:
+		ids := make([]ent.Value, 0, len(m.providers))
+		for id := range m.providers {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeOauthApps:
+		ids := make([]ent.Value, 0, len(m.oauth_apps))
+		for id := range m.oauth_apps {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeOauthStates:
+		ids := make([]ent.Value, 0, len(m.oauth_states))
+		for id := range m.oauth_states {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeUploadBatches:
+		ids := make([]ent.Value, 0, len(m.upload_batches))
+		for id := range m.upload_batches {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeTransferJobs:
+		ids := make([]ent.Value, 0, len(m.transfer_jobs))
+		for id := range m.transfer_jobs {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeSharedLinks:
+		ids := make([]ent.Value, 0, len(m.shared_links))
+		for id := range m.shared_links {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeBandwidthLogs:
+		ids := make([]ent.Value, 0, len(m.bandwidth_logs))
+		for id := range m.bandwidth_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removedmemberships != nil {
-		edges = append(edges, user.EdgeMemberships)
-	}
+	edges := make([]string, 0, 9)
 	if m.removedsessions != nil {
 		edges = append(edges, user.EdgeSessions)
 	}
 	if m.removedapi_tokens != nil {
 		edges = append(edges, user.EdgeAPITokens)
+	}
+	if m.removedproviders != nil {
+		edges = append(edges, user.EdgeProviders)
+	}
+	if m.removedoauth_apps != nil {
+		edges = append(edges, user.EdgeOauthApps)
+	}
+	if m.removedoauth_states != nil {
+		edges = append(edges, user.EdgeOauthStates)
+	}
+	if m.removedupload_batches != nil {
+		edges = append(edges, user.EdgeUploadBatches)
+	}
+	if m.removedtransfer_jobs != nil {
+		edges = append(edges, user.EdgeTransferJobs)
+	}
+	if m.removedshared_links != nil {
+		edges = append(edges, user.EdgeSharedLinks)
+	}
+	if m.removedbandwidth_logs != nil {
+		edges = append(edges, user.EdgeBandwidthLogs)
 	}
 	return edges
 }
@@ -16643,12 +15647,6 @@ func (m *UserMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case user.EdgeMemberships:
-		ids := make([]ent.Value, 0, len(m.removedmemberships))
-		for id := range m.removedmemberships {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeSessions:
 		ids := make([]ent.Value, 0, len(m.removedsessions))
 		for id := range m.removedsessions {
@@ -16661,21 +15659,81 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeProviders:
+		ids := make([]ent.Value, 0, len(m.removedproviders))
+		for id := range m.removedproviders {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeOauthApps:
+		ids := make([]ent.Value, 0, len(m.removedoauth_apps))
+		for id := range m.removedoauth_apps {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeOauthStates:
+		ids := make([]ent.Value, 0, len(m.removedoauth_states))
+		for id := range m.removedoauth_states {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeUploadBatches:
+		ids := make([]ent.Value, 0, len(m.removedupload_batches))
+		for id := range m.removedupload_batches {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeTransferJobs:
+		ids := make([]ent.Value, 0, len(m.removedtransfer_jobs))
+		for id := range m.removedtransfer_jobs {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeSharedLinks:
+		ids := make([]ent.Value, 0, len(m.removedshared_links))
+		for id := range m.removedshared_links {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeBandwidthLogs:
+		ids := make([]ent.Value, 0, len(m.removedbandwidth_logs))
+		for id := range m.removedbandwidth_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.clearedmemberships {
-		edges = append(edges, user.EdgeMemberships)
-	}
+	edges := make([]string, 0, 9)
 	if m.clearedsessions {
 		edges = append(edges, user.EdgeSessions)
 	}
 	if m.clearedapi_tokens {
 		edges = append(edges, user.EdgeAPITokens)
+	}
+	if m.clearedproviders {
+		edges = append(edges, user.EdgeProviders)
+	}
+	if m.clearedoauth_apps {
+		edges = append(edges, user.EdgeOauthApps)
+	}
+	if m.clearedoauth_states {
+		edges = append(edges, user.EdgeOauthStates)
+	}
+	if m.clearedupload_batches {
+		edges = append(edges, user.EdgeUploadBatches)
+	}
+	if m.clearedtransfer_jobs {
+		edges = append(edges, user.EdgeTransferJobs)
+	}
+	if m.clearedshared_links {
+		edges = append(edges, user.EdgeSharedLinks)
+	}
+	if m.clearedbandwidth_logs {
+		edges = append(edges, user.EdgeBandwidthLogs)
 	}
 	return edges
 }
@@ -16684,12 +15742,24 @@ func (m *UserMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
-	case user.EdgeMemberships:
-		return m.clearedmemberships
 	case user.EdgeSessions:
 		return m.clearedsessions
 	case user.EdgeAPITokens:
 		return m.clearedapi_tokens
+	case user.EdgeProviders:
+		return m.clearedproviders
+	case user.EdgeOauthApps:
+		return m.clearedoauth_apps
+	case user.EdgeOauthStates:
+		return m.clearedoauth_states
+	case user.EdgeUploadBatches:
+		return m.clearedupload_batches
+	case user.EdgeTransferJobs:
+		return m.clearedtransfer_jobs
+	case user.EdgeSharedLinks:
+		return m.clearedshared_links
+	case user.EdgeBandwidthLogs:
+		return m.clearedbandwidth_logs
 	}
 	return false
 }
@@ -16706,1906 +15776,33 @@ func (m *UserMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
-	case user.EdgeMemberships:
-		m.ResetMemberships()
-		return nil
 	case user.EdgeSessions:
 		m.ResetSessions()
 		return nil
 	case user.EdgeAPITokens:
 		m.ResetAPITokens()
 		return nil
-	}
-	return fmt.Errorf("unknown User edge %s", name)
-}
-
-// WorkspaceMutation represents an operation that mutates the Workspace nodes in the graph.
-type WorkspaceMutation struct {
-	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	name                  *string
-	slug                  *string
-	created_at            *time.Time
-	updated_at            *time.Time
-	clearedFields         map[string]struct{}
-	members               map[uuid.UUID]struct{}
-	removedmembers        map[uuid.UUID]struct{}
-	clearedmembers        bool
-	providers             map[uuid.UUID]struct{}
-	removedproviders      map[uuid.UUID]struct{}
-	clearedproviders      bool
-	roles                 map[uuid.UUID]struct{}
-	removedroles          map[uuid.UUID]struct{}
-	clearedroles          bool
-	upload_batches        map[uuid.UUID]struct{}
-	removedupload_batches map[uuid.UUID]struct{}
-	clearedupload_batches bool
-	transfer_jobs         map[uuid.UUID]struct{}
-	removedtransfer_jobs  map[uuid.UUID]struct{}
-	clearedtransfer_jobs  bool
-	shared_links          map[uuid.UUID]struct{}
-	removedshared_links   map[uuid.UUID]struct{}
-	clearedshared_links   bool
-	bandwidth_logs        map[uuid.UUID]struct{}
-	removedbandwidth_logs map[uuid.UUID]struct{}
-	clearedbandwidth_logs bool
-	oauth_apps            map[uuid.UUID]struct{}
-	removedoauth_apps     map[uuid.UUID]struct{}
-	clearedoauth_apps     bool
-	api_tokens            map[uuid.UUID]struct{}
-	removedapi_tokens     map[uuid.UUID]struct{}
-	clearedapi_tokens     bool
-	done                  bool
-	oldValue              func(context.Context) (*Workspace, error)
-	predicates            []predicate.Workspace
-}
-
-var _ ent.Mutation = (*WorkspaceMutation)(nil)
-
-// workspaceOption allows management of the mutation configuration using functional options.
-type workspaceOption func(*WorkspaceMutation)
-
-// newWorkspaceMutation creates new mutation for the Workspace entity.
-func newWorkspaceMutation(c config, op Op, opts ...workspaceOption) *WorkspaceMutation {
-	m := &WorkspaceMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeWorkspace,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withWorkspaceID sets the ID field of the mutation.
-func withWorkspaceID(id uuid.UUID) workspaceOption {
-	return func(m *WorkspaceMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Workspace
-		)
-		m.oldValue = func(ctx context.Context) (*Workspace, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Workspace.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withWorkspace sets the old Workspace of the mutation.
-func withWorkspace(node *Workspace) workspaceOption {
-	return func(m *WorkspaceMutation) {
-		m.oldValue = func(context.Context) (*Workspace, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m WorkspaceMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m WorkspaceMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Workspace entities.
-func (m *WorkspaceMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *WorkspaceMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *WorkspaceMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Workspace.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetName sets the "name" field.
-func (m *WorkspaceMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *WorkspaceMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the Workspace entity.
-// If the Workspace object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkspaceMutation) OldName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
-	}
-	return oldValue.Name, nil
-}
-
-// ResetName resets all changes to the "name" field.
-func (m *WorkspaceMutation) ResetName() {
-	m.name = nil
-}
-
-// SetSlug sets the "slug" field.
-func (m *WorkspaceMutation) SetSlug(s string) {
-	m.slug = &s
-}
-
-// Slug returns the value of the "slug" field in the mutation.
-func (m *WorkspaceMutation) Slug() (r string, exists bool) {
-	v := m.slug
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSlug returns the old "slug" field's value of the Workspace entity.
-// If the Workspace object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkspaceMutation) OldSlug(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSlug is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSlug requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSlug: %w", err)
-	}
-	return oldValue.Slug, nil
-}
-
-// ResetSlug resets all changes to the "slug" field.
-func (m *WorkspaceMutation) ResetSlug() {
-	m.slug = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *WorkspaceMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *WorkspaceMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Workspace entity.
-// If the Workspace object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkspaceMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *WorkspaceMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *WorkspaceMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *WorkspaceMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Workspace entity.
-// If the Workspace object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkspaceMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *WorkspaceMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// AddMemberIDs adds the "members" edge to the WorkspaceMember entity by ids.
-func (m *WorkspaceMutation) AddMemberIDs(ids ...uuid.UUID) {
-	if m.members == nil {
-		m.members = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.members[ids[i]] = struct{}{}
-	}
-}
-
-// ClearMembers clears the "members" edge to the WorkspaceMember entity.
-func (m *WorkspaceMutation) ClearMembers() {
-	m.clearedmembers = true
-}
-
-// MembersCleared reports if the "members" edge to the WorkspaceMember entity was cleared.
-func (m *WorkspaceMutation) MembersCleared() bool {
-	return m.clearedmembers
-}
-
-// RemoveMemberIDs removes the "members" edge to the WorkspaceMember entity by IDs.
-func (m *WorkspaceMutation) RemoveMemberIDs(ids ...uuid.UUID) {
-	if m.removedmembers == nil {
-		m.removedmembers = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.members, ids[i])
-		m.removedmembers[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMembers returns the removed IDs of the "members" edge to the WorkspaceMember entity.
-func (m *WorkspaceMutation) RemovedMembersIDs() (ids []uuid.UUID) {
-	for id := range m.removedmembers {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MembersIDs returns the "members" edge IDs in the mutation.
-func (m *WorkspaceMutation) MembersIDs() (ids []uuid.UUID) {
-	for id := range m.members {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMembers resets all changes to the "members" edge.
-func (m *WorkspaceMutation) ResetMembers() {
-	m.members = nil
-	m.clearedmembers = false
-	m.removedmembers = nil
-}
-
-// AddProviderIDs adds the "providers" edge to the Provider entity by ids.
-func (m *WorkspaceMutation) AddProviderIDs(ids ...uuid.UUID) {
-	if m.providers == nil {
-		m.providers = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.providers[ids[i]] = struct{}{}
-	}
-}
-
-// ClearProviders clears the "providers" edge to the Provider entity.
-func (m *WorkspaceMutation) ClearProviders() {
-	m.clearedproviders = true
-}
-
-// ProvidersCleared reports if the "providers" edge to the Provider entity was cleared.
-func (m *WorkspaceMutation) ProvidersCleared() bool {
-	return m.clearedproviders
-}
-
-// RemoveProviderIDs removes the "providers" edge to the Provider entity by IDs.
-func (m *WorkspaceMutation) RemoveProviderIDs(ids ...uuid.UUID) {
-	if m.removedproviders == nil {
-		m.removedproviders = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.providers, ids[i])
-		m.removedproviders[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProviders returns the removed IDs of the "providers" edge to the Provider entity.
-func (m *WorkspaceMutation) RemovedProvidersIDs() (ids []uuid.UUID) {
-	for id := range m.removedproviders {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProvidersIDs returns the "providers" edge IDs in the mutation.
-func (m *WorkspaceMutation) ProvidersIDs() (ids []uuid.UUID) {
-	for id := range m.providers {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProviders resets all changes to the "providers" edge.
-func (m *WorkspaceMutation) ResetProviders() {
-	m.providers = nil
-	m.clearedproviders = false
-	m.removedproviders = nil
-}
-
-// AddRoleIDs adds the "roles" edge to the Role entity by ids.
-func (m *WorkspaceMutation) AddRoleIDs(ids ...uuid.UUID) {
-	if m.roles == nil {
-		m.roles = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.roles[ids[i]] = struct{}{}
-	}
-}
-
-// ClearRoles clears the "roles" edge to the Role entity.
-func (m *WorkspaceMutation) ClearRoles() {
-	m.clearedroles = true
-}
-
-// RolesCleared reports if the "roles" edge to the Role entity was cleared.
-func (m *WorkspaceMutation) RolesCleared() bool {
-	return m.clearedroles
-}
-
-// RemoveRoleIDs removes the "roles" edge to the Role entity by IDs.
-func (m *WorkspaceMutation) RemoveRoleIDs(ids ...uuid.UUID) {
-	if m.removedroles == nil {
-		m.removedroles = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.roles, ids[i])
-		m.removedroles[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRoles returns the removed IDs of the "roles" edge to the Role entity.
-func (m *WorkspaceMutation) RemovedRolesIDs() (ids []uuid.UUID) {
-	for id := range m.removedroles {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RolesIDs returns the "roles" edge IDs in the mutation.
-func (m *WorkspaceMutation) RolesIDs() (ids []uuid.UUID) {
-	for id := range m.roles {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetRoles resets all changes to the "roles" edge.
-func (m *WorkspaceMutation) ResetRoles() {
-	m.roles = nil
-	m.clearedroles = false
-	m.removedroles = nil
-}
-
-// AddUploadBatchIDs adds the "upload_batches" edge to the UploadBatch entity by ids.
-func (m *WorkspaceMutation) AddUploadBatchIDs(ids ...uuid.UUID) {
-	if m.upload_batches == nil {
-		m.upload_batches = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.upload_batches[ids[i]] = struct{}{}
-	}
-}
-
-// ClearUploadBatches clears the "upload_batches" edge to the UploadBatch entity.
-func (m *WorkspaceMutation) ClearUploadBatches() {
-	m.clearedupload_batches = true
-}
-
-// UploadBatchesCleared reports if the "upload_batches" edge to the UploadBatch entity was cleared.
-func (m *WorkspaceMutation) UploadBatchesCleared() bool {
-	return m.clearedupload_batches
-}
-
-// RemoveUploadBatchIDs removes the "upload_batches" edge to the UploadBatch entity by IDs.
-func (m *WorkspaceMutation) RemoveUploadBatchIDs(ids ...uuid.UUID) {
-	if m.removedupload_batches == nil {
-		m.removedupload_batches = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.upload_batches, ids[i])
-		m.removedupload_batches[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUploadBatches returns the removed IDs of the "upload_batches" edge to the UploadBatch entity.
-func (m *WorkspaceMutation) RemovedUploadBatchesIDs() (ids []uuid.UUID) {
-	for id := range m.removedupload_batches {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// UploadBatchesIDs returns the "upload_batches" edge IDs in the mutation.
-func (m *WorkspaceMutation) UploadBatchesIDs() (ids []uuid.UUID) {
-	for id := range m.upload_batches {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetUploadBatches resets all changes to the "upload_batches" edge.
-func (m *WorkspaceMutation) ResetUploadBatches() {
-	m.upload_batches = nil
-	m.clearedupload_batches = false
-	m.removedupload_batches = nil
-}
-
-// AddTransferJobIDs adds the "transfer_jobs" edge to the TransferJob entity by ids.
-func (m *WorkspaceMutation) AddTransferJobIDs(ids ...uuid.UUID) {
-	if m.transfer_jobs == nil {
-		m.transfer_jobs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.transfer_jobs[ids[i]] = struct{}{}
-	}
-}
-
-// ClearTransferJobs clears the "transfer_jobs" edge to the TransferJob entity.
-func (m *WorkspaceMutation) ClearTransferJobs() {
-	m.clearedtransfer_jobs = true
-}
-
-// TransferJobsCleared reports if the "transfer_jobs" edge to the TransferJob entity was cleared.
-func (m *WorkspaceMutation) TransferJobsCleared() bool {
-	return m.clearedtransfer_jobs
-}
-
-// RemoveTransferJobIDs removes the "transfer_jobs" edge to the TransferJob entity by IDs.
-func (m *WorkspaceMutation) RemoveTransferJobIDs(ids ...uuid.UUID) {
-	if m.removedtransfer_jobs == nil {
-		m.removedtransfer_jobs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.transfer_jobs, ids[i])
-		m.removedtransfer_jobs[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTransferJobs returns the removed IDs of the "transfer_jobs" edge to the TransferJob entity.
-func (m *WorkspaceMutation) RemovedTransferJobsIDs() (ids []uuid.UUID) {
-	for id := range m.removedtransfer_jobs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TransferJobsIDs returns the "transfer_jobs" edge IDs in the mutation.
-func (m *WorkspaceMutation) TransferJobsIDs() (ids []uuid.UUID) {
-	for id := range m.transfer_jobs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTransferJobs resets all changes to the "transfer_jobs" edge.
-func (m *WorkspaceMutation) ResetTransferJobs() {
-	m.transfer_jobs = nil
-	m.clearedtransfer_jobs = false
-	m.removedtransfer_jobs = nil
-}
-
-// AddSharedLinkIDs adds the "shared_links" edge to the SharedLink entity by ids.
-func (m *WorkspaceMutation) AddSharedLinkIDs(ids ...uuid.UUID) {
-	if m.shared_links == nil {
-		m.shared_links = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.shared_links[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSharedLinks clears the "shared_links" edge to the SharedLink entity.
-func (m *WorkspaceMutation) ClearSharedLinks() {
-	m.clearedshared_links = true
-}
-
-// SharedLinksCleared reports if the "shared_links" edge to the SharedLink entity was cleared.
-func (m *WorkspaceMutation) SharedLinksCleared() bool {
-	return m.clearedshared_links
-}
-
-// RemoveSharedLinkIDs removes the "shared_links" edge to the SharedLink entity by IDs.
-func (m *WorkspaceMutation) RemoveSharedLinkIDs(ids ...uuid.UUID) {
-	if m.removedshared_links == nil {
-		m.removedshared_links = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.shared_links, ids[i])
-		m.removedshared_links[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSharedLinks returns the removed IDs of the "shared_links" edge to the SharedLink entity.
-func (m *WorkspaceMutation) RemovedSharedLinksIDs() (ids []uuid.UUID) {
-	for id := range m.removedshared_links {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SharedLinksIDs returns the "shared_links" edge IDs in the mutation.
-func (m *WorkspaceMutation) SharedLinksIDs() (ids []uuid.UUID) {
-	for id := range m.shared_links {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSharedLinks resets all changes to the "shared_links" edge.
-func (m *WorkspaceMutation) ResetSharedLinks() {
-	m.shared_links = nil
-	m.clearedshared_links = false
-	m.removedshared_links = nil
-}
-
-// AddBandwidthLogIDs adds the "bandwidth_logs" edge to the BandwidthLog entity by ids.
-func (m *WorkspaceMutation) AddBandwidthLogIDs(ids ...uuid.UUID) {
-	if m.bandwidth_logs == nil {
-		m.bandwidth_logs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.bandwidth_logs[ids[i]] = struct{}{}
-	}
-}
-
-// ClearBandwidthLogs clears the "bandwidth_logs" edge to the BandwidthLog entity.
-func (m *WorkspaceMutation) ClearBandwidthLogs() {
-	m.clearedbandwidth_logs = true
-}
-
-// BandwidthLogsCleared reports if the "bandwidth_logs" edge to the BandwidthLog entity was cleared.
-func (m *WorkspaceMutation) BandwidthLogsCleared() bool {
-	return m.clearedbandwidth_logs
-}
-
-// RemoveBandwidthLogIDs removes the "bandwidth_logs" edge to the BandwidthLog entity by IDs.
-func (m *WorkspaceMutation) RemoveBandwidthLogIDs(ids ...uuid.UUID) {
-	if m.removedbandwidth_logs == nil {
-		m.removedbandwidth_logs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.bandwidth_logs, ids[i])
-		m.removedbandwidth_logs[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedBandwidthLogs returns the removed IDs of the "bandwidth_logs" edge to the BandwidthLog entity.
-func (m *WorkspaceMutation) RemovedBandwidthLogsIDs() (ids []uuid.UUID) {
-	for id := range m.removedbandwidth_logs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// BandwidthLogsIDs returns the "bandwidth_logs" edge IDs in the mutation.
-func (m *WorkspaceMutation) BandwidthLogsIDs() (ids []uuid.UUID) {
-	for id := range m.bandwidth_logs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetBandwidthLogs resets all changes to the "bandwidth_logs" edge.
-func (m *WorkspaceMutation) ResetBandwidthLogs() {
-	m.bandwidth_logs = nil
-	m.clearedbandwidth_logs = false
-	m.removedbandwidth_logs = nil
-}
-
-// AddOauthAppIDs adds the "oauth_apps" edge to the OAuthApp entity by ids.
-func (m *WorkspaceMutation) AddOauthAppIDs(ids ...uuid.UUID) {
-	if m.oauth_apps == nil {
-		m.oauth_apps = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.oauth_apps[ids[i]] = struct{}{}
-	}
-}
-
-// ClearOauthApps clears the "oauth_apps" edge to the OAuthApp entity.
-func (m *WorkspaceMutation) ClearOauthApps() {
-	m.clearedoauth_apps = true
-}
-
-// OauthAppsCleared reports if the "oauth_apps" edge to the OAuthApp entity was cleared.
-func (m *WorkspaceMutation) OauthAppsCleared() bool {
-	return m.clearedoauth_apps
-}
-
-// RemoveOauthAppIDs removes the "oauth_apps" edge to the OAuthApp entity by IDs.
-func (m *WorkspaceMutation) RemoveOauthAppIDs(ids ...uuid.UUID) {
-	if m.removedoauth_apps == nil {
-		m.removedoauth_apps = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.oauth_apps, ids[i])
-		m.removedoauth_apps[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedOauthApps returns the removed IDs of the "oauth_apps" edge to the OAuthApp entity.
-func (m *WorkspaceMutation) RemovedOauthAppsIDs() (ids []uuid.UUID) {
-	for id := range m.removedoauth_apps {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// OauthAppsIDs returns the "oauth_apps" edge IDs in the mutation.
-func (m *WorkspaceMutation) OauthAppsIDs() (ids []uuid.UUID) {
-	for id := range m.oauth_apps {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetOauthApps resets all changes to the "oauth_apps" edge.
-func (m *WorkspaceMutation) ResetOauthApps() {
-	m.oauth_apps = nil
-	m.clearedoauth_apps = false
-	m.removedoauth_apps = nil
-}
-
-// AddAPITokenIDs adds the "api_tokens" edge to the ApiToken entity by ids.
-func (m *WorkspaceMutation) AddAPITokenIDs(ids ...uuid.UUID) {
-	if m.api_tokens == nil {
-		m.api_tokens = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.api_tokens[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAPITokens clears the "api_tokens" edge to the ApiToken entity.
-func (m *WorkspaceMutation) ClearAPITokens() {
-	m.clearedapi_tokens = true
-}
-
-// APITokensCleared reports if the "api_tokens" edge to the ApiToken entity was cleared.
-func (m *WorkspaceMutation) APITokensCleared() bool {
-	return m.clearedapi_tokens
-}
-
-// RemoveAPITokenIDs removes the "api_tokens" edge to the ApiToken entity by IDs.
-func (m *WorkspaceMutation) RemoveAPITokenIDs(ids ...uuid.UUID) {
-	if m.removedapi_tokens == nil {
-		m.removedapi_tokens = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.api_tokens, ids[i])
-		m.removedapi_tokens[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAPITokens returns the removed IDs of the "api_tokens" edge to the ApiToken entity.
-func (m *WorkspaceMutation) RemovedAPITokensIDs() (ids []uuid.UUID) {
-	for id := range m.removedapi_tokens {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// APITokensIDs returns the "api_tokens" edge IDs in the mutation.
-func (m *WorkspaceMutation) APITokensIDs() (ids []uuid.UUID) {
-	for id := range m.api_tokens {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAPITokens resets all changes to the "api_tokens" edge.
-func (m *WorkspaceMutation) ResetAPITokens() {
-	m.api_tokens = nil
-	m.clearedapi_tokens = false
-	m.removedapi_tokens = nil
-}
-
-// Where appends a list predicates to the WorkspaceMutation builder.
-func (m *WorkspaceMutation) Where(ps ...predicate.Workspace) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the WorkspaceMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *WorkspaceMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Workspace, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *WorkspaceMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *WorkspaceMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (Workspace).
-func (m *WorkspaceMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *WorkspaceMutation) Fields() []string {
-	fields := make([]string, 0, 4)
-	if m.name != nil {
-		fields = append(fields, workspace.FieldName)
-	}
-	if m.slug != nil {
-		fields = append(fields, workspace.FieldSlug)
-	}
-	if m.created_at != nil {
-		fields = append(fields, workspace.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, workspace.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *WorkspaceMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case workspace.FieldName:
-		return m.Name()
-	case workspace.FieldSlug:
-		return m.Slug()
-	case workspace.FieldCreatedAt:
-		return m.CreatedAt()
-	case workspace.FieldUpdatedAt:
-		return m.UpdatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *WorkspaceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case workspace.FieldName:
-		return m.OldName(ctx)
-	case workspace.FieldSlug:
-		return m.OldSlug(ctx)
-	case workspace.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case workspace.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown Workspace field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *WorkspaceMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case workspace.FieldName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetName(v)
-		return nil
-	case workspace.FieldSlug:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSlug(v)
-		return nil
-	case workspace.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case workspace.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Workspace field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *WorkspaceMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *WorkspaceMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *WorkspaceMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown Workspace numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *WorkspaceMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *WorkspaceMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *WorkspaceMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown Workspace nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *WorkspaceMutation) ResetField(name string) error {
-	switch name {
-	case workspace.FieldName:
-		m.ResetName()
-		return nil
-	case workspace.FieldSlug:
-		m.ResetSlug()
-		return nil
-	case workspace.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case workspace.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown Workspace field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *WorkspaceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 9)
-	if m.members != nil {
-		edges = append(edges, workspace.EdgeMembers)
-	}
-	if m.providers != nil {
-		edges = append(edges, workspace.EdgeProviders)
-	}
-	if m.roles != nil {
-		edges = append(edges, workspace.EdgeRoles)
-	}
-	if m.upload_batches != nil {
-		edges = append(edges, workspace.EdgeUploadBatches)
-	}
-	if m.transfer_jobs != nil {
-		edges = append(edges, workspace.EdgeTransferJobs)
-	}
-	if m.shared_links != nil {
-		edges = append(edges, workspace.EdgeSharedLinks)
-	}
-	if m.bandwidth_logs != nil {
-		edges = append(edges, workspace.EdgeBandwidthLogs)
-	}
-	if m.oauth_apps != nil {
-		edges = append(edges, workspace.EdgeOauthApps)
-	}
-	if m.api_tokens != nil {
-		edges = append(edges, workspace.EdgeAPITokens)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *WorkspaceMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case workspace.EdgeMembers:
-		ids := make([]ent.Value, 0, len(m.members))
-		for id := range m.members {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeProviders:
-		ids := make([]ent.Value, 0, len(m.providers))
-		for id := range m.providers {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeRoles:
-		ids := make([]ent.Value, 0, len(m.roles))
-		for id := range m.roles {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeUploadBatches:
-		ids := make([]ent.Value, 0, len(m.upload_batches))
-		for id := range m.upload_batches {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeTransferJobs:
-		ids := make([]ent.Value, 0, len(m.transfer_jobs))
-		for id := range m.transfer_jobs {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeSharedLinks:
-		ids := make([]ent.Value, 0, len(m.shared_links))
-		for id := range m.shared_links {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeBandwidthLogs:
-		ids := make([]ent.Value, 0, len(m.bandwidth_logs))
-		for id := range m.bandwidth_logs {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeOauthApps:
-		ids := make([]ent.Value, 0, len(m.oauth_apps))
-		for id := range m.oauth_apps {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeAPITokens:
-		ids := make([]ent.Value, 0, len(m.api_tokens))
-		for id := range m.api_tokens {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *WorkspaceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 9)
-	if m.removedmembers != nil {
-		edges = append(edges, workspace.EdgeMembers)
-	}
-	if m.removedproviders != nil {
-		edges = append(edges, workspace.EdgeProviders)
-	}
-	if m.removedroles != nil {
-		edges = append(edges, workspace.EdgeRoles)
-	}
-	if m.removedupload_batches != nil {
-		edges = append(edges, workspace.EdgeUploadBatches)
-	}
-	if m.removedtransfer_jobs != nil {
-		edges = append(edges, workspace.EdgeTransferJobs)
-	}
-	if m.removedshared_links != nil {
-		edges = append(edges, workspace.EdgeSharedLinks)
-	}
-	if m.removedbandwidth_logs != nil {
-		edges = append(edges, workspace.EdgeBandwidthLogs)
-	}
-	if m.removedoauth_apps != nil {
-		edges = append(edges, workspace.EdgeOauthApps)
-	}
-	if m.removedapi_tokens != nil {
-		edges = append(edges, workspace.EdgeAPITokens)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *WorkspaceMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case workspace.EdgeMembers:
-		ids := make([]ent.Value, 0, len(m.removedmembers))
-		for id := range m.removedmembers {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeProviders:
-		ids := make([]ent.Value, 0, len(m.removedproviders))
-		for id := range m.removedproviders {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeRoles:
-		ids := make([]ent.Value, 0, len(m.removedroles))
-		for id := range m.removedroles {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeUploadBatches:
-		ids := make([]ent.Value, 0, len(m.removedupload_batches))
-		for id := range m.removedupload_batches {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeTransferJobs:
-		ids := make([]ent.Value, 0, len(m.removedtransfer_jobs))
-		for id := range m.removedtransfer_jobs {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeSharedLinks:
-		ids := make([]ent.Value, 0, len(m.removedshared_links))
-		for id := range m.removedshared_links {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeBandwidthLogs:
-		ids := make([]ent.Value, 0, len(m.removedbandwidth_logs))
-		for id := range m.removedbandwidth_logs {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeOauthApps:
-		ids := make([]ent.Value, 0, len(m.removedoauth_apps))
-		for id := range m.removedoauth_apps {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeAPITokens:
-		ids := make([]ent.Value, 0, len(m.removedapi_tokens))
-		for id := range m.removedapi_tokens {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *WorkspaceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 9)
-	if m.clearedmembers {
-		edges = append(edges, workspace.EdgeMembers)
-	}
-	if m.clearedproviders {
-		edges = append(edges, workspace.EdgeProviders)
-	}
-	if m.clearedroles {
-		edges = append(edges, workspace.EdgeRoles)
-	}
-	if m.clearedupload_batches {
-		edges = append(edges, workspace.EdgeUploadBatches)
-	}
-	if m.clearedtransfer_jobs {
-		edges = append(edges, workspace.EdgeTransferJobs)
-	}
-	if m.clearedshared_links {
-		edges = append(edges, workspace.EdgeSharedLinks)
-	}
-	if m.clearedbandwidth_logs {
-		edges = append(edges, workspace.EdgeBandwidthLogs)
-	}
-	if m.clearedoauth_apps {
-		edges = append(edges, workspace.EdgeOauthApps)
-	}
-	if m.clearedapi_tokens {
-		edges = append(edges, workspace.EdgeAPITokens)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *WorkspaceMutation) EdgeCleared(name string) bool {
-	switch name {
-	case workspace.EdgeMembers:
-		return m.clearedmembers
-	case workspace.EdgeProviders:
-		return m.clearedproviders
-	case workspace.EdgeRoles:
-		return m.clearedroles
-	case workspace.EdgeUploadBatches:
-		return m.clearedupload_batches
-	case workspace.EdgeTransferJobs:
-		return m.clearedtransfer_jobs
-	case workspace.EdgeSharedLinks:
-		return m.clearedshared_links
-	case workspace.EdgeBandwidthLogs:
-		return m.clearedbandwidth_logs
-	case workspace.EdgeOauthApps:
-		return m.clearedoauth_apps
-	case workspace.EdgeAPITokens:
-		return m.clearedapi_tokens
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *WorkspaceMutation) ClearEdge(name string) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown Workspace unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *WorkspaceMutation) ResetEdge(name string) error {
-	switch name {
-	case workspace.EdgeMembers:
-		m.ResetMembers()
-		return nil
-	case workspace.EdgeProviders:
+	case user.EdgeProviders:
 		m.ResetProviders()
 		return nil
-	case workspace.EdgeRoles:
-		m.ResetRoles()
-		return nil
-	case workspace.EdgeUploadBatches:
-		m.ResetUploadBatches()
-		return nil
-	case workspace.EdgeTransferJobs:
-		m.ResetTransferJobs()
-		return nil
-	case workspace.EdgeSharedLinks:
-		m.ResetSharedLinks()
-		return nil
-	case workspace.EdgeBandwidthLogs:
-		m.ResetBandwidthLogs()
-		return nil
-	case workspace.EdgeOauthApps:
+	case user.EdgeOauthApps:
 		m.ResetOauthApps()
 		return nil
-	case workspace.EdgeAPITokens:
-		m.ResetAPITokens()
+	case user.EdgeOauthStates:
+		m.ResetOauthStates()
+		return nil
+	case user.EdgeUploadBatches:
+		m.ResetUploadBatches()
+		return nil
+	case user.EdgeTransferJobs:
+		m.ResetTransferJobs()
+		return nil
+	case user.EdgeSharedLinks:
+		m.ResetSharedLinks()
+		return nil
+	case user.EdgeBandwidthLogs:
+		m.ResetBandwidthLogs()
 		return nil
 	}
-	return fmt.Errorf("unknown Workspace edge %s", name)
-}
-
-// WorkspaceMemberMutation represents an operation that mutates the WorkspaceMember nodes in the graph.
-type WorkspaceMemberMutation struct {
-	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	joined_at        *time.Time
-	clearedFields    map[string]struct{}
-	user             *uuid.UUID
-	cleareduser      bool
-	workspace        *uuid.UUID
-	clearedworkspace bool
-	role             *uuid.UUID
-	clearedrole      bool
-	done             bool
-	oldValue         func(context.Context) (*WorkspaceMember, error)
-	predicates       []predicate.WorkspaceMember
-}
-
-var _ ent.Mutation = (*WorkspaceMemberMutation)(nil)
-
-// workspacememberOption allows management of the mutation configuration using functional options.
-type workspacememberOption func(*WorkspaceMemberMutation)
-
-// newWorkspaceMemberMutation creates new mutation for the WorkspaceMember entity.
-func newWorkspaceMemberMutation(c config, op Op, opts ...workspacememberOption) *WorkspaceMemberMutation {
-	m := &WorkspaceMemberMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeWorkspaceMember,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withWorkspaceMemberID sets the ID field of the mutation.
-func withWorkspaceMemberID(id uuid.UUID) workspacememberOption {
-	return func(m *WorkspaceMemberMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *WorkspaceMember
-		)
-		m.oldValue = func(ctx context.Context) (*WorkspaceMember, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().WorkspaceMember.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withWorkspaceMember sets the old WorkspaceMember of the mutation.
-func withWorkspaceMember(node *WorkspaceMember) workspacememberOption {
-	return func(m *WorkspaceMemberMutation) {
-		m.oldValue = func(context.Context) (*WorkspaceMember, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m WorkspaceMemberMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m WorkspaceMemberMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of WorkspaceMember entities.
-func (m *WorkspaceMemberMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *WorkspaceMemberMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *WorkspaceMemberMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().WorkspaceMember.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetUserID sets the "user_id" field.
-func (m *WorkspaceMemberMutation) SetUserID(u uuid.UUID) {
-	m.user = &u
-}
-
-// UserID returns the value of the "user_id" field in the mutation.
-func (m *WorkspaceMemberMutation) UserID() (r uuid.UUID, exists bool) {
-	v := m.user
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUserID returns the old "user_id" field's value of the WorkspaceMember entity.
-// If the WorkspaceMember object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkspaceMemberMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
-	}
-	return oldValue.UserID, nil
-}
-
-// ResetUserID resets all changes to the "user_id" field.
-func (m *WorkspaceMemberMutation) ResetUserID() {
-	m.user = nil
-}
-
-// SetWorkspaceID sets the "workspace_id" field.
-func (m *WorkspaceMemberMutation) SetWorkspaceID(u uuid.UUID) {
-	m.workspace = &u
-}
-
-// WorkspaceID returns the value of the "workspace_id" field in the mutation.
-func (m *WorkspaceMemberMutation) WorkspaceID() (r uuid.UUID, exists bool) {
-	v := m.workspace
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldWorkspaceID returns the old "workspace_id" field's value of the WorkspaceMember entity.
-// If the WorkspaceMember object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkspaceMemberMutation) OldWorkspaceID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
-	}
-	return oldValue.WorkspaceID, nil
-}
-
-// ResetWorkspaceID resets all changes to the "workspace_id" field.
-func (m *WorkspaceMemberMutation) ResetWorkspaceID() {
-	m.workspace = nil
-}
-
-// SetRoleID sets the "role_id" field.
-func (m *WorkspaceMemberMutation) SetRoleID(u uuid.UUID) {
-	m.role = &u
-}
-
-// RoleID returns the value of the "role_id" field in the mutation.
-func (m *WorkspaceMemberMutation) RoleID() (r uuid.UUID, exists bool) {
-	v := m.role
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRoleID returns the old "role_id" field's value of the WorkspaceMember entity.
-// If the WorkspaceMember object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkspaceMemberMutation) OldRoleID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRoleID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRoleID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRoleID: %w", err)
-	}
-	return oldValue.RoleID, nil
-}
-
-// ResetRoleID resets all changes to the "role_id" field.
-func (m *WorkspaceMemberMutation) ResetRoleID() {
-	m.role = nil
-}
-
-// SetJoinedAt sets the "joined_at" field.
-func (m *WorkspaceMemberMutation) SetJoinedAt(t time.Time) {
-	m.joined_at = &t
-}
-
-// JoinedAt returns the value of the "joined_at" field in the mutation.
-func (m *WorkspaceMemberMutation) JoinedAt() (r time.Time, exists bool) {
-	v := m.joined_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldJoinedAt returns the old "joined_at" field's value of the WorkspaceMember entity.
-// If the WorkspaceMember object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkspaceMemberMutation) OldJoinedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldJoinedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldJoinedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldJoinedAt: %w", err)
-	}
-	return oldValue.JoinedAt, nil
-}
-
-// ResetJoinedAt resets all changes to the "joined_at" field.
-func (m *WorkspaceMemberMutation) ResetJoinedAt() {
-	m.joined_at = nil
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (m *WorkspaceMemberMutation) ClearUser() {
-	m.cleareduser = true
-	m.clearedFields[workspacemember.FieldUserID] = struct{}{}
-}
-
-// UserCleared reports if the "user" edge to the User entity was cleared.
-func (m *WorkspaceMemberMutation) UserCleared() bool {
-	return m.cleareduser
-}
-
-// UserIDs returns the "user" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// UserID instead. It exists only for internal usage by the builders.
-func (m *WorkspaceMemberMutation) UserIDs() (ids []uuid.UUID) {
-	if id := m.user; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetUser resets all changes to the "user" edge.
-func (m *WorkspaceMemberMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-}
-
-// ClearWorkspace clears the "workspace" edge to the Workspace entity.
-func (m *WorkspaceMemberMutation) ClearWorkspace() {
-	m.clearedworkspace = true
-	m.clearedFields[workspacemember.FieldWorkspaceID] = struct{}{}
-}
-
-// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
-func (m *WorkspaceMemberMutation) WorkspaceCleared() bool {
-	return m.clearedworkspace
-}
-
-// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *WorkspaceMemberMutation) WorkspaceIDs() (ids []uuid.UUID) {
-	if id := m.workspace; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetWorkspace resets all changes to the "workspace" edge.
-func (m *WorkspaceMemberMutation) ResetWorkspace() {
-	m.workspace = nil
-	m.clearedworkspace = false
-}
-
-// ClearRole clears the "role" edge to the Role entity.
-func (m *WorkspaceMemberMutation) ClearRole() {
-	m.clearedrole = true
-	m.clearedFields[workspacemember.FieldRoleID] = struct{}{}
-}
-
-// RoleCleared reports if the "role" edge to the Role entity was cleared.
-func (m *WorkspaceMemberMutation) RoleCleared() bool {
-	return m.clearedrole
-}
-
-// RoleIDs returns the "role" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// RoleID instead. It exists only for internal usage by the builders.
-func (m *WorkspaceMemberMutation) RoleIDs() (ids []uuid.UUID) {
-	if id := m.role; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetRole resets all changes to the "role" edge.
-func (m *WorkspaceMemberMutation) ResetRole() {
-	m.role = nil
-	m.clearedrole = false
-}
-
-// Where appends a list predicates to the WorkspaceMemberMutation builder.
-func (m *WorkspaceMemberMutation) Where(ps ...predicate.WorkspaceMember) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the WorkspaceMemberMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *WorkspaceMemberMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.WorkspaceMember, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *WorkspaceMemberMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *WorkspaceMemberMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (WorkspaceMember).
-func (m *WorkspaceMemberMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *WorkspaceMemberMutation) Fields() []string {
-	fields := make([]string, 0, 4)
-	if m.user != nil {
-		fields = append(fields, workspacemember.FieldUserID)
-	}
-	if m.workspace != nil {
-		fields = append(fields, workspacemember.FieldWorkspaceID)
-	}
-	if m.role != nil {
-		fields = append(fields, workspacemember.FieldRoleID)
-	}
-	if m.joined_at != nil {
-		fields = append(fields, workspacemember.FieldJoinedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *WorkspaceMemberMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case workspacemember.FieldUserID:
-		return m.UserID()
-	case workspacemember.FieldWorkspaceID:
-		return m.WorkspaceID()
-	case workspacemember.FieldRoleID:
-		return m.RoleID()
-	case workspacemember.FieldJoinedAt:
-		return m.JoinedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *WorkspaceMemberMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case workspacemember.FieldUserID:
-		return m.OldUserID(ctx)
-	case workspacemember.FieldWorkspaceID:
-		return m.OldWorkspaceID(ctx)
-	case workspacemember.FieldRoleID:
-		return m.OldRoleID(ctx)
-	case workspacemember.FieldJoinedAt:
-		return m.OldJoinedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown WorkspaceMember field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *WorkspaceMemberMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case workspacemember.FieldUserID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUserID(v)
-		return nil
-	case workspacemember.FieldWorkspaceID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetWorkspaceID(v)
-		return nil
-	case workspacemember.FieldRoleID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRoleID(v)
-		return nil
-	case workspacemember.FieldJoinedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetJoinedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown WorkspaceMember field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *WorkspaceMemberMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *WorkspaceMemberMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *WorkspaceMemberMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown WorkspaceMember numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *WorkspaceMemberMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *WorkspaceMemberMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *WorkspaceMemberMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown WorkspaceMember nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *WorkspaceMemberMutation) ResetField(name string) error {
-	switch name {
-	case workspacemember.FieldUserID:
-		m.ResetUserID()
-		return nil
-	case workspacemember.FieldWorkspaceID:
-		m.ResetWorkspaceID()
-		return nil
-	case workspacemember.FieldRoleID:
-		m.ResetRoleID()
-		return nil
-	case workspacemember.FieldJoinedAt:
-		m.ResetJoinedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown WorkspaceMember field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *WorkspaceMemberMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.user != nil {
-		edges = append(edges, workspacemember.EdgeUser)
-	}
-	if m.workspace != nil {
-		edges = append(edges, workspacemember.EdgeWorkspace)
-	}
-	if m.role != nil {
-		edges = append(edges, workspacemember.EdgeRole)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *WorkspaceMemberMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case workspacemember.EdgeUser:
-		if id := m.user; id != nil {
-			return []ent.Value{*id}
-		}
-	case workspacemember.EdgeWorkspace:
-		if id := m.workspace; id != nil {
-			return []ent.Value{*id}
-		}
-	case workspacemember.EdgeRole:
-		if id := m.role; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *WorkspaceMemberMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *WorkspaceMemberMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *WorkspaceMemberMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.cleareduser {
-		edges = append(edges, workspacemember.EdgeUser)
-	}
-	if m.clearedworkspace {
-		edges = append(edges, workspacemember.EdgeWorkspace)
-	}
-	if m.clearedrole {
-		edges = append(edges, workspacemember.EdgeRole)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *WorkspaceMemberMutation) EdgeCleared(name string) bool {
-	switch name {
-	case workspacemember.EdgeUser:
-		return m.cleareduser
-	case workspacemember.EdgeWorkspace:
-		return m.clearedworkspace
-	case workspacemember.EdgeRole:
-		return m.clearedrole
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *WorkspaceMemberMutation) ClearEdge(name string) error {
-	switch name {
-	case workspacemember.EdgeUser:
-		m.ClearUser()
-		return nil
-	case workspacemember.EdgeWorkspace:
-		m.ClearWorkspace()
-		return nil
-	case workspacemember.EdgeRole:
-		m.ClearRole()
-		return nil
-	}
-	return fmt.Errorf("unknown WorkspaceMember unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *WorkspaceMemberMutation) ResetEdge(name string) error {
-	switch name {
-	case workspacemember.EdgeUser:
-		m.ResetUser()
-		return nil
-	case workspacemember.EdgeWorkspace:
-		m.ResetWorkspace()
-		return nil
-	case workspacemember.EdgeRole:
-		m.ResetRole()
-		return nil
-	}
-	return fmt.Errorf("unknown WorkspaceMember edge %s", name)
+	return fmt.Errorf("unknown User edge %s", name)
 }

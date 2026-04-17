@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/drivebase/drivebase/internal/ent/transferjob"
-	"github.com/drivebase/drivebase/internal/ent/workspace"
+	"github.com/drivebase/drivebase/internal/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -19,8 +19,8 @@ type TransferJob struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// WorkspaceID holds the value of the "workspace_id" field.
-	WorkspaceID uuid.UUID `json:"workspace_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// SourceProviderID holds the value of the "source_provider_id" field.
 	SourceProviderID uuid.UUID `json:"source_provider_id,omitempty"`
 	// DestProviderID holds the value of the "dest_provider_id" field.
@@ -59,8 +59,8 @@ type TransferJob struct {
 
 // TransferJobEdges holds the relations/edges for other nodes in the graph.
 type TransferJobEdges struct {
-	// Workspace holds the value of the workspace edge.
-	Workspace *Workspace `json:"workspace,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// Files holds the value of the files edge.
 	Files []*TransferJobFile `json:"files,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -68,15 +68,15 @@ type TransferJobEdges struct {
 	loadedTypes [2]bool
 }
 
-// WorkspaceOrErr returns the Workspace value or an error if the edge
+// UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e TransferJobEdges) WorkspaceOrErr() (*Workspace, error) {
-	if e.Workspace != nil {
-		return e.Workspace, nil
+func (e TransferJobEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: workspace.Label}
+		return nil, &NotFoundError{label: user.Label}
 	}
-	return nil, &NotLoadedError{edge: "workspace"}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // FilesOrErr returns the Files value or an error if the edge
@@ -99,7 +99,7 @@ func (*TransferJob) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case transferjob.FieldCreatedAt, transferjob.FieldCompletedAt:
 			values[i] = new(sql.NullTime)
-		case transferjob.FieldID, transferjob.FieldWorkspaceID, transferjob.FieldSourceProviderID, transferjob.FieldDestProviderID:
+		case transferjob.FieldID, transferjob.FieldUserID, transferjob.FieldSourceProviderID, transferjob.FieldDestProviderID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -122,11 +122,11 @@ func (_m *TransferJob) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case transferjob.FieldWorkspaceID:
+		case transferjob.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				_m.WorkspaceID = *value
+				_m.UserID = *value
 			}
 		case transferjob.FieldSourceProviderID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -232,9 +232,9 @@ func (_m *TransferJob) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryWorkspace queries the "workspace" edge of the TransferJob entity.
-func (_m *TransferJob) QueryWorkspace() *WorkspaceQuery {
-	return NewTransferJobClient(_m.config).QueryWorkspace(_m)
+// QueryUser queries the "user" edge of the TransferJob entity.
+func (_m *TransferJob) QueryUser() *UserQuery {
+	return NewTransferJobClient(_m.config).QueryUser(_m)
 }
 
 // QueryFiles queries the "files" edge of the TransferJob entity.
@@ -265,8 +265,8 @@ func (_m *TransferJob) String() string {
 	var builder strings.Builder
 	builder.WriteString("TransferJob(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("workspace_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.WorkspaceID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("source_provider_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SourceProviderID))

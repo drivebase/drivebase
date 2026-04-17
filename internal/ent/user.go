@@ -36,30 +36,33 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
-	// Memberships holds the value of the memberships edge.
-	Memberships []*WorkspaceMember `json:"memberships,omitempty"`
 	// Sessions holds the value of the sessions edge.
 	Sessions []*Session `json:"sessions,omitempty"`
 	// APITokens holds the value of the api_tokens edge.
 	APITokens []*ApiToken `json:"api_tokens,omitempty"`
+	// Providers holds the value of the providers edge.
+	Providers []*Provider `json:"providers,omitempty"`
+	// OauthApps holds the value of the oauth_apps edge.
+	OauthApps []*OAuthApp `json:"oauth_apps,omitempty"`
+	// OauthStates holds the value of the oauth_states edge.
+	OauthStates []*OAuthState `json:"oauth_states,omitempty"`
+	// UploadBatches holds the value of the upload_batches edge.
+	UploadBatches []*UploadBatch `json:"upload_batches,omitempty"`
+	// TransferJobs holds the value of the transfer_jobs edge.
+	TransferJobs []*TransferJob `json:"transfer_jobs,omitempty"`
+	// SharedLinks holds the value of the shared_links edge.
+	SharedLinks []*SharedLink `json:"shared_links,omitempty"`
+	// BandwidthLogs holds the value of the bandwidth_logs edge.
+	BandwidthLogs []*BandwidthLog `json:"bandwidth_logs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
-}
-
-// MembershipsOrErr returns the Memberships value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) MembershipsOrErr() ([]*WorkspaceMember, error) {
-	if e.loadedTypes[0] {
-		return e.Memberships, nil
-	}
-	return nil, &NotLoadedError{edge: "memberships"}
+	loadedTypes [9]bool
 }
 
 // SessionsOrErr returns the Sessions value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) SessionsOrErr() ([]*Session, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Sessions, nil
 	}
 	return nil, &NotLoadedError{edge: "sessions"}
@@ -68,10 +71,73 @@ func (e UserEdges) SessionsOrErr() ([]*Session, error) {
 // APITokensOrErr returns the APITokens value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) APITokensOrErr() ([]*ApiToken, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.APITokens, nil
 	}
 	return nil, &NotLoadedError{edge: "api_tokens"}
+}
+
+// ProvidersOrErr returns the Providers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ProvidersOrErr() ([]*Provider, error) {
+	if e.loadedTypes[2] {
+		return e.Providers, nil
+	}
+	return nil, &NotLoadedError{edge: "providers"}
+}
+
+// OauthAppsOrErr returns the OauthApps value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) OauthAppsOrErr() ([]*OAuthApp, error) {
+	if e.loadedTypes[3] {
+		return e.OauthApps, nil
+	}
+	return nil, &NotLoadedError{edge: "oauth_apps"}
+}
+
+// OauthStatesOrErr returns the OauthStates value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) OauthStatesOrErr() ([]*OAuthState, error) {
+	if e.loadedTypes[4] {
+		return e.OauthStates, nil
+	}
+	return nil, &NotLoadedError{edge: "oauth_states"}
+}
+
+// UploadBatchesOrErr returns the UploadBatches value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) UploadBatchesOrErr() ([]*UploadBatch, error) {
+	if e.loadedTypes[5] {
+		return e.UploadBatches, nil
+	}
+	return nil, &NotLoadedError{edge: "upload_batches"}
+}
+
+// TransferJobsOrErr returns the TransferJobs value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) TransferJobsOrErr() ([]*TransferJob, error) {
+	if e.loadedTypes[6] {
+		return e.TransferJobs, nil
+	}
+	return nil, &NotLoadedError{edge: "transfer_jobs"}
+}
+
+// SharedLinksOrErr returns the SharedLinks value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) SharedLinksOrErr() ([]*SharedLink, error) {
+	if e.loadedTypes[7] {
+		return e.SharedLinks, nil
+	}
+	return nil, &NotLoadedError{edge: "shared_links"}
+}
+
+// BandwidthLogsOrErr returns the BandwidthLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) BandwidthLogsOrErr() ([]*BandwidthLog, error) {
+	if e.loadedTypes[8] {
+		return e.BandwidthLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "bandwidth_logs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -149,11 +215,6 @@ func (_m *User) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryMemberships queries the "memberships" edge of the User entity.
-func (_m *User) QueryMemberships() *WorkspaceMemberQuery {
-	return NewUserClient(_m.config).QueryMemberships(_m)
-}
-
 // QuerySessions queries the "sessions" edge of the User entity.
 func (_m *User) QuerySessions() *SessionQuery {
 	return NewUserClient(_m.config).QuerySessions(_m)
@@ -162,6 +223,41 @@ func (_m *User) QuerySessions() *SessionQuery {
 // QueryAPITokens queries the "api_tokens" edge of the User entity.
 func (_m *User) QueryAPITokens() *ApiTokenQuery {
 	return NewUserClient(_m.config).QueryAPITokens(_m)
+}
+
+// QueryProviders queries the "providers" edge of the User entity.
+func (_m *User) QueryProviders() *ProviderQuery {
+	return NewUserClient(_m.config).QueryProviders(_m)
+}
+
+// QueryOauthApps queries the "oauth_apps" edge of the User entity.
+func (_m *User) QueryOauthApps() *OAuthAppQuery {
+	return NewUserClient(_m.config).QueryOauthApps(_m)
+}
+
+// QueryOauthStates queries the "oauth_states" edge of the User entity.
+func (_m *User) QueryOauthStates() *OAuthStateQuery {
+	return NewUserClient(_m.config).QueryOauthStates(_m)
+}
+
+// QueryUploadBatches queries the "upload_batches" edge of the User entity.
+func (_m *User) QueryUploadBatches() *UploadBatchQuery {
+	return NewUserClient(_m.config).QueryUploadBatches(_m)
+}
+
+// QueryTransferJobs queries the "transfer_jobs" edge of the User entity.
+func (_m *User) QueryTransferJobs() *TransferJobQuery {
+	return NewUserClient(_m.config).QueryTransferJobs(_m)
+}
+
+// QuerySharedLinks queries the "shared_links" edge of the User entity.
+func (_m *User) QuerySharedLinks() *SharedLinkQuery {
+	return NewUserClient(_m.config).QuerySharedLinks(_m)
+}
+
+// QueryBandwidthLogs queries the "bandwidth_logs" edge of the User entity.
+func (_m *User) QueryBandwidthLogs() *BandwidthLogQuery {
+	return NewUserClient(_m.config).QueryBandwidthLogs(_m)
 }
 
 // Update returns a builder for updating this User.

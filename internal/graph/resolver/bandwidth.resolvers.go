@@ -12,7 +12,6 @@ import (
 
 	"github.com/drivebase/drivebase/internal/auth"
 	entbandwidthlog "github.com/drivebase/drivebase/internal/ent/bandwidthlog"
-	entschema "github.com/drivebase/drivebase/internal/ent/schema"
 	"github.com/drivebase/drivebase/internal/graph"
 	"github.com/drivebase/drivebase/internal/templink"
 	"github.com/google/uuid"
@@ -20,6 +19,11 @@ import (
 
 // GenerateTempLink is the resolver for the generateTempLink field.
 func (r *mutationResolver) GenerateTempLink(ctx context.Context, fileNodeID uuid.UUID, ttlSeconds *int) (string, error) {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
+		return "", auth.ErrUnauthenticated
+	}
+
 	fn, err := r.DB.FileNode.Get(ctx, fileNodeID)
 	if err != nil {
 		return "", fmt.Errorf("file not found")
@@ -28,8 +32,8 @@ func (r *mutationResolver) GenerateTempLink(ctx context.Context, fileNodeID uuid
 	if err != nil {
 		return "", fmt.Errorf("provider not found")
 	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionRead)); err != nil {
-		return "", err
+	if prov.UserID != u.ID {
+		return "", fmt.Errorf("forbidden")
 	}
 
 	ttl := time.Hour
@@ -42,16 +46,13 @@ func (r *mutationResolver) GenerateTempLink(ctx context.Context, fileNodeID uuid
 
 // BandwidthUsage is the resolver for the bandwidthUsage field.
 func (r *queryResolver) BandwidthUsage(ctx context.Context, providerID *uuid.UUID, from *time.Time, to *time.Time) ([]*graph.BandwidthSummary, error) {
-	workspaceID, ok := auth.WorkspaceIDFromCtx(ctx)
-	if !ok {
+	u, err := auth.UserFromCtx(ctx)
+	if err != nil {
 		return nil, auth.ErrUnauthenticated
-	}
-	if err := auth.Check(ctx, r.DB, string(entschema.ResourceTypeWorkspace), workspaceID, string(entschema.ActionRead)); err != nil {
-		return nil, err
 	}
 
 	q := r.DB.BandwidthLog.Query().
-		Where(entbandwidthlog.WorkspaceID(workspaceID))
+		Where(entbandwidthlog.UserID(u.ID))
 	if providerID != nil {
 		q = q.Where(entbandwidthlog.ProviderID(*providerID))
 	}

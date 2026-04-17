@@ -5,7 +5,7 @@ enum ConflictStrategy {
 
 type TransferJob {
   id: UUID!
-  workspaceID: UUID!
+  userID: UUID!
   sourceProviderID: UUID!
   destProviderID: UUID!
   # Empty string means root folder.

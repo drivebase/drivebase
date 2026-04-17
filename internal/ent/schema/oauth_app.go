@@ -11,8 +11,8 @@ import (
 )
 
 // OAuthApp stores reusable OAuth client credentials (client_id + encrypted client_secret)
-// for a specific provider type within a workspace.
-// One record per (workspace_id, provider_type).
+// for a specific provider type owned by a user.
+// One record per (user_id, provider_type).
 type OAuthApp struct {
 	ent.Schema
 }
@@ -20,7 +20,7 @@ type OAuthApp struct {
 func (OAuthApp) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
-		field.UUID("workspace_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
 		field.String("provider_type").NotEmpty(),
 		field.String("client_id").NotEmpty(),
 		field.Bytes("encrypted_client_secret").Sensitive(),
@@ -32,12 +32,12 @@ func (OAuthApp) Fields() []ent.Field {
 
 func (OAuthApp) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("workspace", Workspace.Type).Ref("oauth_apps").Field("workspace_id").Unique().Required(),
+		edge.From("user", User.Type).Ref("oauth_apps").Field("user_id").Unique().Required(),
 	}
 }
 
 func (OAuthApp) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("workspace_id", "provider_type").Unique(),
+		index.Fields("user_id", "provider_type").Unique(),
 	}
 }

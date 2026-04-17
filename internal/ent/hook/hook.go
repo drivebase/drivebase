@@ -93,18 +93,6 @@ func (f PasswordResetFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PasswordResetMutation", m)
 }
 
-// The PermissionFunc type is an adapter to allow the use of ordinary
-// function as Permission mutator.
-type PermissionFunc func(context.Context, *ent.PermissionMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f PermissionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.PermissionMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PermissionMutation", m)
-}
-
 // The ProviderFunc type is an adapter to allow the use of ordinary
 // function as Provider mutator.
 type ProviderFunc func(context.Context, *ent.ProviderMutation) (ent.Value, error)
@@ -139,18 +127,6 @@ func (f ProviderQuotaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProviderQuotaMutation", m)
-}
-
-// The RoleFunc type is an adapter to allow the use of ordinary
-// function as Role mutator.
-type RoleFunc func(context.Context, *ent.RoleMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f RoleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.RoleMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RoleMutation", m)
 }
 
 // The SessionFunc type is an adapter to allow the use of ordinary
@@ -235,30 +211,6 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
-}
-
-// The WorkspaceFunc type is an adapter to allow the use of ordinary
-// function as Workspace mutator.
-type WorkspaceFunc func(context.Context, *ent.WorkspaceMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f WorkspaceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.WorkspaceMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkspaceMutation", m)
-}
-
-// The WorkspaceMemberFunc type is an adapter to allow the use of ordinary
-// function as WorkspaceMember mutator.
-type WorkspaceMemberFunc func(context.Context, *ent.WorkspaceMemberMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f WorkspaceMemberFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.WorkspaceMemberMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkspaceMemberMutation", m)
 }
 
 // Condition is a hook condition function.

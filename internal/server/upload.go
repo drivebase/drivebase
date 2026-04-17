@@ -25,7 +25,8 @@ type fileHandler struct {
 func (h *fileHandler) upload(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	if u, _ := auth.UserFromCtx(ctx); u == nil {
+	u, _ := auth.UserFromCtx(ctx)
+	if u == nil {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -72,7 +73,7 @@ func (h *fileHandler) upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := auth.Check(ctx, h.db, string(entschema.ResourceTypeWorkspace), prov.WorkspaceID, string(entschema.ActionWrite)); err != nil {
+	if prov.UserID != u.ID {
 		http.Error(w, "forbidden", http.StatusForbidden)
 		return
 	}
@@ -89,7 +90,7 @@ func (h *fileHandler) upload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	batch, err := h.db.UploadBatch.Create().
-		SetWorkspaceID(prov.WorkspaceID).
+		SetUserID(u.ID).
 		SetProviderID(providerID).
 		SetParentRemoteID(parentRemoteID).
 		SetStatus(string(entschema.BatchStatusRunning)).
