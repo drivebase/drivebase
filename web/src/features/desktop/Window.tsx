@@ -96,7 +96,7 @@ export function Window({ window: win, isFocused }: WindowProps) {
 		>
 			<WindowTitleBar windowId={win.id} title={win.title} isFocused={isFocused} />
 			<div className="flex-1 overflow-auto select-none">
-				<AppComponent windowId={win.id} />
+				<AppComponent windowId={win.id} appState={win.appState} />
 			</div>
 		</div>
 	);

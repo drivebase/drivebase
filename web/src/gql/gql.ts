@@ -20,6 +20,10 @@ type Documents = {
     "\n  mutation RequestPasswordReset($email: String!) {\n    requestPasswordReset(email: $email)\n  }\n": typeof types.RequestPasswordResetDocument,
     "\n  mutation ResetPassword($email: String!, $otp: String!, $newPassword: String!) {\n    resetPassword(email: $email, otp: $otp, newPassword: $newPassword)\n  }\n": typeof types.ResetPasswordDocument,
     "\n  query Me {\n    me {\n      id\n      email\n      name\n    }\n  }\n": typeof types.MeDocument,
+    "\n  mutation ConnectProvider($input: ConnectProviderInput!) {\n    connectProvider(input: $input) {\n      id\n      name\n      type\n      status\n    }\n  }\n": typeof types.ConnectProviderDocument,
+    "\n  mutation DisconnectProvider($id: UUID!) {\n    disconnectProvider(id: $id)\n  }\n": typeof types.DisconnectProviderDocument,
+    "\n  query AvailableProviders {\n    availableProviders {\n      type\n      label\n      description\n      authType\n      fields {\n        name\n        label\n        description\n        placeholder\n        required\n      }\n    }\n  }\n": typeof types.AvailableProvidersDocument,
+    "\n  query Providers {\n    providers {\n      id\n      name\n      type\n      status\n      authType\n      createdAt\n      quota {\n        totalBytes\n        freeBytes\n      }\n    }\n  }\n": typeof types.ProvidersDocument,
 };
 const documents: Documents = {
     "\n  mutation SignIn($input: SignInInput!) {\n    signIn(input: $input) {\n      accessToken\n      refreshToken\n      user {\n        id\n        email\n        name\n      }\n    }\n  }\n": types.SignInDocument,
@@ -28,6 +32,10 @@ const documents: Documents = {
     "\n  mutation RequestPasswordReset($email: String!) {\n    requestPasswordReset(email: $email)\n  }\n": types.RequestPasswordResetDocument,
     "\n  mutation ResetPassword($email: String!, $otp: String!, $newPassword: String!) {\n    resetPassword(email: $email, otp: $otp, newPassword: $newPassword)\n  }\n": types.ResetPasswordDocument,
     "\n  query Me {\n    me {\n      id\n      email\n      name\n    }\n  }\n": types.MeDocument,
+    "\n  mutation ConnectProvider($input: ConnectProviderInput!) {\n    connectProvider(input: $input) {\n      id\n      name\n      type\n      status\n    }\n  }\n": types.ConnectProviderDocument,
+    "\n  mutation DisconnectProvider($id: UUID!) {\n    disconnectProvider(id: $id)\n  }\n": types.DisconnectProviderDocument,
+    "\n  query AvailableProviders {\n    availableProviders {\n      type\n      label\n      description\n      authType\n      fields {\n        name\n        label\n        description\n        placeholder\n        required\n      }\n    }\n  }\n": types.AvailableProvidersDocument,
+    "\n  query Providers {\n    providers {\n      id\n      name\n      type\n      status\n      authType\n      createdAt\n      quota {\n        totalBytes\n        freeBytes\n      }\n    }\n  }\n": types.ProvidersDocument,
 };
 
 /**
@@ -68,6 +76,22 @@ export function graphql(source: "\n  mutation ResetPassword($email: String!, $ot
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query Me {\n    me {\n      id\n      email\n      name\n    }\n  }\n"): (typeof documents)["\n  query Me {\n    me {\n      id\n      email\n      name\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation ConnectProvider($input: ConnectProviderInput!) {\n    connectProvider(input: $input) {\n      id\n      name\n      type\n      status\n    }\n  }\n"): (typeof documents)["\n  mutation ConnectProvider($input: ConnectProviderInput!) {\n    connectProvider(input: $input) {\n      id\n      name\n      type\n      status\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DisconnectProvider($id: UUID!) {\n    disconnectProvider(id: $id)\n  }\n"): (typeof documents)["\n  mutation DisconnectProvider($id: UUID!) {\n    disconnectProvider(id: $id)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query AvailableProviders {\n    availableProviders {\n      type\n      label\n      description\n      authType\n      fields {\n        name\n        label\n        description\n        placeholder\n        required\n      }\n    }\n  }\n"): (typeof documents)["\n  query AvailableProviders {\n    availableProviders {\n      type\n      label\n      description\n      authType\n      fields {\n        name\n        label\n        description\n        placeholder\n        required\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query Providers {\n    providers {\n      id\n      name\n      type\n      status\n      authType\n      createdAt\n      quota {\n        totalBytes\n        freeBytes\n      }\n    }\n  }\n"): (typeof documents)["\n  query Providers {\n    providers {\n      id\n      name\n      type\n      status\n      authType\n      createdAt\n      quota {\n        totalBytes\n        freeBytes\n      }\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

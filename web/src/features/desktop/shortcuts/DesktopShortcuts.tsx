@@ -1,8 +1,5 @@
-import { useEffect } from "react";
-import { eventBus } from "@/lib/event-bus";
 import { useDesktopPreferencesStore } from "@/store/desktop-preferences";
 import { getAllShortcuts } from "./shortcut-registry";
-import { getShortcut } from "./shortcut-registry";
 import type { ShortcutDefinition } from "./shortcut-registry";
 import { ensureBuiltinShortcutsRegistered } from "./index";
 import { ShortcutIcon } from "./ShortcutIcon";
@@ -24,12 +21,6 @@ export function DesktopShortcuts() {
 	ensureBuiltinShortcutsRegistered();
 	const { sortBy } = useDesktopPreferencesStore();
 	const shortcuts = sortShortcuts(getAllShortcuts(), sortBy);
-
-	useEffect(() => {
-		return eventBus.on("desktop:shortcut-activated", ({ shortcutId, launchSourceRect }) => {
-			getShortcut(shortcutId)?.onOpen({ launchSourceRect });
-		});
-	}, []);
 
 	if (shortcuts.length === 0) return null;
 

@@ -4,6 +4,7 @@ import {
 	HardDrive,
 	Settings,
 	Trash2,
+	Plus,
 } from "lucide-react";
 import { registerApp } from "../app-registry";
 import { FileManagerApp } from "./file-manager/FileManagerApp";
@@ -11,6 +12,7 @@ import { DashboardApp } from "./DashboardApp";
 import { ProvidersApp } from "./ProvidersApp";
 import { SettingsApp } from "./SettingsApp";
 import { TrashApp } from "./TrashApp";
+import { ConnectProviderApp } from "@/features/providers/ConnectProviderApp";
 import "./file-manager/context-menu";
 
 registerApp({
@@ -38,9 +40,20 @@ registerApp({
 	label: "Providers",
 	icon: HardDrive,
 	component: ProvidersApp,
-	defaultSize: { width: 800, height: 550 },
-	minSize: { width: 450, height: 350 },
+	defaultSize: { width: 420, height: 550 },
+	minSize: { width: 360, height: 400 },
 	singleton: true,
+});
+
+registerApp({
+	id: "connect-provider",
+	label: "Connect Provider",
+	icon: Plus,
+	component: ConnectProviderApp,
+	defaultSize: { width: 400, height: 480 },
+	minSize: { width: 360, height: 400 },
+	singleton: false,
+	showInDock: false,
 });
 
 registerApp({
@@ -51,6 +64,7 @@ registerApp({
 	defaultSize: { width: 700, height: 500 },
 	minSize: { width: 400, height: 300 },
 	singleton: true,
+	dockGroup: "utility",
 });
 
 registerApp({
@@ -61,4 +75,5 @@ registerApp({
 	defaultSize: { width: 700, height: 500 },
 	minSize: { width: 400, height: 300 },
 	singleton: true,
+	dockGroup: "utility",
 });

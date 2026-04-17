@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
+@plugin "@iconify/tailwind4";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -126,7 +127,23 @@
     }
   html {
     @apply font-sans;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
     }
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    }
+}
+
+/* Hide scrollbars globally — will be customized later */
+* {
+  scrollbar-width: none; /* Firefox */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
 }
 
 /* Ensure Radix portals always render above windows */

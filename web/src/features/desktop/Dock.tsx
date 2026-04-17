@@ -3,14 +3,9 @@ import { DockItem } from "./DockItem";
 import { DockSeparator } from "./DockSeparator";
 
 export function Dock() {
-	const apps = getAllApps();
-
-	const mainApps = apps.filter(
-		(a) => a.id !== "settings" && a.id !== "trash",
-	);
-	const utilApps = apps.filter(
-		(a) => a.id === "settings" || a.id === "trash",
-	);
+	const dockApps = getAllApps().filter((a) => a.showInDock !== false);
+	const mainApps = dockApps.filter((a) => (a.dockGroup ?? "main") === "main");
+	const utilApps = dockApps.filter((a) => a.dockGroup === "utility");
 
 	const allItems = [
 		...mainApps.map((app) => ({ type: "app" as const, app })),
@@ -29,7 +24,6 @@ export function Dock() {
 					if (item.type === "separator") {
 						return <DockSeparator key="separator" />;
 					}
-
 					return <DockItem key={item.app!.id} app={item.app!} />;
 				})}
 			</div>
