@@ -25,6 +25,7 @@ export function ShortcutIcon({ shortcut }: ShortcutIconProps) {
 					width: rect.width,
 					height: rect.height,
 				};
+				shortcut.onOpen({ launchSourceRect });
 				eventBus.emit("desktop:shortcut-activated", {
 					shortcutId: shortcut.id,
 					launchSourceRect,

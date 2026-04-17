@@ -24,7 +24,9 @@ export function useContextMenu(ref: RefObject<HTMLElement | null>): void {
         const rawData = contextEl.getAttribute("data-context-data");
         const data = rawData ? JSON.parse(rawData) : undefined;
 
-        if (type === "file" && data) {
+        if (type === "desktop") {
+          target = { type: "desktop" };
+        } else if (type === "file" && data) {
           target = { type: "file", data };
         } else if (type === "shortcut" && data) {
           target = { type: "shortcut", data };

@@ -4,6 +4,7 @@ import type { LaunchSourceRect } from "../window-animation";
 export interface ShortcutDefinition {
 	id: string;
 	label: string;
+	category?: string;
 	/** Icon component — receives size + className */
 	icon: ComponentType<{ size?: number; className?: string }>;
 	/** Called when the shortcut is double-clicked */

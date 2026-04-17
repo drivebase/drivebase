@@ -1,7 +1,22 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Download, FolderInput, FolderOpen, Image, Info, Layers, Monitor, Pencil, Share2, Trash2, Copy } from "lucide-react";
+import {
+  ArrowDownAZ,
+  Check,
+  ChevronRight,
+  Copy,
+  Download,
+  FolderInput,
+  FolderOpen,
+  Image,
+  Info,
+  Layers,
+  Pencil,
+  Share2,
+  Trash2,
+} from "lucide-react";
 import { useContextMenuStore } from "@/store/context-menu";
+import { useDesktopPreferencesStore } from "@/store/desktop-preferences";
 import type { ContextTarget } from "@/lib/event-bus";
 import { eventBus } from "@/lib/event-bus";
 import { cn } from "@/lib/utils";
@@ -40,6 +55,25 @@ function MenuSeparator() {
   return <div className="-mx-1 my-1 h-px bg-border" />;
 }
 
+function MenuPanel({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "w-52 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 function MenuShortcut({ children }: { children: React.ReactNode }) {
   return (
     <span className="ml-auto text-xs tracking-widest text-muted-foreground group-hover:text-accent-foreground">
@@ -48,10 +82,55 @@ function MenuShortcut({ children }: { children: React.ReactNode }) {
   );
 }
 
+function MenuSub({
+  icon,
+  label,
+  children,
+}: {
+  icon?: React.ReactNode;
+  label: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <button
+        type="button"
+        className={cn(
+          "flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-none select-none",
+          "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+        )}
+      >
+        {icon ?? <span className="size-4" />}
+        {label}
+        <ChevronRight size={14} className="ml-auto" />
+      </button>
+      {isOpen ? (
+        <>
+          {/* Invisible bridge so the mouse doesn't leave the wrapper when crossing the gap */}
+          <div className="absolute top-0 left-full h-full w-2" />
+          <div className="absolute top-0 left-[calc(100%+0.5rem)] z-[100000]">
+            <MenuPanel className="animate-in fade-in-0 zoom-in-95 duration-100">
+              {children}
+            </MenuPanel>
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Menu content per target type
 // ---------------------------------------------------------------------------
 function DesktopMenuItems({ close }: { close: () => void }) {
+  const { useStacks, sortBy, toggleStacks, setSortBy } = useDesktopPreferencesStore();
+
   return (
     <>
       <MenuItem onSelect={close}>
@@ -59,10 +138,36 @@ function DesktopMenuItems({ close }: { close: () => void }) {
         Change Wallpaper…
       </MenuItem>
       <MenuSeparator />
-      <MenuItem onSelect={close}>
-        <Monitor size={14} />
-        Display Settings
+      <MenuItem
+        onSelect={() => {
+          toggleStacks();
+          close();
+        }}
+      >
+        {useStacks ? <Check size={14} /> : <span className="size-4" />}
+        Use Stacks
       </MenuItem>
+      <MenuSeparator />
+      <MenuSub icon={<ArrowDownAZ size={14} />} label="Sort By">
+        <MenuItem
+          onSelect={() => {
+            setSortBy("name");
+            close();
+          }}
+        >
+          {sortBy === "name" ? <Check size={14} /> : <span className="size-4" />}
+          Name
+        </MenuItem>
+        <MenuItem
+          onSelect={() => {
+            setSortBy("type");
+            close();
+          }}
+        >
+          {sortBy === "type" ? <Check size={14} /> : <span className="size-4" />}
+          Type
+        </MenuItem>
+      </MenuSub>
     </>
   );
 }
@@ -241,16 +346,18 @@ export function ContextMenuRenderer() {
     <div
       ref={menuRef}
       style={{ top: clampedY, left: clampedX }}
-      className="fixed z-[99999] w-52 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 animate-in fade-in-0 zoom-in-95 duration-100"
+      className="fixed z-[99999] animate-in fade-in-0 zoom-in-95 duration-100"
     >
-      {target.type === "desktop" && <DesktopMenuItems close={close} />}
-      {target.type === "file" && (
-        <FileMenuItems data={target.data} close={close} />
-      )}
-      {target.type === "shortcut" && (
-        <ShortcutMenuItems data={target.data} close={close} />
-      )}
-      {target.type === "app" && <AppMenuItems target={target} close={close} />}
+      <MenuPanel>
+        {target.type === "desktop" && <DesktopMenuItems close={close} />}
+        {target.type === "file" && (
+          <FileMenuItems data={target.data} close={close} />
+        )}
+        {target.type === "shortcut" && (
+          <ShortcutMenuItems data={target.data} close={close} />
+        )}
+        {target.type === "app" && <AppMenuItems target={target} close={close} />}
+      </MenuPanel>
     </div>,
     document.body,
   );
