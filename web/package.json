@@ -17,6 +17,7 @@
     "codegen:watch": "graphql-codegen --config codegen.ts --watch"
   },
   "dependencies": {
+    "@gravity-ui/icons": "^2.18.0",
     "@heroui/react": "^3.0.2",
     "@heroui/styles": "^3.0.2",
     "@hookform/resolvers": "^5.2.2",
@@ -28,6 +29,7 @@
     "@urql/exchange-auth": "^3.0.0",
     "graphql": "^16.13.2",
     "graphql-sse": "^2.6.0",
+    "interactjs": "^1.10.27",
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

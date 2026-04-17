@@ -12,15 +12,15 @@ export function SettingsSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <aside className="w-60 shrink-0 h-screen flex flex-col bg-surface">
-      <div className="px-3 pt-3">
+    <aside className="w-60 h-full flex flex-col bg-surface">
+      <div className="px-3 h-14 flex items-center shrink-0">
         <Button variant="text" onPress={() => navigate({ to: "/" })} className="gap-2 text-muted">
           <ArrowLeft size={16} />
           Back
         </Button>
       </div>
 
-      <div className="px-5 py-3">
+      <div className="px-5 pb-3">
         <span className="text-xs font-semibold text-muted uppercase tracking-wider">
           Settings
         </span>

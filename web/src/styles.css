@@ -95,3 +95,14 @@ body {
   --warning: oklch(82.03% 0.1388 87.30);
   --warning-foreground: oklch(21.03% 0.0059 87.30);
 }
+
+@keyframes dock-bounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-12px); }
+  50% { transform: translateY(-4px); }
+  70% { transform: translateY(-8px); }
+}
+
+.animate-dock-bounce {
+  animation: dock-bounce 0.6s ease-in-out;
+}
