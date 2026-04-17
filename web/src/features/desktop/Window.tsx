@@ -16,13 +16,12 @@ export function Window({ window: win, isFocused }: WindowProps) {
 	if (!app) return null;
 
 	const AppComponent = app.component;
-
 	const isMaximized = win.state === "maximized";
 
 	return (
 		<div
 			ref={containerRef}
-			className={`absolute flex flex-col bg-surface border border-border/50 overflow-hidden transition-shadow duration-200 ${
+			className={`absolute flex flex-col bg-card border border-border overflow-hidden transition-shadow duration-200 ${
 				isMaximized ? "rounded-none" : "rounded-xl"
 			} ${isFocused ? "shadow-2xl" : "shadow-lg"}`}
 			style={{
@@ -36,11 +35,7 @@ export function Window({ window: win, isFocused }: WindowProps) {
 				if (!isFocused) focusWindow(win.id);
 			}}
 		>
-			<WindowTitleBar
-				windowId={win.id}
-				title={win.title}
-				isFocused={isFocused}
-			/>
+			<WindowTitleBar windowId={win.id} title={win.title} isFocused={isFocused} />
 			<div className="flex-1 overflow-auto">
 				<AppComponent windowId={win.id} />
 			</div>

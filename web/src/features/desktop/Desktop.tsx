@@ -7,7 +7,7 @@ import "./apps";
 
 export function Desktop() {
 	return (
-		<div className="relative w-screen h-screen overflow-hidden">
+		<div className="relative w-screen h-screen overflow-hidden select-none">
 			<DesktopBackground />
 			<WindowLayer />
 			<Dock />

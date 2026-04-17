@@ -6,7 +6,7 @@ import {
 	Trash2,
 } from "lucide-react";
 import { registerApp } from "../app-registry";
-import { FileManagerApp } from "./FileManagerApp";
+import { FileManagerApp } from "./file-manager/FileManagerApp";
 import { DashboardApp } from "./DashboardApp";
 import { ProvidersApp } from "./ProvidersApp";
 import { SettingsApp } from "./SettingsApp";
