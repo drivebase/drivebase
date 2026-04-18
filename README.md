@@ -1,5 +1,5 @@
 > [!NOTE]
-> The app is being written in Go from scratch for efficiency and performance.
+> The app is being written from scratch for efficiency and performance.
 
 <img width="2167" height="1579" alt="drivebase-banner" src="https://github.com/user-attachments/assets/4ce62659-1f4e-42e0-8074-4f85fb14e53e" />
 
