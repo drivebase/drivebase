@@ -36,8 +36,5 @@ npm-debug.log*
 # claude
 .claude/settings.local.json
 
-# generated code (graphql codegen, etc.)
-__generated__
-
 # local config (checked-in example is config.example.toml in packages/config)
 /config.toml
