@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="268px" height="268px" viewBox="0 0 268 268" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>circle</title>
+    <defs>
+        <linearGradient x1="64.8698395%" y1="29.7646741%" x2="32.017623%" y2="84.4583957%" id="linearGradient-1">
+            <stop stop-color="color(display-p3 0.286 0.612 0.682)" offset="0%"></stop>
+            <stop stop-color="color(display-p3 0.314 0.480 0.605)" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Drivebase-4" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M134,0 C208.006156,0 268,59.9938435 268,134 C268,208.006156 208.006156,268 134,268 C59.9938435,268 0,208.006156 0,134 C0,59.9938435 59.9938435,0 134,0 Z M134,73 C100.31063,73 73,100.31063 73,134 C73,167.68937 100.31063,195 134,195 C167.68937,195 195,167.68937 195,134 C195,100.31063 167.68937,73 134,73 Z" id="circle" fill="url(#linearGradient-1)"></path>
+    </g>
+</svg>

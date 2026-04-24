@@ -1,0 +1,5 @@
+export { Shell } from "./shell"
+export { MenuBar } from "./menubar"
+export { Dock } from "./dock"
+export { Desktop } from "./desktop"
+export { BootSplash } from "./boot-splash"

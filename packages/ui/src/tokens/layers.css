@@ -1,0 +1,44 @@
+/* Drivebase UI utility layers. */
+
+@utility glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(40px) saturate(160%);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  border: 1px solid var(--glass-border);
+}
+
+@utility glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid var(--glass-border);
+}
+
+@utility window-shadow {
+  box-shadow: var(--window-shadow);
+}
+
+@utility window-shadow-focus {
+  box-shadow: var(--window-shadow-focus);
+}
+
+@utility drag-region {
+  -webkit-app-region: drag;
+  app-region: drag;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@utility no-drag {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+@utility focus-ring {
+  outline: none;
+}
+
+@utility focus-ring-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

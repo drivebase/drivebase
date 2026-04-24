@@ -1,0 +1,44 @@
+fragment UploadSessionParts on UploadSession {
+  id
+  providerId
+  parentRemoteId
+  name
+  sizeBytes
+  mimeType
+  mode
+  chunkSizeBytes
+  totalChunks
+  status
+  planId
+  lastError
+  createdAt
+  updatedAt
+  completedAt
+}
+
+mutation InitiateUploadSession($input: InitiateUploadSessionInput!) {
+  initiateUploadSession(input: $input) {
+    sessions {
+      session {
+        ...UploadSessionParts
+      }
+      chunkUploadUrlPattern
+      presignedParts {
+        partNumber
+        url
+      }
+    }
+  }
+}
+
+mutation CompleteUploadSession($input: CompleteUploadSessionInput!) {
+  completeUploadSession(input: $input) {
+    ...UploadSessionParts
+  }
+}
+
+mutation CancelUploadSession($id: ID!) {
+  cancelUploadSession(id: $id) {
+    ...UploadSessionParts
+  }
+}

@@ -1,0 +1,46 @@
+# Drivebase example configuration.
+# Copy to ./config.toml at the repo root and fill in real values.
+
+[server]
+env = "dev" # "dev" | "prod"
+port = 4000
+host = "0.0.0.0"
+
+[db]
+# Use 127.0.0.1 not "localhost" — Bun resolves localhost to ::1 which
+# Docker's default port bindings do not listen on.
+url = "postgres://drivebase:drivebase@127.0.0.1:5432/drivebase?sslmode=disable"
+
+[redis]
+url = "redis://127.0.0.1:6379/0"
+
+[crypto]
+# Base64-encoded 32-byte master key. Generate with:
+#   bun -e "console.log(Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64'))"
+masterKeyBase64 = "REPLACE_WITH_32_BYTES_BASE64=="
+
+[auth]
+betterAuthSecret = "REPLACE_WITH_A_LONG_RANDOM_STRING"
+baseUrl = "http://localhost:4000"
+trustedOrigins = ["http://localhost:3000"]
+
+[cache]
+# listChildren TTL — 60s matches the plan. Short enough that edits via other
+# clients show up quickly, long enough to absorb folder-click bursts.
+childrenTtlSeconds = 60
+# Usage refresh is expensive (full bucket scan for S3); 10 min is plenty.
+usageTtlSeconds = 600
+
+[workers.concurrency]
+upload = 4
+download = 4
+transfer = 4
+copy = 4
+move = 4
+delete = 4
+syncReconcile = 1
+usageRefresh = 1
+
+[log]
+level = "info"
+# file = "./logs/drivebase.log"

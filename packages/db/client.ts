@@ -1,58 +1,26 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-import * as schema from "./schema";
+import postgres from "postgres";
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import * as schema from "./schema/index.ts";
 
-/**
- * Database client singleton
- */
-let dbInstance: ReturnType<typeof drizzle> | null = null;
-let poolInstance: Pool | null = null;
+export type Db = PostgresJsDatabase<typeof schema>;
+export type Sql = ReturnType<typeof postgres>;
 
-/**
- * Get or create database client
- */
-export function getDb() {
-	if (!dbInstance) {
-		const databaseUrl = process.env.DATABASE_URL;
+export type CreateDbOptions = {
+  url: string;
+  /** Passed through to postgres-js. */
+  max?: number;
+  /** Passed through to postgres-js. */
+  idleTimeout?: number;
+};
 
-		if (!databaseUrl) {
-			throw new Error("DATABASE_URL environment variable is not set");
-		}
-
-		poolInstance = new Pool({
-			connectionString: databaseUrl,
-			max: 10, // Connection pool size
-			idleTimeoutMillis: 20000,
-			connectionTimeoutMillis: 10000,
-		});
-
-		dbInstance = drizzle(poolInstance, { schema });
-	}
-
-	return dbInstance;
+export function createDb(opts: CreateDbOptions): { db: Db; sql: Sql } {
+  const sql = postgres(opts.url, {
+    max: opts.max ?? 10,
+    idle_timeout: opts.idleTimeout ?? 30,
+    prepare: false,
+  });
+  const db = drizzle(sql, { schema });
+  return { db, sql };
 }
 
-/**
- * Create a new database client (for testing or migrations)
- */
-export function createDb(databaseUrl: string) {
-	const pool = new Pool({
-		connectionString: databaseUrl,
-		max: 1,
-	});
-
-	return drizzle(pool, { schema });
-}
-
-/**
- * Close database connection
- */
-export async function closeDb() {
-	if (poolInstance) {
-		await poolInstance.end();
-		poolInstance = null;
-		dbInstance = null;
-	}
-}
-
-export type Database = ReturnType<typeof getDb>;
+export { schema };

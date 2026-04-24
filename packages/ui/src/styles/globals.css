@@ -1,0 +1,183 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "../tokens/tokens.css";
+@import "../tokens/layers.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@source "../../../../apps/**/*.{ts,tsx}";
+@source "../../../../packages/**/*.{ts,tsx}";
+
+@plugin "@iconify/tailwind4";
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading: var(--font-sans);
+
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-muted: var(--bg-muted);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ring: var(--ring);
+
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-fg: var(--accent-soft-fg);
+
+  --color-danger: var(--danger);
+  --color-danger-fg: var(--danger-fg);
+  --color-success: var(--success);
+  --color-success-fg: var(--success-fg);
+  --color-warning: var(--warning);
+  --color-warning-fg: var(--warning-fg);
+
+  --color-drive-google: var(--drive-google);
+  --color-drive-dropbox: var(--drive-dropbox);
+  --color-drive-onedrive: var(--drive-onedrive);
+  --color-drive-s3: var(--drive-s3);
+  --color-drive-local: var(--drive-local);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-window: var(--window-radius);
+}
+
+@layer base {
+  @keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .animate-overlay-in {
+    animation: overlayFadeIn 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @keyframes overlayFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  .animate-overlay-out {
+    animation: overlayFadeOut 140ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    pointer-events: none;
+  }
+
+  .db-dialog-overlay[data-state="open"] {
+    animation: overlayFadeIn 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @keyframes dialogOpen {
+    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .animate-dialog-open {
+    animation: dialogOpen 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @keyframes dialogClose {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(8px) scale(0.96); }
+  }
+
+  .animate-dialog-close {
+    animation: dialogClose 180ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    pointer-events: none;
+  }
+
+  .db-dialog-content[data-state="open"] > .db-dialog-surface {
+    animation: dialogOpen 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @keyframes windowOpen {
+    from { opacity: 0; transform: scale(0.92) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .animate-window-open {
+    animation: windowOpen 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @keyframes windowClose {
+    from { opacity: 1; transform: scale(1) translateY(0); }
+    to { opacity: 0; transform: scale(0.92) translateY(8px); }
+  }
+
+  .animate-window-close {
+    animation: windowClose 180ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    pointer-events: none;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    /* Lock the whole document — the shell owns scrolling inside windows and
+       panels. Without this, trackpad bounce on macOS lets the page rubber-
+       band even though the shell itself is `overflow: hidden`. */
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01", "ss03";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button,
+  [role="button"] {
+    cursor: default;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Custom scrollbars — thin translucent thumb with a transparent border so
+     the thumb appears inset from the edge. Chromium uses -webkit-scrollbar;
+     Firefox uses scrollbar-color/scrollbar-width. Safari respects the
+     WebKit rules. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    border-radius: 5px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}

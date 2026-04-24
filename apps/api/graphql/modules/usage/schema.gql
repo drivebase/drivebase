@@ -1,0 +1,6 @@
+type Usage {
+  total: BigInt
+  used: BigInt
+  available: BigInt
+  lastSyncedAt: DateTime!
+}

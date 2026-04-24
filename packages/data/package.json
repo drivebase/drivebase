@@ -1,0 +1,39 @@
+{
+  "name": "@drivebase/data",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen:watch": "graphql-codegen --config codegen.ts --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@urql/core": "^5.1.1",
+    "better-auth": "^1.6.5",
+    "graphql": "^16.10.0",
+    "graphql-sse": "^2.5.4",
+    "react": "^19.2.4",
+    "urql": "^4.2.2",
+    "wonka": "^6.3.5"
+  },
+  "devDependencies": {
+    "@graphql-codegen/add": "^5.0.3",
+    "@graphql-codegen/cli": "^5.0.5",
+    "@graphql-codegen/client-preset": "^4.5.1",
+    "@graphql-codegen/typescript": "^4.1.2",
+    "@graphql-codegen/typescript-operations": "^4.4.0",
+    "@graphql-codegen/typescript-urql": "^4.0.0",
+    "@graphql-typed-document-node/core": "^3.2.0",
+    "@parcel/watcher": "^2.5.0",
+    "@types/react": "^19.2.10",
+    "typescript": "^5.9.3"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./auth": "./src/auth/index.ts",
+    "./client": "./src/client/index.ts",
+    "./gql": "./src/gql/index.ts",
+    "./provider": "./src/provider.tsx"
+  }
+}

@@ -1,25 +1,26 @@
 {
-	"short_name": "Drivebase",
-	"name": "Drivebase",
-	"icons": [
-		{
-			"src": "favicon.ico",
-			"sizes": "64x64 32x32 24x24 16x16",
-			"type": "image/x-icon"
-		},
-		{
-			"src": "logo192.png",
-			"type": "image/png",
-			"sizes": "192x192"
-		},
-		{
-			"src": "logo512.png",
-			"type": "image/png",
-			"sizes": "512x512"
-		}
-	],
-	"start_url": ".",
-	"display": "standalone",
-	"theme_color": "#8b5cf6",
-	"background_color": "#ffffff"
+  "short_name": "Drivebase",
+  "name": "Drivebase",
+  "description": "Drivebase is a desktop-style file workspace for browsing, moving, and managing files across connected storage providers.",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#111318",
+  "background_color": "#111318"
 }

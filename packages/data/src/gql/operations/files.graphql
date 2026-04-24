@@ -1,0 +1,50 @@
+query ListChildren($providerId: ID!, $parentId: ID, $force: Boolean) {
+  listChildren(providerId: $providerId, parentId: $parentId, force: $force) {
+    nextPageToken
+    nodes {
+      id
+      providerId
+      remoteId
+      name
+      type
+      parentId
+      pathText
+      size
+      mimeType
+      remoteCreatedAt
+      remoteUpdatedAt
+    }
+  }
+}
+
+mutation CreateFolder($providerId: ID!, $parentId: ID, $name: String!) {
+  createFolder(providerId: $providerId, parentId: $parentId, name: $name) {
+    id
+    providerId
+    remoteId
+    name
+    type
+    parentId
+    pathText
+    size
+    mimeType
+    remoteCreatedAt
+    remoteUpdatedAt
+  }
+}
+
+mutation RenameNode($nodeId: ID!, $newName: String!) {
+  renameNode(nodeId: $nodeId, newName: $newName) {
+    id
+    providerId
+    remoteId
+    name
+    type
+    parentId
+    pathText
+    size
+    mimeType
+    remoteCreatedAt
+    remoteUpdatedAt
+  }
+}

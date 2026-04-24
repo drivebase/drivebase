@@ -1,53 +1,38 @@
-import Redis from "ioredis";
-import { env } from "../config/env";
-import { logger } from "../utils/runtime/logger";
+import { Redis } from "ioredis";
+import { getConfig } from "../config.ts";
 
 /**
- * Redis client singleton
+ * Three ioredis connections:
+ *   - primary: commands (GET/SET/DEL, scripts, stream XADD, etc.)
+ *   - publisher: PUBLISH only
+ *   - subscriber: (P)SUBSCRIBE only — ioredis puts a connection in subscribe
+ *     mode, so it can't be reused for regular commands.
+ *
+ * Holding them here means the API has a single well-known place for Redis.
+ * Workers get their own pool — they import ioredis directly.
  */
-let redisInstance: Redis | null = null;
+type RedisTriple = { primary: Redis; pub: Redis; sub: Redis };
 
-/**
- * Get or create Redis client
- */
-export function getRedis(): Redis {
-	if (!redisInstance) {
-		redisInstance = new Redis(env.REDIS_URL, {
-			maxRetriesPerRequest: 3,
-			enableReadyCheck: true,
-			lazyConnect: false,
-		});
+let cached: RedisTriple | undefined;
 
-		redisInstance.on("error", (error) => {
-			logger.error({ msg: "Redis connection error", error });
-		});
-
-		redisInstance.on("connect", () => {
-			logger.debug("Redis connected");
-		});
-	}
-
-	return redisInstance;
+export async function getRedis(): Promise<RedisTriple> {
+  if (cached) return cached;
+  const cfg = await getConfig();
+  const opts = { maxRetriesPerRequest: null, enableReadyCheck: true };
+  cached = {
+    primary: new Redis(cfg.redis.url, opts),
+    pub: new Redis(cfg.redis.url, opts),
+    sub: new Redis(cfg.redis.url, opts),
+  };
+  return cached;
 }
 
-/**
- * Create a new Redis connection suitable for BullMQ.
- * BullMQ requires maxRetriesPerRequest to be null.
- */
-export function createBullMQConnection(): Redis {
-	return new Redis(env.REDIS_URL, {
-		maxRetriesPerRequest: null,
-		enableReadyCheck: true,
-		lazyConnect: false,
-	});
-}
-
-/**
- * Close Redis connection
- */
 export async function closeRedis(): Promise<void> {
-	if (redisInstance) {
-		await redisInstance.quit();
-		redisInstance = null;
-	}
+  if (!cached) return;
+  await Promise.all([
+    cached.primary.quit(),
+    cached.pub.quit(),
+    cached.sub.quit(),
+  ]);
+  cached = undefined;
 }
