@@ -1,0 +1,66 @@
+query ProviderTypes {
+  providerTypes {
+    type
+    label
+    authKind
+    credentialFields {
+      key
+      label
+      type
+      required
+      placeholder
+      helpText
+    }
+  }
+}
+
+query MyProviders {
+  myProviders {
+    id
+    type
+    authKind
+    label
+    status
+    lastError
+    createdAt
+  }
+}
+
+query MyOAuthApps {
+  myOAuthApps {
+    id
+    provider
+    label
+    clientId
+    createdAt
+  }
+}
+
+mutation ConnectProvider($input: ConnectProviderInput!) {
+  connectProvider(input: $input) {
+    id
+    type
+    authKind
+    label
+    status
+    lastError
+    createdAt
+  }
+}
+
+mutation CreateOAuthApp($input: CreateOAuthAppInput!) {
+  createOAuthApp(input: $input) {
+    id
+    provider
+    label
+    clientId
+    createdAt
+  }
+}
+
+mutation BeginProviderOAuth($input: BeginProviderOAuthInput!) {
+  beginProviderOAuth(input: $input) {
+    authorizeUrl
+    state
+  }
+}

@@ -1,55 +1,43 @@
-# dependencies (bun install)
+# Dependencies
 node_modules
+.pnp
+.pnp.js
 
-# output
-out
-dist
-*.tgz
-
-# code coverage
-coverage
-*.lcov
-
-# python
-__pycache__
-*.pyc
-.venv
-*.pt
-.drivebase
-
-# logs
-logs
-_.log
-report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
-
-# dotenv environment variable files
+# Local env files
 .env
+.env.local
 .env.development.local
 .env.test.local
 .env.production.local
-.env.local
 
-# caches
-.eslintcache
-.cache
-*.tsbuildinfo
+# Testing
+coverage
+
+# Turbo
 .turbo
 
-# IntelliJ based IDEs
-.idea
+# Vercel
+.vercel
 
-# Finder (MacOS) folder config
+# Build Outputs
+dist
+.output
+.nitro
+.tanstack
+.vinxi
+
+# Debug
+npm-debug.log*
+
+# Misc
 .DS_Store
+*.pem
 
-# I18n generated files
-apps/web/src/locales/*/messages.ts
+# claude
+.claude/settings.local.json
 
-# Tesseract OCR data
-*.traineddata
+# generated code (graphql codegen, etc.)
+__generated__
 
-# SQL
-/*.sql
-
-# data
-/data
-docker/samba/samba_share
+# local config (checked-in example is config.example.toml in packages/config)
+/config.toml

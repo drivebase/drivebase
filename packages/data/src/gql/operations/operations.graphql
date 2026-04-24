@@ -1,0 +1,116 @@
+fragment OperationSummaryParts on OperationSummary {
+  totalEntries
+  totalBytes
+  conflicts
+}
+
+fragment PlanEntryParts on PlanEntry {
+  kind
+  srcPath
+  dstPath
+  srcName
+  dstName
+  size
+}
+
+fragment PreflightResultParts on PreflightResult {
+  id
+  operationId
+  status
+  summary {
+    ...OperationSummaryParts
+  }
+  entries {
+    ...PlanEntryParts
+  }
+}
+
+fragment OperationParts on Operation {
+  id
+  kind
+  status
+  jobCounts {
+    total
+    queued
+    running
+    succeeded
+    failed
+    skipped
+    cancelled
+  }
+  summary {
+    ...OperationSummaryParts
+  }
+  entries {
+    dstName
+    srcPath
+    dstPath
+    size
+  }
+  error
+  createdAt
+}
+
+query MyOperations {
+  myOperations {
+    ...OperationParts
+  }
+}
+
+mutation Preflight($input: PreflightInput!) {
+  preflight(input: $input) {
+    ...PreflightResultParts
+  }
+}
+
+mutation ExecutePlan($operationId: ID!) {
+  executePlan(operationId: $operationId) {
+    operationId
+    jobIds
+  }
+}
+
+mutation ResolveConflict($conflictId: ID!, $action: ConflictAction!, $applyToAll: Boolean) {
+  resolveConflict(conflictId: $conflictId, action: $action, applyToAll: $applyToAll) {
+    id
+    status
+  }
+}
+
+mutation CancelOperation($operationId: ID!) {
+  cancelOperation(operationId: $operationId) {
+    id
+    status
+  }
+}
+
+subscription OperationProgress($operationId: ID!) {
+  operationProgress(operationId: $operationId) {
+    __typename
+    ... on ProgressEvent {
+      operationId
+      jobId
+      bytes
+      sizeBytes
+      entryKind
+    }
+    ... on JobStatusEvent {
+      operationId
+      jobId
+      jobStatus: status
+      error
+    }
+    ... on OperationStatusEvent {
+      operationId
+      lifecycleStatus: status
+    }
+    ... on ConflictDiscoveredEvent {
+      operationId
+      jobId
+      conflictId
+      path
+      existingType
+      incomingType
+    }
+  }
+}

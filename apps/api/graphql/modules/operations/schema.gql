@@ -1,0 +1,242 @@
+enum OperationKind {
+  upload
+  download
+  transfer
+  copy_tree
+  move_tree
+  delete_tree
+}
+
+enum OperationStatus {
+  planning
+  ready
+  running
+  succeeded
+  failed
+  cancelled
+}
+
+enum ConflictStrategy {
+  overwrite
+  skip
+  rename
+  error
+  ask
+}
+
+enum ConflictAction {
+  overwrite
+  skip
+  rename
+}
+
+"A file/folder conflict discovered by a worker at write time."
+type ConflictDiscoveredEvent {
+  operationId: ID!
+  jobId: ID!
+  conflictId: ID!
+  path: String!
+  existingType: NodeType!
+  incomingType: NodeType!
+}
+
+enum NodeType {
+  file
+  folder
+}
+
+type OperationSummary {
+  totalEntries: Int!
+  totalBytes: BigInt!
+  conflicts: Int!
+}
+
+"Per-status job counts for a single operation."
+type OperationJobCounts {
+  total: Int!
+  queued: Int!
+  running: Int!
+  succeeded: Int!
+  failed: Int!
+  skipped: Int!
+  cancelled: Int!
+}
+
+type Operation {
+  id: ID!
+  kind: OperationKind!
+  status: OperationStatus!
+  strategy: ConflictStrategy!
+  summary: OperationSummary
+  jobCounts: OperationJobCounts!
+  error: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  completedAt: DateTime
+  entries: [PlanEntry!]!
+}
+
+type PlanEntry {
+  kind: String!
+  srcPath: String
+  dstPath: String!
+  srcName: String
+  dstName: String!
+  size: BigInt
+}
+
+type PreflightResult {
+  id: ID!
+  operationId: ID!
+  status: OperationStatus!
+  summary: OperationSummary!
+  entries: [PlanEntry!]!
+}
+
+"""
+Client-side local tree node — used for upload preflights. The orchestrator
+walks this tree to materialize paths and emit createFolder/upload entries.
+"""
+input LocalTreeNodeInput {
+  name: String!
+  type: NodeType!
+  size: BigInt
+  mimeType: String
+  clientRef: String
+  children: [LocalTreeNodeInput!]
+}
+
+input UploadPreflightInput {
+  dstProviderId: ID!
+  dstParentId: ID
+  tree: [LocalTreeNodeInput!]!
+  strategy: ConflictStrategy!
+}
+
+"""
+Transfer N source nodes from their (shared) provider to a destination
+provider + parent. `srcNodeIds` must be non-empty. Each source is expanded
+to its subtree; all entries land in one operation with one BullMQ job per
+entry.
+"""
+input TransferPreflightInput {
+  srcNodeIds: [ID!]!
+  dstProviderId: ID!
+  dstParentId: ID
+  strategy: ConflictStrategy!
+  """ When true the worker deletes the source nodes after transfer succeeds (move semantics). """
+  deleteSource: Boolean
+}
+
+"""
+Same-provider copy. All `srcNodeIds` must live on the same provider as the
+destination parent. Non-empty.
+"""
+input CopyTreePreflightInput {
+  srcNodeIds: [ID!]!
+  dstParentId: ID
+  strategy: ConflictStrategy!
+}
+
+"""
+Same-provider move. All `srcNodeIds` must share one provider. Non-empty.
+"""
+input MoveTreePreflightInput {
+  srcNodeIds: [ID!]!
+  dstParentId: ID
+  strategy: ConflictStrategy!
+}
+
+"Batched delete. All `srcNodeIds` must share one provider. Non-empty."
+input DeleteTreePreflightInput {
+  srcNodeIds: [ID!]!
+}
+
+"""
+Exactly one of the five preflight inputs must be set. The orchestrator
+dispatches on the one that's non-null.
+"""
+input PreflightInput {
+  upload: UploadPreflightInput
+  transfer: TransferPreflightInput
+  copyTree: CopyTreePreflightInput
+  moveTree: MoveTreePreflightInput
+  deleteTree: DeleteTreePreflightInput
+}
+
+
+type ExecuteResult {
+  operationId: ID!
+  jobIds: [ID!]!
+}
+
+enum JobStatus {
+  running
+  succeeded
+  failed
+  skipped
+}
+
+enum OperationLifecycleStatus {
+  running
+  succeeded
+  failed
+  cancelled
+}
+
+"Throttled byte-level progress. One per ~256 KiB or 500 ms per job."
+type ProgressEvent {
+  operationId: ID!
+  jobId: ID!
+  bytes: BigInt!
+  sizeBytes: BigInt
+  entryKind: String!
+}
+
+"Per-job lifecycle transition. Fires on running / succeeded / failed / skipped."
+type JobStatusEvent {
+  operationId: ID!
+  jobId: ID!
+  status: JobStatus!
+  error: String
+}
+
+"Terminal transition for the whole operation. Fires exactly once."
+type OperationStatusEvent {
+  operationId: ID!
+  status: OperationLifecycleStatus!
+}
+
+"Union of all operation-progress event kinds. Clients switch on __typename."
+union OperationProgress = ProgressEvent | JobStatusEvent | OperationStatusEvent | ConflictDiscoveredEvent
+
+extend type Query {
+  "Fetch a single operation the viewer owns."
+  operation(id: ID!): Operation
+  "Operations owned by the viewer, newest first."
+  myOperations(limit: Int = 50): [Operation!]!
+}
+
+extend type Mutation {
+  "Build a plan (no conflict detection). Returns summary and entries."
+  preflight(input: PreflightInput!): PreflightResult!
+  "Flip a ready operation to running and enqueue one job per entry."
+  executePlan(operationId: ID!): ExecuteResult!
+  "Resolve a runtime conflict discovered by a worker. applyToAll writes a blanket decision."
+  resolveConflict(
+    conflictId: ID!
+    action: ConflictAction!
+    applyToAll: Boolean
+  ): Operation!
+  "Mark an operation cancelled. No-op if already terminal."
+  cancelOperation(operationId: ID!): Operation!
+}
+
+extend type Subscription {
+  """
+  Live progress stream for one operation. Emits ProgressEvent / JobStatusEvent /
+  OperationStatusEvent until the operation hits a terminal state, then the
+  stream closes.
+  """
+  operationProgress(operationId: ID!): OperationProgress!
+}

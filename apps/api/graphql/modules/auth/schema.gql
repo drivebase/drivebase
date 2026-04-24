@@ -1,0 +1,10 @@
+type User {
+  id: ID!
+  email: String!
+  name: String!
+}
+
+extend type Query {
+  "The currently authenticated user, or null if the session is missing/expired."
+  viewer: User
+}

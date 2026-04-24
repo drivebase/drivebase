@@ -1,0 +1,40 @@
+enum NodeType {
+  file
+  folder
+}
+
+type Node {
+  id: ID!
+  providerId: ID!
+  remoteId: String!
+  name: String!
+  type: NodeType!
+  parentId: ID
+  pathText: String!
+  size: BigInt
+  mimeType: String
+  checksum: String
+  remoteCreatedAt: DateTime
+  remoteUpdatedAt: DateTime
+  syncedAt: DateTime!
+}
+
+type NodePage {
+  nodes: [Node!]!
+  nextPageToken: String
+}
+
+extend type Query {
+  """
+  List children of a node on a provider. Hits the local Nodes cache first
+  (TTL 60s); `force: true` bypasses and re-lists from the live provider.
+  """
+  listChildren(providerId: ID!, parentId: ID, force: Boolean): NodePage!
+}
+
+extend type Mutation {
+  "Create a folder under a provider parent (or root when parentId is null)."
+  createFolder(providerId: ID!, parentId: ID, name: String!): Node!
+  "Rename a node in place without changing its parent."
+  renameNode(nodeId: ID!, newName: String!): Node!
+}

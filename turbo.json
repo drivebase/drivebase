@@ -1,36 +1,32 @@
 {
-	"$schema": "https://turborepo.dev/schema.json",
-	"globalEnv": [
-		"PORT",
-		"NODE_ENV",
-		"DATABASE_URL",
-		"REDIS_URL",
-		"JWT_SECRET",
-		"ENCRYPTION_KEY",
-		"APP_URL",
-		"DEFAULT_OWNER_EMAIL",
-		"DEFAULT_OWNER_PASSWORD",
-		"VITE_PUBLIC_BASE_URL",
-		"DATA_DIR"
-	],
-	"tasks": {
-		"build": {
-			"dependsOn": ["^build"],
-			"outputs": ["dist"]
-		},
-		"check-types": {
-			"dependsOn": ["^check-types"]
-		},
-		"dev": {
-			"persistent": true,
-			"cache": false
-		},
-		"test": {
-			"dependsOn": ["^test"]
-		},
-		"test:watch": {
-			"persistent": true,
-			"cache": false
-		}
-	}
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".output/**"]
+    },
+    "codegen": {
+      "inputs": [
+        "codegen.ts",
+        "src/gql/operations/**/*.graphql",
+        "../../apps/api/graphql/modules/**/*.gql"
+      ],
+      "outputs": ["src/gql/__generated__/**", "graphql/__generated__/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "format": {
+      "dependsOn": ["^format"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck", "^codegen"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
 }

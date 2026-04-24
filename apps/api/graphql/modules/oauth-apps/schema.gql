@@ -1,0 +1,26 @@
+type OAuthApp {
+  id: ID!
+  provider: String!
+  label: String!
+  clientId: String!
+  createdAt: DateTime!
+}
+
+input CreateOAuthAppInput {
+  provider: String!
+  label: String!
+  clientId: String!
+  clientSecret: String!
+}
+
+extend type Query {
+  "OAuth app registrations owned by the viewer."
+  myOAuthApps: [OAuthApp!]!
+}
+
+extend type Mutation {
+  "Create an OAuth app. The client secret is encrypted at rest with the server master key."
+  createOAuthApp(input: CreateOAuthAppInput!): OAuthApp!
+  "Delete an OAuth app. Rejected when a provider is still bound to it."
+  deleteOAuthApp(id: ID!): Boolean!
+}

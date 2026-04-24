@@ -1,7 +1,0 @@
-{
-	"[typescript]": {
-		"editor.codeActionsOnSave": {
-			"source.fixAll.biome": "explicit"
-		}
-	}
-}

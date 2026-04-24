@@ -1,0 +1,34 @@
+{
+  "name": "@drivebase/kernel",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@drivebase/data": "workspace:*",
+    "@drivebase/ui": "workspace:*",
+    "lucide-react": "^1.8.0",
+    "mitt": "^3.0.1",
+    "nanoid": "^5.0.8",
+    "radix-ui": "^1.4.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./provider": "./src/provider.tsx",
+    "./bus": "./src/bus/index.ts",
+    "./stores/*": "./src/stores/*.ts",
+    "./registry": "./src/registry/index.ts",
+    "./shell": "./src/shell/index.ts",
+    "./windows": "./src/windows/index.ts"
+  }
+}

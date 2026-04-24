@@ -1,20 +1,23 @@
-import { join } from "node:path";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
-import { Pool } from "pg";
+#!/usr/bin/env bun
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const databaseUrl =
-	process.env.DATABASE_URL ||
-	"postgres://postgres:postgres@localhost:5432/drivebase";
+const url =
+  Bun.env.DATABASE_URL ??
+  "postgres://drivebase:drivebase@localhost:5432/drivebase?sslmode=disable";
 
-const pool = new Pool({ connectionString: databaseUrl });
-const db = drizzle(pool);
+const migrationsFolder = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "migrations",
+);
 
-const migrationsFolder = join(import.meta.dir, "migrations");
+const sql = postgres(url, { max: 1, prepare: false });
+const db = drizzle(sql);
 
-console.log("Running migrations from:", migrationsFolder);
-
+console.log(`applying migrations from ${migrationsFolder}`);
 await migrate(db, { migrationsFolder });
-await pool.end();
-
-console.log("Migrations complete.");
+console.log("migrations applied");
+await sql.end();

@@ -1,107 +1,67 @@
 import {
-	bigint,
-	boolean,
-	pgEnum,
-	pgTable,
-	text,
-	timestamp,
-	uniqueIndex,
+  pgTable,
+  text,
+  timestamp,
+  jsonb,
+  uuid,
+  pgEnum,
+  uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
-import { createId } from "../utils";
-import { users } from "./users";
-import { workspaces } from "./workspaces";
+import { user } from "./auth.ts";
+import { oauthApps } from "./oauth_apps.ts";
 
-/**
- * Provider type enum
- */
-export const providerTypeEnum = pgEnum("provider_type", [
-	"google_drive",
-	"s3",
-	"local",
-	"dropbox",
-	"ftp",
-	"webdav",
-	"telegram",
-	"nextcloud",
-	"darkibox",
-	"samba",
+export const providerAuthKindEnum = pgEnum("provider_auth_kind", [
+  "oauth",
+  "api_key",
+  "credentials",
+  "none",
+]);
+
+export const providerStatusEnum = pgEnum("provider_status", [
+  "connected",
+  "error",
+  "disconnected",
 ]);
 
 /**
- * Authentication type enum
+ * A connected storage provider instance owned by a user.
+ * `credentials` holds the AES-256-GCM ciphertext blob (structured as
+ * { iv, tag, ct } base64) for whichever auth shape the provider expects.
  */
-export const authTypeEnum = pgEnum("auth_type", [
-	"oauth",
-	"api_key",
-	"email_pass",
-	"no_auth",
-]);
-
-/**
- * Storage providers table
- */
-export const storageProviders = pgTable("storage_providers", {
-	id: text("id")
-		.primaryKey()
-		.$defaultFn(() => createId()),
-	name: text("name").notNull(),
-	type: providerTypeEnum("type").notNull(),
-	authType: authTypeEnum("auth_type").notNull().default("no_auth"),
-	encryptedConfig: text("encrypted_config").notNull(),
-	workspaceId: text("workspace_id")
-		.notNull()
-		.references(() => workspaces.id, { onDelete: "cascade" }),
-	isActive: boolean("is_active").notNull().default(true),
-	accountEmail: text("account_email"),
-	accountName: text("account_name"),
-	rootFolderId: text("root_folder_id"),
-	quotaTotal: bigint("quota_total", { mode: "number" }),
-	quotaUsed: bigint("quota_used", { mode: "number" }).notNull().default(0),
-	lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
-	createdAt: timestamp("created_at", { withTimezone: true })
-		.notNull()
-		.defaultNow(),
-	updatedAt: timestamp("updated_at", { withTimezone: true })
-		.notNull()
-		.defaultNow(),
-});
-
-/**
- * Reusable OAuth app credentials for provider connections.
- * Stores provider client/app identifiers and secrets separate from connection instances.
- */
-export const oauthProviderCredentials = pgTable(
-	"oauth_provider_credentials",
-	{
-		id: text("id")
-			.primaryKey()
-			.$defaultFn(() => createId()),
-		type: providerTypeEnum("type").notNull(),
-		encryptedConfig: text("encrypted_config").notNull(),
-		identifierLabel: text("identifier_label").notNull(),
-		identifierValue: text("identifier_value").notNull(),
-		userId: text("user_id")
-			.notNull()
-			.references(() => users.id, { onDelete: "cascade" }),
-		createdAt: timestamp("created_at", { withTimezone: true })
-			.notNull()
-			.defaultNow(),
-		updatedAt: timestamp("updated_at", { withTimezone: true })
-			.notNull()
-			.defaultNow(),
-	},
-	(table) => [
-		uniqueIndex("oauth_provider_credentials_user_type_identifier_idx").on(
-			table.userId,
-			table.type,
-			table.identifierValue,
-		),
-	],
+export const providers = pgTable(
+  "providers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    authKind: providerAuthKindEnum("auth_kind").notNull(),
+    /** Set when authKind='oauth' — points at the user's OAuth app registration. */
+    oauthAppId: uuid("oauth_app_id").references(() => oauthApps.id, {
+      onDelete: "restrict",
+    }),
+    label: text("label").notNull(),
+    status: providerStatusEnum("status").notNull().default("connected"),
+    /** Encrypted credentials blob — never read outside ProviderRegistry. */
+    credentials: jsonb("credentials").$type<{
+      iv: string;
+      tag: string;
+      ct: string;
+    } | null>(),
+    /** Provider-specific non-secret state: OAuth cursors, bucket name, root id, etc. */
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+    lastError: text("last_error"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("providers_user_idx").on(t.userId),
+    uniqueIndex("providers_user_label_uq").on(t.userId, t.label),
+  ],
 );
-
-export type StorageProvider = typeof storageProviders.$inferSelect;
-export type NewStorageProvider = typeof storageProviders.$inferInsert;
-export type OAuthProviderCredential =
-	typeof oauthProviderCredentials.$inferSelect;
-export type NewOAuthProviderCredential =
-	typeof oauthProviderCredentials.$inferInsert;

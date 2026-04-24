@@ -1,0 +1,111 @@
+"""
+Upload session = the byte-plumbing layer under one file entry inside an
+upload operation. A single upload operation may now have many sessions.
+
+Flow:
+  1. `preflight(kind=upload, tree=[singleFile], strategy=...)` → Operation(ready)
+  2. `initiateUploadSession(operationId)` → one session per upload entry
+  3. Client ships bytes (proxy: PUT /api/upload/:sessionId/:index, direct: PUT to S3)
+  4. `completeUploadSession(sessionId, parts?)` → session(ready)
+  5. `executePlan(operationId)` → worker finalizes (writes Node row, etc.)
+
+Direct mode (S3) hands the browser short-TTL presigned URLs so bytes never
+transit our process. Proxy mode stages chunks to disk and the worker
+assembles them into one `provider.upload()` call.
+"""
+enum UploadSessionMode {
+  proxy
+  direct
+}
+
+enum UploadSessionStatus {
+  pending
+  uploading
+  ready
+  completed
+  failed
+  cancelled
+}
+
+type UploadSession {
+  id: ID!
+  providerId: ID!
+  parentRemoteId: String
+  name: String!
+  sizeBytes: BigInt!
+  mimeType: String
+  mode: UploadSessionMode!
+  chunkSizeBytes: Int!
+  totalChunks: Int!
+  status: UploadSessionStatus!
+  planId: ID
+  lastError: String
+  abandonedAfter: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  completedAt: DateTime
+}
+
+type PresignedPart {
+  partNumber: Int!
+  url: String!
+}
+
+"""
+Returned by `initiateUploadSession`. Clients switch on `session.mode`:
+  - `proxy`  → PUT each chunk to `chunkUploadUrlPattern` with `{index}`
+              substituted by its 0-based chunk number.
+  - `direct` → PUT each chunk to the matching `presignedParts[i].url`;
+              collect the response ETag and pass the whole list back
+              through `completeUploadSession.parts`.
+"""
+type InitiateUploadSessionPayload {
+  sessions: [InitiatedUploadSession!]!
+}
+
+type InitiatedUploadSession {
+  session: UploadSession!
+  "Non-null in proxy mode."
+  chunkUploadUrlPattern: String
+  "Non-null in direct mode; ordered by partNumber (1-based, contiguous)."
+  presignedParts: [PresignedPart!]
+}
+
+input InitiateUploadSessionInput {
+  "Must reference a `ready` upload operation with one or more upload entries."
+  operationId: ID!
+  "Optional override of config.uploads.defaultChunkSizeBytes (8 MiB by default)."
+  chunkSizeBytes: Int
+}
+
+input UploadPartInput {
+  partNumber: Int!
+  "ETag returned by the upstream S3 on the PUT response. Quoted or unquoted; server normalizes."
+  etag: String!
+}
+
+input CompleteUploadSessionInput {
+  sessionId: ID!
+  "Required in direct mode; must have exactly totalChunks entries."
+  parts: [UploadPartInput!]
+}
+
+extend type Query {
+  "Single upload session by id, scoped to the viewer."
+  uploadSession(id: ID!): UploadSession
+  "Non-terminal upload sessions for the viewer (pending / uploading / ready)."
+  uploadSessions: [UploadSession!]!
+}
+
+extend type Mutation {
+  "Initiate byte transport for a ready upload operation."
+  initiateUploadSession(
+    input: InitiateUploadSessionInput!
+  ): InitiateUploadSessionPayload!
+  "Mark a session ready after all chunks/parts are in flight."
+  completeUploadSession(
+    input: CompleteUploadSessionInput!
+  ): UploadSession!
+  "Abort a session: cleans staging (proxy) or fires AbortMultipartUpload (direct)."
+  cancelUploadSession(id: ID!): UploadSession!
+}

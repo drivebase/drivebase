@@ -1,0 +1,129 @@
+enum ProviderStatus {
+  connected
+  error
+  disconnected
+}
+
+enum ProviderAuthKind {
+  oauth
+  api_key
+  credentials
+  none
+}
+
+type Provider {
+  id: ID!
+  type: String!
+  authKind: ProviderAuthKind!
+  label: String!
+  status: ProviderStatus!
+  lastError: String
+  oauthAppId: ID
+  createdAt: DateTime!
+  usage: Usage
+}
+
+"""
+Catalogued provider type exposed by the server. Drives the UI connect flow:
+the frontend queries this to render a provider picker and — for non-OAuth
+providers — a credentials form generated from `credentialFields`.
+"""
+type ProviderType {
+  type: String!
+  label: String!
+  authKind: ProviderAuthKind!
+  """
+  Fields the UI should render for the connect form. Empty when
+  `authKind === oauth` (the user authenticates via the authorize URL
+  instead of a form).
+  """
+  credentialFields: [ProviderCredentialField!]!
+  capabilities: ProviderCapabilities!
+}
+
+"""
+UI schema for a single credential input on the connect form. `key` is the
+property name the frontend puts into `ConnectProviderInput.credentials`.
+"""
+type ProviderCredentialField {
+  key: String!
+  label: String!
+  type: ProviderFieldType!
+  required: Boolean!
+  placeholder: String
+  helpText: String
+}
+
+enum ProviderFieldType {
+  text
+  password
+  url
+}
+
+type ProviderCapabilities {
+  isHierarchical: Boolean!
+  supportsNativeCopy: Boolean!
+  supportsNativeMove: Boolean!
+  supportsDelta: Boolean!
+  supportsChecksum: Boolean!
+  supportsMultipartUpload: Boolean!
+  supportsPresignedUploadParts: Boolean!
+}
+
+"""
+Credentials blob at connect time. Shape depends on the provider type —
+validated server-side by the provider module.
+"""
+input ConnectProviderInput {
+  type: String!
+  label: String!
+  credentials: JSON!
+}
+
+"""
+Start a provider-agnostic OAuth connect flow. The server resolves the
+provider type from the oauth app and uses its registered OAuth module
+to build the authorize URL. The `state` is bound to the viewer in Redis
+(10 min TTL) and must be replayed verbatim to completeProviderOAuth.
+"""
+input BeginProviderOAuthInput {
+  oauthAppId: ID!
+  label: String!
+}
+
+type BeginProviderOAuthPayload {
+  authorizeUrl: String!
+  state: String!
+}
+
+"""
+Complete an OAuth connect flow. The server looks up the stashed state,
+exchanges the code for tokens, probes authentication, and persists the
+provider row with encrypted credentials.
+"""
+input CompleteProviderOAuthInput {
+  state: String!
+  code: String!
+}
+
+extend type Query {
+  "Provider types the server knows how to run."
+  providerTypes: [ProviderType!]!
+  "Providers connected by the viewer."
+  myProviders: [Provider!]!
+  "A single provider by id, scoped to the viewer."
+  provider(id: ID!): Provider
+}
+
+extend type Mutation {
+  "Connect a new storage provider. Credentials are AES-256-GCM encrypted at rest."
+  connectProvider(input: ConnectProviderInput!): Provider!
+  "Disconnect (delete) a provider. Cascades to nodes and usage rows."
+  disconnectProvider(id: ID!): Boolean!
+  "Force a usage refresh for a single provider by calling its live getUsage()."
+  refreshUsage(id: ID!): Usage!
+  "Begin a provider-agnostic OAuth connect flow. Returns a URL to redirect the user to."
+  beginProviderOAuth(input: BeginProviderOAuthInput!): BeginProviderOAuthPayload!
+  "Complete an OAuth connect flow. Creates the Provider row after a successful token exchange."
+  completeProviderOAuth(input: CompleteProviderOAuthInput!): Provider!
+}

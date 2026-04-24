@@ -1,0 +1,150 @@
+/* Drivebase / DriveOS design tokens (oklch). */
+
+:root {
+  /* Surfaces */
+  --bg: oklch(0.985 0.004 80);
+  --bg-subtle: oklch(0.965 0.004 80);
+  --bg-muted: oklch(0.93 0.005 80);
+
+  /* Text */
+  --fg: oklch(0.22 0.02 260);
+  --fg-muted: oklch(0.5 0.02 260);
+  --fg-subtle: oklch(0.65 0.02 260);
+
+  /* Lines / focus */
+  --border: oklch(0.82 0.008 80);
+  --border-strong: oklch(0.72 0.012 80);
+  --ring: oklch(0.6 0.15 255);
+
+  /* Accent */
+  --accent: oklch(0.58 0.19 255);
+  --accent-fg: oklch(0.99 0 0);
+  --accent-soft: oklch(0.92 0.04 255);
+  --accent-soft-fg: oklch(0.35 0.18 255);
+
+  /* Semantic */
+  --danger: oklch(0.6 0.22 25);
+  --danger-fg: oklch(0.99 0 0);
+  --success: oklch(0.62 0.15 155);
+  --success-fg: oklch(0.99 0 0);
+  --warning: oklch(0.72 0.15 75);
+  --warning-fg: oklch(0.2 0.02 75);
+
+  /* Glass — matches prototype alphas. The base (`--glass-bg`) is the
+     translucent window surface that lets the wallpaper bleed through; the
+     `-strong` variant is for sub-surfaces (menubar, popovers, toolbars). */
+  --glass-bg: oklch(0.985 0.004 80 / 0.62);
+  --glass-bg-strong: oklch(0.985 0.004 80 / 0.82);
+  --glass-border: oklch(0.2 0.02 260 / 0.08);
+
+  /* Titlebar (dark bar, light text — from prototype) */
+  --titlebar: oklch(24% 0.012 260);
+  --titlebar-ink: oklch(96% 0.006 85);
+  --titlebar-inactive: oklch(70% 0.01 85);
+
+  /* Shadows (two-layer composite) */
+  --shadow-1: 0 1px 2px oklch(0.15 0.02 260 / 0.08);
+  --shadow-2: 0 20px 40px -12px oklch(0.15 0.02 260 / 0.22);
+
+  /* Window shadow — triple-layer composite from the prototype. `-focus` is
+     applied to the frontmost window so focus reads as a lift, not a glow. */
+  --window-shadow:
+    0 1px 1px oklch(0 0 0 / 0.04),
+    0 8px 24px oklch(0.15 0.02 260 / 0.08),
+    0 32px 80px oklch(0.15 0.02 260 / 0.10);
+  --window-shadow-focus:
+    0 1px 1px oklch(0 0 0 / 0.05),
+    0 16px 48px oklch(0.15 0.02 260 / 0.16),
+    0 48px 120px oklch(0.15 0.02 260 / 0.18);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --window-radius: 6px;
+
+  /* Geometry */
+  --window-titlebar-h: 28px;
+  --menubar-h: 36px;
+  --dock-h: 72px;
+
+  /* Drive hues */
+  --drive-google: oklch(0.68 0.14 85);
+  --drive-dropbox: oklch(0.6 0.18 255);
+  --drive-onedrive: oklch(0.6 0.15 235);
+  --drive-s3: oklch(0.72 0.14 55);
+  --drive-local: oklch(0.58 0.06 260);
+
+  /* Scrollbar thumb (translucent so it floats over any surface) */
+  --scrollbar-thumb: oklch(0 0 0 / 0.15);
+  --scrollbar-thumb-hover: oklch(0 0 0 / 0.25);
+
+  /* Wallpaper */
+  --wallpaper-topo-ink: oklch(0.55 0.05 240 / 0.18);
+  --wallpaper-linen-warp: oklch(0.94 0.006 80);
+  --wallpaper-gradient-a: oklch(0.92 0.08 250);
+  --wallpaper-gradient-b: oklch(0.96 0.04 50);
+  --wallpaper-solid: oklch(0.95 0.005 80);
+}
+
+.dark {
+  --bg: oklch(0.18 0.01 260);
+  --bg-subtle: oklch(0.22 0.01 260);
+  --bg-muted: oklch(0.28 0.01 260);
+
+  --fg: oklch(0.96 0.005 80);
+  --fg-muted: oklch(0.72 0.01 260);
+  --fg-subtle: oklch(0.55 0.01 260);
+
+  --border: oklch(1 0 0 / 0.1);
+  --border-strong: oklch(1 0 0 / 0.18);
+  --ring: oklch(0.7 0.18 255);
+
+  --accent: oklch(0.7 0.19 255);
+  --accent-fg: oklch(0.18 0.02 260);
+  --accent-soft: oklch(0.35 0.12 255 / 0.35);
+  --accent-soft-fg: oklch(0.85 0.1 255);
+
+  --danger: oklch(0.7 0.2 25);
+  --danger-fg: oklch(0.99 0 0);
+  --success: oklch(0.72 0.14 155);
+  --success-fg: oklch(0.15 0.02 155);
+  --warning: oklch(0.8 0.14 75);
+  --warning-fg: oklch(0.2 0.02 75);
+
+  --glass-bg: oklch(0.22 0.01 260 / 0.55);
+  --glass-bg-strong: oklch(0.22 0.01 260 / 0.78);
+  --glass-border: oklch(1 0 0 / 0.08);
+
+  --titlebar: oklch(14% 0.008 260);
+  --titlebar-ink: oklch(96% 0.006 85);
+  --titlebar-inactive: oklch(40% 0.012 260);
+
+  --shadow-1: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-2: 0 20px 40px -12px oklch(0 0 0 / 0.55);
+
+  --window-shadow:
+    0 1px 1px oklch(0 0 0 / 0.3),
+    0 8px 24px oklch(0 0 0 / 0.35),
+    0 32px 80px oklch(0 0 0 / 0.45);
+  --window-shadow-focus:
+    0 1px 1px oklch(0 0 0 / 0.4),
+    0 16px 48px oklch(0 0 0 / 0.5),
+    0 48px 120px oklch(0 0 0 / 0.6);
+
+  --drive-google: oklch(0.75 0.15 85);
+  --drive-dropbox: oklch(0.72 0.19 255);
+  --drive-onedrive: oklch(0.72 0.16 235);
+  --drive-s3: oklch(0.78 0.16 55);
+  --drive-local: oklch(0.72 0.06 260);
+
+  --scrollbar-thumb: oklch(1 0 0 / 0.12);
+  --scrollbar-thumb-hover: oklch(1 0 0 / 0.22);
+
+  --wallpaper-topo-ink: oklch(0.85 0.04 240 / 0.12);
+  --wallpaper-linen-warp: oklch(0.25 0.01 260);
+  --wallpaper-gradient-a: oklch(0.28 0.1 260);
+  --wallpaper-gradient-b: oklch(0.2 0.06 300);
+  --wallpaper-solid: oklch(0.2 0.01 260);
+}
