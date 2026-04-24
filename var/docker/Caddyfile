@@ -1,0 +1,25 @@
+:80 {
+    # API routes — proxy to the Bun API server
+    handle /graphql* {
+        reverse_proxy localhost:4000
+    }
+    handle /auth/* {
+        reverse_proxy localhost:4000
+    }
+    handle /upload/* {
+        reverse_proxy localhost:4000
+    }
+    handle /download/* {
+        reverse_proxy localhost:4000
+    }
+    handle /healthz {
+        reverse_proxy localhost:4000
+    }
+
+    # Web — serve pre-built static files with SPA fallback
+    handle {
+        root * /app/apps/web/dist
+        try_files {path} /index.html
+        file_server
+    }
+}
