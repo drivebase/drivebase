@@ -1,0 +1,17 @@
+node_modules
+.git
+.turbo
+.tanstack
+
+# Build outputs
+**/dist
+
+# Dev / local
+*.log
+.env
+.env.*
+config.toml
+
+# Test artefacts
+**/coverage
+**/__snapshots__
