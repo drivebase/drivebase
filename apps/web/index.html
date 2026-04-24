@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111318" />
+    <title>Drivebase</title>
+    <meta
+      name="description"
+      content="Drivebase is a desktop-style file workspace for browsing, moving, and managing files across connected storage providers."
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <script>
+      // Runs before React mounts. Dark is the product default; persisted state
+      // may explicitly switch back to light.
+      (function () {
+        try {
+          document.documentElement.classList.add("dark");
+          var r = localStorage.getItem("drivebase:theme");
+          if (!r) return;
+          var s = JSON.parse(r);
+          if (s && s.state && s.state.theme === "light")
+            document.documentElement.classList.remove("dark");
+        } catch (e) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
