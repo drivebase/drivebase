@@ -23,8 +23,8 @@ masterKeyBase64 = "REPLACE_WITH_32_BYTES_BASE64=="
 # Generate with:
 #   Linux / macOS / Windows (Git Bash / WSL):  openssl rand -hex 32
 betterAuthSecret = "REPLACE_WITH_A_LONG_RANDOM_STRING"
-baseUrl = "http://localhost:4000"
-trustedOrigins = ["http://localhost:3000"]
+baseUrl = "http://localhost:1558"
+trustedOrigins = ["http://localhost:1558"]
 
 [cache]
 # listChildren TTL — 60s matches the plan. Short enough that edits via other
