@@ -23,6 +23,23 @@ The UI is designed as a desktop OS shell running in the browser. Apps (Files, Pr
 > [!WARNING]
 > **v4 is still in active development.** Expect breaking changes, incomplete features, and shifting APIs until a stable release is tagged.
 
+## Quick Install
+
+Run the installer in a terminal:
+
+```bash
+curl -fsSL https://drivebase.io/install | bash
+```
+
+This will create a `drivebase/` directory with Docker Compose and a pre-configured `config.toml` (secrets auto-generated). After it finishes:
+
+```bash
+cd drivebase
+docker compose up -d
+```
+
+Then open `http://localhost:4000`.
+
 ## Features
 
 - **OS-like interface** — windowed apps, a taskbar, and a desktop shell; feels like a native file manager in the browser
