@@ -83,6 +83,7 @@ export const handleMove: Handler = async (ctx) => {
     }
     await updateNodeAfterMove(deps, entry.src.remoteId, entry.src.providerId, entry.src.path, dstPath, dstName);
     await invalidateEntryCache(deps, entry);
+    void deps.telemetry.track({ name: 'file.moved', data: { provider: provider.type } });
     return { bytes: entry.size ?? 0 };
   }
 
@@ -107,6 +108,7 @@ export const handleMove: Handler = async (ctx) => {
         ),
       );
     await invalidateEntryCache(deps, entry);
+    void deps.telemetry.track({ name: 'file.moved', data: { provider: provider.type } });
     return { bytes: entry.size ?? 0 };
   }
 
@@ -130,6 +132,7 @@ export const handleMove: Handler = async (ctx) => {
       ),
     );
   await invalidateEntryCache(deps, entry);
+  void deps.telemetry.track({ name: 'file.moved', data: { provider: provider.type } });
   return { bytes: uploaded.size ?? entry.size ?? 0 };
 };
 

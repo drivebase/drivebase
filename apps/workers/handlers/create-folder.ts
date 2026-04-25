@@ -85,6 +85,7 @@ export const handleCreateFolder: Handler = async (ctx) => {
   }
 
   await invalidateEntryCache(deps, entry);
+  void deps.telemetry.track({ name: 'folder.created', data: { provider: provider.type } });
   return { bytes: 0 };
 };
 

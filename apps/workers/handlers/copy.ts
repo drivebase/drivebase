@@ -63,6 +63,7 @@ export const handleCopy: Handler = async (ctx) => {
       node: copied,
     });
     await invalidateEntryCache(deps, entry);
+    void deps.telemetry.track({ name: 'file.copied', data: { provider: provider.type } });
     return { bytes: entry.size ?? 0 };
   }
 
@@ -82,5 +83,6 @@ export const handleCopy: Handler = async (ctx) => {
     node: uploaded,
   });
   await invalidateEntryCache(deps, entry);
+  void deps.telemetry.track({ name: 'file.copied', data: { provider: provider.type } });
   return { bytes: uploaded.size ?? entry.size ?? 0 };
 };

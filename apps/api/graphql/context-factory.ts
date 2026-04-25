@@ -1,5 +1,6 @@
 import type { AppConfig } from "@drivebase/config";
 import type { Logger } from "@drivebase/logger";
+import { createTelemetryClient } from "@drivebase/telemetry";
 import { getAuth } from "~/auth/better-auth.ts";
 import { getDb } from "~/db.ts";
 import { getConfig } from "~/config.ts";
@@ -31,6 +32,10 @@ export async function buildContext(req: Request): Promise<GraphQLContext> {
     usage: config.cache.usageTtlSeconds,
   });
 
+  const telemetry = createTelemetryClient({
+    disabled: process.env.TELEMETRY_DISABLED === 'true',
+  });
+
   return {
     db,
     log,
@@ -39,6 +44,7 @@ export async function buildContext(req: Request): Promise<GraphQLContext> {
     pubsub,
     redis,
     cache,
+    telemetry,
     requestId,
     user: session?.user
       ? {

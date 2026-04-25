@@ -81,5 +81,9 @@ export const handleTransfer: Handler = async (ctx) => {
     node: uploaded,
   });
   await invalidateEntryCache(deps, entry);
+  void deps.telemetry.track({
+    name: 'file.transferred',
+    data: { from_provider: src.type, to_provider: dst.type },
+  });
   return { bytes: uploaded.size ?? entry.size ?? 0 };
 };

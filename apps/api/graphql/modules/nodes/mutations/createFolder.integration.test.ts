@@ -19,6 +19,7 @@ import {
   type ProviderModule,
 } from "@drivebase/storage";
 import { CacheService } from "@drivebase/cache";
+import { createTelemetryClient } from "@drivebase/telemetry";
 import { buildSchema } from "~/graphql/schema.ts";
 import { pubsub } from "~/pubsub.ts";
 import type { GraphQLContext } from "~/graphql/context.ts";
@@ -172,6 +173,7 @@ function ctx(): GraphQLContext {
       children: config.cache.childrenTtlSeconds,
       usage: config.cache.usageTtlSeconds,
     }),
+    telemetry: createTelemetryClient({ disabled: true }),
     user: { id: userId, email: "nodes@drivebase.local", name: "Nodes Test" },
     requestId: "test",
   };

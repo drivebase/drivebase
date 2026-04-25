@@ -1,4 +1,5 @@
 import { CacheService } from "@drivebase/cache";
+import { createTelemetryClient } from "@drivebase/telemetry";
 import { getConfig } from "./config.ts";
 import { getDb } from "./db.ts";
 import { closeRedis, getRedis } from "./redis.ts";
@@ -24,6 +25,9 @@ const cache = new CacheService(primary, {
   children: config.cache.childrenTtlSeconds,
   usage: config.cache.usageTtlSeconds,
 });
+const telemetry = createTelemetryClient({
+  disabled: process.env.TELEMETRY_DISABLED === 'true',
+});
 
 const workers = startWorkers({
   db,
@@ -33,6 +37,7 @@ const workers = startWorkers({
   primary,
   pub,
   cache,
+  telemetry,
   getQueue: makeQueueFactory(primary),
 });
 

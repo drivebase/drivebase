@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@drivebase/cache": "workspace:*",
+    "@drivebase/telemetry": "workspace:*",
     "@drivebase/config": "workspace:*",
     "@drivebase/db": "workspace:*",
     "@drivebase/logger": "workspace:*",

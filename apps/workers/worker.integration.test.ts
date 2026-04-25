@@ -24,6 +24,7 @@ import { createLogger } from "@drivebase/logger";
 import { CacheService } from "@drivebase/cache";
 import { startWorkers } from "./workers.ts";
 import type { WorkerDeps } from "./runtime/deps.ts";
+import { createTelemetryClient } from "@drivebase/telemetry";
 import { makeQueueFactory } from "./queues.ts";
 
 /**
@@ -231,6 +232,7 @@ beforeAll(async () => {
       children: config.cache.childrenTtlSeconds,
       usage: config.cache.usageTtlSeconds,
     }),
+    telemetry: createTelemetryClient({ disabled: true }),
     getQueue: makeQueueFactory(redis.client),
   };
   workers = startWorkers(deps);
