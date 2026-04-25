@@ -13,4 +13,12 @@ export default defineConfig({
     viteReact(),
     svgr(),
   ],
+  server: {
+    proxy: {
+      "/auth": "http://localhost:4000",
+      "/graphql": "http://localhost:4000",
+      "/upload": "http://localhost:4000",
+      "/download": "http://localhost:4000",
+    },
+  },
 })
