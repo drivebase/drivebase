@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.0.0-alpha.5](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.4...v4.0.0-alpha.5) (2026-04-25)
+
+### Fixes
+
+* dev api url, glass backdrop-filter, vite proxy ([8d09cec](https://github.com/drivebase/drivebase/commit/8d09cecc9a8abbe8b69d3975549affd2925cb8e9))
+
 ## [4.0.0-alpha.4](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.3...v4.0.0-alpha.4) (2026-04-25)
 
 ### Fixes
