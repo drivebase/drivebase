@@ -4,7 +4,7 @@ import type { Bindings, TrackBody } from '../types'
 const v1 = new Hono<{ Bindings: Bindings }>()
 
 v1.post('/send', async (c) => {
-  const { UMAMI_URL, UMAMI_WEBSITE_ID } = c.env
+  const { UMAMI_URL, UMAMI_WEBSITE_ID, UMAMI_TOKEN } = c.env
 
   if (!UMAMI_URL || !UMAMI_WEBSITE_ID) {
     return c.json({ error: 'Umami not configured' }, 503)
@@ -28,6 +28,7 @@ v1.post('/send', async (c) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...(UMAMI_TOKEN && { Authorization: `Bearer ${UMAMI_TOKEN}` }),
       'User-Agent': userAgent,
       ...(forwarded && { 'X-Forwarded-For': forwarded }),
     },

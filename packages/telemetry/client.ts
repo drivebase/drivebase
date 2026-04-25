@@ -22,9 +22,10 @@ export function createTelemetryClient(opts: TelemetryClientOptions = {}): Teleme
       const body = {
         type: 'event' as const,
         payload: {
-          url: `/events/${event.name}`,
+          hostname: 'drivebase.io',
+          url: `/${event.name}`,
           name: event.name,
-          ...('data' in event && event.data ? { data: event.data as Record<string, string | number | boolean> } : {}),
+          data: ('data' in event ? event.data : {}) as Record<string, string | number | boolean>,
         },
       }
 
