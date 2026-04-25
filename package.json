@@ -8,7 +8,10 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "turbo format",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "db:studio": "bun --cwd packages/db db:studio",
+    "db:migrate": "bun --cwd packages/db db:migrate",
+    "db:push": "bun --cwd packages/db db:push"
   },
   "devDependencies": {
     "turbo": "^2.8.17",
