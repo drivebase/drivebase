@@ -1,6 +1,7 @@
 export type Bindings = {
   UMAMI_URL: string
   UMAMI_WEBSITE_ID: string
+  UMAMI_TOKEN: string
 }
 
 export type EventPayload = {
