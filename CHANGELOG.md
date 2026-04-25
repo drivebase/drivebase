@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.0.0-alpha.4](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.3...v4.0.0-alpha.4) (2026-04-25)
+
+### Fixes
+
+* use relative API URL fallback ([3c433da](https://github.com/drivebase/drivebase/commit/3c433dab3cc032754842a42abb77d33a47af76db))
+
 ## [4.0.0-alpha.3](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.2...v4.0.0-alpha.3) (2026-04-25)
 
 ### Features
