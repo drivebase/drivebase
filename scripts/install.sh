@@ -34,7 +34,7 @@ cd "$DIR" || exit
 
 # 2. Download compose.prod.yml
 echo -e "${CYAN}• Downloading Docker Compose configuration...${NC}"
-HTTP_STATUS=$(curl -s -o compose.yml -w "%{http_code}" https://raw.githubusercontent.com/drivebase/drivebase/main/compose.prod.yml)
+HTTP_STATUS=$(curl -s -H "Cache-Control: no-cache" -o compose.yml -w "%{http_code}" https://raw.githubusercontent.com/drivebase/drivebase/main/compose.prod.yml)
 if [ "$HTTP_STATUS" != "200" ]; then
     echo -e "${RED}  ✗ Failed to download compose.prod.yml (HTTP $HTTP_STATUS)${NC}"
     exit 1
@@ -43,7 +43,7 @@ echo -e "${GREEN}  ✓ compose.yml downloaded${NC}"
 
 # 3. Download config.example.toml as config.toml
 echo -e "${CYAN}• Downloading configuration template...${NC}"
-HTTP_STATUS=$(curl -s -o config.toml -w "%{http_code}" https://raw.githubusercontent.com/drivebase/drivebase/main/config.example.toml)
+HTTP_STATUS=$(curl -s -H "Cache-Control: no-cache" -o config.toml -w "%{http_code}" https://raw.githubusercontent.com/drivebase/drivebase/main/config.example.toml)
 if [ "$HTTP_STATUS" != "200" ]; then
     echo -e "${RED}  ✗ Failed to download config.example.toml (HTTP $HTTP_STATUS)${NC}"
     exit 1
