@@ -21,30 +21,34 @@ v1.post('/send', async (c) => {
     return c.json({ error: 'payload.url is required' }, 400)
   }
 
-  const forwarded = c.req.header('x-forwarded-for')
-  const userAgent = c.req.header('user-agent') ?? ''
+  const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
 
-  const res = await fetch(`${UMAMI_URL}/api/send`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(UMAMI_TOKEN && { Authorization: `Bearer ${UMAMI_TOKEN}` }),
-      'User-Agent': userAgent,
-      ...(forwarded && { 'X-Forwarded-For': forwarded }),
+  const umamiPayload = {
+    type: body.type ?? 'event',
+    payload: {
+      ...body.payload,
+      website: UMAMI_WEBSITE_ID,
     },
-    body: JSON.stringify({
-      type: body.type ?? 'event',
-      payload: {
-        ...body.payload,
-        website: UMAMI_WEBSITE_ID,
-      },
-    }),
-  })
-
-  if (!res.ok) {
-    const text = await res.text()
-    return c.json({ error: 'Upstream error', detail: text }, 502)
   }
+
+  console.log('[telemetry] forwarding to umami', JSON.stringify(umamiPayload))
+
+  c.executionCtx.waitUntil(
+    fetch(`${UMAMI_URL}/api/send`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${UMAMI_TOKEN}`,
+        'User-Agent': userAgent,
+      },
+      body: JSON.stringify(umamiPayload),
+    }).then(async (res) => {
+      const text = await res.text()
+      console.log(`[telemetry] umami response ${res.status}:`, text)
+    }).catch((err) => {
+      console.error('[telemetry] umami fetch failed:', err)
+    }),
+  )
 
   return c.json({ ok: true })
 })
