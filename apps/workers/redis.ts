@@ -14,9 +14,10 @@ export async function getRedis(): Promise<RedisPair> {
   if (cached) return cached;
   const cfg = await getConfig();
   const opts = { maxRetriesPerRequest: null, enableReadyCheck: true };
+  const noop = () => {};
   cached = {
-    primary: new Redis(cfg.redis.url, opts),
-    pub: new Redis(cfg.redis.url, opts),
+    primary: new Redis(cfg.redis.url, opts).on('error', noop),
+    pub: new Redis(cfg.redis.url, opts).on('error', noop),
   };
   return cached;
 }

@@ -15,7 +15,7 @@ export async function getQueue(name: QueueName): Promise<Queue> {
   if (hit) return hit;
   const { primary } = await getRedis();
   const q = new Queue(name, {
-    connection: primary,
+    connection: primary.duplicate(),
     defaultJobOptions: {
       attempts: 5,
       backoff: { type: "exponential", delay: 2000 },
