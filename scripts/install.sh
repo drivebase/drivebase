@@ -32,12 +32,12 @@ fi
 
 cd "$DIR" || exit
 
-# 2. Download compose.yml
+# 2. Download compose.prod.yml
 echo -e "${CYAN}• Downloading Docker Compose configuration...${NC}"
-if curl -s -o compose.yml https://raw.githubusercontent.com/drivebase/drivebase/main/compose.yml; then
+if curl -s -o compose.yml https://raw.githubusercontent.com/drivebase/drivebase/main/compose.prod.yml; then
     echo -e "${GREEN}  ✓ compose.yml downloaded${NC}"
 else
-    echo -e "${RED}  ✗ Failed to download compose.yml${NC}"
+    echo -e "${RED}  ✗ Failed to download compose.prod.yml${NC}"
     exit 1
 fi
 
