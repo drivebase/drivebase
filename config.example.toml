@@ -16,10 +16,12 @@ url = "redis://127.0.0.1:6379/0"
 
 [crypto]
 # Base64-encoded 32-byte master key. Generate with:
-#   bun -e "console.log(Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64'))"
+#   Linux / macOS / Windows (Git Bash / WSL):  openssl rand -base64 32
 masterKeyBase64 = "REPLACE_WITH_32_BYTES_BASE64=="
 
 [auth]
+# Generate with:
+#   Linux / macOS / Windows (Git Bash / WSL):  openssl rand -hex 32
 betterAuthSecret = "REPLACE_WITH_A_LONG_RANDOM_STRING"
 baseUrl = "http://localhost:4000"
 trustedOrigins = ["http://localhost:3000"]
