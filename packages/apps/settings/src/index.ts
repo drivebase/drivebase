@@ -1,0 +1,1 @@
+export { settingsManifest } from "./manifest"

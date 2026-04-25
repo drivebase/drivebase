@@ -15,6 +15,7 @@
     "@tanstack/router-plugin": "^1.132.0",
     "@drivebase/app-files": "workspace:*",
     "@drivebase/app-providers": "workspace:*",
+    "@drivebase/app-settings": "workspace:*",
     "@drivebase/data": "workspace:*",
     "@drivebase/kernel": "workspace:*",
     "@drivebase/ui": "workspace:*",
