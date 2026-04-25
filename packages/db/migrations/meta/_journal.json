@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1776505804847,
-      "tag": "0000_regular_slayback",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1776575033458,
-      "tag": "0001_furry_killer_shrike",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1776928730271,
-      "tag": "0002_overrated_franklin_richards",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1777002859772,
-      "tag": "0003_wooden_spot",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1777013815334,
-      "tag": "0004_previous_goblin_queen",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1777088457740,
-      "tag": "0005_transfer_stats",
+      "when": 1777121606569,
+      "tag": "0000_init",
       "breakpoints": true
     }
   ]
