@@ -1,17 +1,24 @@
-import { useMutation } from "urql"
+import { useClient, useMutation } from "urql"
 import {
   ConnectProviderDocument,
+  MyProvidersDocument,
   type ConnectProviderMutation,
   type ConnectProviderMutationVariables,
 } from "../gql"
 
-/**
- * `connectProvider` mutation. Credentials are validated server-side by the
- * provider module, encrypted at rest, and the returned Provider row is what
- * the UI pushes into its connected list.
- */
 export function useConnectProvider() {
-  return useMutation<ConnectProviderMutation, ConnectProviderMutationVariables>(
+  const client = useClient()
+  const [state, execute] = useMutation<ConnectProviderMutation, ConnectProviderMutationVariables>(
     ConnectProviderDocument,
   )
+
+  const connect = async (variables: ConnectProviderMutationVariables) => {
+    const result = await execute(variables)
+    if (result.data?.connectProvider) {
+      client.query(MyProvidersDocument, {}, { requestPolicy: "network-only" }).toPromise()
+    }
+    return result
+  }
+
+  return [state, connect] as const
 }
