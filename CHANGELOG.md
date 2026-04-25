@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0-alpha.8](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.7...v4.0.0-alpha.8) (2026-04-25)
+
+### Fixes
+
+* refetch providers after connect for realtime update ([9b16026](https://github.com/drivebase/drivebase/commit/9b16026ff33246da619f394e5aca523d3c810766))
+
+### Others
+
+* add vite/client types to packages via per-package devDep ([36344cf](https://github.com/drivebase/drivebase/commit/36344cffc8994d9320e4a972640371429f8c9f31))
+* remove predev ([e2c2f61](https://github.com/drivebase/drivebase/commit/e2c2f61c620d0b9d4a049cfa1d9a6203873abe38))
+
 ## [4.0.0-alpha.7](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.6...v4.0.0-alpha.7) (2026-04-25)
 
 ### Fixes
