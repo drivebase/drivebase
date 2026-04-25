@@ -6,13 +6,17 @@ import { requireUser } from "~/graphql/errors.ts";
 export const disconnectProvider: MutationResolvers["disconnectProvider"] =
   async (_parent, { id }, ctx) => {
     const user = requireUser(ctx);
-    const res = await ctx.db
+    const [row] = await ctx.db
       .delete(schema.providers)
       .where(
         and(
           eq(schema.providers.id, id),
           eq(schema.providers.userId, user.id),
         ),
-      );
-    return (res as { count?: number }).count !== 0;
+      )
+      .returning({ type: schema.providers.type });
+    if (row) {
+      void ctx.telemetry.track({ name: 'provider.disconnected', data: { provider: row.type } });
+    }
+    return row !== undefined;
   };

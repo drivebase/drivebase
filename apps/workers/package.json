@@ -18,6 +18,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1032.0",
     "@drivebase/cache": "workspace:*",
+    "@drivebase/telemetry": "workspace:*",
     "@drivebase/config": "workspace:*",
     "@drivebase/db": "workspace:*",
     "@drivebase/logger": "workspace:*",

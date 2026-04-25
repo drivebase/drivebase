@@ -58,6 +58,7 @@ export const connectProvider: MutationResolvers["connectProvider"] = async (
     .returning();
   if (!row) throw new Error("insert failed");
   ctx.log.info({ providerId: row.id, type: row.type }, "provider connected");
+  void ctx.telemetry.track({ name: 'provider.connected', data: { provider: row.type } });
   return row;
 };
 

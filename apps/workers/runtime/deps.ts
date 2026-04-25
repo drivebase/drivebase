@@ -2,6 +2,7 @@ import type { CacheService } from "@drivebase/cache";
 import type { AppConfig } from "@drivebase/config";
 import type { Db } from "@drivebase/db";
 import type { Logger } from "@drivebase/logger";
+import type { TelemetryClient } from "@drivebase/telemetry";
 import type { ProviderRegistry, QueueName } from "@drivebase/storage";
 import type { Queue } from "bullmq";
 import type { Redis } from "ioredis";
@@ -15,6 +16,7 @@ export type WorkerDeps = {
   primary: Redis;
   pub: Redis;
   cache: CacheService;
+  telemetry: TelemetryClient;
   /** Returns a cached BullMQ Queue for the given queue name. */
   getQueue: (name: QueueName) => Promise<Queue>;
 };

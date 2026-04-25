@@ -18,5 +18,6 @@ export const completeUploadSession: MutationResolvers["completeUploadSession"] =
       parts,
     });
     ctx.log.info({ sessionId: updated.id }, "upload session ready");
+    void ctx.telemetry.track({ name: 'upload.completed' });
     return updated;
   };

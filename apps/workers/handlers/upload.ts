@@ -167,6 +167,10 @@ export const handleUpload: Handler = async (ctx) => {
     }
 
     await invalidateEntryCache(deps, entry);
+    void deps.telemetry.track({
+      name: 'file.uploaded',
+      data: { provider: provider.type, size_kb: Math.round(bytes / 1024) },
+    });
     return { bytes };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

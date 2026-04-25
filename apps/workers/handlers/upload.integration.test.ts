@@ -34,6 +34,7 @@ import type { Redis } from "ioredis";
 import { handleUpload } from "./upload.ts";
 import type { HandlerContext } from "../runtime/handler.ts";
 import type { WorkerDeps } from "../runtime/deps.ts";
+import { createTelemetryClient } from "@drivebase/telemetry";
 import { evictProvider } from "../runtime/providers.ts";
 import { makeQueueFactory } from "../queues.ts";
 
@@ -181,6 +182,7 @@ beforeAll(async () => {
       children: config.cache.childrenTtlSeconds,
       usage: config.cache.usageTtlSeconds,
     }),
+    telemetry: createTelemetryClient({ disabled: true }),
     getQueue: makeQueueFactory(redis.client),
   };
 

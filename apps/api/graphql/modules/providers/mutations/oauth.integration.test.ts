@@ -23,6 +23,7 @@ import { buildSchema } from "~/graphql/schema.ts";
 import { pubsub } from "~/pubsub.ts";
 import type { GraphQLContext } from "~/graphql/context.ts";
 import { CacheService } from "@drivebase/cache";
+import { createTelemetryClient } from "@drivebase/telemetry";
 import { oauthStateKey, type OAuthStateStash } from "./oauth-state.ts";
 
 /**
@@ -181,6 +182,7 @@ function ctx(user: GraphQLContext["user"] = { id: userId, email: "a@drivebase.lo
       children: config.cache.childrenTtlSeconds,
       usage: config.cache.usageTtlSeconds,
     }),
+    telemetry: createTelemetryClient({ disabled: true }),
     user,
     requestId: "test",
   };

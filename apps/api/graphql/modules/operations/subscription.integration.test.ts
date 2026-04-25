@@ -21,6 +21,7 @@ import {
 } from "~/pubsub.ts";
 import type { GraphQLContext } from "~/graphql/context.ts";
 import { CacheService } from "@drivebase/cache";
+import { createTelemetryClient } from "@drivebase/telemetry";
 
 /**
  * Exercises the full Subscription path inside this process:
@@ -144,6 +145,7 @@ function makeContext(): GraphQLContext {
     pubsub,
     redis: pub,
     cache,
+    telemetry: createTelemetryClient({ disabled: true }),
     user: { id: userId, email: "sub@drivebase.local", name: "Sub Test" },
     requestId: "test",
   };

@@ -50,5 +50,6 @@ export const handleDelete: Handler = async (ctx) => {
     );
 
   await invalidateEntryCache(deps, entry);
+  void deps.telemetry.track({ name: 'file.deleted', data: { provider: provider.type } });
   return { bytes: 0 };
 };

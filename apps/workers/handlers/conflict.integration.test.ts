@@ -40,6 +40,7 @@ import { handleCopy } from "./copy.ts";
 import { JobPausedForConflict } from "../runtime/conflict.ts";
 import type { HandlerContext } from "../runtime/handler.ts";
 import type { WorkerDeps } from "../runtime/deps.ts";
+import { createTelemetryClient } from "@drivebase/telemetry";
 import { evictProvider } from "../runtime/providers.ts";
 
 // ---------------------------------------------------------------------------
@@ -144,6 +145,7 @@ beforeAll(async () => {
     primary: redis.client,
     pub,
     cache: new CacheService(redis.client, { children: 60, usage: 600 }),
+    telemetry: createTelemetryClient({ disabled: true }),
     getQueue: makeQueueFactory(redis.client),
   };
 

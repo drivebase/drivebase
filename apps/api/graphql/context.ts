@@ -1,5 +1,6 @@
 import type { Db } from "@drivebase/db";
 import type { Logger } from "@drivebase/logger";
+import type { TelemetryClient } from "@drivebase/telemetry";
 import type { ProviderRegistry } from "@drivebase/storage";
 import type { AppConfig } from "@drivebase/config";
 import type { Redis } from "ioredis";
@@ -25,6 +26,7 @@ export type GraphQLContext = {
   /** Typed cache over Redis (listChildren, usage). */
   cache: CacheService;
   user: AuthedUser | null;
+  telemetry: TelemetryClient;
   /** Request id for correlating logs across a single request. */
   requestId: string;
 };
