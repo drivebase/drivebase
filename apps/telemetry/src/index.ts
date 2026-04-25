@@ -29,7 +29,7 @@ const v1 = new Hono<{ Bindings: Bindings }>()
 
 app.use('*', cors())
 
-app.get('/', (c) => c.json({ ok: true }))
+app.get('/', (c) => c.json({ ok: true, time: new Date().toISOString() }))
 
 app.route('/v1', v1)
 
