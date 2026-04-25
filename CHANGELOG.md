@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.0.0-alpha.7](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.6...v4.0.0-alpha.7) (2026-04-25)
+
+### Fixes
+
+* local provider errors when root parent path does not exist ([1c69f46](https://github.com/drivebase/drivebase/commit/1c69f46cdf9dc8212931aaf2bd65abbadaa8e633))
+
 ## [4.0.0-alpha.6](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.5...v4.0.0-alpha.6) (2026-04-25)
 
 ### Fixes
