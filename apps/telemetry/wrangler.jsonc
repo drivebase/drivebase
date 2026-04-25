@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "telemetry",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-04-25",
+  "vars": {
+    "UMAMI_URL": "",
+    "UMAMI_WEBSITE_ID": ""
+  }
+}
