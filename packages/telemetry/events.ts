@@ -1,10 +1,19 @@
-export type TelemetryEvent =
-  | { name: 'file.uploaded'; data: { provider: string; size_kb: number } }
-  | { name: 'file.deleted'; data: { provider: string } }
-  | { name: 'file.moved'; data: { provider: string } }
-  | { name: 'file.copied'; data: { provider: string } }
-  | { name: 'file.transferred'; data: { from_provider: string; to_provider: string } }
-  | { name: 'folder.created'; data: { provider: string } }
-  | { name: 'provider.connected'; data: { provider: string } }
-  | { name: 'provider.disconnected'; data: { provider: string } }
-  | { name: 'upload.completed' }
+export const ALLOWED_EVENT_NAMES = [
+  'file.uploaded',
+  'file.deleted',
+  'file.moved',
+  'file.copied',
+  'file.transferred',
+  'folder.created',
+  'provider.connected',
+  'provider.disconnected',
+  'upload.completed',
+  'install',
+] as const
+
+export type EventName = (typeof ALLOWED_EVENT_NAMES)[number]
+
+export type TelemetryEvent = {
+  name: EventName
+  data?: Record<string, string | number | boolean>
+}
