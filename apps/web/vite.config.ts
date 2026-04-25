@@ -1,5 +1,5 @@
 import { defineConfig } from "vite"
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
+import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import viteReact from "@vitejs/plugin-react"
 import viteTsConfigPaths from "vite-tsconfig-paths"
 import tailwindcss from "@tailwindcss/vite"
@@ -7,18 +7,10 @@ import svgr from "vite-plugin-svgr"
 
 export default defineConfig({
   plugins: [
-    TanStackRouterVite({ autoCodeSplitting: true }),
+    tanstackRouter({ autoCodeSplitting: true }),
     viteTsConfigPaths({ projects: ["./tsconfig.json"] }),
     tailwindcss(),
     viteReact(),
     svgr(),
   ],
-  server: {
-    proxy: {
-      "/auth": "http://localhost:4000",
-      "/graphql": "http://localhost:4000",
-      "/upload": "http://localhost:4000",
-      "/download": "http://localhost:4000",
-    },
-  },
 })
