@@ -23,24 +23,16 @@ ENV VITE_PUBLIC_API_URL=${VITE_PUBLIC_API_URL}
 COPY --from=pruner /app/out/full/ .
 RUN cd apps/web && bun run build
 
-# ── Stage 4: production deps (api + workers only, no devDependencies) ────────
-FROM oven/bun:1.3.5-alpine AS prod-deps
-WORKDIR /app
-COPY --from=pruner /app/out/json/ .
-COPY --from=pruner /app/out/bun.lock ./bun.lock
-RUN bun install --ignore-scripts --production --frozen-lockfile
-
-# ── Stage 5: runtime ─────────────────────────────────────────────────────────
+# ── Stage 4: runtime ─────────────────────────────────────────────────────────
 FROM oven/bun:1.3.5-alpine AS runtime
 WORKDIR /app
 
 RUN apk add --no-cache caddy supervisor
 
-# Production node_modules only
-COPY --from=prod-deps /app/node_modules ./node_modules
-
-# Pruned source (api + workers run directly via bun)
+# Full pruned source with workspace context so bun hoists deps correctly
 COPY --from=pruner /app/out/full/ .
+COPY --from=pruner /app/out/bun.lock ./bun.lock
+RUN bun install --ignore-scripts --production --frozen-lockfile
 
 # Pre-built web static files
 COPY --from=web-builder /app/apps/web/dist ./apps/web/dist
