@@ -9,7 +9,8 @@
     "strict": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "types": ["vite/client"]
   },
   "include": ["."],
   "exclude": ["node_modules", "dist"]
