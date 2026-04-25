@@ -2,9 +2,5 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "drivebase-telemetry",
   "main": "src/index.ts",
-  "compatibility_date": "2026-04-25",
-  "vars": {
-    "UMAMI_URL": "",
-    "UMAMI_WEBSITE_ID": ""
-  }
+  "compatibility_date": "2026-04-25"
 }
