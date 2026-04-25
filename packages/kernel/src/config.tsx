@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, type ReactNode, type ComponentType } from "react"
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode, type ComponentType } from "react"
 
 export interface MenuItem {
   id: string
@@ -42,7 +42,14 @@ const DEFAULT_CONFIG: KernelConfig = {
   desktopMenus: [],
 }
 
-const ConfigContext = createContext<KernelConfig>(DEFAULT_CONFIG)
+interface ConfigContextValue extends KernelConfig {
+  setConfig: (patch: Partial<KernelConfig>) => void
+}
+
+const ConfigContext = createContext<ConfigContextValue>({
+  ...DEFAULT_CONFIG,
+  setConfig: () => {},
+})
 
 export function KernelConfigProvider({
   config,
@@ -51,10 +58,20 @@ export function KernelConfigProvider({
   config?: Partial<KernelConfig>
   children: ReactNode
 }) {
-  const value = useMemo<KernelConfig>(() => ({ ...DEFAULT_CONFIG, ...config }), [config])
+  const [overrides, setOverrides] = useState<Partial<KernelConfig>>({})
+
+  const setConfig = useCallback((patch: Partial<KernelConfig>) => {
+    setOverrides((prev) => ({ ...prev, ...patch }))
+  }, [])
+
+  const value = useMemo<ConfigContextValue>(
+    () => ({ ...DEFAULT_CONFIG, ...config, ...overrides, setConfig }),
+    [config, overrides, setConfig],
+  )
+
   return <ConfigContext.Provider value={value}>{children}</ConfigContext.Provider>
 }
 
-export function useKernelConfig(): KernelConfig {
+export function useKernelConfig(): ConfigContextValue {
   return useContext(ConfigContext)
 }
