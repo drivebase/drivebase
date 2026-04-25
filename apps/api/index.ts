@@ -1,3 +1,4 @@
+import "./utils/polyfill";
 import { readFile } from "node:fs/promises";
 import { ensureVectorExtension, getDb } from "@drivebase/db";
 import { env } from "./config/env";
