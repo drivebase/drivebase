@@ -41,7 +41,19 @@ export class LocalProvider implements IStorageProvider {
   constructor(private readonly rootDir: string) {}
 
   async authenticate(_creds: ProviderCredentials): Promise<AuthContext> {
-    await mkdir(this.rootDir, { recursive: true });
+    try {
+      await mkdir(this.rootDir);
+    } catch (err: unknown) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === "EEXIST") return { accountLabel: this.rootDir };
+      if (code === "ENOENT") {
+        throw new ProviderError(
+          `local: parent directory does not exist: ${this.rootDir}`,
+          "local",
+        );
+      }
+      throw err;
+    }
     return { accountLabel: this.rootDir };
   }
 
@@ -111,7 +123,6 @@ export class LocalProvider implements IStorageProvider {
 
   async upload(args: UploadArgs): Promise<RemoteNode> {
     const parentDir = this.abs(args.parentRemoteId ?? null);
-    await mkdir(parentDir, { recursive: true });
     const abs = join(parentDir, args.name);
     // Delete existing file if present (overwrite semantics)
     await rm(abs, { recursive: true, force: true }).catch(() => {});
@@ -142,7 +153,13 @@ export class LocalProvider implements IStorageProvider {
   async createFolder(parentRemoteId: string | null, name: string): Promise<RemoteNode> {
     const parentDir = this.abs(parentRemoteId);
     const abs = join(parentDir, name);
-    await mkdir(abs, { recursive: true });
+    try {
+      await mkdir(abs);
+    } catch (err: unknown) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === "ENOENT") throw new NotFoundError(`local: parent folder not found: ${parentDir}`);
+      if (code !== "EEXIST") throw err;
+    }
     const relId = relative(this.rootDir, abs);
     return { remoteId: relId, name, type: "folder", parentRemoteId };
   }
@@ -155,7 +172,6 @@ export class LocalProvider implements IStorageProvider {
     const src = this.abs(remoteId);
     const name = newName ?? basename(src);
     const dstDir = this.abs(newParentRemoteId);
-    await mkdir(dstDir, { recursive: true });
     const dst = join(dstDir, name);
 
     // If source and destination are the same, nothing to do
@@ -192,7 +208,6 @@ export class LocalProvider implements IStorageProvider {
     const src = this.abs(remoteId);
     const name = newName ?? basename(src);
     const dstDir = this.abs(newParentRemoteId);
-    await mkdir(dstDir, { recursive: true });
     const dst = join(dstDir, name);
     // copyFile with COPYFILE_FICLONE (fallback if not supported)
     // Note: Bun's copyFile doesn't take flags, so we delete first for overwrite
