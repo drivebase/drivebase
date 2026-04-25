@@ -64,6 +64,7 @@
       "dependencies": {
         "@drivebase/app-files": "workspace:*",
         "@drivebase/app-providers": "workspace:*",
+        "@drivebase/app-settings": "workspace:*",
         "@drivebase/data": "workspace:*",
         "@drivebase/kernel": "workspace:*",
         "@drivebase/ui": "workspace:*",
@@ -135,6 +136,21 @@
     },
     "packages/apps/providers": {
       "name": "@drivebase/app-providers",
+      "version": "0.0.0",
+      "dependencies": {
+        "@drivebase/data": "workspace:*",
+        "@drivebase/kernel": "workspace:*",
+        "@drivebase/ui": "workspace:*",
+        "lucide-react": "^1.8.0",
+        "react": "^19.2.4",
+      },
+      "devDependencies": {
+        "@types/react": "^19.2.10",
+        "typescript": "^5.9.3",
+      },
+    },
+    "packages/apps/settings": {
+      "name": "@drivebase/app-settings",
       "version": "0.0.0",
       "dependencies": {
         "@drivebase/data": "workspace:*",
@@ -568,6 +584,8 @@
     "@drivebase/app-files": ["@drivebase/app-files@workspace:packages/apps/files"],
 
     "@drivebase/app-providers": ["@drivebase/app-providers@workspace:packages/apps/providers"],
+
+    "@drivebase/app-settings": ["@drivebase/app-settings@workspace:packages/apps/settings"],
 
     "@drivebase/cache": ["@drivebase/cache@workspace:packages/cache"],
 

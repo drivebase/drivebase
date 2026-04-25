@@ -1,0 +1,24 @@
+{
+  "name": "@drivebase/app-settings",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@drivebase/data": "workspace:*",
+    "@drivebase/kernel": "workspace:*",
+    "@drivebase/ui": "workspace:*",
+    "lucide-react": "^1.8.0",
+    "react": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.10",
+    "typescript": "^5.9.3"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./manifest": "./src/manifest.tsx"
+  }
+}
