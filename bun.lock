@@ -53,6 +53,7 @@
     "apps/telemetry": {
       "name": "telemetry",
       "dependencies": {
+        "@drivebase/telemetry": "workspace:*",
         "hono": "^4.12.15",
       },
       "devDependencies": {
