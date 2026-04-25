@@ -4,10 +4,20 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parse as parseToml } from "smol-toml";
 
-const url =
-  Bun.env.DATABASE_URL ??
-  "postgres://drivebase:drivebase@localhost:5432/drivebase?sslmode=disable";
+async function getDbUrl(): Promise<string> {
+  if (Bun.env.DATABASE_URL) return Bun.env.DATABASE_URL;
+  const configPath = Bun.env.DRIVEBASE_CONFIG ?? "./config.toml";
+  const file = Bun.file(configPath);
+  if (await file.exists()) {
+    const cfg = parseToml(await file.text()) as { db?: { url?: string } };
+    if (cfg.db?.url) return cfg.db.url;
+  }
+  return "postgres://drivebase:drivebase@localhost:5432/drivebase?sslmode=disable";
+}
+
+const url = await getDbUrl();
 
 const migrationsFolder = resolve(
   dirname(fileURLToPath(import.meta.url)),

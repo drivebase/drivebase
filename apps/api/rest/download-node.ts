@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { schema, type Db } from "@drivebase/db";
 import type { AppConfig } from "@drivebase/config";
 import type { Logger } from "@drivebase/logger";
@@ -82,6 +82,21 @@ export async function handleDownloadNode(args: {
   }
   if (node.remoteUpdatedAt) {
     headers.set("last-modified", node.remoteUpdatedAt.toUTCString());
+  }
+
+  if (node.size != null && node.size > 0) {
+    deps.db
+      .insert(schema.transferStats)
+      .values({ userId, bytesDownloaded: node.size, filesDownloaded: 1 })
+      .onConflictDoUpdate({
+        target: schema.transferStats.userId,
+        set: {
+          bytesDownloaded: sql`${schema.transferStats.bytesDownloaded} + ${node.size}`,
+          filesDownloaded: sql`${schema.transferStats.filesDownloaded} + 1`,
+          updatedAt: sql`now()`,
+        },
+      })
+      .catch((err) => deps.log.warn({ err, nodeId, userId }, "transfer_stats download increment failed"));
   }
 
   return new Response(stream, {

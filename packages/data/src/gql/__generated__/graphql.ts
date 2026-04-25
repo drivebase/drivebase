@@ -539,6 +539,7 @@ export type Query = {
   provider: Maybe<Provider>;
   /** Provider types the server knows how to run. */
   providerTypes: Array<ProviderType>;
+  transferStats: Maybe<TransferStats>;
   /** Single upload session by id, scoped to the viewer. */
   uploadSession: Maybe<UploadSession>;
   /** Non-terminal upload sessions for the viewer (pending / uploading / ready). */
@@ -602,6 +603,17 @@ export type TransferPreflightInput = {
   dstProviderId: Scalars['ID']['input'];
   srcNodeIds: Array<Scalars['ID']['input']>;
   strategy: ConflictStrategy;
+};
+
+export type TransferStats = {
+  __typename?: 'TransferStats';
+  bytesDownloaded: Scalars['BigInt']['output'];
+  bytesTransferred: Scalars['BigInt']['output'];
+  bytesUploaded: Scalars['BigInt']['output'];
+  filesDownloaded: Scalars['Int']['output'];
+  filesTransferred: Scalars['Int']['output'];
+  filesUploaded: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type UploadPartInput = {
