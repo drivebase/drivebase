@@ -15,6 +15,7 @@
     "release": "release-it --no-npm"
   },
   "devDependencies": {
+    "@release-it/bumper": "^7.0.5",
     "@release-it/conventional-changelog": "^11.0.0",
     "release-it": "^20.0.1",
     "turbo": "^2.8.17",
