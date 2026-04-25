@@ -24,6 +24,14 @@
       },
       "infile": "CHANGELOG.md",
       "strictSemVer": true
+    },
+    "@release-it/bumper": {
+      "out": [
+        {
+          "file": "compose.prod.yml",
+          "type": "text/plain"
+        }
+      ]
     }
   }
 }
