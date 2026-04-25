@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.0.0-alpha.6](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.5...v4.0.0-alpha.6) (2026-04-25)
+
+### Fixes
+
+* preserve backdrop-filter in production CSS via var() reference ([5ca0bfb](https://github.com/drivebase/drivebase/commit/5ca0bfbeb74926757925aba59338b2fb69e10e9b))
+
+### Others
+
+* remove proxy ([6e4740a](https://github.com/drivebase/drivebase/commit/6e4740aca2f14baf0f7f22512fcce272ee82c1e9))
+
 ## [4.0.0-alpha.5](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.4...v4.0.0-alpha.5) (2026-04-25)
 
 ### Fixes
