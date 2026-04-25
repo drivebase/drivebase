@@ -27,6 +27,10 @@ RUN cd apps/web && bun run build
 FROM oven/bun:1.3.5-alpine AS runtime
 WORKDIR /app
 
+# Version is injected at build time: --build-arg APP_VERSION=1.2.3
+ARG APP_VERSION="0.0.0"
+ENV APP_VERSION=${APP_VERSION}
+
 RUN apk add --no-cache caddy supervisor
 
 # Full pruned source with workspace context so bun hoists deps correctly

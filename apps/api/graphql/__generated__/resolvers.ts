@@ -22,6 +22,11 @@ export type Scalars = {
   JSON: { input: unknown; output: unknown; }
 };
 
+export type AppMetadata = {
+  __typename?: 'AppMetadata';
+  version: Scalars['String']['output'];
+};
+
 /**
  * Start a provider-agnostic OAuth connect flow. The server resolves the
  * provider type from the oauth app and uses its registered OAuth module
@@ -214,6 +219,7 @@ export type Mutation = {
   renameNode: Node;
   /** Resolve a runtime conflict discovered by a worker. applyToAll writes a blanket decision. */
   resolveConflict: Operation;
+  triggerAppUpdate: UpdateStatus;
 };
 
 
@@ -299,6 +305,11 @@ export type MutationResolveConflictArgs = {
   action: ConflictAction;
   applyToAll?: InputMaybe<Scalars['Boolean']['input']>;
   conflictId: Scalars['ID']['input'];
+};
+
+
+export type MutationTriggerAppUpdateArgs = {
+  version?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Node = {
@@ -525,6 +536,7 @@ export type ProviderType = {
 
 export type Query = {
   __typename?: 'Query';
+  appMetadata: AppMetadata;
   /**
    * List children of a node on a provider. Hits the local Nodes cache first
    * (TTL 60s); `force: true` bypasses and re-lists from the live provider.
@@ -543,6 +555,7 @@ export type Query = {
   /** Provider types the server knows how to run. */
   providerTypes: Array<ProviderType>;
   transferStats: Maybe<TransferStats>;
+  updateStatus: UpdateStatus;
   /** Single upload session by id, scoped to the viewer. */
   uploadSession: Maybe<UploadSession>;
   /** Non-terminal upload sessions for the viewer (pending / uploading / ready). */
@@ -617,6 +630,14 @@ export type TransferStats = {
   filesTransferred: Scalars['Int']['output'];
   filesUploaded: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type UpdateStatus = {
+  __typename?: 'UpdateStatus';
+  currentVersion: Maybe<Scalars['String']['output']>;
+  message: Maybe<Scalars['String']['output']>;
+  status: Scalars['String']['output'];
+  targetVersion: Maybe<Scalars['String']['output']>;
 };
 
 export type UploadPartInput = {
@@ -773,6 +794,7 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  AppMetadata: ResolverTypeWrapper<AppMetadata>;
   BeginProviderOAuthInput: BeginProviderOAuthInput;
   BeginProviderOAuthPayload: ResolverTypeWrapper<BeginProviderOAuthPayload>;
   BigInt: ResolverTypeWrapper<Scalars['BigInt']['output']>;
@@ -828,6 +850,7 @@ export type ResolversTypes = ResolversObject<{
   Subscription: ResolverTypeWrapper<Record<PropertyKey, never>>;
   TransferPreflightInput: TransferPreflightInput;
   TransferStats: ResolverTypeWrapper<TransferStats>;
+  UpdateStatus: ResolverTypeWrapper<UpdateStatus>;
   UploadPartInput: UploadPartInput;
   UploadPreflightInput: UploadPreflightInput;
   UploadSession: ResolverTypeWrapper<UploadSessionMapper>;
@@ -839,6 +862,7 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  AppMetadata: AppMetadata;
   BeginProviderOAuthInput: BeginProviderOAuthInput;
   BeginProviderOAuthPayload: BeginProviderOAuthPayload;
   BigInt: Scalars['BigInt']['output'];
@@ -884,11 +908,16 @@ export type ResolversParentTypes = ResolversObject<{
   Subscription: Record<PropertyKey, never>;
   TransferPreflightInput: TransferPreflightInput;
   TransferStats: TransferStats;
+  UpdateStatus: UpdateStatus;
   UploadPartInput: UploadPartInput;
   UploadPreflightInput: UploadPreflightInput;
   UploadSession: UploadSessionMapper;
   Usage: UsageMapper;
   User: UserMapper;
+}>;
+
+export type AppMetadataResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['AppMetadata'] = ResolversParentTypes['AppMetadata']> = ResolversObject<{
+  version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type BeginProviderOAuthPayloadResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['BeginProviderOAuthPayload'] = ResolversParentTypes['BeginProviderOAuthPayload']> = ResolversObject<{
@@ -958,6 +987,7 @@ export type MutationResolvers<ContextType = GraphQLContext, ParentType extends R
   refreshUsage?: Resolver<ResolversTypes['Usage'], ParentType, ContextType, RequireFields<MutationRefreshUsageArgs, 'id'>>;
   renameNode?: Resolver<ResolversTypes['Node'], ParentType, ContextType, RequireFields<MutationRenameNodeArgs, 'newName' | 'nodeId'>>;
   resolveConflict?: Resolver<ResolversTypes['Operation'], ParentType, ContextType, RequireFields<MutationResolveConflictArgs, 'action' | 'conflictId'>>;
+  triggerAppUpdate?: Resolver<ResolversTypes['UpdateStatus'], ParentType, ContextType, Partial<MutationTriggerAppUpdateArgs>>;
 }>;
 
 export type NodeResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Node'] = ResolversParentTypes['Node']> = ResolversObject<{
@@ -1100,6 +1130,7 @@ export type ProviderTypeResolvers<ContextType = GraphQLContext, ParentType exten
 }>;
 
 export type QueryResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  appMetadata?: Resolver<ResolversTypes['AppMetadata'], ParentType, ContextType>;
   listChildren?: Resolver<ResolversTypes['NodePage'], ParentType, ContextType, RequireFields<QueryListChildrenArgs, 'providerId'>>;
   myOAuthApps?: Resolver<Array<ResolversTypes['OAuthApp']>, ParentType, ContextType>;
   myOperations?: Resolver<Array<ResolversTypes['Operation']>, ParentType, ContextType, RequireFields<QueryMyOperationsArgs, 'limit'>>;
@@ -1108,6 +1139,7 @@ export type QueryResolvers<ContextType = GraphQLContext, ParentType extends Reso
   provider?: Resolver<Maybe<ResolversTypes['Provider']>, ParentType, ContextType, RequireFields<QueryProviderArgs, 'id'>>;
   providerTypes?: Resolver<Array<ResolversTypes['ProviderType']>, ParentType, ContextType>;
   transferStats?: Resolver<Maybe<ResolversTypes['TransferStats']>, ParentType, ContextType>;
+  updateStatus?: Resolver<ResolversTypes['UpdateStatus'], ParentType, ContextType>;
   uploadSession?: Resolver<Maybe<ResolversTypes['UploadSession']>, ParentType, ContextType, RequireFields<QueryUploadSessionArgs, 'id'>>;
   uploadSessions?: Resolver<Array<ResolversTypes['UploadSession']>, ParentType, ContextType>;
   viewer?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
@@ -1125,6 +1157,13 @@ export type TransferStatsResolvers<ContextType = GraphQLContext, ParentType exte
   filesTransferred?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   filesUploaded?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type UpdateStatusResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['UpdateStatus'] = ResolversParentTypes['UpdateStatus']> = ResolversObject<{
+  currentVersion?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  targetVersion?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type UploadSessionResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['UploadSession'] = ResolversParentTypes['UploadSession']> = ResolversObject<{
@@ -1160,6 +1199,7 @@ export type UserResolvers<ContextType = GraphQLContext, ParentType extends Resol
 }>;
 
 export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
+  AppMetadata?: AppMetadataResolvers<ContextType>;
   BeginProviderOAuthPayload?: BeginProviderOAuthPayloadResolvers<ContextType>;
   BigInt?: GraphQLScalarType;
   ConflictDiscoveredEvent?: ConflictDiscoveredEventResolvers<ContextType>;
@@ -1189,6 +1229,7 @@ export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   TransferStats?: TransferStatsResolvers<ContextType>;
+  UpdateStatus?: UpdateStatusResolvers<ContextType>;
   UploadSession?: UploadSessionResolvers<ContextType>;
   Usage?: UsageResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

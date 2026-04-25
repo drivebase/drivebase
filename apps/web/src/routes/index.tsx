@@ -13,6 +13,7 @@ import {
 import { useEffect, useMemo } from "react"
 import { apps } from "@/driveos/apps"
 import { desktopMenus, getSystemMenuItems } from "@/driveos/menus"
+import { UpdateBadge } from "@/driveos/update-badge"
 
 export const Route = createFileRoute("/")({
   component: DriveOSRoot,
@@ -40,7 +41,7 @@ function DriveOSWithData() {
   return (
     <KernelProvider
       apps={apps}
-      config={{ brandName: "Drivebase", systemMenuItems, desktopMenus }}
+      config={{ brandName: "Drivebase", systemMenuItems, desktopMenus, MenuBarExtra: UpdateBadge }}
     >
       <DriveOSGate viewer={viewer} fetching={fetching} onRefetch={refetch} />
     </KernelProvider>
