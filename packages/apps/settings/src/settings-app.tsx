@@ -27,8 +27,11 @@ const NAV: NavItem[] = [
   { id: "about",      label: "About",      icon: Info,       component: AboutSection },
 ]
 
-export function SettingsApp(_props: AppProps) {
-  const [activeId, setActiveId] = useState(NAV[0]!.id)
+export function SettingsApp({ payload }: AppProps) {
+  const initial = (payload as { section?: string } | undefined)?.section
+  const [activeId, setActiveId] = useState(
+    NAV.find((n) => n.id === initial)?.id ?? NAV[0]!.id,
+  )
   const [query, setQuery] = useState("")
   const active = NAV.find((n) => n.id === activeId) ?? NAV[0]!
   const Section = active.component

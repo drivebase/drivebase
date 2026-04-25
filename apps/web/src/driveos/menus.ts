@@ -4,11 +4,12 @@ import { signOut } from "@drivebase/data"
 
 export function getSystemMenuItems(args: {
   onSignOut: () => Promise<void> | void
+  onOpenSettings: (section?: string) => void
 }): MenuItem[] {
-  const { onSignOut } = args
+  const { onSignOut, onOpenSettings } = args
   return [
-    { id: "about", label: "About Drivebase" },
-    { id: "settings", label: "Settings…", shortcut: "⌘," },
+    { id: "about", label: "About Drivebase", onSelect: () => onOpenSettings("about") },
+    { id: "settings", label: "Settings…", shortcut: "⌘,", onSelect: () => onOpenSettings() },
     {
       id: "separator-main",
       separator: true,

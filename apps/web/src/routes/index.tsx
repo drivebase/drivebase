@@ -9,8 +9,9 @@ import {
   LoginScreen,
   Shell,
   useBus,
+  useKernelConfig,
 } from "@drivebase/kernel"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { apps } from "@/driveos/apps"
 import { desktopMenus, getSystemMenuItems } from "@/driveos/menus"
 import { UpdateBadge } from "@/driveos/update-badge"
@@ -30,18 +31,10 @@ function DriveOSRoot() {
 function DriveOSWithData() {
   const { viewer, fetching, refetch } = useViewer()
 
-  const systemMenuItems = useMemo(
-    () =>
-      getSystemMenuItems({
-        onSignOut: () => { refetch() },
-      }),
-    [refetch],
-  )
-
   return (
     <KernelProvider
       apps={apps}
-      config={{ brandName: "Drivebase", systemMenuItems, desktopMenus, MenuBarExtra: UpdateBadge }}
+      config={{ brandName: "Drivebase", systemMenuItems: [], desktopMenus, MenuBarExtra: UpdateBadge }}
     >
       <DriveOSGate viewer={viewer} fetching={fetching} onRefetch={refetch} />
     </KernelProvider>
@@ -56,6 +49,20 @@ interface DriveOSGateProps {
 
 function DriveOSGate({ viewer, fetching, onRefetch }: DriveOSGateProps) {
   const bus = useBus()
+  const { setConfig } = useKernelConfig()
+
+  const onOpenSettings = useCallback((section?: string) => {
+    bus.emit("app.launch", { appId: "settings", payload: section ? { section } : undefined })
+  }, [bus])
+
+  const systemMenuItems = useMemo(
+    () => getSystemMenuItems({ onSignOut: () => { onRefetch() }, onOpenSettings }),
+    [onRefetch, onOpenSettings],
+  )
+
+  useEffect(() => {
+    setConfig({ systemMenuItems })
+  }, [setConfig, systemMenuItems])
 
   useEffect(() => {
     if (fetching) return
