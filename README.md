@@ -20,6 +20,9 @@ Drivebase is an open-source, self-hosted platform that connects your cloud stora
 
 The UI is designed as a desktop OS shell running in the browser. Apps (Files, Providers, Settings) open as windows you can move, resize, and switch between — making it feel like a native file manager rather than a typical web dashboard.
 
+> [!WARNING]
+> **v4 is still in active development.** Expect breaking changes, incomplete features, and shifting APIs until a stable release is tagged.
+
 ## Features
 
 - **OS-like interface** — windowed apps, a taskbar, and a desktop shell; feels like a native file manager in the browser
