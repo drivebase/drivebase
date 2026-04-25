@@ -5,13 +5,13 @@
 <h1 align="center">Drivebase</h1>
 
 <p align="center">
-  Self-hosted file management across all your cloud storage — unified.
+  Your cloud storage. One OS. Runs anywhere.
 </p>
 
 <p align="center">
-  <a href="https://github.com/mxvsh/drivebase/releases"><img src="https://img.shields.io/github/v/release/mxvsh/drivebase?style=flat-square" alt="Release" /></a>
-  <a href="https://github.com/mxvsh/drivebase/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mxvsh/drivebase?style=flat-square" alt="License" /></a>
-  <a href="https://github.com/mxvsh/drivebase/stargazers"><img src="https://img.shields.io/github/stars/mxvsh/drivebase?style=flat-square" alt="Stars" /></a>
+  <a href="https://github.com/drivebase/drivebase/releases"><img src="https://img.shields.io/github/v/release/drivebase/drivebase?style=flat-square" alt="Release" /></a>
+  <a href="https://github.com/drivebase/drivebase/blob/main/LICENSE"><img src="https://img.shields.io/github/license/drivebase/drivebase?style=flat-square" alt="License" /></a>
+  <a href="https://github.com/drivebase/drivebase/stargazers"><img src="https://img.shields.io/github/stars/drivebase/drivebase?style=flat-square" alt="Stars" /></a>
 </p>
 
 ---
@@ -68,7 +68,7 @@ The UI is designed as a desktop OS shell running in the browser. Apps (Files, Pr
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/mxvsh/drivebase.git
+git clone https://github.com/drivebase/drivebase.git
 cd drivebase
 bun install
 ```
