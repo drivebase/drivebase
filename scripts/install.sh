@@ -41,11 +41,11 @@ if [ "$HTTP_STATUS" != "200" ]; then
 fi
 echo -e "${GREEN}  ✓ compose.yml downloaded${NC}"
 
-# 3. Download config.toml
+# 3. Download config.example.toml as config.toml
 echo -e "${CYAN}• Downloading configuration template...${NC}"
-HTTP_STATUS=$(curl -s -o config.toml -w "%{http_code}" https://raw.githubusercontent.com/drivebase/drivebase/main/config.toml)
+HTTP_STATUS=$(curl -s -o config.toml -w "%{http_code}" https://raw.githubusercontent.com/drivebase/drivebase/main/config.example.toml)
 if [ "$HTTP_STATUS" != "200" ]; then
-    echo -e "${RED}  ✗ Failed to download config.toml (HTTP $HTTP_STATUS)${NC}"
+    echo -e "${RED}  ✗ Failed to download config.example.toml (HTTP $HTTP_STATUS)${NC}"
     exit 1
 fi
 echo -e "${GREEN}  ✓ config.toml downloaded${NC}"
