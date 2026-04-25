@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "telemetry",
+  "name": "drivebase-telemetry",
   "main": "src/index.ts",
   "compatibility_date": "2026-04-25",
   "vars": {
