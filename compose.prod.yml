@@ -1,0 +1,58 @@
+services:
+  drivebase:
+    image: ghcr.io/drivebase/drivebase:v4.0.0-alpha.2
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./config.toml:/app/config.toml:ro
+      - drivebase_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: drivebase
+      POSTGRES_PASSWORD: drivebase
+      POSTGRES_DB: drivebase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U drivebase"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  updater:
+    image: ghcr.io/drivebase/updater:v4.0.0-alpha.2
+    restart: unless-stopped
+    ports:
+      - "4001:4001"
+    environment:
+      - APP_CONTAINER_NAME=drivebase-drivebase-1
+      - APP_IMAGE=ghcr.io/drivebase/drivebase
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - drivebase
+
+volumes:
+  postgres_data:
+  redis_data:
+  drivebase_data:
