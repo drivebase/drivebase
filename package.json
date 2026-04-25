@@ -1,6 +1,6 @@
 {
   "name": "drivebase",
-  "version": "0.0.1",
+  "version": "4.0.0-beta.1",
   "private": true,
   "scripts": {
     "build": "turbo build",
@@ -11,9 +11,12 @@
     "typecheck": "turbo typecheck",
     "db:studio": "bun --cwd packages/db db:studio",
     "db:migrate": "bun --cwd packages/db db:migrate",
-    "db:push": "bun --cwd packages/db db:push"
+    "db:push": "bun --cwd packages/db db:push",
+    "release": "release-it --no-npm"
   },
   "devDependencies": {
+    "@release-it/conventional-changelog": "^11.0.0",
+    "release-it": "^20.0.1",
     "turbo": "^2.8.17",
     "typescript": "5.9.3"
   },
