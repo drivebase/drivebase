@@ -30,9 +30,3 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/telemetry
           packageManager: bun
-          secrets: |
-            UMAMI_URL
-            UMAMI_WEBSITE_ID
-        env:
-          UMAMI_URL: ${{ secrets.UMAMI_URL }}
-          UMAMI_WEBSITE_ID: ${{ secrets.UMAMI_WEBSITE_ID }}
