@@ -4,7 +4,6 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "predev": "bun run codegen",
     "dev": "DRIVEBASE_CONFIG=../../config.toml bun --hot ./index.ts",
     "prestart": "bun run codegen",
     "start": "bun ./index.ts",
