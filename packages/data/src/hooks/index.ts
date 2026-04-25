@@ -23,3 +23,4 @@ export {
   useMyOperations,
   type OperationEntry,
 } from "./use-my-operations"
+export { useAppUpdate } from "./use-app-update"

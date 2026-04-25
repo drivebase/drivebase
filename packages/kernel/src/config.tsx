@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, type ReactNode } from "react"
+import { createContext, useContext, useMemo, type ReactNode, type ComponentType } from "react"
 
 export interface MenuItem {
   id: string
@@ -32,6 +32,8 @@ export interface KernelConfig {
    * Apps still contribute their own menus when focused.
    */
   desktopMenus: DesktopMenu[]
+  /** Optional component rendered in the menubar right section, before the theme toggle. */
+  MenuBarExtra?: ComponentType
 }
 
 const DEFAULT_CONFIG: KernelConfig = {

@@ -35,7 +35,7 @@ export function MenuBar() {
   const win = useWindowStore((s) => (focusedId ? s.windows[focusedId] : null))
   const activeApp = useAppRegistryStore((s) => (win ? s.apps[win.appId] : null))
   const windowMenus = useWindowMenuStore((s) => (focusedId ? s.menusByWindowId[focusedId] ?? null : null))
-  const { brandName, systemMenuItems } = useKernelConfig()
+  const { brandName, systemMenuItems, MenuBarExtra } = useKernelConfig()
 
   const appMenu: DesktopMenu | null = activeApp && focusedId
     ? {
@@ -67,6 +67,7 @@ export function MenuBar() {
       </Menubar.Root>
 
       <div className="ml-auto flex items-center gap-4 px-2 text-[var(--fg-muted)]">
+        {MenuBarExtra && <MenuBarExtra />}
         <button type="button" onClick={toggleTheme} className="hover:text-[var(--fg)]">
           {theme === "dark" ? "☾" : "☀"}
         </button>

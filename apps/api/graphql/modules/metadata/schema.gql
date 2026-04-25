@@ -1,0 +1,19 @@
+type AppMetadata {
+  version: String!
+}
+
+type UpdateStatus {
+  status: String!
+  message: String
+  currentVersion: String
+  targetVersion: String
+}
+
+extend type Query {
+  appMetadata: AppMetadata!
+  updateStatus: UpdateStatus!
+}
+
+extend type Mutation {
+  triggerAppUpdate(version: String): UpdateStatus!
+}
