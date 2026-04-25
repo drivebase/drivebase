@@ -7,6 +7,8 @@ services:
     volumes:
       - ./config.toml:/app/config.toml:ro
       - drivebase_data:/app/data
+    networks:
+      - drivebase-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -22,6 +24,8 @@ services:
       POSTGRES_DB: drivebase
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - drivebase-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U drivebase"]
       interval: 5s
@@ -33,6 +37,8 @@ services:
     restart: unless-stopped
     volumes:
       - redis_data:/data
+    networks:
+      - drivebase-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -49,8 +55,14 @@ services:
       - APP_IMAGE=ghcr.io/drivebase/drivebase
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - drivebase-network
     depends_on:
       - drivebase
+
+networks:
+  drivebase-network:
+    driver: bridge
 
 volumes:
   postgres_data:
