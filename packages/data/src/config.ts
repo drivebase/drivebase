@@ -5,7 +5,7 @@
 export function getApiBaseUrl(): string {
   const url = import.meta.env?.VITE_PUBLIC_API_URL
   if (typeof url === "string" && url.length > 0) return url.replace(/\/$/, "")
-  return "http://localhost:4000"
+  return ""
 }
 
 export const GRAPHQL_ENDPOINT = "/graphql"
