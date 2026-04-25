@@ -542,6 +542,7 @@ export type Query = {
   provider: Maybe<Provider>;
   /** Provider types the server knows how to run. */
   providerTypes: Array<ProviderType>;
+  transferStats: Maybe<TransferStats>;
   /** Single upload session by id, scoped to the viewer. */
   uploadSession: Maybe<UploadSession>;
   /** Non-terminal upload sessions for the viewer (pending / uploading / ready). */
@@ -605,6 +606,17 @@ export type TransferPreflightInput = {
   dstProviderId: Scalars['ID']['input'];
   srcNodeIds: Array<Scalars['ID']['input']>;
   strategy: ConflictStrategy;
+};
+
+export type TransferStats = {
+  __typename?: 'TransferStats';
+  bytesDownloaded: Scalars['BigInt']['output'];
+  bytesTransferred: Scalars['BigInt']['output'];
+  bytesUploaded: Scalars['BigInt']['output'];
+  filesDownloaded: Scalars['Int']['output'];
+  filesTransferred: Scalars['Int']['output'];
+  filesUploaded: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type UploadPartInput = {
@@ -815,6 +827,7 @@ export type ResolversTypes = ResolversObject<{
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Subscription: ResolverTypeWrapper<Record<PropertyKey, never>>;
   TransferPreflightInput: TransferPreflightInput;
+  TransferStats: ResolverTypeWrapper<TransferStats>;
   UploadPartInput: UploadPartInput;
   UploadPreflightInput: UploadPreflightInput;
   UploadSession: ResolverTypeWrapper<UploadSessionMapper>;
@@ -870,6 +883,7 @@ export type ResolversParentTypes = ResolversObject<{
   String: Scalars['String']['output'];
   Subscription: Record<PropertyKey, never>;
   TransferPreflightInput: TransferPreflightInput;
+  TransferStats: TransferStats;
   UploadPartInput: UploadPartInput;
   UploadPreflightInput: UploadPreflightInput;
   UploadSession: UploadSessionMapper;
@@ -1093,6 +1107,7 @@ export type QueryResolvers<ContextType = GraphQLContext, ParentType extends Reso
   operation?: Resolver<Maybe<ResolversTypes['Operation']>, ParentType, ContextType, RequireFields<QueryOperationArgs, 'id'>>;
   provider?: Resolver<Maybe<ResolversTypes['Provider']>, ParentType, ContextType, RequireFields<QueryProviderArgs, 'id'>>;
   providerTypes?: Resolver<Array<ResolversTypes['ProviderType']>, ParentType, ContextType>;
+  transferStats?: Resolver<Maybe<ResolversTypes['TransferStats']>, ParentType, ContextType>;
   uploadSession?: Resolver<Maybe<ResolversTypes['UploadSession']>, ParentType, ContextType, RequireFields<QueryUploadSessionArgs, 'id'>>;
   uploadSessions?: Resolver<Array<ResolversTypes['UploadSession']>, ParentType, ContextType>;
   viewer?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
@@ -1100,6 +1115,16 @@ export type QueryResolvers<ContextType = GraphQLContext, ParentType extends Reso
 
 export type SubscriptionResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
   operationProgress?: SubscriptionResolver<ResolversTypes['OperationProgress'], "operationProgress", ParentType, ContextType, RequireFields<SubscriptionOperationProgressArgs, 'operationId'>>;
+}>;
+
+export type TransferStatsResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['TransferStats'] = ResolversParentTypes['TransferStats']> = ResolversObject<{
+  bytesDownloaded?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  bytesTransferred?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  bytesUploaded?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  filesDownloaded?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  filesTransferred?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  filesUploaded?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 
 export type UploadSessionResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['UploadSession'] = ResolversParentTypes['UploadSession']> = ResolversObject<{
@@ -1163,6 +1188,7 @@ export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   ProviderType?: ProviderTypeResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
+  TransferStats?: TransferStatsResolvers<ContextType>;
   UploadSession?: UploadSessionResolvers<ContextType>;
   Usage?: UsageResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

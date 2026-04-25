@@ -36,6 +36,13 @@
       "when": 1777013815334,
       "tag": "0004_previous_goblin_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1777088457740,
+      "tag": "0005_transfer_stats",
+      "breakpoints": true
     }
   ]
 }

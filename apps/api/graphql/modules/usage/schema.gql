@@ -4,3 +4,17 @@ type Usage {
   available: BigInt
   lastSyncedAt: DateTime!
 }
+
+type TransferStats {
+  bytesUploaded: BigInt!
+  bytesDownloaded: BigInt!
+  bytesTransferred: BigInt!
+  filesUploaded: Int!
+  filesDownloaded: Int!
+  filesTransferred: Int!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  transferStats: TransferStats
+}

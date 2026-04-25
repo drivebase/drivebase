@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { Worker, type Job } from "bullmq";
 import { schema } from "@drivebase/db";
-import { queueForEntry, type PlanEntry, type QueueName } from "@drivebase/storage";
+import { queueForEntry, type PlanEntry, type PlanEntryKind, type QueueName } from "@drivebase/storage";
 import type { WorkerDeps } from "./deps.ts";
 import { maybeFinalizeOperation } from "./operation-state.ts";
 import { publishProgress } from "./progress.ts";
@@ -230,6 +230,8 @@ async function runWrapped(
     })
     .where(eq(schema.jobs.id, jobId));
 
+  await incrementTransferStats(deps, operationId, entry.kind, finalBytes);
+
   await publishProgress(deps.pub, {
     kind: "status",
     operationId,
@@ -279,6 +281,50 @@ async function markJobFailed(
     .where(eq(schema.jobs.id, jobId))
     .returning({ operationId: schema.jobs.operationId });
   return row?.operationId ?? null;
+}
+
+async function incrementTransferStats(
+  deps: WorkerDeps,
+  operationId: string,
+  kind: PlanEntryKind,
+  bytes: number,
+): Promise<void> {
+  if (kind === "createFolder" || kind === "delete" || bytes === 0) return;
+
+  const [op] = await deps.db
+    .select({ userId: schema.operations.userId })
+    .from(schema.operations)
+    .where(eq(schema.operations.id, operationId))
+    .limit(1);
+  if (!op) return;
+
+  const s = schema.transferStats;
+
+  if (kind === "upload") {
+    await deps.db
+      .insert(s)
+      .values({ userId: op.userId, bytesUploaded: bytes, filesUploaded: 1 })
+      .onConflictDoUpdate({
+        target: s.userId,
+        set: {
+          bytesUploaded: sql`${s.bytesUploaded} + ${bytes}`,
+          filesUploaded: sql`${s.filesUploaded} + 1`,
+          updatedAt: sql`now()`,
+        },
+      });
+  } else {
+    await deps.db
+      .insert(s)
+      .values({ userId: op.userId, bytesTransferred: bytes, filesTransferred: 1 })
+      .onConflictDoUpdate({
+        target: s.userId,
+        set: {
+          bytesTransferred: sql`${s.bytesTransferred} + ${bytes}`,
+          filesTransferred: sql`${s.filesTransferred} + 1`,
+          updatedAt: sql`now()`,
+        },
+      });
+  }
 }
 
 /**
