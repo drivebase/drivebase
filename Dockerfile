@@ -49,7 +49,7 @@ FROM runtime-base AS runtime
 COPY --from=web-builder /app/apps/web/dist ./apps/web/dist
 ENTRYPOINT ["/entrypoint.sh"]
 
-# ── Stage 6: runtime-ci — web pre-built externally and injected via context ───
+# ── Stage 6: runtime-ci — web pre-built externally and injected via named context ───
 FROM runtime-base AS runtime-ci
-COPY apps/web/dist ./apps/web/dist
+COPY --from=web-dist . ./apps/web/dist
 ENTRYPOINT ["/entrypoint.sh"]

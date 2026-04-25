@@ -106,6 +106,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}-${{ matrix.suffix }}
+          build-contexts: |
+            web-dist=apps/web/dist
           build-args: |
             APP_VERSION=${{ steps.version.outputs.VERSION }}
           cache-from: type=gha,scope=${{ matrix.suffix }}
