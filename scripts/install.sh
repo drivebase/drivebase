@@ -34,21 +34,21 @@ cd "$DIR" || exit
 
 # 2. Download compose.prod.yml
 echo -e "${CYAN}• Downloading Docker Compose configuration...${NC}"
-if curl -s -o compose.yml https://raw.githubusercontent.com/drivebase/drivebase/main/compose.prod.yml; then
-    echo -e "${GREEN}  ✓ compose.yml downloaded${NC}"
-else
-    echo -e "${RED}  ✗ Failed to download compose.prod.yml${NC}"
+HTTP_STATUS=$(curl -s -o compose.yml -w "%{http_code}" https://raw.githubusercontent.com/drivebase/drivebase/main/compose.prod.yml)
+if [ "$HTTP_STATUS" != "200" ]; then
+    echo -e "${RED}  ✗ Failed to download compose.prod.yml (HTTP $HTTP_STATUS)${NC}"
     exit 1
 fi
+echo -e "${GREEN}  ✓ compose.yml downloaded${NC}"
 
 # 3. Download config.toml
 echo -e "${CYAN}• Downloading configuration template...${NC}"
-if curl -s -o config.toml https://raw.githubusercontent.com/drivebase/drivebase/main/config.toml; then
-    echo -e "${GREEN}  ✓ config.toml downloaded${NC}"
-else
-    echo -e "${RED}  ✗ Failed to download config.toml${NC}"
+HTTP_STATUS=$(curl -s -o config.toml -w "%{http_code}" https://raw.githubusercontent.com/drivebase/drivebase/main/config.toml)
+if [ "$HTTP_STATUS" != "200" ]; then
+    echo -e "${RED}  ✗ Failed to download config.toml (HTTP $HTTP_STATUS)${NC}"
     exit 1
 fi
+echo -e "${GREEN}  ✓ config.toml downloaded${NC}"
 
 # 4. Generate secrets
 echo -e "${CYAN}• Generating secure keys...${NC}"
