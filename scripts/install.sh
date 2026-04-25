@@ -64,10 +64,14 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' "s|masterKeyBase64 = .*|masterKeyBase64 = \"${MASTER_KEY}\"|" config.toml
     sed -i '' "s|betterAuthSecret = .*|betterAuthSecret = \"${AUTH_SECRET}\"|" config.toml
     sed -i '' "s|env = \"dev\"|env = \"prod\"|" config.toml
+    sed -i '' "s|127.0.0.1:5432|postgres:5432|" config.toml
+    sed -i '' "s|127.0.0.1:6379|redis:6379|" config.toml
 else
     sed -i "s|masterKeyBase64 = .*|masterKeyBase64 = \"${MASTER_KEY}\"|" config.toml
     sed -i "s|betterAuthSecret = .*|betterAuthSecret = \"${AUTH_SECRET}\"|" config.toml
     sed -i "s|env = \"dev\"|env = \"prod\"|" config.toml
+    sed -i "s|127.0.0.1:5432|postgres:5432|" config.toml
+    sed -i "s|127.0.0.1:6379|redis:6379|" config.toml
 fi
 
 echo -e "${GREEN}  ✓ Secrets generated and written to config.toml${NC}"
