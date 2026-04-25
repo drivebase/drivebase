@@ -12,6 +12,7 @@
   <a href="https://github.com/drivebase/drivebase/releases"><img src="https://img.shields.io/github/v/release/drivebase/drivebase?style=flat-square" alt="Release" /></a>
   <a href="https://github.com/drivebase/drivebase/blob/main/LICENSE"><img src="https://img.shields.io/github/license/drivebase/drivebase?style=flat-square" alt="License" /></a>
   <a href="https://github.com/drivebase/drivebase/stargazers"><img src="https://img.shields.io/github/stars/drivebase/drivebase?style=flat-square" alt="Stars" /></a>
+  <a href="https://deepwiki.com/drivebase/drivebase"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
 ---
