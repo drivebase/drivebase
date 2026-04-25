@@ -1,6 +1,6 @@
 services:
   drivebase:
-    image: ghcr.io/drivebase/drivebase:v4.0.0-alpha.2
+    image: ghcr.io/drivebase/drivebase:v4.0.0-alpha.3
     restart: unless-stopped
     ports:
       - "1558:80"
@@ -46,7 +46,7 @@ services:
       retries: 10
 
   updater:
-    image: ghcr.io/drivebase/updater:v4.0.0-alpha.2
+    image: ghcr.io/drivebase/updater:v4.0.0-alpha.3
     restart: unless-stopped
     ports:
       - "4001:4001"
