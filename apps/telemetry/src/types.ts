@@ -2,6 +2,7 @@ export type Bindings = {
   UMAMI_URL: string
   UMAMI_WEBSITE_ID: string
   UMAMI_TOKEN: string
+  RATE_LIMITER: { limit(opts: { key: string }): Promise<{ success: boolean }> }
 }
 
 export type EventPayload = {

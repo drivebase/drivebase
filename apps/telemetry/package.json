@@ -7,6 +7,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
+    "@drivebase/telemetry": "workspace:*",
     "hono": "^4.12.15"
   },
   "devDependencies": {
