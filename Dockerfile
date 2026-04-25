@@ -6,14 +6,14 @@ WORKDIR /app
 COPY . .
 RUN bunx turbo prune @drivebase/api @drivebase/workers web --docker
 
-# ── Stage 2: install all deps (needed for web build + codegen) ───────────────
+# ── Stage 2: install all deps ─────────────────────────────────────────────────
 FROM oven/bun:1.3.5-alpine AS deps
 WORKDIR /app
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/bun.lock ./bun.lock
 RUN bun install --ignore-scripts
 
-# ── Stage 3: build web (static SPA) ─────────────────────────────────────────
+# ── Stage 3: build web (static SPA) — skipped in CI builds ───────────────────
 FROM deps AS web-builder
 # Baked into the JS bundle at build time — set to your public host,
 # e.g. https://drivebase.example.com. Leave empty to use same-origin
@@ -23,25 +23,19 @@ ENV VITE_PUBLIC_API_URL=${VITE_PUBLIC_API_URL}
 COPY --from=pruner /app/out/full/ .
 RUN cd apps/web && bun run build
 
-# ── Stage 4: runtime ─────────────────────────────────────────────────────────
-FROM oven/bun:1.3.5-alpine AS runtime
+# ── Stage 4: runtime base (shared by runtime and runtime-ci) ─────────────────
+FROM oven/bun:1.3.5-alpine AS runtime-base
 WORKDIR /app
 
-# Version is injected at build time: --build-arg APP_VERSION=1.2.3
 ARG APP_VERSION="0.0.0"
 ENV APP_VERSION=${APP_VERSION}
 
 RUN apk add --no-cache caddy supervisor
 
-# Full pruned source with workspace context so bun hoists deps correctly
 COPY --from=pruner /app/out/full/ .
 COPY --from=pruner /app/out/bun.lock ./bun.lock
 RUN bun install --ignore-scripts --production --frozen-lockfile
 
-# Pre-built web static files
-COPY --from=web-builder /app/apps/web/dist ./apps/web/dist
-
-# Runtime support files
 COPY var/docker/supervisord.conf /etc/supervisord.conf
 COPY var/docker/supervisor.d/ /etc/supervisor.d/
 COPY var/docker/Caddyfile /etc/caddy/Caddyfile
@@ -50,4 +44,12 @@ RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
 
+# ── Stage 5: runtime — web built internally (local / self-hosted builds) ──────
+FROM runtime-base AS runtime
+COPY --from=web-builder /app/apps/web/dist ./apps/web/dist
+ENTRYPOINT ["/entrypoint.sh"]
+
+# ── Stage 6: runtime-ci — web pre-built externally and injected via context ───
+FROM runtime-base AS runtime-ci
+COPY apps/web/dist ./apps/web/dist
 ENTRYPOINT ["/entrypoint.sh"]
