@@ -8,6 +8,7 @@
   Your cloud storage. One OS. Runs anywhere.
 </p>
 
+
 <p align="center">
   <a href="https://github.com/drivebase/drivebase/releases"><img src="https://img.shields.io/github/v/release/drivebase/drivebase?style=flat-square" alt="Release" /></a>
   <a href="https://github.com/drivebase/drivebase/blob/main/LICENSE"><img src="https://img.shields.io/github/license/drivebase/drivebase?style=flat-square" alt="License" /></a>
@@ -16,6 +17,8 @@
 </p>
 
 ---
+
+[Watch demo](https://x.com/i/status/2048080132418728354)
 
 Drivebase is an open-source, self-hosted platform that connects your cloud storage providers — Google Drive, S3, local filesystem, and more — under a single interface. Browse, upload, transfer, and manage files across providers without touching each service separately.
 
