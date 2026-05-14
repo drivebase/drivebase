@@ -12,19 +12,8 @@
     />
     <link rel="manifest" href="/manifest.json" />
     <script>
-      // Runs before React mounts. Dark is the product default; persisted state
-      // may explicitly switch back to light.
       (function () {
-        try {
-          document.documentElement.classList.add("dark");
-          var r = localStorage.getItem("drivebase:theme");
-          if (!r) return;
-          var s = JSON.parse(r);
-          if (s && s.state && s.state.theme === "light")
-            document.documentElement.classList.remove("dark");
-        } catch (e) {
-          document.documentElement.classList.add("dark");
-        }
+        document.documentElement.classList.add("dark");
       })();
     </script>
   </head>
