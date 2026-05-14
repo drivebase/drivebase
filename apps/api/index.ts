@@ -17,6 +17,10 @@ import {
   matchDownloadNodeRoute,
 } from "~/rest/download-node.ts";
 import {
+  handlePreviewNode,
+  matchPreviewRoute,
+} from "~/rest/preview-node.ts";
+import {
   handleOAuthCallback,
   matchOAuthCallbackRoute,
 } from "~/rest/oauth-callback.ts";
@@ -165,6 +169,20 @@ const server = Bun.serve({
         deps: { db, config, registry, log },
         userId: session.user.id,
         nodeId: downloadRoute.nodeId,
+      });
+      return cors(req, res);
+    }
+
+    const previewRoute = matchPreviewRoute(req);
+    if (previewRoute) {
+      const session = await auth.api.getSession({ headers: req.headers });
+      if (!session?.user) {
+        return cors(req, Response.json({ error: "unauthenticated" }, { status: 401 }));
+      }
+      const res = await handlePreviewNode({
+        deps: { db, config, log },
+        userId: session.user.id,
+        nodeId: previewRoute.nodeId,
       });
       return cors(req, res);
     }

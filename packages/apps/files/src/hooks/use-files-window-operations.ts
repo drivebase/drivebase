@@ -1,6 +1,7 @@
 import { useCallback, useRef, type RefObject } from "react"
 import { useCreateFolder, useRenameNode } from "@drivebase/data"
 import { askConfirm } from "@drivebase/ui/hooks/ask-confirm"
+import { fileKindOf } from "@drivebase/ui/components/file-icon"
 import { useBus, useFilesClipboardStore } from "@drivebase/kernel"
 import { useDeleteNodes } from "./use-delete-node"
 import { useDuplicateNodes } from "./use-duplicate-node"
@@ -15,6 +16,13 @@ import type { ViewMode } from "../components/toolbar"
 import type { FilesAppPayload } from "../files-app"
 import type { DraftFolderNode, Provider } from "../files-window-types"
 import type { BreadcrumbCrumb } from "./use-files-navigation"
+
+function isImageFile(node: FileItemNode): boolean {
+  return (
+    node.type === "file" &&
+    (!!node.mimeType?.startsWith("image/") || fileKindOf(node.name) === "image")
+  )
+}
 
 interface ClipboardSnapshot {
   mode: ReturnType<typeof useFilesClipboardStore.getState>["mode"]
@@ -39,6 +47,7 @@ export interface UseFilesWindowOperationsParams {
   replaceSelection: (ids: string[]) => void
   pushFolder: (node: FileItemNode) => void
   setInfoNode: (node: FileItemNode | null) => void
+  setPreviewNode: (node: FileItemNode | null) => void
   setRenamingId: (id: string | null) => void
   setDraftFolder: React.Dispatch<React.SetStateAction<DraftFolderNode | null>>
   refetch: () => void
@@ -53,6 +62,8 @@ export interface UseFilesWindowOperationsResult {
   handleDuplicate: (node: FileItemNode) => Promise<void>
   handleInfo: (node: FileItemNode) => void
   handleInfoSelection: () => void
+  handlePreview: (node: FileItemNode) => void
+  handlePreviewSelection: () => void
   handleDownload: (node: FileItemNode) => void
   handleDownloadSelection: () => void
   startRename: (node: FileItemNode) => void
@@ -117,6 +128,7 @@ export function useFilesWindowOperations({
   replaceSelection,
   pushFolder,
   setInfoNode,
+  setPreviewNode,
   setRenamingId,
   setDraftFolder,
   refetch,
@@ -190,7 +202,8 @@ export function useFilesWindowOperations({
 
   const handleOpen = useCallback((node: FileItemNode) => {
     if (node.type === "folder") pushFolder(node)
-  }, [pushFolder])
+    else if (isImageFile(node)) setPreviewNode(node)
+  }, [pushFolder, setPreviewNode])
 
   const handleOpenSelection = useCallback(() => {
     if (!singleSelectedNode || singleSelectedNode.type !== "folder") return
@@ -236,6 +249,16 @@ export function useFilesWindowOperations({
     if (!singleSelectedNode) return
     handleInfo(singleSelectedNode)
   }, [handleInfo, singleSelectedNode])
+
+  const handlePreview = useCallback((node: FileItemNode) => {
+    if (!isImageFile(node)) return
+    setPreviewNode(node)
+  }, [setPreviewNode])
+
+  const handlePreviewSelection = useCallback(() => {
+    if (!singleSelectedNode || !isImageFile(singleSelectedNode)) return
+    handlePreview(singleSelectedNode)
+  }, [handlePreview, singleSelectedNode])
 
   const handleDownload = useCallback((node: FileItemNode) => {
     if (node.type !== "file") return
@@ -466,6 +489,8 @@ export function useFilesWindowOperations({
     handleDuplicate,
     handleInfo,
     handleInfoSelection,
+    handlePreview,
+    handlePreviewSelection,
     handleDownload,
     handleDownloadSelection,
     startRename,

@@ -3,6 +3,7 @@ import type { ContextMenuEntry, MenuContribution } from "@drivebase/kernel"
 import {
   Copy,
   Download,
+  Eye,
   FolderOpen,
   Info,
   Pencil,
@@ -10,8 +11,14 @@ import {
   Trash2,
   Upload,
 } from "lucide-react"
+import { fileKindOf } from "@drivebase/ui/components/file-icon"
 import type { ViewMode } from "./components/toolbar"
 import type { FileItemNode } from "./components/file-item"
+
+function isImageFile(node: FileItemNode | null): boolean {
+  if (!node || node.type !== "file") return false
+  return !!node.mimeType?.startsWith("image/") || fileKindOf(node.name) === "image"
+}
 
 export interface FilesCommandActions
   extends Record<string, () => void | Promise<void>> {
@@ -21,6 +28,7 @@ export interface FilesCommandActions
   newFolder: () => void
   openSelection: () => void
   openSelectionInNewWindow: () => void
+  previewSelection: () => void
   copySelection: () => void
   cutSelection: () => void
   renameSelection: () => void
@@ -46,6 +54,7 @@ export interface FilesCommandContext {
 export interface FilesItemActions {
   open: () => void
   openInNewWindow: () => void
+  preview: () => void
   copy: () => void
   cut: () => void
   rename: () => void
@@ -62,7 +71,7 @@ function firstSelection(selection: FileItemNode[]): FileItemNode | null {
 }
 
 function canOpen(node: FileItemNode | null): boolean {
-  return node?.type === "folder"
+  return node?.type === "folder" || isImageFile(node)
 }
 
 function canDownload(node: FileItemNode | null): boolean {
@@ -79,6 +88,7 @@ function commandState(ctx: FilesCommandContext) {
     hasSelection,
     canOpen: !ctx.busy && canOpen(single),
     canOpenInNewWindow: !ctx.busy && canOpen(single),
+    canPreview: !ctx.busy && isImageFile(single),
     canRename: !ctx.busy && single !== null,
     canDownload: !ctx.busy && canDownload(single),
     canDuplicate: !ctx.busy && hasSelection,
@@ -120,6 +130,13 @@ export function buildFilesWindowMenus(ctx: FilesCommandContext): MenuContributio
           shortcut: "⌘↩",
           disabled: !state.canOpenInNewWindow,
           commandId: "openSelectionInNewWindow",
+        },
+        {
+          id: "preview",
+          label: "Preview",
+          shortcut: "Space",
+          disabled: !state.canPreview,
+          commandId: "previewSelection",
         },
         { id: "separator-rename", separator: true },
         {
@@ -291,6 +308,9 @@ export function buildFilesItemContextMenu(
       shortcut: "⌘↩",
       disabled: !state.canOpenInNewWindow,
     }),
+    ...(isImageFile(node)
+      ? [entry("preview", "Preview", <Eye size={14} />, actions.preview)]
+      : []),
     { id: "sep-open", separator: true },
     entry("copy", "Copy", <Copy size={14} />, actions.copy, {
       shortcut: "⌘C",

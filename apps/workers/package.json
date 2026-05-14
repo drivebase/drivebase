@@ -1,5 +1,5 @@
 {
-  "name": "@drivebase/workers",
+  "name": "workers",
   "module": "index.ts",
   "type": "module",
   "private": true,
@@ -16,6 +16,7 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "sharp": "^0.34.2",
     "@aws-sdk/client-s3": "^3.1032.0",
     "@drivebase/cache": "workspace:*",
     "@drivebase/telemetry": "workspace:*",

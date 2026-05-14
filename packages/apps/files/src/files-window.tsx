@@ -6,6 +6,7 @@ import { Toolbar } from "./components/toolbar"
 import { Breadcrumb } from "./components/breadcrumb"
 import { FilesView } from "./components/files-view"
 import { InfoDialog } from "./components/info-dialog"
+import { PreviewDialog } from "./components/preview-dialog"
 import { useFileSelection } from "./hooks/use-file-selection"
 import { useFilesNavigation, type BreadcrumbCrumb } from "./hooks/use-files-navigation"
 import { useFilesWindowState } from "./hooks/use-files-window-state"
@@ -106,6 +107,7 @@ export function FilesWindow({
       if (node.type === "folder") nav.push({ id: node.id, name: node.name })
     },
     setInfoNode: state.setInfoNode,
+    setPreviewNode: state.setPreviewNode,
     setRenamingId: state.setRenamingId,
     setDraftFolder: state.setDraftFolder,
     refetch,
@@ -127,6 +129,7 @@ export function FilesWindow({
     newFolder: operations.handleNewFolder,
     openSelection: operations.handleOpenSelection,
     openSelectionInNewWindow: operations.handleOpenSelectionInNewWindow,
+    previewSelection: operations.handlePreviewSelection,
     copySelection: operations.handleCopySelection,
     cutSelection: operations.handleCutSelection,
     renameSelection: operations.handleRenameSelection,
@@ -149,6 +152,7 @@ export function FilesWindow({
     operations.handleNewFolder,
     operations.handleOpenSelection,
     operations.handleOpenSelectionInNewWindow,
+    operations.handlePreviewSelection,
     operations.handleCopySelection,
     operations.handleCutSelection,
     operations.handleRenameSelection,
@@ -275,6 +279,7 @@ export function FilesWindow({
             onDuplicateNode={operations.handleDuplicate}
             onDeleteNode={operations.handleDelete}
             onInfoNode={operations.handleInfo}
+            onPreviewNode={operations.handlePreview}
             commandContext={commandContext}
             onDropNodes={dnd.handleDropNodes}
           />
@@ -298,6 +303,13 @@ export function FilesWindow({
         open={state.infoNode !== null}
         node={state.infoNode}
         onClose={() => state.setInfoNode(null)}
+      />
+
+      <PreviewDialog
+        node={state.previewNode}
+        siblings={filteredNodes}
+        onClose={() => state.setPreviewNode(null)}
+        onNavigate={state.setPreviewNode}
       />
     </div>
   )

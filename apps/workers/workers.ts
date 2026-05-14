@@ -8,6 +8,10 @@ import { handleTransfer } from "./handlers/transfer.ts";
 import { handleCopy } from "./handlers/copy.ts";
 import { handleMove } from "./handlers/move.ts";
 import { handleDelete } from "./handlers/delete.ts";
+import {
+  startPreviewWorker,
+  type PreviewJobData,
+} from "./handlers/preview-generate.ts";
 
 /**
  * Spin up every BullMQ Worker this process runs. Returns them so `index.ts`
@@ -26,4 +30,17 @@ export function startWorkers(deps: WorkerDeps): Worker<JobData>[] {
     createWorker(deps, "move", c.move, handleMove),
     createWorker(deps, "delete", c.delete, handleDelete),
   ];
+}
+
+export function startPreviewWorkerInstance(
+  deps: WorkerDeps,
+): Worker<PreviewJobData> {
+  return startPreviewWorker({
+    db: deps.db,
+    config: deps.config,
+    registry: deps.registry,
+    log: deps.log,
+    primary: deps.primary,
+    pub: deps.pub,
+  });
 }

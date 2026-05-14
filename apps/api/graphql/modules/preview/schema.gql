@@ -1,0 +1,8 @@
+type PreviewReadyEvent {
+  nodeId: ID!
+}
+
+extend type Subscription {
+  "Fires once when the thumbnail for `nodeId` has been generated and cached."
+  previewReady(nodeId: ID!): PreviewReadyEvent!
+}

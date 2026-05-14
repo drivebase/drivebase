@@ -14,6 +14,7 @@ import { resolvers as usageResolvers } from "./modules/usage/index.ts";
 import { resolvers as operationsResolvers } from "./modules/operations/index.ts";
 import { resolvers as uploadsResolvers } from "./modules/uploads/index.ts";
 import { resolvers as metadataResolvers } from "./modules/metadata/index.ts";
+import { resolvers as previewResolvers } from "./modules/preview/index.ts";
 
 /**
  * Load every `*.gql` file under `graphql/modules/**` and merge them with
@@ -41,6 +42,7 @@ export async function buildSchema() {
     operationsResolvers,
     uploadsResolvers,
     metadataResolvers,
+    previewResolvers,
   ]);
   return makeExecutableSchema({ typeDefs, resolvers });
 }

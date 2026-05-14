@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import { AppConfigSchema, type AppConfig } from "./schema.ts";
 
@@ -27,7 +27,19 @@ export async function loadConfig(path?: string): Promise<AppConfig> {
       .join("\n");
     throw new Error(`invalid config at ${p}:\n${issues}`);
   }
-  cached = result.data;
+  const configDir = dirname(p);
+  const data = result.data;
+  cached = {
+    ...data,
+    uploads: {
+      ...data.uploads,
+      stagingDir: resolve(configDir, data.uploads.stagingDir),
+    },
+    preview: {
+      ...data.preview,
+      cachePath: resolve(configDir, data.preview.cachePath),
+    },
+  };
   return cached;
 }
 

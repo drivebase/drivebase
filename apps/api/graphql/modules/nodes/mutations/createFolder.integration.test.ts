@@ -158,8 +158,9 @@ function ctx(): GraphQLContext {
       usageTtlSeconds: 600,
     },
     workers: {
-      concurrency: { upload: 1, download: 1, transfer: 1, copy: 1, move: 1, delete: 1, syncReconcile: 1, usageRefresh: 1 },
+      concurrency: { upload: 1, download: 1, transfer: 1, copy: 1, move: 1, delete: 1, syncReconcile: 1, usageRefresh: 1, previewGenerate: 1 },
     },
+    preview: { maxEdgePx: 400, maxCacheSizeBytes: 512 * 1024 * 1024, cachePath: "/tmp/drivebase-preview-test" },
     log: { level: "warn" },
   };
   return {

@@ -20,6 +20,8 @@ export interface UseFilesWindowStateResult {
   setQuery: React.Dispatch<React.SetStateAction<string>>
   infoNode: FileItemNode | null
   setInfoNode: React.Dispatch<React.SetStateAction<FileItemNode | null>>
+  previewNode: FileItemNode | null
+  setPreviewNode: React.Dispatch<React.SetStateAction<FileItemNode | null>>
   renamingId: string | null
   setRenamingId: React.Dispatch<React.SetStateAction<string | null>>
   draftFolder: DraftFolderNode | null
@@ -39,6 +41,7 @@ export function useFilesWindowState({
   const [view, setView] = useState<ViewMode>(initialView ?? "grid")
   const [query, setQuery] = useState("")
   const [infoNode, setInfoNode] = useState<FileItemNode | null>(null)
+  const [previewNode, setPreviewNode] = useState<FileItemNode | null>(null)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [draftFolder, setDraftFolder] = useState<DraftFolderNode | null>(null)
   const [windowDragOver, setWindowDragOver] = useState(false)
@@ -71,6 +74,8 @@ export function useFilesWindowState({
     setQuery,
     infoNode,
     setInfoNode,
+    previewNode,
+    setPreviewNode,
     renamingId,
     setRenamingId,
     draftFolder,

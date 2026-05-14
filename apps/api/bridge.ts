@@ -3,6 +3,7 @@ import type { Redis } from "ioredis";
 import {
   pubsub,
   type OperationProgressEvent,
+  type PreviewReadyPayload,
 } from "./pubsub.ts";
 
 /**
@@ -32,19 +33,27 @@ export async function startRedisBridge(args: {
   // is what we re-publish into the in-process PubSub.
   sub.on("pmessage", (_pattern: string, channel: string, message: string) => {
     try {
-      const event = JSON.parse(message) as OperationProgressEvent;
-      pubsub.publish(channel as `operation:${string}:progress`, event);
+      if (channel.startsWith("preview:")) {
+        const payload = JSON.parse(message) as PreviewReadyPayload;
+        pubsub.publish(channel as `preview:${string}:ready`, payload);
+      } else {
+        const event = JSON.parse(message) as OperationProgressEvent;
+        pubsub.publish(channel as `operation:${string}:progress`, event);
+      }
     } catch (err) {
       log.warn({ err, channel }, "redis bridge: bad payload");
     }
   });
 
-  await sub.psubscribe("operation:*:progress");
-  log.info({ pattern: "operation:*:progress" }, "redis → pubsub bridge online");
+  await sub.psubscribe("operation:*:progress", "preview:*:ready");
+  log.info(
+    { patterns: ["operation:*:progress", "preview:*:ready"] },
+    "redis → pubsub bridge online",
+  );
 
   return {
     stop: async () => {
-      await sub.punsubscribe("operation:*:progress");
+      await sub.punsubscribe("operation:*:progress", "preview:*:ready");
     },
   };
 }
