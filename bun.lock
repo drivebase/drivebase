@@ -19,8 +19,10 @@
         "@drivebase/config": "workspace:*",
         "@drivebase/db": "workspace:*",
         "@drivebase/logger": "workspace:*",
+        "@drivebase/provider-dropbox": "workspace:*",
         "@drivebase/provider-google-drive": "workspace:*",
         "@drivebase/provider-local": "workspace:*",
+        "@drivebase/provider-onedrive": "workspace:*",
         "@drivebase/provider-s3": "workspace:*",
         "@drivebase/storage": "workspace:*",
         "@drivebase/telemetry": "workspace:*",
@@ -112,8 +114,10 @@
         "@drivebase/config": "workspace:*",
         "@drivebase/db": "workspace:*",
         "@drivebase/logger": "workspace:*",
+        "@drivebase/provider-dropbox": "workspace:*",
         "@drivebase/provider-google-drive": "workspace:*",
         "@drivebase/provider-local": "workspace:*",
+        "@drivebase/provider-onedrive": "workspace:*",
         "@drivebase/provider-s3": "workspace:*",
         "@drivebase/storage": "workspace:*",
         "@drivebase/telemetry": "workspace:*",
@@ -279,6 +283,17 @@
         "typescript": "^6.0.3",
       },
     },
+    "packages/providers/dropbox": {
+      "name": "@drivebase/provider-dropbox",
+      "version": "0.0.0",
+      "dependencies": {
+        "@drivebase/storage": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.12",
+        "typescript": "^6.0.3",
+      },
+    },
     "packages/providers/google-drive": {
       "name": "@drivebase/provider-google-drive",
       "version": "0.0.0",
@@ -292,6 +307,17 @@
     },
     "packages/providers/local": {
       "name": "@drivebase/provider-local",
+      "version": "0.0.0",
+      "dependencies": {
+        "@drivebase/storage": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.12",
+        "typescript": "^6.0.3",
+      },
+    },
+    "packages/providers/onedrive": {
+      "name": "@drivebase/provider-onedrive",
       "version": "0.0.0",
       "dependencies": {
         "@drivebase/storage": "workspace:*",
@@ -644,9 +670,13 @@
 
     "@drivebase/logger": ["@drivebase/logger@workspace:packages/logger"],
 
+    "@drivebase/provider-dropbox": ["@drivebase/provider-dropbox@workspace:packages/providers/dropbox"],
+
     "@drivebase/provider-google-drive": ["@drivebase/provider-google-drive@workspace:packages/providers/google-drive"],
 
     "@drivebase/provider-local": ["@drivebase/provider-local@workspace:packages/providers/local"],
+
+    "@drivebase/provider-onedrive": ["@drivebase/provider-onedrive@workspace:packages/providers/onedrive"],
 
     "@drivebase/provider-s3": ["@drivebase/provider-s3@workspace:packages/providers/s3"],
 
@@ -2824,9 +2854,13 @@
 
     "@drivebase/logger/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
+    "@drivebase/provider-dropbox/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
+
     "@drivebase/provider-google-drive/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "@drivebase/provider-local/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
+
+    "@drivebase/provider-onedrive/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "@drivebase/provider-s3/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 

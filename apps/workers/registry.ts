@@ -7,6 +7,14 @@ import {
   buildGoogleDriveModule,
   type DriveTokens,
 } from "@drivebase/provider-google-drive";
+import {
+  buildDropboxModule,
+  type DropboxTokens,
+} from "@drivebase/provider-dropbox";
+import {
+  buildOneDriveModule,
+  type OneDriveTokens,
+} from "@drivebase/provider-onedrive";
 import { schema, type Db } from "@drivebase/db";
 import type { AppConfig } from "@drivebase/config";
 
@@ -46,6 +54,68 @@ export function getRegistry(deps?: {
         return { clientId: row.clientId, clientSecret };
       },
       persistTokens: async (providerId, next: DriveTokens) => {
+        const ciphertext = await encryptJson(
+          deps.config.crypto.masterKeyBase64,
+          {
+            accessToken: next.accessToken,
+            refreshToken: next.refreshToken,
+            expiresAt: next.expiresAt,
+          },
+        );
+        await deps.db
+          .update(schema.providers)
+          .set({ credentials: ciphertext, updatedAt: new Date() })
+          .where(and(eq(schema.providers.id, providerId)));
+      },
+    }),
+  );
+  globalRegistry.register(
+    buildDropboxModule({
+      resolveOAuthApp: async (oauthAppId) => {
+        const [row] = await deps.db
+          .select()
+          .from(schema.oauthApps)
+          .where(eq(schema.oauthApps.id, oauthAppId))
+          .limit(1);
+        if (!row) throw new Error(`oauth app ${oauthAppId} not found`);
+        const clientSecret = await decryptString(
+          deps.config.crypto.masterKeyBase64,
+          row.clientSecret,
+        );
+        return { clientId: row.clientId, clientSecret };
+      },
+      persistTokens: async (providerId, next: DropboxTokens) => {
+        const ciphertext = await encryptJson(
+          deps.config.crypto.masterKeyBase64,
+          {
+            accessToken: next.accessToken,
+            refreshToken: next.refreshToken,
+            expiresAt: next.expiresAt,
+          },
+        );
+        await deps.db
+          .update(schema.providers)
+          .set({ credentials: ciphertext, updatedAt: new Date() })
+          .where(and(eq(schema.providers.id, providerId)));
+      },
+    }),
+  );
+  globalRegistry.register(
+    buildOneDriveModule({
+      resolveOAuthApp: async (oauthAppId) => {
+        const [row] = await deps.db
+          .select()
+          .from(schema.oauthApps)
+          .where(eq(schema.oauthApps.id, oauthAppId))
+          .limit(1);
+        if (!row) throw new Error(`oauth app ${oauthAppId} not found`);
+        const clientSecret = await decryptString(
+          deps.config.crypto.masterKeyBase64,
+          row.clientSecret,
+        );
+        return { clientId: row.clientId, clientSecret };
+      },
+      persistTokens: async (providerId, next: OneDriveTokens) => {
         const ciphertext = await encryptJson(
           deps.config.crypto.masterKeyBase64,
           {

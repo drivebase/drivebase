@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { Menubar } from "radix-ui"
-import { useThemeStore } from "../stores/theme-store"
 import { useWindowStore } from "../stores/window-store"
 import { useWindowCommandStore } from "../stores/window-command-store"
 import { useWindowMenuStore } from "../stores/window-menu-store"
@@ -27,8 +26,6 @@ function useClock() {
  */
 export function MenuBar() {
   const clock = useClock()
-  const toggleTheme = useThemeStore((s) => s.toggle)
-  const theme = useThemeStore((s) => s.theme)
   const focusedId = useWindowStore((s) => s.focusedId)
   const closeWindow = useWindowStore((s) => s.close)
   const invokeWindowCommand = useWindowCommandStore((s) => s.invoke)
@@ -68,9 +65,6 @@ export function MenuBar() {
 
       <div className="ml-auto flex items-center gap-4 px-2 text-[var(--fg-muted)]">
         {MenuBarExtra && <MenuBarExtra />}
-        <button type="button" onClick={toggleTheme} className="hover:text-[var(--fg)]">
-          {theme === "dark" ? "☾" : "☀"}
-        </button>
         <span className="font-mono tabular-nums">{clock}</span>
       </div>
     </div>

@@ -1,19 +1,10 @@
 import { SettingsRow } from "../components/settings-row"
 import { SettingsGroup } from "../components/settings-group"
-import { Monitor, Sun, Moon } from "lucide-react"
+import { Sun, Moon } from "lucide-react"
 
 export function AppearanceSection() {
   return (
     <div className="p-6 space-y-6">
-      <SettingsGroup label="Theme">
-        <SettingsRow
-          icon={Monitor}
-          title="Color scheme"
-        >
-          <ThemeSelector />
-        </SettingsRow>
-      </SettingsGroup>
-
       <SettingsGroup label="Desktop">
         <SettingsRow
           icon={Sun}
@@ -30,28 +21,6 @@ export function AppearanceSection() {
           <Toggle />
         </SettingsRow>
       </SettingsGroup>
-    </div>
-  )
-}
-
-function ThemeSelector() {
-  const options = [
-    { value: "light", label: "Light" },
-    { value: "dark",  label: "Dark"  },
-    { value: "system", label: "System" },
-  ]
-  return (
-    <div className="flex gap-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-subtle)] p-0.5">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          className="rounded-[var(--radius-sm)] px-3 py-1 text-xs text-[var(--fg-muted)] transition-colors hover:text-[var(--fg)] aria-pressed:bg-[var(--bg)] aria-pressed:text-[var(--fg)] aria-pressed:shadow-sm"
-          aria-pressed={o.value === "dark"}
-        >
-          {o.label}
-        </button>
-      ))}
     </div>
   )
 }
