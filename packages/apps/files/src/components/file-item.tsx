@@ -1,11 +1,13 @@
 import { cn } from "@drivebase/ui/lib/cn"
-import { FileIcon } from "@drivebase/ui/components/file-icon"
-import { useEffect, useRef, type DragEventHandler, type MouseEventHandler } from "react"
+import { FileIcon, fileKindOf } from "@drivebase/ui/components/file-icon"
+import { getApiBaseUrl } from "@drivebase/data"
+import { useEffect, useRef, useState, type DragEventHandler, type MouseEventHandler } from "react"
 
 export interface FileItemNode {
   id: string
   name: string
   type: "file" | "folder"
+  mimeType?: string | null
   size?: number | string | null
   remoteUpdatedAt?: string | null
 }
@@ -76,7 +78,7 @@ export function FileItemGrid({
           </span>
         </>
       ) : null}
-      <FileIcon type={node.type} name={node.name} variant="lg" />
+      <PreviewThumb node={node} />
       {isRenaming ? (
         <InlineRenameField
           value={node.name}
@@ -121,6 +123,51 @@ export function FileItemGrid({
     >
       {content}
     </button>
+  )
+}
+
+const RETRY_DELAYS_MS = [2000, 4000, 8000, 16000, 30000]
+
+function PreviewThumb({ node }: { node: FileItemNode }) {
+  const [bust, setBust] = useState(0)
+  const [loaded, setLoaded] = useState(false)
+  const retries = useRef(0)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const isImage =
+    node.type === "file" &&
+    (node.mimeType?.startsWith("image/") || fileKindOf(node.name) === "image")
+
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
+
+  if (!isImage) {
+    return <FileIcon type={node.type} name={node.name} variant="lg" />
+  }
+
+  const src = `${getApiBaseUrl()}/api/preview/${node.id}${bust > 0 ? `?t=${bust}` : ""}`
+
+  const handleError = () => {
+    const delay = RETRY_DELAYS_MS[retries.current]
+    if (delay === undefined) return
+    retries.current += 1
+    timer.current = setTimeout(() => setBust((b) => b + 1), delay)
+  }
+
+  return (
+    <div className="relative flex h-[44px] w-[44px] items-center justify-center">
+      {!loaded && <FileIcon type={node.type} name={node.name} variant="lg" className="absolute" />}
+      <img
+        src={src}
+        alt=""
+        draggable={false}
+        className={cn(
+          "absolute h-full w-full rounded-[var(--radius-sm)] object-cover",
+          !loaded && "invisible",
+        )}
+        onLoad={() => setLoaded(true)}
+        onError={handleError}
+      />
+    </div>
   )
 }
 

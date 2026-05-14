@@ -72,8 +72,20 @@ export const AppConfigSchema = z.object({
           delete: z.number().int().positive().default(4),
           syncReconcile: z.number().int().positive().default(1),
           usageRefresh: z.number().int().positive().default(1),
+          previewGenerate: z.number().int().positive().default(2),
         })
         .prefault({}),
+    })
+    .prefault({}),
+  preview: z
+    .object({
+      maxEdgePx: z.number().int().positive().default(400),
+      maxCacheSizeBytes: z
+        .number()
+        .int()
+        .positive()
+        .default(512 * 1024 * 1024),
+      cachePath: z.string().min(1).default("./cache/previews"),
     })
     .prefault({}),
   log: z

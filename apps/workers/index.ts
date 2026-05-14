@@ -6,7 +6,7 @@ import { closeRedis, getRedis } from "./redis.ts";
 import { getLogger } from "./logger.ts";
 import { getRegistry } from "./registry.ts";
 import { makeQueueFactory } from "./queues.ts";
-import { startWorkers } from "./workers.ts";
+import { startWorkers, startPreviewWorkerInstance } from "./workers.ts";
 
 /**
  * Workers entrypoint. Boots config → logger → DB → Redis → registry, then
@@ -29,7 +29,7 @@ const telemetry = createTelemetryClient({
   disabled: process.env.TELEMETRY_DISABLED === 'true',
 });
 
-const workers = startWorkers({
+const deps = {
   db,
   config,
   registry,
@@ -39,10 +39,13 @@ const workers = startWorkers({
   cache,
   telemetry,
   getQueue: makeQueueFactory(primary),
-});
+};
+
+const workers = startWorkers(deps);
+const previewWorker = startPreviewWorkerInstance(deps);
 
 log.info(
-  { queues: workers.map((w) => w.name), env: config.server.env },
+  { queues: [...workers.map((w) => w.name), previewWorker.name], env: config.server.env },
   "drivebase workers started",
 );
 
@@ -51,8 +54,7 @@ async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
   log.info({ signal }, "drivebase workers shutting down");
-  // BullMQ's worker.close() waits for active jobs to complete.
-  await Promise.all(workers.map((w) => w.close()));
+  await Promise.all([...workers, previewWorker].map((w) => w.close()));
   await sql.end({ timeout: 5 });
   await closeRedis();
   log.info("drivebase workers stopped");

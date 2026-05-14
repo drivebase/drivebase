@@ -448,6 +448,11 @@ export type PresignedPart = {
   url: Scalars['String']['output'];
 };
 
+export type PreviewReadyEvent = {
+  __typename?: 'PreviewReadyEvent';
+  nodeId: Scalars['ID']['output'];
+};
+
 /** Throttled byte-level progress. One per ~256 KiB or 500 ms per job. */
 export type ProgressEvent = {
   __typename?: 'ProgressEvent';
@@ -596,11 +601,18 @@ export type Subscription = {
    * stream closes.
    */
   operationProgress: OperationProgress;
+  /** Fires once when the thumbnail for `nodeId` has been generated and cached. */
+  previewReady: PreviewReadyEvent;
 };
 
 
 export type SubscriptionOperationProgressArgs = {
   operationId: Scalars['ID']['input'];
+};
+
+
+export type SubscriptionPreviewReadyArgs = {
+  nodeId: Scalars['ID']['input'];
 };
 
 /**

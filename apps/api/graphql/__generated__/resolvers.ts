@@ -451,6 +451,11 @@ export type PresignedPart = {
   url: Scalars['String']['output'];
 };
 
+export type PreviewReadyEvent = {
+  __typename?: 'PreviewReadyEvent';
+  nodeId: Scalars['ID']['output'];
+};
+
 /** Throttled byte-level progress. One per ~256 KiB or 500 ms per job. */
 export type ProgressEvent = {
   __typename?: 'ProgressEvent';
@@ -599,11 +604,18 @@ export type Subscription = {
    * stream closes.
    */
   operationProgress: OperationProgress;
+  /** Fires once when the thumbnail for `nodeId` has been generated and cached. */
+  previewReady: PreviewReadyEvent;
 };
 
 
 export type SubscriptionOperationProgressArgs = {
   operationId: Scalars['ID']['input'];
+};
+
+
+export type SubscriptionPreviewReadyArgs = {
+  nodeId: Scalars['ID']['input'];
 };
 
 /**
@@ -837,6 +849,7 @@ export type ResolversTypes = ResolversObject<{
   PreflightInput: PreflightInput;
   PreflightResult: ResolverTypeWrapper<Omit<PreflightResult, 'entries'> & { entries: Array<ResolversTypes['PlanEntry']> }>;
   PresignedPart: ResolverTypeWrapper<PresignedPart>;
+  PreviewReadyEvent: ResolverTypeWrapper<PreviewReadyEvent>;
   ProgressEvent: ResolverTypeWrapper<ProgressEventMapper>;
   Provider: ResolverTypeWrapper<ProviderMapper>;
   ProviderAuthKind: ProviderAuthKind;
@@ -898,6 +911,7 @@ export type ResolversParentTypes = ResolversObject<{
   PreflightInput: PreflightInput;
   PreflightResult: Omit<PreflightResult, 'entries'> & { entries: Array<ResolversParentTypes['PlanEntry']> };
   PresignedPart: PresignedPart;
+  PreviewReadyEvent: PreviewReadyEvent;
   ProgressEvent: ProgressEventMapper;
   Provider: ProviderMapper;
   ProviderCapabilities: ProviderCapabilities;
@@ -1081,6 +1095,10 @@ export type PresignedPartResolvers<ContextType = GraphQLContext, ParentType exte
   url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type PreviewReadyEventResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['PreviewReadyEvent'] = ResolversParentTypes['PreviewReadyEvent']> = ResolversObject<{
+  nodeId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
 export type ProgressEventResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['ProgressEvent'] = ResolversParentTypes['ProgressEvent']> = ResolversObject<{
   bytes?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   entryKind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -1147,6 +1165,7 @@ export type QueryResolvers<ContextType = GraphQLContext, ParentType extends Reso
 
 export type SubscriptionResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
   operationProgress?: SubscriptionResolver<ResolversTypes['OperationProgress'], "operationProgress", ParentType, ContextType, RequireFields<SubscriptionOperationProgressArgs, 'operationId'>>;
+  previewReady?: SubscriptionResolver<ResolversTypes['PreviewReadyEvent'], "previewReady", ParentType, ContextType, RequireFields<SubscriptionPreviewReadyArgs, 'nodeId'>>;
 }>;
 
 export type TransferStatsResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['TransferStats'] = ResolversParentTypes['TransferStats']> = ResolversObject<{
@@ -1221,6 +1240,7 @@ export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   PlanEntry?: PlanEntryResolvers<ContextType>;
   PreflightResult?: PreflightResultResolvers<ContextType>;
   PresignedPart?: PresignedPartResolvers<ContextType>;
+  PreviewReadyEvent?: PreviewReadyEventResolvers<ContextType>;
   ProgressEvent?: ProgressEventResolvers<ContextType>;
   Provider?: ProviderResolvers<ContextType>;
   ProviderCapabilities?: ProviderCapabilitiesResolvers<ContextType>;

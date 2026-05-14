@@ -48,6 +48,7 @@ export interface FilesViewProps {
   onDuplicateNode: (node: FileItemNode) => void
   onDeleteNode: (node: FileItemNode) => void
   onInfoNode: (node: FileItemNode) => void
+  onPreviewNode: (node: FileItemNode) => void
   commandContext: FilesCommandContext
   /**
    * Fired when nodes are dropped onto a folder or the background.
@@ -101,6 +102,7 @@ export function FilesView({
   onDuplicateNode,
   onDeleteNode,
   onInfoNode,
+  onPreviewNode,
   commandContext,
   onDropNodes,
 }: FilesViewProps) {
@@ -161,6 +163,7 @@ export function FilesView({
       download: () => onDownloadNode(node),
       delete: () => void onDeleteNode(node),
       info: () => onInfoNode(node),
+      preview: () => onPreviewNode(node),
       pasteIntoFolder: () => onPasteIntoFolder(node),
       canPasteIntoFolder: node.type === "folder" ? canPasteIntoFolder(node) : false,
     },

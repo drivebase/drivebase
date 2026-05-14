@@ -55,6 +55,12 @@ export function operationChannel(operationId: string): string {
   return `operation:${operationId}:progress`;
 }
 
+export type PreviewReadyPayload = { nodeId: string };
+
+export function previewChannel(nodeId: string): string {
+  return `preview:${nodeId}:ready`;
+}
+
 /**
  * Typed PubSub channel map. The key format is important: templates in
  * graphql-yoga's PubSub must be string-literal-typed so `pubsub.subscribe`
@@ -62,6 +68,8 @@ export function operationChannel(operationId: string): string {
  */
 export type PubSubChannels = {
   [K: `operation:${string}:progress`]: [OperationProgressEvent];
+} & {
+  [K: `preview:${string}:ready`]: [PreviewReadyPayload];
 };
 
 export const pubsub = createPubSub<PubSubChannels>();

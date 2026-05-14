@@ -206,8 +206,10 @@ beforeAll(async () => {
         delete: 1,
         syncReconcile: 1,
         usageRefresh: 1,
+        previewGenerate: 1,
       },
     },
+    preview: { maxEdgePx: 400, maxCacheSizeBytes: 512 * 1024 * 1024, cachePath: "/tmp/drivebase-preview-test" },
     log: { level: "warn" },
   };
   // Use prod mode (no pino-pretty transport) so the test doesn't need

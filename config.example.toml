@@ -42,6 +42,12 @@ move = 4
 delete = 4
 syncReconcile = 1
 usageRefresh = 1
+previewGenerate = 2
+
+[preview]
+maxEdgePx = 400
+maxCacheSizeBytes = 536870912  # 512 MB
+cachePath = "./cache/previews"
 
 [log]
 level = "info"

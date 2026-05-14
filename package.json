@@ -5,7 +5,7 @@
   "scripts": {
     "build": "turbo build",
     "codegen": "turbo codegen",
-    "dev": "turbo dev",
+    "dev": "turbo dev --filter=api --filter=web --filter=workers",
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck",
