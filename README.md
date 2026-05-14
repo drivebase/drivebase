@@ -63,8 +63,8 @@ Then open `http://localhost:4000`.
 - [x] Google Drive
 - [x] AWS S3 / S3-compatible (Cloudflare R2, Wasabi, Backblaze B2, MinIO, etc.)
 - [x] Local Filesystem
-- [ ] Dropbox
-- [ ] OneDrive
+- [x] Dropbox
+- [x] OneDrive
 - [ ] Box
 - [ ] Azure Blob Storage
 - [ ] SFTP
