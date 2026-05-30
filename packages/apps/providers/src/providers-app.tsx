@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useProviderTypes } from "@drivebase/data"
 import type { AppProps } from "@drivebase/kernel"
+import { useBus } from "@drivebase/kernel/bus"
 import type { ProviderTypesQuery } from "@drivebase/data/gql"
 import { Button } from "@drivebase/ui/components/button"
 import { ConnectForm } from "./connect-form"
@@ -19,13 +20,17 @@ type ProviderType = ProviderTypesQuery["providerTypes"][number]
 export function ProvidersApp(_props: AppProps) {
   const [selected, setSelected] = useState<ProviderType | null>(null)
   const { providerTypes, fetching: typesFetching, error: typesError } = useProviderTypes()
+  const bus = useBus()
 
   if (selected) {
     return (
       <ConnectForm
         providerType={selected}
         onBack={() => setSelected(null)}
-        onConnected={() => setSelected(null)}
+        onConnected={() => {
+          setSelected(null)
+          bus.emit("provider.connected", undefined)
+        }}
       />
     )
   }

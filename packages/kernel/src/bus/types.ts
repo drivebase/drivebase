@@ -29,6 +29,9 @@ export type KernelEventMap = {
   "theme.change": { theme: "light" | "dark" }
   "wallpaper.change": { variant: string }
 
+  // Providers
+  "provider.connected": void
+
   // Files
   "files.refresh": void
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useMyProviders } from "@drivebase/data"
 import { Icon } from "@drivebase/ui/primitives/icon"
 import { ContextMenuZone } from "../overlays/context-menu-zone"
@@ -7,6 +7,7 @@ import { useAppRegistryStore } from "../stores/app-registry-store"
 import { useDesktopShortcutStore } from "../stores/desktop-shortcut-store"
 import { useLayoutStore } from "../stores/layout-store"
 import { useBus } from "../bus/context"
+import { useSubscribe } from "../bus/use-subscribe"
 import type { IconSpec } from "../registry/app-manifest"
 
 interface DesktopBackgroundMenuPayload {
@@ -121,8 +122,10 @@ export function Desktop() {
   const removeProviderShortcut = useDesktopShortcutStore((s) => s.removeProviderShortcut)
   const wallpaper = useLayoutStore((s) => s.wallpaper)
   const setWallpaper = useLayoutStore((s) => s.setWallpaper)
-  const { providers, fetching: providersFetching } = useMyProviders()
+  const { providers, fetching: providersFetching, refetch } = useMyProviders()
   const bus = useBus()
+
+  useSubscribe("provider.connected", useCallback(() => { refetch() }, [refetch]))
 
   useEffect(() => {
     if (providersFetching) return
