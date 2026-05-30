@@ -38,3 +38,6 @@ npm-debug.log*
 
 # local config (checked-in example is config.example.toml in packages/config)
 /config.toml
+
+# Cache
+/cache
