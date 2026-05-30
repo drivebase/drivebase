@@ -18,6 +18,10 @@
 
 ---
 
+<img width="1920" height="1080" alt="848shots_so" src="https://github.com/user-attachments/assets/23635f58-8718-48ec-8de4-261392f2c5f0" />
+
+<br />
+
 [Watch demo](https://x.com/i/status/2048080132418728354)
 
 Drivebase is an open-source, self-hosted platform that connects your cloud storage providers — Google Drive, S3, local filesystem, and more — under a single interface. Browse, upload, transfer, and manage files across providers without touching each service separately.
