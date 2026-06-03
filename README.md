@@ -5,7 +5,7 @@
 <h1 align="center">Drivebase</h1>
 
 <p align="center">
-  Your cloud storage. One OS. Runs anywhere.
+  Your cloud storage. One desktop. Runs anywhere.
 </p>
 
 
@@ -47,7 +47,7 @@ Then open `http://localhost:4000`.
 
 ## Features
 
-- **OS-like interface** — windowed apps, a taskbar, and a desktop shell; feels like a native file manager in the browser
+- **Desktop shell interface** — windowed apps, a taskbar, and a desktop shell; feels like a native file manager in the browser
 - **Unified file browser** — navigate folders and files across all connected providers in one place
 - **Multi-provider support** — Google Drive, AWS S3 (and S3-compatible services), local filesystem
 - **Batch operations** — copy, move, transfer, and delete across providers with preflight conflict analysis
