@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/drivebase/drivebase/releases"><img src="https://img.shields.io/github/v/release/drivebase/drivebase?style=flat-square" alt="Release" /></a>
-  <a href="https://github.com/drivebase/drivebase/blob/main/LICENSE"><img src="https://img.shields.io/github/license/drivebase/drivebase?style=flat-square" alt="License" /></a>
+  <a href="https://cloud.drivebase.io"> <img src="https://img.shields.io/badge/Drivebase_Cloud-blue?style=flat-square" alt="Cloud" /> </a>
   <a href="https://github.com/drivebase/drivebase/stargazers"><img src="https://img.shields.io/github/stars/drivebase/drivebase?style=flat-square" alt="Stars" /></a>
   <a href="https://deepwiki.com/drivebase/drivebase"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
@@ -27,9 +27,6 @@
 Drivebase is an open-source, self-hosted platform that connects your cloud storage providers — Google Drive, S3, local filesystem, and more — under a single interface. Browse, upload, transfer, and manage files across providers without touching each service separately.
 
 The UI is designed as a desktop OS shell running in the browser. Apps (Files, Providers, Settings) open as windows you can move, resize, and switch between — making it feel like a native file manager rather than a typical web dashboard.
-
-> [!WARNING]
-> **v4 is still in active development.** Expect breaking changes, incomplete features, and shifting APIs until a stable release is tagged.
 
 ## Quick Install
 
