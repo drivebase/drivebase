@@ -30,5 +30,8 @@
     "packages/*",
     "packages/providers/*",
     "packages/apps/*"
-  ]
+  ],
+  "dependencies": {
+    "react-dom": "^19.2.7"
+  }
 }
