@@ -4,7 +4,7 @@
 FROM oven/bun:1.3.5-alpine AS pruner
 WORKDIR /app
 COPY . .
-RUN bunx turbo prune @drivebase/api @drivebase/workers web --docker
+RUN bunx turbo prune api workers web --docker
 
 # ── Stage 2: install all deps ─────────────────────────────────────────────────
 FROM oven/bun:1.3.5-alpine AS deps
