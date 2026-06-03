@@ -3,7 +3,7 @@ services:
     image: ghcr.io/drivebase/drivebase:v4.0.0
     restart: unless-stopped
     ports:
-      - "9200:80"  # set auth.base_url in config.toml to match, e.g. http://yourhost:9200
+      - "3000:3000"  # set auth.baseUrl in config.toml to match, e.g. http://yourhost:3000
     volumes:
       - ./config.toml:/app/config.toml:ro
       - drivebase_data:/app/data

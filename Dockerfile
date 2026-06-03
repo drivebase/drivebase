@@ -42,7 +42,7 @@ COPY var/docker/Caddyfile /etc/caddy/Caddyfile
 COPY var/docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-EXPOSE 80
+EXPOSE 3000
 
 # ── Stage 5: runtime — web built internally (local / self-hosted builds) ──────
 FROM runtime-base AS runtime

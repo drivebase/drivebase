@@ -1,4 +1,4 @@
-:80 {
+:3000 {
     # API routes — proxy to the Bun API server
     handle /graphql* {
         reverse_proxy localhost:4000
