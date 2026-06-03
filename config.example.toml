@@ -23,8 +23,11 @@ masterKeyBase64 = "REPLACE_WITH_32_BYTES_BASE64=="
 # Generate with:
 #   Linux / macOS / Windows (Git Bash / WSL):  openssl rand -hex 32
 betterAuthSecret = "REPLACE_WITH_A_LONG_RANDOM_STRING"
-baseUrl = "http://localhost:1558"
-trustedOrigins = ["http://localhost:1558"]
+# Must be the public-facing URL the browser hits (not the internal API port).
+# Local dev: Vite's dev server URL (the proxy forwards API routes to :4000).
+# Docker:    the URL matching your port mapping, e.g. http://yourhost:9200
+baseUrl = "http://localhost:5173"
+trustedOrigins = []
 
 [cache]
 # listChildren TTL — 60s matches the plan. Short enough that edits via other
