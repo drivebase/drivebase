@@ -25,8 +25,8 @@ masterKeyBase64 = "REPLACE_WITH_32_BYTES_BASE64=="
 betterAuthSecret = "REPLACE_WITH_A_LONG_RANDOM_STRING"
 # Must be the public-facing URL the browser hits (not the internal API port).
 # Local dev: Vite's dev server URL (the proxy forwards API routes to :4000).
-# Docker:    the URL matching your port mapping, e.g. http://yourhost:9200
-baseUrl = "http://localhost:5173"
+# Docker:    the URL matching your port mapping, e.g. http://yourhost:3000
+baseUrl = "http://localhost:3000"
 trustedOrigins = []
 
 [cache]

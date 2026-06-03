@@ -19,6 +19,7 @@ export default defineConfig({
     svgr(),
   ],
   server: {
+    port: 3000,
     proxy: {
       "/graphql": API_PROXY,
       "/auth": API_PROXY,
