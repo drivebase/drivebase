@@ -1,5 +1,32 @@
 # Changelog
 
+## [4.0.0](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.8...v4.0.0) (2026-06-03)
+
+### Features
+
+* add dropbox provider ([28d84d6](https://github.com/drivebase/drivebase/commit/28d84d6c54bc55d96e469494e0f4d3ca49325bfa))
+* add install event, derive EventName from ALLOWED_EVENT_NAMES ([b9d7824](https://github.com/drivebase/drivebase/commit/b9d7824eb2c2f21d8344627eb0bc01a4476abd2d))
+* add onedrive provider ([3234e42](https://github.com/drivebase/drivebase/commit/3234e42fc83ee1cafcbce61207029d3df64545a5))
+* preview option for images ([2c7f7e0](https://github.com/drivebase/drivebase/commit/2c7f7e0487928028f4daaf723bd65a5677e2c844))
+* rate limiting, payload size guard, event name validation in telemetry worker ([0ece434](https://github.com/drivebase/drivebase/commit/0ece4343475fe02cb7927b9eea00e05260647a71))
+
+### Fixes
+
+* export ALLOWED_EVENT_NAMES + correct ratelimits field in wrangler ([c3f0d74](https://github.com/drivebase/drivebase/commit/c3f0d74b0713f7e26b70497bb5868ee54484b83d))
+* handle oauth route ([710c4c9](https://github.com/drivebase/drivebase/commit/710c4c98eb1f3192c39945c3c3dee1f3939bfdfc))
+* refetch providers on desktop after oauth connect ([0794f84](https://github.com/drivebase/drivebase/commit/0794f84059bd55c508bac016900f0cfcf895f465))
+
+### Styles
+
+* use dark mode only ([69f3d94](https://github.com/drivebase/drivebase/commit/69f3d94dc104f56722cfa1353a1daf61f4425648))
+
+### Others
+
+* add makefile ([1bcd2ce](https://github.com/drivebase/drivebase/commit/1bcd2ce43363ddb2073f513912c699f508c12051))
+* reset migrations ([cdf2e04](https://github.com/drivebase/drivebase/commit/cdf2e04038a7d994cdca35eb0d80432d714948c6))
+* update .gitignore ([4cb2163](https://github.com/drivebase/drivebase/commit/4cb2163d1e89d8f8f6b81bdc3b73ec499b38bce4))
+* update docker config for production deployment ([a473a65](https://github.com/drivebase/drivebase/commit/a473a65140fd7d5dc444b617fb0495b9f99cd146))
+
 ## [4.0.0-alpha.8](https://github.com/drivebase/drivebase/compare/v4.0.0-alpha.7...v4.0.0-alpha.8) (2026-04-25)
 
 ### Fixes
