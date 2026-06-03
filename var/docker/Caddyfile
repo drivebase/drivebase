@@ -15,6 +15,9 @@
     handle /healthz {
         reverse_proxy localhost:4000
     }
+    handle /oauth/* {
+        reverse_proxy localhost:4000
+    }
 
     # Web — serve pre-built static files with SPA fallback
     handle {
